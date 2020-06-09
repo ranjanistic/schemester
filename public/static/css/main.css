@@ -1,0 +1,38 @@
+html{
+    scroll-behavior: smooth;
+    position: relative;
+    top:0;
+    bottom:0;
+    left:0;
+    margin:12px;
+    right:0;
+}
+
+body{
+    font-size:18px;
+    padding:12px;
+    background-color: #efefef;
+}
+a{
+    text-decoration: none;
+    transition: 0.5s ease;
+    font-size: 18px;
+}
+a:hover{
+    color:white;
+    
+    font-size: 22px;
+}
+a:focus{
+    font-size: 16px;
+}
+.container{
+    color:white;
+    background-color: #2196f3;
+    border-radius: 12px;
+    font-family: 'Jost',sans-serif;
+    font-size:22px;
+    padding:12px;
+    box-shadow:0 8px 16px 0 #00000055,0 6px 20px 0 #00000055
+}
+

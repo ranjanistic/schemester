@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <title>Login | Admin | Schemester</title>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#2196f3">
+        <link rel="icon" href="../static/graphic/schemester.png">
+        <link rel = "stylesheet" href="../static/css/main.css">
+        <link rel = "stylesheet" href="../static/css/fmt.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+        This is administrator login page.
+        <form method="post" action="login" >
+            <div style="padding:26px; border-radius: 22px;margin: 22px;">
+                <fieldset id="email_fieldset">
+                    <legend>Username</legend>
+                    <label for="uid">Your email address here.</label>
+                    <input required="true" type="email" id="email" name="email">
+                </fieldset>
+                <br/>
+                <fieldset id="password_fieldset">
+                    <legend>Password</legend>
+                    <label for="pass">The password you've set.</label>
+                    <input required="true" type="password" id="password" name="password">
+                </fieldset>
+                <br/>
+                <fieldset id="password_fieldset">
+                    <legend>Institution ID</legend>
+                    <label for="pass">Your institution's private UIID.</label>
+                    <input required="true" type="password" id="PUIID" name="PUIID">
+                </fieldset>
+                <br/>
+            <button class="button-submit" type="" id="signinproceed">Proceed</button>
+                <br/><br/>
+                <div class="fmt-row">
+                    <button style="width: 40%;" class="button-reset fmt-left" type="reset">Re-fill</button>
+                    <a href="forgot.html"><button style="width:40%" class="button-reset fmt-right" type="button">Forgot?</button></a>
+                </div>
+            </div>
+        </form>
+        </div>
+    </body>
+</html>
