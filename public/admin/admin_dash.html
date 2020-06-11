@@ -9,8 +9,8 @@
         <meta name="theme-color" content="#2196f3">
         <link rel="icon" href="../static/graphic/schemester.png">
         <link rel = "stylesheet" href="../static/css/fmt.css">
-        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
-
+        <link rel = "stylesheet" href="../static/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/init.js"></script>
@@ -18,97 +18,148 @@
         <script type="text/javascript">
             window.onload = function() {
                 initAuthStateListener();
-            };  
+            };
+            window.onscroll = function(){
+                
+            }
         </script>
 
     </head>
     <body class="fmt-light-grey">
-        <div class="fmt-blue fmt-top fmt-shadow fmt-padding" id="topBar">
+        
+        <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
+            <a href="/"><img src="../static/graphic/schemester.png" width="50"></a>
             <span id="greeting">Loading</span>
-            <span class="fmt-right fmt-btn">Account</span>
-            <button id="logoutAdminButton" class="fmt-right fmt-btn">Logout</button>
+            <div class="fmt-dropdown-hover fmt-right">
+                <span class="fmt-btn" id="settingButton">Settings</span>
+                <div class="fmt-dropdown-content fmt-shadow" id="settingDropdown">
+                    <a href style="font-size: 18px;">Account</a>
+                    <a href style="font-size: 18px;">Institution</a>
+                    <a href style="font-size: 18px;" id="logoutAdminButton">Logout</a>
+                </div>
+            </div>
         </div>
-        <div class="fmt-row fmt-cyan fmt-padding" id="adminBody" style="margin-top: 72px;">
+        <div class="fmt-row fmt-padding" id="adminBody" style="margin-top: 72px;">
 
-            <div class="fmt-col fmt-half fmt-green fmt-padding" id="summary" style="margin-bottom: 10px;">
-                <span class="fmt-row">Today</span>
-                <div class="fmt-row fmt-padding fmt-white">
-                    Teachers absent (Number)
-                    <!--This division contains list of absentee teachers/assignees-->
-                    <div class="fmt-row" id="absenteelist">
-                        <!--This division contains absentee details, for each absentee-->
-                        <div class="fmt-row  fmt-red" id="absentee1">
-                            <span class="fmt-third">Teacher name</span>
-                            <span class="fmt-third">Period(s)</span>
-                            <span class="fmt-third">Teacher Message</span>
+            <div class="fmt-col fmt-half fmt-padding-small">
+                <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
+                    <span class="fmt-row heading">Today</span>
+                    <div class="fmt-row">
+                        Teachers absent (Number)
+                        <!--This division contains list of absentee teachers/assignees-->
+                        <div class="fmt-row fmt-red" id="absenteelist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="absentee1">
+                                <span class="fmt-third">Teacher name</span>
+                                <span class="fmt-third">Period(s)</span>
+                                <span class="fmt-third">Teacher Message</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fmt-row">
+                        Classes affected (Number)
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row fmt-teal" id="classAffectedlist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="affectedClass1">
+                                <span class="fmt-half">Class</span>
+                                <span class="fmt-half">Period(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fmt-row">
+                        Free teachers
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row fmt-orange" id="freeAssigneeList">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="freeAssignee1">
+                                <span class="fmt-half">Free teacher's name</span>
+                                <span class="fmt-half">Free periods</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="fmt-row fmt-padding fmt-teal">
-                    Classes affected (Number)
-                    <!--This division contains list of affected classes due to absentee teachers/assignees-->
-                    <div class="fmt-row" id="classAffectedlist">
-                        <!--This division contains absentee details, for each absentee-->
-                        <div class="fmt-row fmt-white" id="affectedClass1">
-                            <span class="fmt-half">Class</span>
-                            <span class="fmt-half">Period(s)</span>
+
+                <div class="container fmt-animate-bottom" id="summary" style="margin-bottom: 10px;">
+                    <span class="fmt-row heading">This week</span>
+                    <div class="fmt-row">
+                        Teachers absent (Number)
+                        <!--This division contains list of absentee teachers/assignees-->
+                        <div class="fmt-row fmt-red" id="absenteelist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="absentee1">
+                                <span class="fmt-third">Teacher name</span>
+                                <span class="fmt-third">Period(s)</span>
+                                <span class="fmt-third">Teacher Message</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="fmt-row fmt-padding fmt-orange">
-                    Free teachers
-                    <!--This division contains list of affected classes due to absentee teachers/assignees-->
-                    <div class="fmt-row" id="freeAssigneeList">
-                        <!--This division contains absentee details, for each absentee-->
-                        <div class="fmt-row fmt-white" id="freeAssignee1">
-                            <span class="fmt-half">Free teacher's name</span>
-                            <span class="fmt-half">Free periods</span>
+                    <div class="fmt-row">
+                        Classes affected (Number)
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row fmt-teal" id="classAffectedlist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="affectedClass1">
+                                <span class="fmt-half">Class</span>
+                                <span class="fmt-half">Period(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fmt-row">
+                        Free teachers
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row fmt-orange" id="freeAssigneeList">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="freeAssignee1">
+                                <span class="fmt-half">Free teacher's name</span>
+                                <span class="fmt-half">Free periods</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="fmt-col fmt-half fmt-orange fmt-padding" id="actions" style="margin-bottom: 10px;">
-                Take a look
-                <div class="fmt-row fmt-padding fmt-white">
-                    Edit today's schedule
-                    <div class="fmt-row" id="todayScheduleradio">
-                        <!--Using following radio ids, show nex division of particular selection-->
-                        <input type="radio" name="todaySelection" class="radio" id="teacherRadioToday">Teacher<span>
-                        <input type="radio" name="todaySelection" class="radio" id="classRadioToday">Class</span>
+            <div class="fmt-col fmt-half fmt-padding-small">
+                <div class="container fmt-animate-right" id="actions">
+                    <span class="fmt-row heading">Work</span>
+                    <div class="fmt-row fmt-padding fmt-white">
+                        Edit today's schedule
+                        <div class="fmt-row" id="todayScheduleradio">
+                            <!--Using following radio ids, show nex division of particular selection-->
+                            <input type="radio" name="todaySelection" class="radio" id="teacherRadioToday">Teacher<span>
+                            <input type="radio" name="todaySelection" class="radio" id="classRadioToday">Class</span>
+                        </div>
+                        <div class="fmt-row fmt-blue" id="teacherSearchToday">
+                            Select teacher: (Dropdown searchable list of teachers here,
+                            leading to today's schedule page of admin for that teacher)
+                        </div>
+                        <div class="fmt-row fmt-yellow" id="classSearchToday">
+                            Select Class: (Dropdown searchable list of classes with sub-dropdown list of their sections here,
+                            leading to today's schedule page of admin for that class)
+                        </div>
                     </div>
-                    <div class="fmt-row fmt-blue" id="teacherSearchToday">
-                        Select teacher: (Dropdown searchable list of teachers here,
-                        leading to today's schedule page of admin for that teacher)
-                    </div>
-                    <div class="fmt-row fmt-yellow" id="classSearchToday">
-                        Select Class: (Dropdown searchable list of classes with sub-dropdown list of their sections here,
-                        leading to today's schedule page of admin for that class)
-                    </div>
-                </div>
-                <div class="fmt-row fmt-padding fmt-pink">
-                    View full week schedule of
-                    <div class="fmt-row" id="fullScheduleradio">
-                        <!--Using following radio ids, show nex division of particular selection-->
-                        
-                        <input type="radio" name="weekSelection" class="radio" id="teacherRadioWeek">Teacher<span>
-                        <input type="radio" name="weekSelection" class="radio" id="classRadioWeek">Class</span>
-                    </div>
-                    <div class="fmt-row fmt-blue" id="teacherSearchWeek">
-                        Select teacher: (Dropdown searchable list of teachers here,
-                        leading to full schedule page of admin for that teacher)
-                    </div>
-                    <div class="fmt-row fmt-yellow" id="classSearchWeek">
-                        Select class: (Dropdown searchable list of classes with sub-dropdown list of their sections here,
-                        leading to full schedule page of admin for that class)
+                    <div class="fmt-row fmt-padding fmt-pink">
+                        View full week schedule of
+                        <div class="fmt-row" id="fullScheduleradio">
+                            <!--Using following radio ids, show nex division of particular selection-->
+                            
+                            <input type="radio" name="weekSelection" class="radio" id="teacherRadioWeek">Teacher<span>
+                            <input type="radio" name="weekSelection" class="radio" id="classRadioWeek">Class</span>
+                        </div>
+                        <div class="fmt-row fmt-blue" id="teacherSearchWeek">
+                            Select teacher: (Dropdown searchable list of teachers here,
+                            leading to full schedule page of admin for that teacher)
+                        </div>
+                        <div class="fmt-row fmt-yellow" id="classSearchWeek">
+                            Select class: (Dropdown searchable list of classes with sub-dropdown list of their sections here,
+                            leading to full schedule page of admin for that class)
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <div class="fmt-bottom fmt-center fmt-red" id="bottomBar">
-            <span class="fmt-green">Monday, January 9, 2021 12:49 pm</span>
+        <div class="fmt-bottom fmt-animate-bottom-slow fmt-center" id="bottomBar">
+            <span class="bottom-container">Monday, January 9, 2021 12:49 pm</span>
         </div>
     </body>
 </html>

@@ -53,7 +53,10 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-dropdown-hover:hover .fmt-dropdown-content{display:block}
 .fmt-dropdown-hover:first-child,.fmt-dropdown-click:hover{background-color:#ccc;color:#000}
 .fmt-dropdown-hover:hover > .fmt-button:first-child,.fmt-dropdown-click:hover > .fmt-button:first-child{background-color:#ccc;color:#000}
-.fmt-dropdown-content{cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;min-width:160px;margin:0;padding:0;z-index:1}
+.fmt-dropdown-content{border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+    text-align:center;
+    
+    cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;margin:0;padding:12px;z-index:1}
 .fmt-check,.fmt-radio{width:24px;height:24px;position:relative;top:6px}
 .fmt-sidebar{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto}
 .fmt-bar-block .fmt-dropdown-hover,.fmt-bar-block .fmt-dropdown-click{width:100%}
@@ -128,6 +131,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-animate-left{position:relative;animation:animateleft 0.4s}@keyframes animateleft{from{left:-300px;opacity:0} to{left:0;opacity:1}}
 .fmt-animate-right{position:relative;animation:animateright 0.4s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}
 .fmt-animate-bottom{position:relative;animation:animatebottom 0.4s}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}
+.fmt-animate-bottom-slow{position:fixed;animation:animatebottom 1s}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1;}}
 .fmt-animate-zoom {animation:animatezoom 0.4s}@keyframes animatezoom{from{transform:scale(0)} to{transform:scale(1)}}
 
 .fmt-animate-input{transition:width 0.4s ease-in-out}.fmt-animate-input:focus{width:100%!important}

@@ -8,8 +8,8 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
         <meta name="theme-color" content="#2196f3">
         <link rel="icon" href="../static/graphic/schemester.png">
-        <link rel = "stylesheet" href="../static/css/main.css">
         <link rel = "stylesheet" href="../static/css/fmt.css">
+        <link rel = "stylesheet" href="../static/css/main.css">
         <link href="https://fonts.googleapis.com/css2?family=Jost" rel="stylesheet">
 
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
@@ -24,32 +24,38 @@
 
     </head>
     <body>
-        <div class="container">
-        This is administrator login page.
-            <div style="padding:26px; border-radius: 22px;margin: 22px;">
-                <fieldset id="email_fieldset">
-                    <legend>Username</legend>
-                    <label for="uid">Your email address here.</label>
-                    <input required="true" type="email" id="adminemail" name="adminEmail">
-                </fieldset>
-                <br/>
-                <fieldset id="password_fieldset">
-                    <legend>Password</legend>
-                    <label for="pass">The password you've set.</label>
-                    <input required="true" type="password" id="adminpassword" name="adminPassword">
-                </fieldset>
-                <br/>
-                <fieldset id="password_fieldset">
-                    <legend>Institution ID</legend>
-                    <label for="pass">Your institution's private UIID.</label>
-                    <input type="password" id="PUIID" name="PUIID">
-                </fieldset>
-                <br/>
-                <button class="button-submit" id="loginAdminButton">Proceed</button>
-                <br/><br/>
-                <div class="fmt-row">
-                    <button style="width: 40%;" class="button-reset fmt-left" type="reset">Re-fill</button>
-                    <a href="forgot.html"><button style="width:40%" class="button-reset fmt-right" type="button">Forgot?</button></a>
+        <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
+            <a href="/"><img src="../static/graphic/schemester.png" width="50"></a>
+            <span>Admin Login</span>
+        </div>
+        <div class="fmt-padding"  style="margin-top: 72px;">
+            <div class="container">
+                <span class="heading">Administrator</span>
+                <div>
+                    <fieldset id="email_fieldset">
+                        <legend>Username</legend>
+                        <label for="uid">Your email address here.</label>
+                        <input required="true" type="email" id="adminemail" name="adminEmail">
+                    </fieldset>
+                    <br/>
+                    <fieldset id="password_fieldset">
+                        <legend>Password</legend>
+                        <label for="pass">The password you've set.</label>
+                        <input required="true" type="password" id="adminpassword" name="adminPassword">
+                    </fieldset>
+                    <br/>
+                    <fieldset id="password_fieldset">
+                        <legend>Institution ID</legend>
+                        <label for="pass">Your institution's private UIID.</label>
+                        <input type="password" id="PUIID" name="PUIID">
+                    </fieldset>
+                    <br/>
+                    <button class="button-submit" id="loginAdminButton">Proceed</button>
+                    <br/><br/>
+                    <div class="fmt-row">
+                        <button style="width: 40%;" class="button-reset fmt-left" type="reset">Re-fill</button>
+                        <a href="forgot.html"><button style="width:40%" class="button-reset fmt-right" type="button">Forgot?</button></a>
+                    </div>
                 </div>
             </div>
         </div>

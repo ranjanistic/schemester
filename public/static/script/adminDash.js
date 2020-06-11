@@ -16,14 +16,18 @@ function initAuthStateListener() {
             var photoURL = user.photoURL;
             var uid = user.uid;
             var providerData = user.providerData;
-            //window.location.replace("admin_dash.html")
+            document.title = email
             document.getElementById('greeting').textContent = email;
-            //alert(email);
         } else {
             window.location.replace("admin_login.html")
-            //alert("signedOut")
         }
     });
-    // [END authstatelistener]
     document.getElementById('logoutAdminButton').addEventListener('click', adminLogout, false);
+    /* When the user clicks on the button, toggle between hiding and showing the dropdown content */
+    document.getElementById("settingButton").addEventListener('click', 
+    function(){
+        document.getElementById("settingButton").classList.toggle("show");
+    }, false);
 }
+
+// Close the dropdown menu if the user clicks outside of it
