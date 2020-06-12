@@ -7,6 +7,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
     <meta name="theme-color" content="#2196f3">
+    <link rel="manifest" href="manifest.webmanifest">  
     <link rel="icon" href="static/graphic/schemester.png">
     <link rel = "stylesheet" href="static/css/fmt.css">
     <link rel = "stylesheet" href="static/css/main.css">
@@ -22,6 +23,13 @@
       window.onload = function() {
         initAuthStateListener();
       };
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('sw.js').then(function(registration){
+          console.log("SW:true");
+        });
+      } else {
+        console.log("SW:false");
+      }
     </script>
   </head>
   

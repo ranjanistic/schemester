@@ -1,0 +1,27 @@
+{
+    "short_name" : "Schemester",
+    "name" : "Schemester",
+    "lang": "en-US",
+    "categories": ["tools", "education"],
+    "icons": [
+      {
+        "src" : "static/graphic/icon/schemester192.webp",
+        "type": "image/webp",
+        "sizes": "192x192", 
+        "purpose": "any maskable"
+      },
+      {
+        "src" : "static/graphic/icon/schemester512.webp",
+        "type": "image/webp",
+        "sizes": "512x512", 
+        "purpose": "any maskable"
+      }
+    ],
+    "description": "",
+    "start_url" : "index.html",
+    "background_color" : "#2196F3",
+    "display" : "fullscreen",
+    "orientation": "any",
+    "scope" : ".",
+    "theme_color" : "#2196F3"
+}
