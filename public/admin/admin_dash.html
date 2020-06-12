@@ -14,28 +14,17 @@
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/init.js"></script>
-        <script src="../static/script/adminDash.js"></script>
-        <script type="text/javascript">
-            window.onload = function() {
-                initAuthStateListener();
-            };
-            window.onscroll = function(){
-                
-            }
-        </script>
-
+        <script src="../static/script/admin/adminDash.js"></script>
     </head>
-    <body class="fmt-light-grey">
-        
+    <body>
         <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-            <a href="/"><img src="../static/graphic/schemester.png" width="50"></a>
-            <span id="greeting">Loading</span>
+            <a href="admin_dash.html"><img src="../static/graphic/schemester.png" width="50"></a>
+            <span id="greeting">Loading...</span>
             <div class="fmt-dropdown-hover fmt-right">
-                <span class="fmt-btn" id="settingButton">Settings</span>
-                <div class="fmt-dropdown-content fmt-shadow" id="settingDropdown">
-                    <a href style="font-size: 18px;">Account</a>
-                    <a href style="font-size: 18px;">Institution</a>
-                    <a href style="font-size: 18px;" id="logoutAdminButton">Logout</a>
+                <span id="settingButton"><img style="padding: 8px 0 8px 0;" src="../static/graphic/menudotsvertical.svg" width="35"></span>
+                <div class="fmt-dropdown-content fmt-shadow" id="settingDropdown" style="right:0;margin-right: 14px;">
+                    <a href="management.html" style="font-size: 22px;">Settings</a>
+                    <a href style="font-size: 22px;" id="logoutAdminButton">Logout</a>
                 </div>
             </div>
         </div>
@@ -159,7 +148,7 @@
         </div>
 
         <div class="fmt-bottom fmt-animate-bottom-slow fmt-center" id="bottomBar">
-            <span class="bottom-container">Monday, January 9, 2021 12:49 pm</span>
+            <span class="bottom-container fmt-shadow" id="todayDateTime">Monday, January 9, 2021 12:49 pm</span>
         </div>
     </body>
 </html>

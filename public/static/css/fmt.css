@@ -53,14 +53,15 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-dropdown-hover:hover .fmt-dropdown-content{display:block}
 .fmt-dropdown-hover:first-child,.fmt-dropdown-click:hover{background-color:#ccc;color:#000}
 .fmt-dropdown-hover:hover > .fmt-button:first-child,.fmt-dropdown-click:hover > .fmt-button:first-child{background-color:#ccc;color:#000}
-.fmt-dropdown-content{border-bottom-left-radius:8px;border-bottom-right-radius:8px;
+.fmt-dropdown-content{
+    border-radius:8px 0px 8px 8px;
     text-align:center;
-    
-    cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;margin:0;padding:12px;z-index:1}
+    cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;margin:0;padding:12px;z-index:1
+}
 .fmt-check,.fmt-radio{width:24px;height:24px;position:relative;top:6px}
 .fmt-sidebar{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto}
 .fmt-bar-block .fmt-dropdown-hover,.fmt-bar-block .fmt-dropdown-click{width:100%}
-.fmt-bar-block .fmt-dropdown-hover .fmt-dropdown-content,.fmt-bar-block .fmt-dropdown-click .fmt-dropdown-content{min-width:100%}
+.fmt-bar-block .fmt-dropdown-hover .fmt-dropdown-content,.fmt-bar-block .fmt-dropdown-click{min-width:100%}
 .fmt-bar-block .fmt-dropdown-hover .fmt-button,.fmt-bar-block .fmt-dropdown-click .fmt-button{width:100%;text-align:left;padding:8px 16px}
 .fmt-main,#main{transition:margin-left .4s}
 .fmt-modal{z-index:3;display:none;padding-top:100px;position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgb(0,0,0);background-color:rgba(0,0,0,0.4)}

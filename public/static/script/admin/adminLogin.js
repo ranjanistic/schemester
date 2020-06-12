@@ -1,7 +1,6 @@
 //The admin login page script
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
-        document.getElementById('loginAdminButton').textContent = "Proceed";
         if (user) {
             // User is signed in.
             window.location.replace("admin_dash.html")

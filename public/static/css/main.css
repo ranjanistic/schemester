@@ -25,9 +25,28 @@ a:hover{
 a:focus{
     font-size: 16px;
 }
+.caption{
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000af;
+}
+.editable{
+    color:#00559b;
+    font-size: 22px;
+}
 #topBar{
     color:white;
     background-color: #2196F3;
+}
+.circle-button{
+    padding: 4px;
+    background-color: #2196F3;
+    border-radius: 50%;
+    transition:0.3s ease;
+}
+.circle-button:focus{
+    padding:8px;
+    background-color: #90c3ec;
 }
 .container{
     color: black;
@@ -42,6 +61,15 @@ a:focus{
 .container:hover{
     box-shadow: 1px 5px 10px #00000044;
 }
+.sub-container{
+    color: black;
+    background-color: #efefef;
+    border-radius: 12px;
+    font-size:22px;
+    padding:14px;
+    box-shadow: 1px 5px 10px #00000011;
+    transition: 0.3s ease;
+}
 .bottom-container{
     color:white;
     background-color: #2196F3;
@@ -53,5 +81,68 @@ a:focus{
 .heading{
     color:#2196F3;
     font-size: 54px;
-    
+}
+.sub-heading{
+    color:black;
+    font-size: 44px;
+}
+.leftTabButton{
+    border-radius: 18px 0px 0px 18px;
+    padding:4px 12px 4px 12px;
+    border-width: 0;
+    background-color: transparent;
+    color:black;
+    transition:0.2s ease;
+}
+.leftTabButton:hover{
+    background-color: #efefef;
+    box-shadow: 1px 5px 10px #00000011;
+    color:#121212d8;
+}
+.leftTabButtonSelected{
+    margin:4px 0px 4px 0px;
+    border-width: 0;
+    border-radius: 18px 0px 0px 18px;
+    padding:4px 12px 4px 12px;
+    background-color: #2196F3;
+    color:white
+}
+.tabContainerRight{
+    color: white;
+    background-color: #2196F3;
+    border-radius: 18px;
+    font-size:22px;
+    padding:14px;
+    transition: 0.3s ease;
+}
+
+.positive-button{
+    background-color: #2152f3;
+    color:white;
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+}
+.positive-button:focus{
+    outline:none;
+    background-color: #94a5db;
+    box-shadow: 1px 5px 10px #00000011;
+}
+.negative-button{
+    background-color: #c40c36;
+    color:white;
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+}
+.negative-button:focus{
+    outline:none;
+    background-color: #db94a5;
+    box-shadow: 1px 5px 10px #00000011;
 }

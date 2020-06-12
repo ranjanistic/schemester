@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <title>Admin | Settings | Schemester</title>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#2196f3">
+        <link rel="icon" href="../static/graphic/schemester.png">
+        <link rel = "stylesheet" href="../static/css/fmt.css">
+        <link rel = "stylesheet" href="../static/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <script src="/__/firebase/7.15.0/firebase-app.js"></script>
+        <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
+        <script src="/__/firebase/7.15.0/firebase-firestore.js"></script>
+        <script src="../static/script/admin/adminManage.js"></script>
+        <script src="/__/firebase/init.js"></script>
+
+    </head>
+    <body>
+        <div class="fmt-top fmt-shadow fmt-padding" id="topBar">
+            <img style="padding: 4px;" src="../static/graphic/leftArrow.svg" width="35" id="backFromSettings">
+            <span>Manage</span>
+        </div>
+        <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
+            <div class="container">
+                <span class="heading">Settings</span>
+                <div class="fmt-row">
+                    <div class="fmt-col fmt-hide-small" style="text-align:right;min-width: 25%; width:25%; margin-top:28px;bottom:0;position: relative;" id="tabgroup">
+                        <div class="leftTabButton" id="adminTab">Admin Account</div>
+                        <div class="leftTabButton" id="institutionTab">Institution Defaults</div>
+                        <div class="leftTabButton" id="scheduleTab">Schedule Details</div>
+                    </div>
+                    <!--settings on large and medium screens-->
+                    <div class="fmt-col fmt-hide-small tabContainerRight" style="margin:4px 0px 4px 0px;width:75%" id="settingsContainer">
+                        <!--account settings box-->
+                        <div class="sub-container" id="accountSettingsBox">
+                            <span class="sub-heading">Administrator</span>
+                            <div>
+                                <span class="caption">Admin name</span><br/>
+                                <span class="editable" id="adminName">Loading...</span><br/>
+                                <span class="caption">Email address</span><br/>
+                                <span class="editable" id="adminEmailAddress">Loading...</span><br/>
+                                <span class="caption">Contact Number</span><br/>
+                                <span class="editable" id="adminPhoneNumber">Loading...</span><br/>
+                            </div>
+                        </div>
+                        <!--institution settings box-->
+                        <div class="sub-container" id="institutionSettingsBox" style="display: none;">
+                            <span class="sub-heading">Institution</span>
+                            <div>
+                                <span class="caption">Display name</span><br/>
+                                <span class="editable" id="instituteName">Test institution of Noida</span><br/>
+                                <span class="caption">UIID</span><br/>
+                                <span class="editable" id="uiid">testInstitute2001</span><br/>
+                                <span class="caption">PUIID</span><br/>
+                                <span  id="puiid">**************</span><br/>
+                                <span class="caption">Institute Type</span><br/>
+                                <span class="editable" id="instituteType">School</span><br/>
+                            </div>
+                        </div>
+                        <!--institution settings box-->
+                        <div class="sub-container" id="scheduleSettingsBox" style="display: none;">
+                            <span class="sub-heading">Timings</span>
+                            <div>
+                                <span class="caption">Each period duration</span><br/>
+                                <span class="editable" id="periodDuration">45 minutes</span><br/>
+                                <span class="caption">Week starts on</span><br/>
+                                <span class="editable" id="weekStartDay">Monday</span><br/>
+                                <span class="caption">Schedule starts at</span><br/>
+                                <span class="editable" id="scheduleStartTime">8:30 am</span><br/>
+                                <span class="caption">Schedule ends at</span><br/>
+                                <span class="editable" id="scheduleEndTime">2:00 pm</span><br/>
+                                <span class="caption">Break starts at</span><br/>
+                                <span class="editable" id="breakStartTime">10:45 am</span><br/>
+                                <span class="caption">Break duration</span><br/>
+                                <span class="editable" id="breakDuration">15 minutes</span><br/>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Settings on small screens-->
+                    <div class="fmt-col fmt-hide-large fmt-hide-medium" style="margin:4px 0px 4px 0px;width:100%">
+                        <!--account settings box-->
+                        <div class="sub-container" id="maccountSettingsBox"  style="margin-bottom:20px;">
+                            <span class="sub-heading">Administrator</span>
+                            <div>
+                                <span class="caption">Admin name</span><br/>
+                                <span class="editable" id="madminName">Loading...</span><br/>
+                                <span class="caption">Email address</span><br/>
+                                <span class="editable" id="madminEmailAddress">Loading...</span><br/>
+                                <span class="caption">Contact Number</span><br/>
+                                <span class="editable" id="madminPhoneNumber">987654321</span><br/>
+                            </div>
+                        </div>
+                        <!--institution settings box-->
+                        <div class="sub-container" id="minstitutionSettingsBox" style="margin-bottom:20px;">
+                            <span class="sub-heading">Institution</span>
+                            <div>
+                                <span class="caption">Display name</span><br/>
+                                <span class="editable" id="minstituteName">Test institution of Noida</span><br/>
+                                <span class="caption">UIID</span><br/>
+                                <span class="editable" id="muiid">testInstitute2001</span><br/>
+                                <span class="caption">PUIID</span><br/>
+                                <span  id="mpuiid">**************</span><br/>
+                                <span class="caption">Institute Type</span><br/>
+                                <span class="editable" id="minstituteType">School</span><br/>
+                            </div>
+                        </div>
+                        <!--institution settings box-->
+                        <div class="sub-container" id="mscheduleSettingsBox" style="margin-bottom:20px;">
+                            <span class="sub-heading">Schedule</span>
+                            <div>
+                                <span class="caption">Each period duration</span><br/>
+                                <span class="editable" id="mperiodDuration">45 minutes</span><br/>
+                                <span class="caption">Week starts on</span><br/>
+                                <span class="editable" id="mweekStartDay">Monday</span><br/>
+                                <span class="caption">Schedule starts at</span><br/>
+                                <span class="editable" id="mscheduleStartTime">8:30 am</span><br/>
+                                <span class="caption">Schedule ends at</span><br/>
+                                <span class="editable" id="mscheduleEndTime">2:00 pm</span><br/>
+                                <span class="caption">Break starts at</span><br/>
+                                <span class="editable" id="mbreakStartTime">10:45 am</span><br/>
+                                <span class="caption">Break duration</span><br/>
+                                <span class="editable" id="mbreakDuration">15 minutes</span><br/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="fmt-bottom fmt-padding-small">
+            <button class="positive-button fmt-right" id="saveAndReturn">Save</button>
+            <button class="negative-button fmt-left" id="cancelAndReturn">Cancel</button>
+        </div>
+    </body>
+</html>
