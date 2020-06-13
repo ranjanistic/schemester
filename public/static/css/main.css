@@ -7,6 +7,40 @@ html{
     right:0;
 }
 
+/* Custom scrollbar*/
+/* width */
+::-webkit-scrollbar {
+    width: 5px;
+    border-radius:8px;
+    transition:0.4s ease
+  }
+  
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: transparent; 
+    border-radius:8px;
+    transition:0.4s ease
+
+  }
+   
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    border-radius:4px;
+    background: #216bf3;
+    transition:0.4s ease 
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #173dbd;
+    transition:0.4s ease 
+  }
+  ::-webkit-scrollbar-thumb:focus {
+    background: #0f256d;
+    transition:0.4s ease 
+  }
+
+
 body{
     font-size:18px;
     font-family: 'Jost',sans-serif;
@@ -18,7 +52,7 @@ a{
     font-size: 18px;
 }
 a:hover{
-    color:#2196F3;
+    color:#216bf3;
     font-size: 22px;
 }
 
@@ -36,11 +70,11 @@ a:focus{
 }
 #topBar{
     color:white;
-    background-color: #2196F3;
+    background-color: #216bf3;
 }
 .circle-button{
     padding: 4px;
-    background-color: #2196F3;
+    background-color: #216bf3;
     border-radius: 50%;
     transition:0.3s ease;
 }
@@ -72,19 +106,41 @@ a:focus{
 }
 .bottom-container{
     color:white;
-    background-color: #2196F3;
+    background-color: #216bf3;
     font-size: 18px;
     border-radius: 8px 8px 0 0;
     box-shadow: 1px 5px 10px #00000011;
     padding:4px 8px 4px 8px;
 }
 .heading{
-    color:#2196F3;
+    color:#216bf3;
     font-size: 54px;
+    
 }
 .sub-heading{
     color:black;
     font-size: 44px;
+}
+.group-heading{
+    color:#000000d7;
+    float:left;
+    font-family: 'Jost',sans-serif;
+    font-size: 32px;
+}
+.group-text{
+    color:#00000093;
+    text-align:left;
+    float:left;
+    font-family: 'Roboto',sans-serif;
+    font-size: 18px;
+}
+.leftTabGroup{
+    text-align:right;
+    min-width: 25%;
+    width:25%;
+    margin-top:28px;
+    position: relative;
+    float:bottom;
 }
 .leftTabButton{
     border-radius: 18px 0px 0px 18px;
@@ -99,17 +155,21 @@ a:focus{
     box-shadow: 1px 5px 10px #00000011;
     color:#121212d8;
 }
+.leftTabButton:focus{
+    background-color: #efefefbb;
+    box-shadow: 1px 1px 1px #00000010;
+}
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
     border-width: 0;
     border-radius: 18px 0px 0px 18px;
     padding:4px 12px 4px 12px;
-    background-color: #2196F3;
+    background-color: #216bf3;
     color:white
 }
 .tabContainerRight{
     color: white;
-    background-color: #2196F3;
+    background-color: #216bf3;
     border-radius: 18px;
     font-size:22px;
     padding:14px;
@@ -145,4 +205,45 @@ a:focus{
     outline:none;
     background-color: #db94a5;
     box-shadow: 1px 5px 10px #00000011;
+}
+.warning-button{
+    background-color: #d6b915;
+    color:black;
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+}
+.warning-button:focus{
+    outline:none;
+    background-color: #81700c;
+    box-shadow: 1px 5px 10px #00000011;
+}
+.image-text-button{
+    color:black;
+    border-width: 0;
+    font-size: 22px;
+    box-shadow: 1px 5px 10px #00000044;
+    background-color: white;
+    padding:0;
+    width: 100%;
+    font-family: 'Questrial',sans-serif;
+    position: relative;
+    border-radius: 12px;
+    transition: 0.2s ease-in-out;
+}
+.image-text-button:hover{
+    background-color: #ffffffc7;
+    box-shadow: 1px 5px 20px #00000079;
+}
+.image-text-button:focus{
+    outline:none;
+    color:#00000066;
+    background-color: #ffffff98;
+    box-shadow: 2px 2px 2px 2px #00000011;
+}
+.image-text-container{
+
 }

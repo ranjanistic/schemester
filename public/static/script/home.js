@@ -2,7 +2,6 @@
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            window.location.replace("admin/admin_dash.html")
             document.getElementById('adminLogin').addEventListener('click', function(){
                 window.location.replace("admin/admin_dash.html")
             }, false);
@@ -20,4 +19,12 @@ function initAuthStateListener() {
     });
 }
 
-
+function setCLickListeners(){
+    document.getElementById('registerInstitution').addEventListener('click', function(){
+        window.location.replace("registration.html")
+    }, false);
+}
+window.onload = function() {
+    initAuthStateListener();
+    setCLickListeners()
+};

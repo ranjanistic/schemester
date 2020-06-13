@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
-        <meta name="theme-color" content="#2196f3">
+        <meta name="theme-color" content="#216bf3">
         <link rel="icon" href="../static/graphic/schemester.png">
         <link rel = "stylesheet" href="../static/css/fmt.css">
         <link rel = "stylesheet" href="../static/css/main.css">
@@ -27,10 +27,11 @@
             <div class="container">
                 <span class="heading">Settings</span>
                 <div class="fmt-row">
-                    <div class="fmt-col fmt-hide-small" style="text-align:right;min-width: 25%; width:25%; margin-top:28px;bottom:0;position: relative;" id="tabgroup">
+                    <div class="fmt-col fmt-hide-small leftTabGroup" id="tabgroup">
                         <div class="leftTabButton" id="adminTab">Admin Account</div>
                         <div class="leftTabButton" id="institutionTab">Institution Defaults</div>
                         <div class="leftTabButton" id="scheduleTab">Schedule Details</div>
+                        <div class="leftTabButton" id="securityTab">Security Settings</div>
                     </div>
                     <!--settings on large and medium screens-->
                     <div class="fmt-col fmt-hide-small tabContainerRight" style="margin:4px 0px 4px 0px;width:75%" id="settingsContainer">
@@ -41,14 +42,16 @@
                                 <span class="caption">Admin name</span><br/>
                                 <span class="editable" id="adminName">Loading...</span><br/>
                                 <span class="caption">Email address</span><br/>
-                                <span class="editable" id="adminEmailAddress">Loading...</span><br/>
+                                <span class="editable" id="adminEmailAddress">Loading...</span>
+                                <button class="warning-button" id="verificationButton">Checking</button>
+                                <br/>
                                 <span class="caption">Contact Number</span><br/>
                                 <span class="editable" id="adminPhoneNumber">Loading...</span><br/>
                             </div>
                         </div>
                         <!--institution settings box-->
                         <div class="sub-container" id="institutionSettingsBox" style="display: none;">
-                            <span class="sub-heading">Institution</span>
+                            <span class="sub-heading">Basic</span>
                             <div>
                                 <span class="caption">Display name</span><br/>
                                 <span class="editable" id="instituteName">Test institution of Noida</span><br/>
@@ -76,6 +79,18 @@
                                 <span class="editable" id="breakStartTime">10:45 am</span><br/>
                                 <span class="caption">Break duration</span><br/>
                                 <span class="editable" id="breakDuration">15 minutes</span><br/>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-container" id="securitySettingsBox" style="display: none;">
+                            <span class="sub-heading">Security</span>
+                            <div>
+                                <span class="caption">Subscription till</span><br/>
+                                <span  id="subscriptionTill">Last date</span ><br/>
+                                <span class="caption">Reset Admin Password</span><br/>
+                                <button class="positive-button" id="resetPasswordButton">Get email link</button><br/>
+                                <span class="caption">Change Admin Email ID</span><br/>
+                                <button class="positive-button" id="changeEmailButton">Add new email address</button><br/>
                             </div>
                         </div>
                     </div>
@@ -123,6 +138,17 @@
                                 <span class="editable" id="mbreakStartTime">10:45 am</span><br/>
                                 <span class="caption">Break duration</span><br/>
                                 <span class="editable" id="mbreakDuration">15 minutes</span><br/>
+                            </div>
+                        </div>
+                        <div class="sub-container" id="msecuritySettingsBox" style="margin-bottom:20px;">
+                            <span class="sub-heading">Security</span>
+                            <div>
+                                <span class="caption">Subscription till</span><br/>
+                                <span  id="msubscriptionTill">Last date</span ><br/>
+                                <span class="caption">Reset Admin Password</span><br/>
+                                <button class="positive-button" id="mresetPasswordButton">Get email link</button><br/>
+                                <span class="caption">Change Admin Email ID</span><br/>
+                                <button class="positive-button" id="mchangeEmailButton">Add new email address</button><br/>
                             </div>
                         </div>
                     </div>

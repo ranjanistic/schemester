@@ -1,6 +1,6 @@
 {
     "short_name" : "Schemester",
-    "name" : "Schemester App",
+    "name" : "Schemester",
     "lang": "en-US",
     "categories": ["tools", "education"],
     "icons": [
@@ -20,11 +20,11 @@
         "sizes": "512x512"
       }
     ],
-    "description": "",
+    "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
     "start_url" : "https://schemester.web.app/",
-    "background_color" : "#2196F3",
+    "background_color" : "#216bf3",
     "display" : "standalone",
     "orientation": "any",
     "scope" : "/",
-    "theme_color" : "#2196F3"
+    "theme_color" : "#216bf3"
 }

@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <title>Schemester | Get Scheduled</title>
+  <title>Schemester</title>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
-    <meta name="theme-color" content="#2196f3">
+    <meta name="theme-color" content="#216bf3">
     <link rel="manifest" href="/manifest.json">  
     <link rel="icon" href="static/graphic/schemester.png">
     <link rel = "stylesheet" href="static/css/fmt.css">
@@ -16,13 +15,8 @@
     <!-- update the version number as needed -->
     <script src="/__/firebase/7.15.0/firebase-app.js"></script>
     <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
-    <script src="/__/firebase/7.15.0/firebase-database.js"></script>
     <script src="/__/firebase/init.js"></script>
-    <script src="static/script/home.js"></script>
     <script type="text/javascript">
-      window.onload = function() {
-        initAuthStateListener();
-      };
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').then(function(registration){
           console.log("SW:true");
@@ -30,29 +24,34 @@
       } else {
         console.log("SW:false");
       }
+      window.onload = function() {
+        
+        firebase.auth().onAuthStateChanged(function(user) {
+          if (user) {
+            window.location.replace("admin/admin_dash.html")
+          } else {
+            window.location.replace("home.html")
+          }
+        });
+      };
     </script>
   </head>
-  
-  <body>
-    <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-      <a href="/"><img src="static/graphic/schemester.png" width="50"></a>
-      <span>Schemester</span>
+  <body style="background-color: #216bf3;padding:33px">
+    <div class="fmt-row">
+      <img class="fmt-col fmt-half fmt-center " src="static/graphic/schemesterIconConcept.svg"/>
+      <div class="fmt-col fmt-half fmt-hide-small fmt-animate-bottom" style="display: flex;justify-content:center;align-items:center;height:600px;">
+        <div>
+          <img class="fmt-spin-fast" width="60px"src="static/graphic/onethreeload.svg"/>
+        </div>
+        <br/>
+        <div class=" sub-heading fmt-animate-fading-fast fmt-padding" style="color:white;">A moment...</div>
+      </div>    
+      <div class="fmt-col fmt-half fmt-hide-large fmt-hide-medium fmt-center fmt-animate-bottom" style="padding-top:50px">
+        <div>
+          <img class="fmt-spin-fast" width="60px"src="static/graphic/onethreeload.svg"/>
+        </div>
+        <span class="sub-heading fmt-animate-fading-fast" style="color:white;">A moment</span>
+      </div>    
     </div>
-    <div style="margin-top: 82px;">
-      <a href="registration.html">Register as Institution</a>
-      <br/>
-      <a id="adminLogin">Admin Login</a><br/>
-      <a id="adminDashboard">Admin dashboard</a><br/>
-      <br/>
-      <a href="user/user_register.html">Register as student or teacher</a><br/>
-      <br/>
-      <a href="user/student/student_login.html">Student login</a><br/>
-      <a href="user/student/student_dash.html">Student dashboard</a><br/>
-      <br/>
-      <a href="user/assignee/assignee_login.html">Teacher login</a><br/>
-      <a href="user/assignee/assignee_dash.html">Teacher dashboard</a><br/>
-      <br/>
-    </div>
-    </script>
   </body>
 </html>
