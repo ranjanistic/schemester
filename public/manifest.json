@@ -1,27 +1,30 @@
 {
     "short_name" : "Schemester",
-    "name" : "Schemester",
+    "name" : "Schemester App",
     "lang": "en-US",
     "categories": ["tools", "education"],
     "icons": [
       {
         "src" : "static/graphic/icon/schemester192.webp",
         "type": "image/webp",
-        "sizes": "192x192", 
-        "purpose": "any maskable"
+        "sizes": "192x192"
+      },
+      {
+        "src" : "static/graphic/icon/schemester192.png",
+        "type": "image/png",
+        "sizes": "192x192"
       },
       {
         "src" : "static/graphic/icon/schemester512.webp",
         "type": "image/webp",
-        "sizes": "512x512", 
-        "purpose": "any maskable"
+        "sizes": "512x512"
       }
     ],
     "description": "",
-    "start_url" : "index.html",
+    "start_url" : "https://schemester.web.app/",
     "background_color" : "#2196F3",
-    "display" : "fullscreen",
+    "display" : "standalone",
     "orientation": "any",
-    "scope" : ".",
+    "scope" : "/",
     "theme_color" : "#2196F3"
 }
