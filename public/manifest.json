@@ -10,11 +10,6 @@
         "sizes": "192x192"
       },
       {
-        "src" : "static/graphic/icon/schemester192.png",
-        "type": "image/png",
-        "sizes": "192x192"
-      },
-      {
         "src" : "static/graphic/icon/schemester512.webp",
         "type": "image/webp",
         "sizes": "512x512"

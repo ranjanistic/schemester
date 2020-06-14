@@ -17,7 +17,6 @@
     <script src="/__/firebase/init.js"></script>
     <script type="text/javascript">
       window.onload = function() {
-        
         firebase.auth().onAuthStateChanged(function(user) {
           if (user) {
             window.location.replace("admin/admin_dash.html")
@@ -28,9 +27,9 @@
       };
     </script>
   </head>
-  <body style="background-color: #216bf3;padding:33px">
+  <body style="background-color: #216bf3;padding:22px;cursor: wait;">
     <div class="fmt-row">
-      <img class="fmt-col fmt-half fmt-center " src="static/graphic/schemesterIconConcept.svg"/>
+      <img class="fmt-col fmt-half fmt-center" src="static/graphic/schemesterIconConcept.svg"/>
       <div class="fmt-col fmt-half fmt-hide-small fmt-animate-bottom" style="display: flex;justify-content:center;align-items:center;height:600px;">
         <div>
           <img class="fmt-spin-fast" width="60px"src="static/graphic/onethreeload.svg"/>
@@ -38,11 +37,11 @@
         <br/>
         <div class=" sub-heading fmt-animate-fading-fast fmt-padding" style="color:white;">A moment...</div>
       </div>    
-      <div class="fmt-col fmt-half fmt-hide-large fmt-hide-medium fmt-center fmt-animate-bottom" style="padding-top:50px">
+      <div class="fmt-col fmt-half fmt-hide-large fmt-hide-medium fmt-center fmt-animate-bottom" style="padding-top:50px;">
         <div>
           <img class="fmt-spin-fast" width="60px"src="static/graphic/onethreeload.svg"/>
         </div>
-        <span class="sub-heading fmt-animate-fading-fast" style="color:white;">A moment</span>
+        <span class="sub-heading fmt-animate-fading-fast" style="color:white;cursor: wait;">A moment</span>
       </div>    
     </div>
   </body>

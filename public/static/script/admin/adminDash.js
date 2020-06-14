@@ -85,11 +85,9 @@ var prevScrollpos = window.pageYOffset;
 window.onscroll = function() {
 var currentScrollPos = window.pageYOffset;
 if (prevScrollpos > currentScrollPos) {
-    //document.getElementById("bottomBar").style.bottom = "0";
     document.getElementById("todayDateTime").style.color = "white"
-    document.getElementById("todayDateTime").style.backgroundColor = "#2100FF"
+    document.getElementById("todayDateTime").style.backgroundColor = "#216bf3"
 } else {
-    //document.getElementById("bottomBar").style.bottom = "-50px";
     document.getElementById("todayDateTime").style.color = "#1f1f1f55"
     document.getElementById("todayDateTime").style.backgroundColor = "transparent"
 }

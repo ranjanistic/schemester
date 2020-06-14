@@ -109,7 +109,7 @@ a:focus{
     background-color: #216bf3;
     font-size: 18px;
     border-radius: 8px 8px 0 0;
-    box-shadow: 1px 5px 10px #00000011;
+    box-shadow: 1px 5px 10px #00000088;
     padding:4px 8px 4px 8px;
 }
 .heading{
@@ -124,6 +124,7 @@ a:focus{
 .group-heading{
     color:#000000d7;
     float:left;
+    text-align:left;
     font-family: 'Jost',sans-serif;
     font-size: 32px;
 }
@@ -175,9 +176,40 @@ a:focus{
     padding:14px;
     transition: 0.3s ease;
 }
+input{
+    padding:0;
+    color:black;
+    background-color: transparent;
+    border-width:0;
+    width:100%;
+    font-size: 24px;
+}
+input:focus{
+    outline:none;
+    border-width: 0;
+    background-color: transparent;
+}
+.text-field{
+    border-radius: 8px;border-color: #218ef3d0;padding:0 4px 8px 8px;outline:none;border-width: 2px; color:#216bf3;
+    font-size: 16px;transition: 0.5s ease;
+}
+.text-field:hover{
+    outline:none;
+    color:#216bf3;
+    border-color: #216bf3;
+    border-width: 3px;
+    transition: 0.5s ease;
+}
+.text-field-error{
+    border-radius: 8px;border-color: #bd1919;padding:0 4px 8px 8px;outline:none;border-width: 3px; color:#bd1919;
+    font-size: 16px;transition: 0.5s ease;
+}
+.field-caption{
+    padding:0 4px 0 4px;
 
+}
 .positive-button{
-    background-color: #2152f3;
+    background-color: #216bf3;
     color:white;
     margin: 4px;
     border-width: 0;
@@ -192,7 +224,7 @@ a:focus{
     box-shadow: 1px 5px 10px #00000011;
 }
 .negative-button{
-    background-color: #c40c36;
+    background-color: #c40c0c;
     color:white;
     margin: 4px;
     border-width: 0;
@@ -243,7 +275,4 @@ a:focus{
     color:#00000066;
     background-color: #ffffff98;
     box-shadow: 2px 2px 2px 2px #00000011;
-}
-.image-text-container{
-
 }

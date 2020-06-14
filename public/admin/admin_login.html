@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
-    <title>Login · Admin · Schemester</title>
     <head>
+        <title>Login · Admin · Schemester</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -16,8 +16,9 @@
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/init.js"></script>
         <script src="../static/script/admin/adminLogin.js"></script>
-        <script type="text/javascript">
+        <script type="text/javascript">        
             window.onload = function() {
+                initializeElements();
                 initAuthStateListener();
             };
         </script>
@@ -25,39 +26,35 @@
     </head>
     <body>
         <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-            <a href="../index.html"><img src="../static/graphic/schemester.png" width="50"></a>
+            <a href="../"><img src="../static/graphic/schemesterIconConcept.svg" width="50"></a>
             <span>Admin Login</span>
+
         </div>
         <div class="fmt-padding"  style="margin-top: 72px;">
             <div class="container">
                 <span class="heading">Administrator</span>
-                <div>
-                    <fieldset id="email_fieldset">
-                        <legend>Username</legend>
-                        <label for="uid">Your email address here.</label>
-                        <input required="true" type="email" id="adminemail" name="adminEmail">
-                    </fieldset>
-                    <br/>
-                    <fieldset id="password_fieldset">
-                        <legend>Password</legend>
-                        <label for="pass">The password you've set.</label>
-                        <input required="true" type="password" id="adminpassword" name="adminPassword">
-                    </fieldset>
-                    <br/>
-                    <fieldset id="password_fieldset">
-                        <legend>Institution ID</legend>
-                        <label for="pass">Your institution's private UIID.</label>
-                        <input type="password" id="PUIID" name="PUIID">
-                    </fieldset>
-                    <br/>
-                    <button class="button-submit" id="loginAdminButton">Proceed</button>
-                    <br/><br/>
-                    <div class="fmt-row">
-                        <button style="width: 40%;" class="button-reset fmt-left" type="reset">Re-fill</button>
-                        <a href="forgot.html"><button style="width:40%" class="button-reset fmt-right" type="button">Forgot?</button></a>
-                    </div>
-                </div>
+
+                <fieldset class="text-field" id="email_fieldset">
+                    <legend class="field-caption" >Username · Email Address</legend>
+                    <input required="true" placeholder="someone@example.domain" onchange="focusToNext()" type="email" id="adminemail" name="credential">
+                    <span class="fmt-right caption" style="color:#bd1919" id="emailError"></span>
+                </fieldset>
+                <br/>
+                <fieldset class="text-field" id="password_fieldset">
+                    <legend class="field-caption">Password</legend>
+                    <input required="true" placeholder="Your account password." onchange="focusToNext()" type="password" id="adminpassword" name="credential">
+                    <button class="positive-button fmt-right" style="display:none" id="forgotpasswordButton">Forgot?</button>    
+                </fieldset>
+                <br/>
+                <fieldset class="text-field" id="puiid_fieldset">
+                    <legend class="field-caption">PUIID · Private UIID</legend>
+                    <input placeholder="Your institution's private identifier." onchange="focusToNext()" type="password" id="puiid" name="credential">
+                </fieldset>
+                <br/>
             </div>
+            <br/>
+            <button class="positive-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="background-color:#216bf3;display:none" width="50" src="../static/graphic/onethreeload.svg" id="loginLoader"/>
         </div>
     </body>
 </html>
