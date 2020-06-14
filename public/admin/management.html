@@ -4,7 +4,6 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
         <meta name="theme-color" content="#216bf3">
         <link rel="icon" href="../static/graphic/schemester.png">
@@ -14,20 +13,26 @@
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/7.15.0/firebase-firestore.js"></script>
-        <script src="../static/script/admin/adminManage.js"></script>
         <script src="/__/firebase/init.js"></script>
-
+        <script src="../static/script/admin/management.js"></script>
+        <script type="text/javascript">
+            window.onload = function() {
+                initializeElements();
+                initAuthStateListener();
+            };
+        </script>
     </head>
     <body>
         <div class="fmt-top fmt-shadow fmt-padding" id="topBar">
             <img style="padding: 4px;" src="../static/graphic/leftArrow.svg" width="35" id="backFromSettings">
-            <span>Manage</span>
+            <span>Settings</span>
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="container">
                 <span class="heading">Settings</span>
                 <div class="fmt-row">
-                    <div class="fmt-col fmt-hide-small leftTabGroup" id="tabgroup">
+                    
+                    <div class="fmt-col fmt-hide-small leftTabGroup" id="tabGroup">
                         <div class="leftTabButton" id="adminTab">Admin Account</div>
                         <div class="leftTabButton" id="institutionTab">Institution Defaults</div>
                         <div class="leftTabButton" id="scheduleTab">Schedule Details</div>
@@ -153,7 +158,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
         <div class="fmt-bottom fmt-padding-small">

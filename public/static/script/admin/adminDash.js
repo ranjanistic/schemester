@@ -1,35 +1,43 @@
 //the admin dashboard script
+var logOut,settings,dateTime, greeting;
+const click = 'click', nothing = '',space = ' ',tab = '   ';
+
+function initializeElements(){
+    logOut = document.getElementById('logoutAdminButton');
+    dateTime = document.getElementById('todayDateTime');
+    greeting = document.getElementById('greeting');
+    settings = document.getElementById('settingsAdminButton');
+    logOut.addEventListener(click, function(){
+        window.location.replace("../")
+        firebase.auth().signOut();
+    }, false);
+    settings.addEventListener(click,function(){
+        window.location.replace("management.html");
+    },false);
+    loadLocalContent()
+}
 
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
-        //document.getElementById('quickstart-verify-email').disabled = true;
         if (user) {
-            // User is signed in.
             loadRemoteContent(user);
         } else {
-            window.location.replace("../index.html")
+            window.location.replace("../")
         }
     });
-    document.getElementById('logoutAdminButton').addEventListener('click', function(){
-        window.location.replace("../index.html")
-        firebase.auth().signOut();
-    }, false);
 }
 
-window.onload = function() {
-    
-    loadLocalContent()
+window.onload = function() {    
+    initializeElements()
     initAuthStateListener();
 };
-let space = ' '
+
 function loadLocalContent(){
     var today = new Date();
     var date = getDayName(today.getDay())+','+space+getMonthName(today.getMonth()) + space + today.getDate() +','+space + today.getFullYear()+","+space+ today.getHours()+':'+today.getMinutes();
-    console.log(date)
-    document.getElementById('todayDateTime').textContent = date
+    dateTime.textContent = date
 }
-let nothing = ''
-let title = nothing
+
 function loadRemoteContent(user){
     var displayName = user.displayName;
     var email = user.email;
@@ -38,18 +46,8 @@ function loadRemoteContent(user){
     var uid = user.uid;
     var providerData = user.providerData;
     document.title = email+" · Admin";
-    document.getElementById('greeting').textContent = "Welcome";
+    greeting.textContent = "Welcome";
     //document.getElementById('adminImage').style.backgroundImage = photoURL
-}
-function titleLoader() {
-    let i = 1;
-    while(title==nothing){
-        let j = i+1
-        setTimeout(function(){ 
-            document.title = i+nothing+j;
-        }, 800);
-        i=j;
-    }
 }
 function getDayName(dIndex){
     switch(dIndex){
@@ -77,19 +75,19 @@ function getMonthName(mIndex){
         case 9: return "October";
         case 10: return "November";
         case 11: return "December";
-        default: return "Error"
+        default: return "Error";
     }
 }
 
 var prevScrollpos = window.pageYOffset;
 window.onscroll = function() {
-var currentScrollPos = window.pageYOffset;
-if (prevScrollpos > currentScrollPos) {
-    document.getElementById("todayDateTime").style.color = "white"
-    document.getElementById("todayDateTime").style.backgroundColor = "#216bf3"
-} else {
-    document.getElementById("todayDateTime").style.color = "#1f1f1f55"
-    document.getElementById("todayDateTime").style.backgroundColor = "transparent"
-}
+    var currentScrollPos = window.pageYOffset;
+    if (prevScrollpos > currentScrollPos) {
+        dateTime.style.color = "white"
+        dateTime.style.backgroundColor = "#216bf3"
+    } else {
+        dateTime.style.color = "#1f1f1f55"
+        dateTime.style.backgroundColor = "transparent"
+    }
     prevScrollpos = currentScrollPos;
 }

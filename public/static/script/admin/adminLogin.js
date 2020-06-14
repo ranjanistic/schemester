@@ -1,6 +1,7 @@
 //The admin login page script
-var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader,
- nothing = '',hide = "none", show = "block";
+var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader;
+const nothing = '',hide = "none", show = "block",click='click';
+
 function initializeElements(){
     emailFieldSet = document.getElementById('email_fieldset');
     passwordFieldset = document.getElementById('password_fieldset');
@@ -12,6 +13,7 @@ function initializeElements(){
     puiidInput = document.getElementById('puiid');
     logInButton = document.getElementById('loginAdminButton');
     logInLoader = document.getElementById('loginLoader');
+    logInButton.addEventListener(click, adminLogin, false);
 }
 
 function initAuthStateListener() {
@@ -22,7 +24,6 @@ function initAuthStateListener() {
             emailInput.focus();
         }
     });
-    logInButton.addEventListener('click', adminLogin, false);
 }
 
 function adminLogin() {

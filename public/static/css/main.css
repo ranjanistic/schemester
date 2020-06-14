@@ -71,6 +71,7 @@ a:focus{
 #topBar{
     color:white;
     background-color: #216bf3;
+    font-size: 18px;
 }
 .circle-button{
     padding: 4px;
@@ -132,7 +133,7 @@ a:focus{
     color:#00000093;
     text-align:left;
     float:left;
-    font-family: 'Roboto',sans-serif;
+    font-family: 'Questrial',sans-serif;
     font-size: 18px;
 }
 .leftTabGroup{
