@@ -72,7 +72,6 @@ function handleTabClicks(event){
 
 function setEventListeners(){
     for(var i= 0;i<tabs.length;i++){
-        console.log(i)
         tabs[i].addEventListener(click,handleTabClicks,false);
     }
 
