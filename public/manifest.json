@@ -21,7 +21,7 @@
       }
     ],
     "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
-    "start_url" : "https://schemester.web.app/",
+    "start_url" : "/",
     "background_color" : "#216bf3",
     "display" : "standalone",
     "orientation": "any",
