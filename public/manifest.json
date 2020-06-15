@@ -1,35 +1,56 @@
 {
-    "short_name" : "Schemester",
     "name" : "Schemester",
+    "short_name" : "Schemester",
     "lang": "en-US",
     "categories": ["tools", "education"],
     "icons": [
       {
-        "src" : "static/graphic/icon/schemester192.webp",
-        "type": "image/webp",
-        "sizes": "192x192"
+        "src" : "static/graphic/icons/schemester128.png",
+        "type": "image/png",
+        "sizes": "128x128"
       },
       {
-        "src" : "static/graphic/icon/schemester192.png",
+        "src" : "static/graphic/icons/schemester192.png",
         "type": "image/png",
         "sizes": "192x192"
       },
       {
-        "src" : "static/graphic/icon/schemester512.webp",
-        "type": "image/webp",
+        "src" : "static/graphic/icons/schemester256.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      },
+      {
+        "src": "static/graphic/icons/schemester512.png",
+        "type": "image/png",
         "sizes": "512x512"
       },
       {
-        "src" : "static/graphic/icon/schemester512.png",
-        "type": "image/png",
-        "sizes": "512x512"
+        "src": "static/graphic/icons/schemester512.svg",
+        "type": "image/svg+xml",
+        "sizes": "512x512",
+        "purpose":"any"
       }
     ],
     "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
     "start_url" : "/",
     "background_color" : "#216bf3",
     "display" : "standalone",
-    "orientation": "any",
+    "orientation" : "portrait-primary",
     "scope" : "/",
-    "theme_color" : "#216bf3"
+    "theme_color" : "#216bf3",
+    "shortcuts": [
+      {
+        "name": "Dashboard",
+        "description": "View the list of podcasts you saved for later",
+        "url": "/admin/admin_dash.html",
+        "icons": [
+          {
+            "src": "static/graphic/icons/schemester512.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512",
+            "purpose": "any"
+          }
+        ]
+      }
+    ]
 }

@@ -8,11 +8,11 @@ function initializeElements(){
     greeting = document.getElementById('greeting');
     settings = document.getElementById('settingsAdminButton');
     logOut.addEventListener(click, function(){
-        window.location.replace("../")
+        window.location.replace("/")
         firebase.auth().signOut();
     }, false);
     settings.addEventListener(click,function(){
-        window.location.replace("management.html");
+        window.location.href = "management.html";
     },false);
     loadLocalContent()
 }
@@ -22,7 +22,7 @@ function initAuthStateListener() {
         if (user) {
             loadRemoteContent(user);
         } else {
-            window.location.replace("../")
+            window.location.replace("/")
         }
     });
 }

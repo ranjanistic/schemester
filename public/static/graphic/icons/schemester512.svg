@@ -9,13 +9,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="210mm"
-   height="200mm"
-   viewBox="0 0 210 200"
+   width="512"
+   height="512"
+   viewBox="0 0 135.46667 135.46667"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="schemesterIcon3-ranjanistic(inspired).svg">
+   sodipodi:docname="schemester512.svg">
   <defs
      id="defs2">
     <filter
@@ -96,6 +96,16 @@
          stdDeviation="2.6192181"
          id="feGaussianBlur1356" />
     </filter>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath967">
+      <circle
+         style="opacity:1;fill:#552200;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill"
+         id="circle969"
+         cx="-50.348743"
+         cy="194.68817"
+         r="84.578865" />
+    </clipPath>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -105,8 +115,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.175"
-     inkscape:cx="90.251626"
-     inkscape:cy="721.33591"
+     inkscape:cx="-181.36083"
+     inkscape:cy="-204.64609"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -114,7 +124,9 @@
      inkscape:window-height="745"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     units="px"
+     inkscape:showpageshadow="false" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -131,11 +143,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-97)">
+     transform="translate(0,-161.53333)">
     <g
-       id="g1677"
-       transform="matrix(1.3246962,0,0,1.3246962,-42.743829,11.10149)">
+       id="g953"
+       clip-path="url(#clipPath967)"
+       transform="matrix(0.79926636,0,0,0.79926636,107.97539,73.65896)">
       <g
+         transform="matrix(1.3246962,0,0,1.3246962,-199.89831,4.6870213)"
          id="g1499">
         <g
            id="g1454"
@@ -406,21 +420,21 @@
         </g>
       </g>
       <circle
-         r="20"
-         cy="120.21545"
-         cx="88.451485"
+         r="26.493923"
+         cy="163.93596"
+         cx="-82.726967"
          id="path1613"
          style="opacity:1;fill:#2a2aff;fill-opacity:0.11597936;fill-rule:nonzero;stroke:#0000ff;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />
       <path
-         transform="rotate(-50.115106)"
-         d="m -15.425053,144.07399 a 20,20 0 0 1 -10,17.32051 20,20 0 0 1 -20,0 20,20 0 0 1 -10,-17.32051"
+         transform="rotate(-50.115107)"
+         d="m -152.21428,40.470989 a 26.493925,26.493925 0 0 1 -13.24696,22.944413 26.493925,26.493925 0 0 1 -26.49393,-10e-7 26.493925,26.493925 0 0 1 -13.24696,-22.944413"
          sodipodi:open="true"
          sodipodi:end="3.1415927"
          sodipodi:start="0"
-         sodipodi:ry="20"
-         sodipodi:rx="20"
-         sodipodi:cy="144.07399"
-         sodipodi:cx="-35.425053"
+         sodipodi:ry="26.493925"
+         sodipodi:rx="26.493925"
+         sodipodi:cy="40.470989"
+         sodipodi:cx="-178.70821"
          sodipodi:type="arc"
          id="path1613-3"
          style="opacity:1;fill:#2a2aff;fill-opacity:0.10567011;fill-rule:nonzero;stroke:#0000ff;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />

@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="200mm"
-   height="200mm"
-   viewBox="0 0 200 200"
+   width="152"
+   height="152"
+   viewBox="0 0 152 152"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -21,13 +21,13 @@
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff00"
-     bordercolor="#66666600"
+     bordercolor="#ffffff00"
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.26580115"
-     inkscape:cx="1151.7771"
-     inkscape:cy="529.71225"
+     inkscape:zoom="2.1264092"
+     inkscape:cx="68.952741"
+     inkscape:cy="58.912548"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,18 +52,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-97)">
+     transform="translate(0,-145)">
     <path
-       style="opacity:1;fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:12;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       style="opacity:1;fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:12.06297493;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
        id="path815"
        sodipodi:type="arc"
-       sodipodi:cx="101"
-       sodipodi:cy="200"
-       sodipodi:rx="68.608459"
-       sodipodi:ry="68.608459"
+       sodipodi:cx="76"
+       sodipodi:cy="221"
+       sodipodi:rx="68.968513"
+       sodipodi:ry="68.968513"
        sodipodi:start="0"
-       sodipodi:end="2.1658459"
+       sodipodi:end="2.3245823"
        sodipodi:open="true"
-       d="m 169.60846,200 a 68.608459,68.608459 0 0 1 -36.44835,60.60403 68.608459,68.608459 0 0 1 -70.618569,-3.78794" />
+       d="m 144.96851,221 a 68.968513,68.968513 0 0 1 -41.5716,63.29348 68.968513,68.968513 0 0 1 -74.599238,-13.00833" />
   </g>
 </svg>

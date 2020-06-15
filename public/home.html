@@ -6,33 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
     <meta name="theme-color" content="#216bf3">  
-    <link rel="manifest" href="/manifest.json">  
-    <link rel="icon" href="static/graphic/schemester.png">
-    <link rel="apple-touch-icon" href="static/graphic/schemester.png">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
     <link rel = "stylesheet" href="static/css/fmt.css">
     <link rel = "stylesheet" href="static/css/main.css">
-    <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="canonical" href="http://schemester.web.app"/>
+    <script async src="https://unpkg.com/pwacompat" crossorigin="anonymous"></script>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Schemester">
+    <link rel="icon" href="static/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+    <link rel="apple-touch-icon" href="static/graphic/icons/schemester128.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3">
+    <meta name="apple-mobile-web-app-title" content="Schemester">
+    <meta name="msapplication-TileColor" content="#216bf3">
+    <meta name="msapplication-TileImage" content="static/graphic/schemester.png">
     <!--TODO: Pop up modals-->
     <!-- update the version number as needed -->
     <script src="/__/firebase/7.15.0/firebase-app.js"></script>
     <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
     <script src="/__/firebase/7.15.0/firebase-database.js"></script>
     <script src="/__/firebase/init.js"></script>
-    <script src="static/script/home.js"></script>
+    <script src="static/script/homepage.js"></script>
   </head>
   
   <body>
     <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-      <a href="index.html"><img src="static/graphic/schemesterIconConcept.svg" width="50" alt="Schemester icon"></a>
-      <span>Home</span>
+      <a href="/"><img src="static/graphic/icons/schemester512.svg" width="50" alt="Schemester icon"></a>
+      <span id="homeGreeting">Home</span>
+      <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="50" src="static/graphic/onethreeload.svg" id="homeNavLoader"/>
     </div>
     <div class="fmt-row">
-    <div class="fmt-col fmt-padding fmt-animate-right" style="margin-top: 82px;">
+    <div class="fmt-col fmt-padding" style="margin-top: 82px;">
         <div class="fmt-row">
-            <div class="fmt-col m4 fmt-padding-small" id="adminLogin">
-                <button class="image-text-button" style="margin-bottom: 22px;">
+            <div class="fmt-col m4 fmt-padding-small">
+                <button class="image-text-button" style="margin-bottom: 22px;" id="adminLogin">
                     <div class="fmt-amber" style="border-radius: 8px;">
-                        <img src="static/graphic/icon/schemester192.webp"/>
+                        <img src="static/graphic/icons/schemester192.png" alt="Administrator Illustration"/>
                     </div>
                     <div class="fmt-padding-large fmt-col">
                         <span class="group-heading fmt-row">Continue as Administrator</span>
@@ -44,10 +55,10 @@
                 </button>
             </div>
 
-            <div class="fmt-col m4 fmt-padding-small" id="registerInstitution">
-                <button class="image-text-button" style="margin-bottom: 22px;">
+            <div class="fmt-col m4 fmt-padding-small">
+                <button class="image-text-button" style="margin-bottom: 22px;" id="registerInstitution">
                     <div class="fmt-blue" style="border-radius: 8px;">
-                        <img src="static/graphic/icon/schemester192.webp"/>
+                        <img src="static/graphic/icons/schemester192.png" alt="Institution Illustration"/>
                     </div>
                     <div class="fmt-padding-large fmt-col">
                         <span class="group-heading fmt-row">Register as an Institution</span>
@@ -59,10 +70,10 @@
                 </button>
             </div>
             
-            <div class="fmt-col m4 fmt-padding-small"  id="adminDashboard">
-                <button class="image-text-button" style="margin-bottom: 22px;">
+            <div class="fmt-col m4 fmt-padding-small" >
+                <button class="image-text-button" style="margin-bottom: 22px;" id="adminDashboard">
                     <div class="fmt-indigo" style="border-radius: 8px;">
-                        <img src="static/graphic/icon/schemester192.webp"/>
+                        <img src="static/graphic/icons/schemester192.png" alt="Dashboard Illustration"/>
                     </div>
                     <div class="fmt-padding-large fmt-col">
                         <span class="group-heading fmt-row">Checkout Dashboard</span>
@@ -81,7 +92,7 @@
     <div class="fmt-row fmt-white" style="line-height:80px; justify-content: center;padding:62px 0px 82px 0px">
         <div class="fmt-center">
             <span style="padding:22px;font-size: 24px;color:#216bf3;font-family: 'Questrial', sans-serif;">Get to know what we do.</span><br/>
-            <a href="#tourView"><button class="positive-button" style="padding: 0px 62px 0px 62px; font-size:38px">Take a tour</button></a>
+            <a href="#tourView"><button class="display-button">Take a tour</button></a>
         </div>
     </div>
     <div class="fmt-row" style="background-color: #216bf3;padding:82px 0 0 0" id="tourView">
@@ -91,19 +102,24 @@
                     We do what they call, 'Tedious'.
                 </div>
                 <br/>
-                <div class="fmt-row group-text" style="color:white;padding-left:12px">
-                    A schedule is important for consistency at work.<br/>And so is schedule management.
-                    <br/>And that's what we do.
+                <div class="fmt-row" >
+                    <span class=" group-text " style="color:white;padding-left:12px">
+                        A schedule is important for consistency at work.<br/>And so is schedule management.
+                        <br/>And that's what we do.
+                    </span>
                 </div>
-
+                <br/>
+                <div class="fmt-row">
+                    <a href="registration.html"><button class="sub-display-button" onclick="showLoader()" id="getStarted">Get started</button></a>
+                </div>
             </div>
-            <div class="fmt-col fmt-half">
-                <img class="fmt-right" src="static/graphic/schemesterIconConcept.svg" width="50%"/>
+            <div class="fmt-col fmt-half fmt-center" style="margin-top: 22px;">
+                <img class="fmt-center" src="static/graphic/icons/schemester512.svg" width="50%" alt="Display Illustration 1"/>
             </div>
         </div>
         <div class="fmt-row" style="padding:44px">
             <div class="fmt-col fmt-half fmt-left">
-                <img class="fmt-left" src="static/graphic/schemesterIconConcept.svg"/>
+                
             </div>
             <div class="fmt-col fmt-half">
                 
@@ -113,17 +129,24 @@
     <!--foot note-->
     <div class="fmt-row" style="background-color: #efefef;line-height: 80px;">
         <div class="fmt-col m6 fmt-padding fmt-center">
-            Location : South Asia
+            Simplify · Schedule · Schemester
         </div>
     </div>
     <script>
         if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').then(function(registration){
           console.log("SW:true");
+        }).catch(function(){
+            console.log("SW:error");    
         });
       } else {
         console.log("SW:false");
       }
     </script>
+    <script type="module">        
+        if (('standalone' in navigator) && (!navigator.standalone)) {
+          import('https://unpkg.com/pwacompat');
+        }
+      </script>
   </body>
 </html>

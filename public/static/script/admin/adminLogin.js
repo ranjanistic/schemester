@@ -62,7 +62,7 @@ function adminLogin() {
                 case "auth/invalid-email":{
                     logInLoader.style.display = hide;
                     logInButton.style.display = show
-                    validateEmailID();
+                    validateEmailID(emailInput,emailFieldSet,emailError);
                 };break;
                 default: {
                     logInLoader.style.display = hide;
@@ -74,27 +74,27 @@ function adminLogin() {
             }
         });
 }
-function validateEmailID(){
-    if(!isEmailValid(emailInput.value)){
-        emailFieldSet.className = "text-field-error";
-        if(emailInput.value!=nothing){
-            emailError.innerHTML = "Invalid email address.";
+function validateEmailID(email,field,error){
+    if(!isEmailValid(email.value)){
+        field.className = "text-field-error";
+        if(email.value!=nothing){
+            error.innerHTML = "Invalid email address.";
         } else {
-            emailError.innerHTML = "Need an email address here.";
+            error.innerHTML = "Need an email address here.";
         }
-        emailInput.focus()
-        emailInput.oninput = function(){
-            validateEmailID();
+        email.focus()
+        email.oninput = function(){
+            validateEmailID(emailInput,emailFieldSet,emailError);
         }
     } else {
-        emailFieldSet.className = "text-field";
-        emailError.innerHTML = nothing;
+        field.className = "text-field";
+        error.innerHTML = nothing;
     }
 }
 
 function focusToNext(){
     if(!isEmailValid(emailInput.value)){
-        validateEmailID();
+        validateEmailID(emailInput,emailFieldSet,emailError);
         emailInput.focus();
     } else {
         if(passwordInput.value == nothing){
@@ -103,6 +103,29 @@ function focusToNext(){
             puiidInput.focus();
         }
     }
+}
+
+function resetMailValidation(){
+    if(!isEmailValid(document.getElementById('resetemailAdmin').value)){
+        document.getElementById('resetemail_fieldset').className = "text-field-error";
+        document.getElementById('resetemailError').textContent = "Invalid email address.";
+        document.getElementById('resetemailAdmin').oninput = function(){
+            resetMailValidation();
+        }
+    } else {
+        document.getElementById('resetemail_fieldset').className = "text-field";
+        document.getElementById('resetemailError').textContent = "";
+    }
+}
+function showResetBox(){
+    document.getElementById('resetemail_fieldset').className = "text-field";
+    document.getElementById('resetemailError').textContent = "";
+    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity-off','fmt-animate-opacity');
+    document.getElementById('passResetBox').style.display = 'block';
+
+}
+function hideResetBox(){
+    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity','fmt-animate-opacity-off');
 }
 
 function isEmailValid(emailValue){
