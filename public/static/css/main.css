@@ -146,6 +146,7 @@ a:focus{
     background-color: #efefef;
     box-shadow: 1px 5px 10px #00000011;
     color:#121212d8;
+    cursor: pointer;
 }
 .leftTabButton:focus{
     background-color: #efefefbb;
@@ -183,6 +184,7 @@ input:focus{
 .text-field{
     border-radius: 8px;border-color: #218ef3d0;padding:0 4px 8px 8px;outline:none;border-width: 2px; color:#216bf3;
     font-size: 16px;transition: 0.5s ease;
+    border-style:solid;
 }
 .text-field:hover{
     outline:none;
@@ -208,6 +210,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000044;
     padding: 12px 62px 12px 62px; font-size:38px;
     transition: 0.2s ease;
+    cursor: pointer;
 
 }
 .display-button:focus{
@@ -223,7 +226,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000044;
     padding: 8px 32px 8px 32px; font-size:24px;
     transition: 0.2s ease;
-
+    cursor: pointer;
 }
 .sub-display-button:focus{
     outline: none;
@@ -239,6 +242,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
+    cursor: pointer;
 }
 .positive-button:focus{
     outline:none;
@@ -254,6 +258,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
+    cursor: pointer;
 }
 .neutral-button:focus{
     outline:none;
@@ -269,6 +274,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
+    cursor: pointer;
 }
 .negative-button:focus{
     outline:none;
@@ -284,6 +290,7 @@ input:focus{
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
+    cursor: pointer;
 }
 .warning-button:focus{
     outline:none;
@@ -297,6 +304,7 @@ input:focus{
     border-radius:50%;
     box-shadow: 1px 5px 10px #00000022;
     transition:0.2s ease;
+    cursor: pointer;
 }
 .circle-button:focus{
     outline:none;
@@ -314,6 +322,7 @@ input:focus{
     position: relative;
     border-radius: 12px;
     transition: 0.2s ease-in-out;
+    cursor: pointer;
 }
 .image-text-button:hover{
     background-color: #ffffffc7;

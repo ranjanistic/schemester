@@ -1,5 +1,3 @@
-
-
 const OFFLINE_VERSION = 1;
 const CACHE_NAME = 'offline';
 const cacheName = 'schemester-cache'
@@ -8,11 +6,12 @@ self.addEventListener('install', function(event) {
     caches.open(cacheName).then(function(cache) {
       return cache.addAll(
         [
-          '/index.html',
-          '/home.html',
           '/static/css/main.css',
           '/static/css/fmt.css',
-          '/offline.html'
+          '/index.html',
+          '/home.html',
+          '/offline.html',
+          '/404.html'
         ]
       );
     })

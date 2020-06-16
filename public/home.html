@@ -28,6 +28,7 @@
     <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
     <script src="/__/firebase/7.15.0/firebase-database.js"></script>
     <script src="/__/firebase/init.js"></script>
+    <script src="../static/script/main.js"></script>
     <script src="static/script/homepage.js"></script>
   </head>
   
@@ -134,19 +135,18 @@
     </div>
     <script>
         if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('sw.js').then(function(registration){
-          console.log("SW:true");
-        }).catch(function(){
-            console.log("SW:error");    
-        });
-      } else {
-        console.log("SW:false");
-      }
-    </script>
-    <script type="module">        
+            navigator.serviceWorker.register('sw.js')
+                .then(function(registration){
+                console.log("SW:true");
+            }).catch(function(){
+                console.log("SW:error");    
+            });
+        } else {
+                console.log("SW:false");
+            }
         if (('standalone' in navigator) && (!navigator.standalone)) {
-          import('https://unpkg.com/pwacompat');
+            import('https://unpkg.com/pwacompat');
         }
-      </script>
+    </script>
   </body>
 </html>

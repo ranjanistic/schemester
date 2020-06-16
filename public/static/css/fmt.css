@@ -15,7 +15,7 @@ button,input{overflow:visible}button,select{text-transform:none}
 button,html [type=button],[type=reset],[type=submit]{-webkit-appearance:button}
 button::-moz-focus-inner, [type=button]::-moz-focus-inner, [type=reset]::-moz-focus-inner, [type=submit]::-moz-focus-inner{border-style:none;padding:0}
 button:-moz-focusring, [type=button]:-moz-focusring, [type=reset]:-moz-focusring, [type=submit]:-moz-focusring{outline:1px dotted ButtonText}
-fieldset{border:1px solid #c0c0c0;margin:0 2px;padding:.35em .625em .75em}
+
 legend{color:inherit;display:table;max-width:100%;padding:0;white-space:normal}textarea{overflow:auto}
 [type=checkbox],[type=radio]{padding:0}
 [type=number]::-webkit-inner-spin-button,[type=number]::-webkit-outer-spin-button{height:auto}
@@ -65,7 +65,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-main,#main{transition:margin-left .4s}
 .fmt-modal{z-index:3;display:none;padding-top:100px;position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background-color: #00000088;}
 .fmt-modal-content{margin:auto;background-color:#fff;position:relative;padding:0;outline:0;width:600px}
-.fmt-snackbar{z-index:3;display:none;position: fixed;bottom:0;float:bottom;padding:4px;box-shadow: 1px 5px 5px #00000044;border-radius:4px;width: max-content;}
+.fmt-snackbar{z-index:3;display:none;position: fixed;bottom:0;float:bottom;padding:4px;box-shadow: 1px 5px 5px #00000044;border-radius:4px;background-color: #216bf3;margin:12px}
 .fmt-bar{width:100%;overflow:hidden}.fmt-center .fmt-bar{display:inline-block;width:auto}
 .fmt-bar .fmt-bar-item{padding:8px 16px;float:left;width:auto;border:none;display:block;outline:0}
 .fmt-bar .fmt-dropdown-hover,.fmt-bar .fmt-dropdown-click{position:static;float:left}
@@ -133,7 +133,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-animate-left{position:relative;animation:animateleft 0.4s}@keyframes animateleft{from{left:-300px;opacity:0} to{left:0;opacity:1}}
 .fmt-animate-right{position:relative;animation:animateright 0.4s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}
 .fmt-animate-right-slow{position:relative;animation:animateright 1s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}
-.fmt-animate-bottom-off{position:fixed;animation:animatebottom 0.4s ease;animation-fill-mode: forwards;}@keyframes animatebottom{from{bottom:0;opacity:1} to{bottom:-300px;opacity:0;display:block;}}
+.fmt-animate-bottom-off{animation:animatebottom 0.4s ease;animation-fill-mode: forwards;}@keyframes animatebottom{from{bottom:0;opacity:1} to{bottom:-300px;opacity:0;display:none;}}
 .fmt-animate-bottom{position:fixed;animation:animatebottom 0.4s ease}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}
 .fmt-animate-bottom-slow{position:fixed;animation:animatebottom 1s}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1;}}
 .fmt-animate-zoom {position:relative; animation:animatezoom 0.4s}@keyframes animatezoom{from{transform:scale(1.5)} to{transform:scale(1)}}

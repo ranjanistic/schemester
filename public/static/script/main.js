@@ -1,36 +1,39 @@
 
 class Snackbar{
-    constructor(bar,text,button,buttonText){
+    constructor(bar,text,button){
         this.bar = bar;
         this.text = text;
         this.button = button;
     }
-    show(isNormal){
-        this.bar.classList.replace('fmt-animate-bottom-off','fmt-animate-bottom');
-        if(!isNormal){
-            this.box.style.backgroundColor = "#1b2123"
-        }
-        this.bar.style.display = 'block';
 
-    }
-    hide(){
-        this.bar.classList.replace('fmt-animate-bottom','fmt-animate-bottom-off');
-    }
 }
 
-var snack = new Snackbar();
-function showSnackBar(text = String(),buttonText = String(), isNormal = true){
-    snack = new Snackbar(
+
+function showSnackBar(text = String(),buttonText = String(), isNormal = true,hasAction = false){
+    var snack = new Snackbar(
         document.getElementById('snackBar'),document.getElementById('snackText'),
         document.getElementById('snackButton')
     );
     snack.text.textContent = text;
     snack.button.textContent = buttonText;
-    snack.show(isNormal);
-    snack.button.addEventListener('click',function(){
-        hideSnackBar();
-    },false)
+    if(!isNormal){
+        snack.bar.style.backgroundColor = "#bb2123"
+    } else {
+        snack.bar.style.backgroundColor = "#216bf3"
+    }
+    if(!hasAction){
+        snack.button.style.display = 'none';
+    } else {
+        snack.button.style.display = 'block';
+    }
+    snack.bar.classList.replace('fmt-animate-bottom-off','fmt-animate-bottom');
+    snack.bar.style.display = 'block';
 }
 function hideSnackBar(){
-    snack.hide();
+    var snack = new Snackbar(
+        document.getElementById('snackBar'),document.getElementById('snackText'),
+        document.getElementById('snackButton')
+    );
+    snack.bar.classList.replace('fmt-animate-bottom','fmt-animate-bottom-off');
+    snack.bar.style.display = 'none';
 }

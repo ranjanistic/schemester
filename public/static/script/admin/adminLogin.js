@@ -1,5 +1,6 @@
 //The admin login page script
-var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader;
+var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader
+,snackButton,navLoader; 
 const nothing = '',hide = "none", show = "block",click='click';
 
 function initializeElements(){
@@ -13,6 +14,8 @@ function initializeElements(){
     puiidInput = document.getElementById('puiid');
     logInButton = document.getElementById('loginAdminButton');
     logInLoader = document.getElementById('loginLoader');
+    snackButton = document.getElementById('snackButton');
+    navLoader = document.getElementById('navLoader');
     logInButton.addEventListener(click, adminLogin, false);
 }
 
@@ -29,7 +32,8 @@ function initAuthStateListener() {
 function adminLogin() {
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
-    } 
+    }
+    hideSnackBar();
     emailFieldSet.className = "text-field";
     passwordFieldset.className = "text-field";
     emailError.innerHTML = nothing;
@@ -49,8 +53,8 @@ function adminLogin() {
                 case "auth/too-many-requests":{
                     logInLoader.style.display = hide;
                     logInButton.style.display = show
-                    emailError = "Too many failed attempts."
-                    logInButton.textContent = "";
+                    logInButton.textContent = "Disabled";
+                    showSnackBar('Too many unsuccessfull attempts, try again after a while.','',false);
                 };break;
                 case "auth/user-not-found":{
                     emailFieldSet.className = "text-field-error";
@@ -62,14 +66,24 @@ function adminLogin() {
                 };break;
                 case "auth/invalid-email":{
                     logInLoader.style.display = hide;
-                    logInButton.style.display = show
+                    logInButton.style.display = show;
                     validateEmailID(emailInput,emailFieldSet,emailError);
+                };break;
+                case "auth/user-disabled":{
+                    snackButton.onclick = function(){
+                        navLoader.style.display = show;
+                        window.location.href = "help.html";
+                    }
+                    logInLoader.style.display = hide;
+                    logInButton.style.display = show;
+                    logInButton.textContent = "Retry";
+                    showSnackBar("This account has been disabled. You might want to contact us directly.","Help",false,true);
                 };break;
                 case "auth/network-request-failed":{
                     logInLoader.style.display = hide;
                     logInButton.style.display = show
                     logInButton.textContent = "Retry";
-                    showSnackBar('No internet connection','Re-check',true);
+                    showSnackBar('No internet connection','',false);
                 };break;
                 default: {
                     logInLoader.style.display = hide;
@@ -113,8 +127,17 @@ function focusToNext(){
     }
 }
 function passwordFieldNormal(){
-    forgotPassword.style.display = 'none'
+    forgotPassword.style.display = hide;
     passwordFieldset.className = "text-field";
+}
+function sendPassResetLink(){
+    snackButton.onclick = function(){
+        hideSnackBar();
+    }
+    if(resetMailValidation()){
+        hideResetBox();
+        showSnackBar("A link has been sent at your provided email address. Reset your password from there.",'Got it',true,true);
+    }
 }
 function resetMailValidation(){
     if(!isEmailValid(document.getElementById('resetemailAdmin').value)){
@@ -123,16 +146,18 @@ function resetMailValidation(){
         document.getElementById('resetemailAdmin').oninput = function(){
             resetMailValidation();
         }
+        return false;
     } else {
         document.getElementById('resetemail_fieldset').className = "text-field";
         document.getElementById('resetemailError').textContent = nothing;
     }
+    return true
 }
 function showResetBox(){
     document.getElementById('resetemail_fieldset').className = "text-field";
     document.getElementById('resetemailError').textContent = nothing;
     document.getElementById('passResetBox').classList.replace('fmt-animate-opacity-off','fmt-animate-opacity');
-    document.getElementById('passResetBox').style.display = 'block';
+    document.getElementById('passResetBox').style.display = show;
 
 }
 function hideResetBox(){
