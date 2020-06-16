@@ -2,18 +2,21 @@
 
 const OFFLINE_VERSION = 1;
 const CACHE_NAME = 'offline';
-
-const OFFLINE_URL = '/offline.html';
-
-const staticCacheName = 'schemester-cache-v1';
-
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-
-    const cache = await caches.open(CACHE_NAME);
-
-    await cache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
-  })());
+const cacheName = 'schemester-cache'
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(cacheName).then(function(cache) {
+      return cache.addAll(
+        [
+          '/index.html',
+          '/home.html',
+          '/static/css/main.css',
+          '/static/css/fmt.css',
+          '/offline.html'
+        ]
+      );
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -29,30 +32,18 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  // We only want to call event.respondWith() if this is a navigation request
-  // for an HTML page.
-  if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        // First, try to use the navigation preload response if it's supported.
-        const preloadResponse = await event.preloadResponse;
-        if (preloadResponse) {
-          return preloadResponse;
-        }
-
-        const networkResponse = await fetch(event.request);
-        return networkResponse;
-      } catch (error) {
-
-        console.log('Fetch failed; returning offline page instead.', error);
-
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(OFFLINE_URL);
-        return cachedResponse;
-      }
-    })());
-  }
-
-
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    // Try the cache
+    caches.match(event.request).then(function(response) {
+      // Fall back to network
+      return response || fetch(event.request);
+    }).catch(function() {
+      // If both fail, show a generic fallback:
+      return caches.match('/offline.html');
+      // However, in reality you'd have many different
+      // fallbacks, depending on URL & headers.
+      // Eg, a fallback silhouette image for avatars.
+    })
+  );
 });
