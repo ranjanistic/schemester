@@ -1,30 +1,58 @@
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open('static-pages').then(function(cache) {
-      return cache.addAll(
-        [
-          'https://fonts.googleapis.com/css2?family=Jost&display=swap',
-          'https://fonts.googleapis.com/css2?family=Questrial&display=swap',
-          '/static/css/fmt.css',
-          '/static/css/main.css',
-          '/index.html',
-          '/404.html',
-          '/offline.html',
-          '/admin/admin_dash.html',
-          '/admin/current_schedule.html',
-          '/admin/week_schedule.html'
-        ]
-      );
-    }).catch(function(){
-      console.log("uncached");
-    })
-  );
+
+
+const OFFLINE_VERSION = 1;
+const CACHE_NAME = 'offline';
+
+const OFFLINE_URL = '/offline.html';
+
+const staticCacheName = 'schemester-cache-v1';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil((async () => {
+
+    const cache = await caches.open(CACHE_NAME);
+
+    await cache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
+  })());
 });
-  self.addEventListener('fetch', function(event) {
-  console.log(event.request.url);
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request);
-    })
-  );
-  });
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    // Enable navigation preload if it's supported.
+    // See https://developers.google.com/web/updates/2017/02/navigation-preload
+    if ('navigationPreload' in self.registration) {
+      await self.registration.navigationPreload.enable();
+    }
+  })());
+
+  // Tell the active service worker to take control of the page immediately.
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  // We only want to call event.respondWith() if this is a navigation request
+  // for an HTML page.
+  if (event.request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        // First, try to use the navigation preload response if it's supported.
+        const preloadResponse = await event.preloadResponse;
+        if (preloadResponse) {
+          return preloadResponse;
+        }
+
+        const networkResponse = await fetch(event.request);
+        return networkResponse;
+      } catch (error) {
+
+        console.log('Fetch failed; returning offline page instead.', error);
+
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(OFFLINE_URL);
+        return cachedResponse;
+      }
+    })());
+  }
+
+
+});
