@@ -72,16 +72,7 @@ a:focus{
     background-color: #216bf3;
     font-size: 18px;
 }
-.circle-button{
-    padding: 4px;
-    background-color: #216bf3;
-    border-radius: 50%;
-    transition:0.3s ease;
-}
-.circle-button:focus{
-    padding:8px;
-    background-color: #90c3ec;
-}
+
 .container{
     color: black;
     background-color: white;
@@ -254,6 +245,21 @@ input:focus{
     background-color: #94a5db;
     box-shadow: 1px 5px 10px #00000011;
 }
+.neutral-button{
+    background-color: white;
+    color:#216bf3;
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+}
+.neutral-button:focus{
+    outline:none;
+    background-color: #eeeeeeee;
+    box-shadow: 1px 5px 5px #00000000;
+}
 .negative-button{
     background-color: #c40c0c;
     color:white;
@@ -283,6 +289,18 @@ input:focus{
     outline:none;
     background-color: #81700c;
     box-shadow: 1px 5px 10px #00000011;
+}
+.circle-button{
+    background-color: #ffffff;
+    padding:4px;
+    border-width:0;
+    border-radius:50%;
+    box-shadow: 1px 5px 10px #00000022;
+    transition:0.2s ease;
+}
+.circle-button:focus{
+    outline:none;
+    background-color: #efefef;
 }
 .image-text-button{
     color:black;

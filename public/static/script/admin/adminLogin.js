@@ -49,7 +49,8 @@ function adminLogin() {
                 case "auth/too-many-requests":{
                     logInLoader.style.display = hide;
                     logInButton.style.display = show
-                    logInButton.textContent = "Retry";
+                    emailError = "Too many failed attempts."
+                    logInButton.textContent = "";
                 };break;
                 case "auth/user-not-found":{
                     emailFieldSet.className = "text-field-error";
@@ -64,12 +65,19 @@ function adminLogin() {
                     logInButton.style.display = show
                     validateEmailID(emailInput,emailFieldSet,emailError);
                 };break;
+                case "auth/network-request-failed":{
+                    logInLoader.style.display = hide;
+                    logInButton.style.display = show
+                    logInButton.textContent = "Retry";
+                    showSnackBar('No internet connection','Re-check',true);
+                };break;
                 default: {
                     logInLoader.style.display = hide;
                     logInButton.style.display = show
                     logInButton.textContent = "Retry";
                     forgotPassword.style.display = show
-                    alert(errorMessage);
+                    console.log(errorCode+'/'+errorMessage);
+                    alert(errorMessage+' '+errorCode);
                 }
             }
         });
@@ -104,7 +112,10 @@ function focusToNext(){
         }
     }
 }
-
+function passwordFieldNormal(){
+    forgotPassword.style.display = 'none'
+    passwordFieldset.className = "text-field";
+}
 function resetMailValidation(){
     if(!isEmailValid(document.getElementById('resetemailAdmin').value)){
         document.getElementById('resetemail_fieldset').className = "text-field-error";
@@ -114,12 +125,12 @@ function resetMailValidation(){
         }
     } else {
         document.getElementById('resetemail_fieldset').className = "text-field";
-        document.getElementById('resetemailError').textContent = "";
+        document.getElementById('resetemailError').textContent = nothing;
     }
 }
 function showResetBox(){
     document.getElementById('resetemail_fieldset').className = "text-field";
-    document.getElementById('resetemailError').textContent = "";
+    document.getElementById('resetemailError').textContent = nothing;
     document.getElementById('passResetBox').classList.replace('fmt-animate-opacity-off','fmt-animate-opacity');
     document.getElementById('passResetBox').style.display = 'block';
 

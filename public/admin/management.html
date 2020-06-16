@@ -24,7 +24,7 @@
     </head>
     <body>
         <div class="fmt-top fmt-shadow fmt-padding" id="topBar">
-            <img style="padding: 4px;" src="../static/graphic/leftArrow.svg" width="35" id="backFromSettings">
+            <button class="circle-button"><img  src="../static/graphic/leftArrow.svg" width="25" id="backFromSettings"></button>
             <span>Settings</span>
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
@@ -32,14 +32,22 @@
                 <span class="heading">Settings</span>
                 <div class="fmt-row">
                     
-                    <div class="fmt-col fmt-hide-small leftTabGroup" id="tabGroup">
-                        <div class="leftTabButton" id="adminTab">Admin Account</div>
-                        <div class="leftTabButton" id="institutionTab">Institution Defaults</div>
-                        <div class="leftTabButton" id="scheduleTab">Schedule Details</div>
-                        <div class="leftTabButton" id="securityTab">Security Settings</div>
+                    <div class="fmt-col fmt-hide-small leftTabGroup fmt-quarter" id="tabGroup">
+                        <div class="leftTabButton" id="adminTab">
+                            <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
+                            Admin Account</div>
+                        <div class="leftTabButton" id="institutionTab">
+                            <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
+                            Institution Defaults</div>
+                        <div class="leftTabButton" id="scheduleTab">
+                            <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
+                            Schedule Details</div>
+                        <div class="leftTabButton" id="securityTab">
+                            <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
+                            Security Settings</div>
                     </div>
                     <!--settings on large and medium screens-->
-                    <div class="fmt-col fmt-hide-small tabContainerRight" style="margin:4px 0px 4px 0px;width:75%" id="settingsContainer">
+                    <div class="fmt-col fmt-hide-small fmt-threequarter tabContainerRight" style="margin:4px 0px 4px 0px;" id="settingsContainer">
                         <!--account settings box-->
                         <div class="sub-container" id="accountSettingsBox">
                             <span class="sub-heading">Administrator</span>
@@ -103,7 +111,7 @@
                     <div class="fmt-col fmt-hide-large fmt-hide-medium" style="margin:4px 0px 4px 0px;width:100%">
                         <!--account settings box-->
                         <div class="sub-container" id="maccountSettingsBox"  style="margin-bottom:20px;">
-                            <span class="sub-heading">Administrator</span>
+                            <span class="sub-heading">Admin</span>
                             <div>
                                 <span class="caption">Admin name</span><br/>
                                 <span class="editable" id="madminName">Loading...</span><br/>
