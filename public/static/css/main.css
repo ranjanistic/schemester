@@ -48,7 +48,7 @@ body{
 }
 a{
     text-decoration: none;
-    transition: 0.5s ease;
+    
 }
 a:hover{
     color:#216bf3;
@@ -71,6 +71,7 @@ a:focus{
     color:white;
     background-color: #216bf3;
     font-size: 18px;
+    padding: 8px;
 }
 
 .container{
@@ -168,7 +169,13 @@ a:focus{
     padding:14px;
     transition: 0.3s ease;
 }
-input{
+
+.text-field{
+    border-radius: 8px;border-color: #218ef3d0;padding:0 4px 8px 8px;outline:none;border-width: 2px; color:#216bf3;
+    font-size: 16px;transition: 0.5s ease;
+    border-style:solid;
+}
+.text-input{
     padding:0;
     color:black;
     background-color: transparent;
@@ -176,15 +183,10 @@ input{
     width:100%;
     font-size: 24px;
 }
-input:focus{
+.text-input:focus{
     outline:none;
     border-width: 0;
     background-color: transparent;
-}
-.text-field{
-    border-radius: 8px;border-color: #218ef3d0;padding:0 4px 8px 8px;outline:none;border-width: 2px; color:#216bf3;
-    font-size: 16px;transition: 0.5s ease;
-    border-style:solid;
 }
 .text-field:hover{
     outline:none;
@@ -194,13 +196,26 @@ input:focus{
     transition: 0.5s ease;
 }
 .text-field-error{
-    border-radius: 8px;border-color: #bd1919;padding:0 4px 8px 8px;outline:none;border-width: 3px; color:#bd1919;
+    border: 3px solid #c40c0c;
+    border-radius: 8px;
+    padding:0 4px 8px 8px;
+    outline:none;
+    color:#c40c0c;
     font-size: 16px;transition: 0.5s ease;
 }
 .field-caption{
     padding:0 4px 0 4px;
-
 }
+.box-field{
+    border-radius: 8px;border-color: #216bf3;
+    padding:0 4px 8px 4px;
+    outline:none;
+    border-width: 3px;
+    color:#216bf3;
+    transition: 0.5s ease;
+    border-style:solid;
+}
+
 .display-button{
     background-color: #216bf3;
     color:white;
@@ -299,7 +314,7 @@ input:focus{
 }
 .circle-button{
     background-color: #ffffff;
-    padding:4px;
+    padding:8px;
     border-width:0;
     border-radius:50%;
     box-shadow: 1px 5px 10px #00000022;
@@ -333,4 +348,130 @@ input:focus{
     color:#00000066;
     background-color: #ffffff98;
     box-shadow: 2px 2px 2px 2px #00000011;
+}
+
+.radio-container {
+    position: relative;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px 4px 34px;
+    margin:4px;
+    background-color: #efefef;
+    border-radius:18px;
+    -webkit-user-select: none;
+    width:fit-content;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition:0.3s ease;
+  }
+  
+  /* Hide the browser's default radio button */
+  .radio-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* Create a custom radio button */
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 0px;
+    width: 0px;
+    margin:4px;
+    display:none;
+    background-color: #216bf3;
+    border-radius: 50%;
+    box-shadow: 1px 5px 10px #00000022;
+  }
+  
+  .radio-container:hover{
+    background-color: #216bf3;
+    color:white;
+  }
+  
+  /* When the radio button is checked, add a blue background */
+  .radio-container input:checked ~ .checkmark {
+    display:block;
+    height: 25px;
+    width: 25px;
+    background-color: #216bF3;
+  }
+  .radio-container input ~ .checkmark {
+    display:block;
+    height: 25px;
+    width: 25px;
+    background-color: #efefef;
+  }
+  /* Create the indicator (the dot/circle - hidden when not checked) */
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  /* Show the indicator (dot/circle) when checked */
+  .radio-container input:checked ~ .checkmark:after {
+    display: block;
+    transition: 0.3s ease;
+  }
+  
+  /* Style the indicator (dot/circle) */
+  .radio-container .checkmark:after {
+    top: 9px;
+    left: 9px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #efefef;
+  }
+
+.dropdown {
+    position: relative;
+    display: inline-flex;
+}
+.dropdown-input{
+    outline:none;
+    border: 0px solid;
+    border-radius:8px;
+    background-color: #efefef;
+    color:#232323;
+    padding:4px 8px;
+    font-size: 18px;
+    transition:0.2s ease;
+}
+.dropdown-input:focus{
+    outline:none;
+    background-color: white;
+    color:black;
+    box-shadow: 1px 5px 10px #00000044;   
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    border-radius:0 8px 8px 8px;
+    font-size:20px;
+    background-color: white;
+    box-shadow: 1px 5px 10px #00000044;
+    overflow: auto;
+    z-index: 1;
+    cursor:pointer;
+    transition:0.3s ease;
+  }
+  
+.dropdown-content a {
+    color: black;
+    background-color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
+    transition:0.3s ease;
+}
+.dropdown-content a:hover {
+    background-color: #efefef;
+    color:#216bf3;
+
 }

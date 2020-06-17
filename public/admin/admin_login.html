@@ -26,10 +26,10 @@
 
     </head>
     <body>
-        <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-            <a href="/"><img src="../static/graphic/icons/schemester512.svg" onclick="document.getElementById('navLoader').style.display = 'block'" width="50" alt="Schemester icon"></a>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <img src="../static/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
             <span>Admin Login</span>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="50" src="../static/graphic/onethreeload.svg" id="navLoader"/>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="../static/graphic/onethreeload.svg" id="navLoader"/>
         </div>
         <div class="fmt-padding"  style="margin-top: 72px;">
             <div class="container">
@@ -37,19 +37,19 @@
                 <span class="heading fmt-hide-medium fmt-hide-large">Admin</span>
                 <fieldset class="text-field" id="email_fieldset">
                     <legend class="field-caption" >Username · Email Address</legend>
-                    <input required="true" placeholder="someone@example.domain" onchange="focusToNext()" type="email" id="adminemail" name="credential">
+                    <input class="text-input" required="true" placeholder="someone@example.domain" type="email" id="adminemail" name="credential">
                     <span class="fmt-right caption" style="color:#bd1919" id="emailError"></span>
                 </fieldset>
                 <br/>
                 <fieldset class="text-field" id="password_fieldset">
                     <legend class="field-caption">Password</legend>
-                    <input required="true" placeholder="Your account password." oninput="passwordFieldNormal()" onchange="focusToNext()" type="password" id="adminpassword" name="credential">
-                    <button class="positive-button fmt-right" style="display:none" onclick="showResetBox()" id="forgotpasswordButton">Forgot?</button>    
+                    <input class="text-input" required="true" placeholder="Your account password." type="password" id="adminpassword" name="credential">
+                    <button class="positive-button fmt-right" style="display:none" id="forgotpasswordButton">Forgot?</button>    
                 </fieldset>
                 <br/>
                 <fieldset class="text-field" id="puiid_fieldset">
                     <legend class="field-caption">PUIID · Private UIID</legend>
-                    <input placeholder="Your institution's private identifier." onchange="focusToNext()" type="password" id="puiid" name="credential">
+                    <input class="text-input" placeholder="Your institution's private identifier." type="password" id="puiid" name="credential">
                 </fieldset>
                 <br/>
             </div>
@@ -57,6 +57,7 @@
             <button class="positive-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="background-color:#216bf3;display:none" width="50" src="../static/graphic/onethreeload.svg" id="loginLoader"/>
         </div>
+
         <div id="passResetBox" class="fmt-modal fmt-animate-opacity">
             <div class="fmt-modal-content container fmt-row fmt-animate-opacity" style="padding:44px 0 22px 0;">
               <div class="fmt-col fmt-third fmt-center fmt-padding">
@@ -67,19 +68,19 @@
                 <div class="fmt-row">
                     <fieldset class="text-field" id="resetemail_fieldset">
                         <legend class="field-caption">Your email address</legend>
-                        <input placeholder="someone@example.domain" type="email" onchange="resetMailValidation()" autocomplete="off" id="resetemailAdmin">
+                        <input class="text-input" placeholder="someone@example.domain" type="email" autocomplete="off" id="resetemailAdmin">
                         <span class="fmt-right caption" style="color:#bd1919" id="resetemailError"></span>
                     </fieldset>
                     <br/>
-                    <button class="negative-button fmt-right" onclick="hideResetBox()" id="cancelResetMenu">Cancel</button>    
-                    <button class="positive-button fmt-right" onclick="sendPassResetLink()" id="getLinkButton">Send Link</button>    
+                    <button class="negative-button fmt-right"  id="cancelResetMenu">Cancel</button>
+                    <button class="positive-button fmt-right" id="getLinkButton">Send Link</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div id="snackBar" class="fmt-snackbar fmt-animate-bottom" style="display:none;">
+        <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
             <span class="group-text fmt-padding" id="snackText" style="color:white">
             </span>
             <button class="fmt-right neutral-button" id="snackButton"></button>

@@ -1,7 +1,6 @@
 //The admin login page script
 var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader
-,snackButton,navLoader; 
-const nothing = '',hide = "none", show = "block",click='click';
+,snackButton,back;
 
 function initializeElements(){
     emailFieldSet = document.getElementById('email_fieldset');
@@ -15,108 +14,103 @@ function initializeElements(){
     logInButton = document.getElementById('loginAdminButton');
     logInLoader = document.getElementById('loginLoader');
     snackButton = document.getElementById('snackButton');
-    navLoader = document.getElementById('navLoader');
+    back = document.getElementById('backFromLogin');
+
+    back.addEventListener(click,function(){
+        showLoader();
+        window.location.replace('/');
+    },false);
     logInButton.addEventListener(click, adminLogin, false);
+    passwordInput.addEventListener('input',function(){
+        setFieldSetof(passwordFieldset,true,null);
+        visibilityOf(forgotPassword,false);
+    },false);
+    emailInput.addEventListener('change',focusToNext,false);
+    passwordInput.addEventListener('change',focusToNext,false);
+    forgotPassword.addEventListener(click,function(){showResetBox(snackButton)},false);
+    puiidInput.addEventListener('change',focusToNext(),false);
+    document.getElementById('resetemailAdmin').addEventListener('change',resetMailValidation,false)
 }
 
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             window.location.replace("../");
-        } else {
-            emailInput.focus();
         }
     });
 }
 
 function adminLogin() {
+    visibilityOf(logInLoader,true);
+    visibilityOf(logInButton,false);
+    setFieldSetof(emailFieldSet,true,emailError);
+    setFieldSetof(passwordFieldset,true,null);
+    hideSnackBar();
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
     }
-    hideSnackBar();
-    emailFieldSet.className = "text-field";
-    passwordFieldset.className = "text-field";
-    emailError.innerHTML = nothing;
-    logInButton.style.display = hide;
-    logInLoader.style.display = show;
-        firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value).catch(function(error) {
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            switch(errorCode){
-                case "auth/wrong-password":{
-                    logInLoader.style.display = hide;
-                    passwordFieldset.className = "text-field-error";
-                    logInButton.style.display = show
-                    logInButton.textContent = "Retry";
-                    forgotPassword.style.display = show
-                };break;
-                case "auth/too-many-requests":{
-                    logInLoader.style.display = hide;
-                    logInButton.style.display = show
-                    logInButton.textContent = "Disabled";
-                    showSnackBar('Too many unsuccessfull attempts, try again after a while.','',false);
-                };break;
-                case "auth/user-not-found":{
-                    emailFieldSet.className = "text-field-error";
-                    emailError.innerHTML = "Account not found.";
-                    logInLoader.style.display = hide;
-                    emailInput.focus();
-                    logInButton.style.display = show
-                    logInButton.textContent = "Retry";
-                };break;
-                case "auth/invalid-email":{
-                    logInLoader.style.display = hide;
-                    logInButton.style.display = show;
-                    validateEmailID(emailInput,emailFieldSet,emailError);
-                };break;
-                case "auth/user-disabled":{
-                    snackButton.onclick = function(){
-                        navLoader.style.display = show;
-                        window.location.href = "help.html";
-                    }
-                    logInLoader.style.display = hide;
-                    logInButton.style.display = show;
-                    logInButton.textContent = "Retry";
-                    showSnackBar("This account has been disabled. You might want to contact us directly.","Help",false,true);
-                };break;
-                case "auth/network-request-failed":{
-                    logInLoader.style.display = hide;
-                    logInButton.style.display = show
-                    logInButton.textContent = "Retry";
-                    showSnackBar('No internet connection','',false);
-                };break;
-                default: {
-                    logInLoader.style.display = hide;
-                    logInButton.style.display = show
-                    logInButton.textContent = "Retry";
-                    forgotPassword.style.display = show
-                    console.log(errorCode+'/'+errorMessage);
-                    alert(errorMessage+' '+errorCode);
+    firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value).catch(function(error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log(errorCode);
+        switch(errorCode){
+            case "auth/wrong-password":{
+                setFieldSetof(passwordFieldset,false,null);
+                visibilityOf(forgotPassword,true);
+                logInButton.textContent = "Retry";
+            };break;
+            case "auth/too-many-requests":{
+                showSnackBar('Too many unsuccessfull attempts, try again after a while.','',false);
+                logInButton.textContent = "Disabled";
+            };break;
+            case "auth/user-not-found":{
+                setFieldSetof(emailFieldSet,false,emailError,"Account not found.");
+                logInLoader.style.display = hide;
+                emailInput.focus();
+                logInButton.textContent = "Retry";
+            };break;
+            case "auth/invalid-email":{
+                validateEmailID(emailInput,emailFieldSet,emailError);
+            };break;
+            case "auth/user-disabled":{
+                snackButton.onclick = function(){
+                    showLoader();
+                    window.location.href = "help.html";
                 }
+                logInButton.textContent = "Retry";
+                showSnackBar("This account has been disabled. You might want to contact us directly.","Help",false,true);
+            };break;
+            case "auth/network-request-failed":{
+                logInButton.textContent = "Retry";
+                showSnackBar('No internet connection','',false);
+            };break;
+            default: {
+                logInButton.textContent = "Retry";
+                visibilityOf(forgotPassword,true);
+                console.log(errorCode+'/'+errorMessage);
+                alert(errorMessage+' '+errorCode);
             }
-        });
-}
-function validateEmailID(email,field,error){
-    if(!isEmailValid(email.value)){
-        field.className = "text-field-error";
-        if(email.value!=nothing){
-            error.innerHTML = "Invalid email address.";
-        } else {
-            error.innerHTML = "Need an email address here.";
         }
-        email.focus()
+        visibilityOf(logInLoader,false);
+        visibilityOf(logInButton,true);
+    });
+}
+
+function validateEmailID(email,field,error){
+    setFieldSetof(field,isEmailValid(email.value),error,"Invalid email address.");
+    if(!isEmailValid(email.value)){
+        email.focus();
         email.oninput = function(){
             validateEmailID(emailInput,emailFieldSet,emailError);
         }
-    } else {
-        field.className = "text-field";
-        error.innerHTML = nothing;
     }
 }
 
 function focusToNext(){
     if(!isEmailValid(emailInput.value)){
-        validateEmailID(emailInput,emailFieldSet,emailError);
+        if(emailInput.value != nothing){
+            validateEmailID(emailInput,emailFieldSet,emailError);
+        }
         emailInput.focus();
     } else {
         if(passwordInput.value == nothing){
@@ -125,46 +119,4 @@ function focusToNext(){
             puiidInput.focus();
         }
     }
-}
-function passwordFieldNormal(){
-    forgotPassword.style.display = hide;
-    passwordFieldset.className = "text-field";
-}
-function sendPassResetLink(){
-    snackButton.onclick = function(){
-        hideSnackBar();
-    }
-    if(resetMailValidation()){
-        hideResetBox();
-        showSnackBar("A link has been sent at your provided email address. Reset your password from there.",'Got it',true,true);
-    }
-}
-function resetMailValidation(){
-    if(!isEmailValid(document.getElementById('resetemailAdmin').value)){
-        document.getElementById('resetemail_fieldset').className = "text-field-error";
-        document.getElementById('resetemailError').textContent = "Invalid email address.";
-        document.getElementById('resetemailAdmin').oninput = function(){
-            resetMailValidation();
-        }
-        return false;
-    } else {
-        document.getElementById('resetemail_fieldset').className = "text-field";
-        document.getElementById('resetemailError').textContent = nothing;
-    }
-    return true
-}
-function showResetBox(){
-    document.getElementById('resetemail_fieldset').className = "text-field";
-    document.getElementById('resetemailError').textContent = nothing;
-    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity-off','fmt-animate-opacity');
-    document.getElementById('passResetBox').style.display = show;
-
-}
-function hideResetBox(){
-    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity','fmt-animate-opacity-off');
-}
-
-function isEmailValid(emailValue){
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return emailRegex.test(String(emailValue).toLowerCase());
 }

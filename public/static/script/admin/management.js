@@ -1,7 +1,7 @@
 //admin management default script
-var adminName,mAdminName,adminEmail,mAdminEmail,verification;
+var adminName,mAdminName,adminEmail,mAdminEmail,verification,resetPass,mResetPass,snackBtn;
 var tabs,boxes;
-const block = "block", none = "none", click='click';
+
 
 function initializeElements(){
     adminName = document.getElementById("adminName");
@@ -9,6 +9,9 @@ function initializeElements(){
     adminEmail = document.getElementById("adminEmailAddress");
     mAdminEmail = document.getElementById("madminEmailAddress");
     verification = document.getElementById("verificationButton");
+    resetPass = document.getElementById('resetPasswordButton');
+    mResetPass = document.getElementById('mresetPasswordButton');
+    snackBtn = document.getElementById('snackButton');
     tabs = Array(document.getElementById("adminTab"),
         document.getElementById("institutionTab"),
         document.getElementById("scheduleTab"),
@@ -21,7 +24,7 @@ function initializeElements(){
         document.getElementById("securitySettingsBox")
     )
     tabs[0].className = "leftTabButtonSelected";
-    boxes[0].style.display = block;
+    boxes[0].style.display = show;
     setEventListeners()
 }
 function initAuthStateListener() {
@@ -57,15 +60,16 @@ function initAuthStateListener() {
         }
     });
 }
+
 function handleTabClicks(event){
     var e = event.currentTarget;
     for(var k=0;k<tabs.length;k++){
         if(e == tabs[k]){
             tabs[k].className = "leftTabButtonSelected";
-            boxes[k].style.display = block;
+            boxes[k].style.display = show;
         } else {
             tabs[k].className = "leftTabButton";
-            boxes[k].style.display = none;
+            boxes[k].style.display = hide;
         }
     }
 }
@@ -82,7 +86,11 @@ function setEventListeners(){
         //Ask user to save
         undoAndReturn()
     },false);
+    resetPass.addEventListener(click,function(){showResetBox(snackBtn)},false);
+    mResetPass.addEventListener(click,function(){showResetBox(snackBtn)},false);
 }
 function undoAndReturn(){
+    showLoader();
     window.location.replace("admin_dash.html");
+
 }

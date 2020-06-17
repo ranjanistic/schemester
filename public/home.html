@@ -28,15 +28,15 @@
     <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
     <script src="/__/firebase/7.15.0/firebase-database.js"></script>
     <script src="/__/firebase/init.js"></script>
-    <script src="../static/script/main.js"></script>
+    <script src="static/script/main.js"></script>
     <script src="static/script/homepage.js"></script>
   </head>
   
   <body>
-    <div class="fmt-top fmt-shadow fmt-padding-small" id="topBar">
-      <a href="/"><img src="static/graphic/icons/schemester512.svg" width="50" alt="Schemester icon"></a>
+    <div class="fmt-top fmt-shadow" id="topBar">
+      <a href="/"><img src="static/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
       <span id="homeGreeting">Home</span>
-      <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="50" src="static/graphic/onethreeload.svg" id="homeNavLoader"/>
+      <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
     </div>
     <div class="fmt-row">
     <div class="fmt-col fmt-padding" style="margin-top: 82px;">
@@ -123,6 +123,7 @@
                 
             </div>
             <div class="fmt-col fmt-half">
+            </div>
                 
         </div>
     </div>
@@ -132,6 +133,11 @@
         <div class="fmt-col m6 fmt-padding fmt-center">
             Simplify · Schedule · Schemester
         </div>
+    </div>
+    <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
+        <span class="group-text fmt-padding" id="snackText" style="color:white">
+        </span>
+        <button class="fmt-right neutral-button" id="snackButton"></button>
     </div>
     <script>
       if ('serviceWorker' in navigator) {

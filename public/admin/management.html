@@ -10,6 +10,7 @@
         <link rel = "stylesheet" href="../static/css/fmt.css">
         <link rel = "stylesheet" href="../static/css/main.css">
         <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/7.15.0/firebase-firestore.js"></script>
@@ -24,9 +25,10 @@
         </script>
     </head>
     <body>
-        <div class="fmt-top fmt-shadow fmt-padding" id="topBar">
-            <button class="circle-button"><img  src="../static/graphic/leftArrow.svg" width="25" id="backFromSettings"></button>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <img class="circle-button"  src="../static/graphic/leftArrow.svg" width="40" id="backFromSettings">
             <span>Settings</span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="../static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="container">
@@ -173,5 +175,33 @@
             <button class="positive-button fmt-right" id="saveAndReturn">Save</button>
             <button class="negative-button fmt-left" id="cancelAndReturn">Cancel</button>
         </div>
+
+        <div id="passResetBox" class="fmt-modal fmt-animate-opacity">
+            <div class="fmt-modal-content container fmt-row fmt-animate-opacity" style="padding:44px 0 22px 0;">
+              <div class="fmt-col fmt-third fmt-center fmt-padding">
+                <img src="../static/graphic/icons/schemester512.svg" width="100"/>
+              </div>
+              <div class="fmt-col fmt-twothird fmt-padding" > 
+                <div class="group-text fmt-text-black fmt-row fmt-padding-small">Tell us your email address and we'll send you a link to help you reset your password.</div>
+                <div class="fmt-row">
+                    <fieldset class="text-field" id="resetemail_fieldset">
+                        <legend class="field-caption">Your email address</legend>
+                        <input class="text-input" placeholder="someone@example.domain" type="email" autocomplete="off" id="resetemailAdmin">
+                        <span class="fmt-right caption" style="color:#bd1919" id="resetemailError"></span>
+                    </fieldset>
+                    <br/>
+                    <button class="negative-button fmt-right" id="cancelResetMenu">Cancel</button>
+                    <button class="positive-button fmt-right" id="getLinkButton">Send Link</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
+            <span class="group-text fmt-padding" id="snackText" style="color:white">
+            </span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+
     </body>
 </html>

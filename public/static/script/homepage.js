@@ -1,6 +1,6 @@
 //Homepage default script
 var adminLogin, adminSignup,adminDash;
-const click = 'click';
+
 function initializeElements(){
     adminLogin = document.getElementById('adminLogin');
     adminSignup = document.getElementById('registerInstitution');
@@ -49,9 +49,7 @@ function showGreeting(){
         greeting.textContent = "Schemester"
     }
 }
-function showLoader(){
-    document.getElementById('homeNavLoader').style.display = "block";
-}
+
 
 window.onload = function() {
     initializeElements();

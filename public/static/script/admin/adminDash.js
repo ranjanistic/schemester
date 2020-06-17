@@ -1,19 +1,56 @@
 //the admin dashboard script
-var logOut,settings,dateTime, greeting;
-const click = 'click', nothing = '',space = ' ',tab = '   ';
+
+var logOut,settings,dateTime,greeting, teacherChipToday, classChipToday,workboxtoday,
+teacherBoxToday, classBoxToday,teacherSearchInput, teacherDropdown, classSearchInput,classDropdown
+,dayInput,dayDropdown;
 
 function initializeElements(){
     logOut = document.getElementById('logoutAdminButton');
     dateTime = document.getElementById('todayDateTime');
     greeting = document.getElementById('greeting');
     settings = document.getElementById('settingsAdminButton');
+    dayInput = document.getElementById('dayinput');
+    dayDropdown = document.getElementById('daydropdown');
+    teacherChipToday = document.getElementById('teacherRadioToday');
+    classChipToday = document.getElementById('classRadioToday');
+    workboxtoday = document.getElementById('workSectionToday');
+    teacherBoxToday = document.getElementById('teacherSectionToday');
+    classBoxToday =  document.getElementById('classSectionToday');
+    teacherSearchInput = document.getElementById('teachersearchinput');
+    teacherDropdown = document.getElementById('teacherDropdown');
+
+    //classSearchInput = document.getElementById('classsearchinput');
+    //classDropdown = document.getElementById('classDropdown');
+    visibilityOf(workboxtoday,false);
+    //visibilityOf(teacherBoxToday,false);
+    classChipToday.addEventListener(click,function(){
+        visibilityOf(workboxtoday,true);
+        visibilityOf(teacherBoxToday,false);
+        visibilityOf(classBoxToday,true);
+    });
+    teacherChipToday.addEventListener(click,function(){
+        visibilityOf(workboxtoday,true);
+        visibilityOf(classBoxToday,false);
+        visibilityOf(teacherBoxToday,true);
+    });
     logOut.addEventListener(click, function(){
-        window.location.replace("/")
+        showLoader();
+        window.location.replace("/");
         firebase.auth().signOut();
     }, false);
     settings.addEventListener(click,function(){
+        showLoader();
         window.location.href = "management.html";
     },false);
+
+    dayInput.addEventListener('click',function(){
+        visibilityOf(dayDropdown,false);
+    });
+
+    dayInput.oninput = function(){
+        visibilityOf(dayDropdown,true)
+        filterFunction(dayInput,dayDropdown);
+    }
     loadLocalContent()
 }
 
@@ -35,7 +72,8 @@ window.onload = function() {
 function loadLocalContent(){
     var today = new Date();
     var date = getDayName(today.getDay())+','+space+getMonthName(today.getMonth()) + space + today.getDate() +','+space + today.getFullYear()+","+space+ today.getHours()+':'+today.getMinutes();
-    dateTime.textContent = date
+    dateTime.textContent = date;
+    dayInput.placeholder = getDayName(today.getDay());
 }
 
 function loadRemoteContent(user){
@@ -49,33 +87,24 @@ function loadRemoteContent(user){
     greeting.textContent = "Welcome";
     //document.getElementById('adminImage').style.backgroundImage = photoURL
 }
-function getDayName(dIndex){
-    switch(dIndex){
-        case 0: return "Sunday";
-        case 1: return "Monday";
-        case 2: return "Tuesday";
-        case 3: return "Wednesday";
-        case 4: return "Thursday";
-        case 5: return "Friday";
-        case 6: return "Saturday";
-        default:return "Error";
-    }
-}
-function getMonthName(mIndex){
-    switch(mIndex){
-        case 0: return "January";
-        case 1: return "February";
-        case 2: return "March";
-        case 3: return "April";
-        case 4: return "May";
-        case 5: return "June";
-        case 6: return "July";
-        case 7: return "August";
-        case 8: return "September";
-        case 9: return "October";
-        case 10: return "November";
-        case 11: return "December";
-        default: return "Error";
+
+function filterFunction(input,dropdown) {
+    var input, filter, a, i;
+    filter = input.value.toUpperCase();
+    a = dropdown.getElementsByTagName("a");
+    for (i = 0; i < a.length; i++) {
+        var txtValue = a[i].textContent || a[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            a[i].style.display = show;
+            a[i].onclick = function(){
+                console.log("valeu",txtValue);
+                input.value = txtValue;
+                visibilityOf(dayDropdown,false);
+            }
+            break;
+        } else {
+            a[i].style.display = hide;
+        }
     }
 }
 
@@ -83,7 +112,7 @@ var prevScrollpos = window.pageYOffset;
 window.onscroll = function() {
     var currentScrollPos = window.pageYOffset;
     if (prevScrollpos > currentScrollPos) {
-        dateTime.style.color = "white"
+        dateTime.style.color = "#ffffff"
         dateTime.style.backgroundColor = "#216bf3"
     } else {
         dateTime.style.color = "#1f1f1f55"
