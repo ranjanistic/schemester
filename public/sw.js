@@ -1,35 +1,22 @@
-const OFFLINE_VERSION = 1;
-const CACHE_NAME = 'offline';
-const cacheName = 'schemester-cache'
+var CACHE_NAME = 'my-site-cache-v1';
+var urlsToCache = [
+  '/index.html',
+  '/home.html',
+  '/offline.html',
+];
+
 self.addEventListener('install', function(event) {
+  // Perform install steps
   event.waitUntil(
-    caches.open(cacheName).then(function(cache) {
-      return cache.addAll(
-        [
-          '/static/css/main.css',
-          '/static/css/fmt.css',
-          '/index.html',
-          '/home.html',
-          '/offline.html',
-          '/404.html'
-        ]
-      );
-    })
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
   );
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    // Enable navigation preload if it's supported.
-    // See https://developers.google.com/web/updates/2017/02/navigation-preload
-    if ('navigationPreload' in self.registration) {
-      await self.registration.navigationPreload.enable();
-    }
-  })());
 
-  // Tell the active service worker to take control of the page immediately.
-  self.clients.claim();
-});
 
 self.addEventListener('fetch', function(event) {
   event.respondWith(
