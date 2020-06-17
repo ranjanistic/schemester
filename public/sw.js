@@ -1,8 +1,10 @@
-var CACHE_NAME = 'my-site-cache-v1';
+var CACHE_NAME = 'schemester-cache-v1';
 var urlsToCache = [
   '/index.html',
   '/home.html',
   '/offline.html',
+  '/admin/admin_login.html',
+  
 ];
 
 self.addEventListener('install', function(event) {
