@@ -1,6 +1,6 @@
 //admin management default script
 var adminName,mAdminName,adminEmail,mAdminEmail,verification,resetPass,mResetPass,snackBtn;
-var tabs,boxes;
+var tabs,boxes,chips,sections;
 
 
 function initializeElements(){
@@ -16,17 +16,32 @@ function initializeElements(){
         document.getElementById("institutionTab"),
         document.getElementById("scheduleTab"),
         document.getElementById("securityTab")
-    )
+    );
+    setClassName(tabs[0],"leftTabButtonSelected");
     boxes = Array(
         document.getElementById("accountSettingsBox"),
         document.getElementById("institutionSettingsBox"),
         document.getElementById("scheduleSettingsBox"),
         document.getElementById("securitySettingsBox")
-    )
-    tabs[0].className = "leftTabButtonSelected";
-    boxes[0].style.display = show;
+    );
+    showElement(boxes,0)
+    chips = Array(
+        document.getElementById("madminTab"),
+        document.getElementById("minstitutionTab"),
+        document.getElementById("mscheduleTab"),
+        document.getElementById("msecurityTab")
+    );
+    chips[0].click();
+    sections = Array(
+        document.getElementById("maccountSettingsBox"),
+        document.getElementById("minstitutionSettingsBox"),
+        document.getElementById("mscheduleSettingsBox"),
+        document.getElementById("msecuritySettingsBox")
+    );
+    showElement(sections,0)
     setEventListeners()
 }
+
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
@@ -36,11 +51,10 @@ function initAuthStateListener() {
             var photoURL = user.photoURL;
             var uid = user.uid;
             var providerData = user.providerData;
+            replaceClass(verification,"warning-button","positive-button",emailVerified);
             if(emailVerified){
-                verification.classList.replace("warning-button","positive-button");
                 verification.textContent = "Verified";
             } else {
-                verification.classList.replace("positive-button","warning-button");
                 verification.textContent = "Verify now";
             }
             if(displayName==null){
@@ -61,24 +75,26 @@ function initAuthStateListener() {
     });
 }
 
-function handleTabClicks(event){
+function handleTabClicks(event,clickables,showables,showClass,hideClass){
     var e = event.currentTarget;
-    for(var k=0;k<tabs.length;k++){
-        if(e == tabs[k]){
-            tabs[k].className = "leftTabButtonSelected";
-            boxes[k].style.display = show;
-        } else {
-            tabs[k].className = "leftTabButton";
-            boxes[k].style.display = hide;
+    for(var k=0;k<clickables.length;k++){
+        var condition = e == clickables[k];
+        visibilityOf(showables[k],condition);
+        if(showClass!=null && hideClass!=null){
+            setClassName(clickables[k],showClass,hideClass,condition);
         }
     }
 }
 
 function setEventListeners(){
     for(var i= 0;i<tabs.length;i++){
-        tabs[i].addEventListener(click,handleTabClicks,false);
+        tabs[i].addEventListener(click,function(){
+            handleTabClicks(event,tabs,boxes,"leftTabButtonSelected","leftTabButton");
+        },false);
+        chips[i].addEventListener(click,function(){
+            handleTabClicks(event,chips,sections);
+        },false);
     }
-
     document.getElementById("cancelAndReturn").addEventListener(click,function(){
         undoAndReturn()
     },false);
@@ -92,5 +108,4 @@ function setEventListeners(){
 function undoAndReturn(){
     showLoader();
     window.location.replace("admin_dash.html");
-
 }

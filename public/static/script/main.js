@@ -20,7 +20,7 @@ function showSnackBar(text = String(),buttonText = String(), isNormal = true,has
     if(!isNormal){
         snack.bar.style.backgroundColor = "#c40c0c"
     } else {
-        snack.bar.style.backgroundColor = "#216bf3"
+        snack.bar.style.backgroundColor = "#216bf3ff"
     }
     if(!hasAction){
         snack.button.style.display = 'none';
@@ -58,6 +58,32 @@ function setFieldSetof(fieldset,isNormal,errorField,errorMsg = nothing){
         }
     } else {
         fieldset.className = "text-field-error";
+    }
+}
+
+function setClassName(element,normalClass,eventClass,condition){
+    if(condition!=null){
+        if(condition){
+            element.className = normalClass;
+        } else {
+            element.className = eventClass;
+        }
+    } else {
+        element.className = normalClass;
+    }
+}
+function showElement(elements,index){
+    for(var k = 0,j=0;k<elements.length;k++,j++){
+        visibilityOf(elements[k],k==index);
+    }
+}
+function replaceClass(element,class1,class2,replaceC1){
+    if(replaceC1!=null){
+        if(replaceC1){
+            element.classList.replace(class1,class2);
+        } else {
+            element.classList.replace(class2,class1);
+        }
     }
 }
 

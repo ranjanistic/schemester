@@ -110,10 +110,31 @@
                             </div>
                         </div>
                     </div>
+                    <div class="fmt-hide-large fmt-hide-medium" id="mtabGroup">
+                        <label class="radio-container">
+                            Admin<input type="radio" name="settingSelection" id="madminTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="radio-container">
+                            Institution<input type="radio" name="settingSelection" id="minstitutionTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <br/>
+                        <div class="fmt-padding-small"></div>
+                        <label class="radio-container">
+                            Schedule<input type="radio" name="settingSelection" id="mscheduleTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="radio-container">
+                            Security<input type="radio" name="settingSelection" id="msecurityTab">       
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <br/>
                     <!--Settings on small screens-->
                     <div class="fmt-col fmt-hide-large fmt-hide-medium" style="margin:4px 0px 4px 0px;width:100%">
                         <!--account settings box-->
-                        <div class="sub-container" id="maccountSettingsBox"  style="margin-bottom:20px;">
+                        <div class="sub-container fmt-animate-opacity" id="maccountSettingsBox"  style="margin-bottom:20px;">
                             <span class="sub-heading">Admin</span>
                             <div>
                                 <span class="caption">Admin name</span><br/>
@@ -125,7 +146,7 @@
                             </div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container" id="minstitutionSettingsBox" style="margin-bottom:20px;">
+                        <div class="sub-container fmt-animate-opacity" id="minstitutionSettingsBox" style="margin-bottom:20px;">
                             <span class="sub-heading">Institution</span>
                             <div>
                                 <span class="caption">Display name</span><br/>
@@ -139,7 +160,7 @@
                             </div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container" id="mscheduleSettingsBox" style="margin-bottom:20px;">
+                        <div class="sub-container fmt-animate-opacity" id="mscheduleSettingsBox" style="margin-bottom:20px;">
                             <span class="sub-heading">Schedule</span>
                             <div>
                                 <span class="caption">Each period duration</span><br/>
@@ -156,7 +177,7 @@
                                 <span class="editable" id="mbreakDuration">15 minutes</span><br/>
                             </div>
                         </div>
-                        <div class="sub-container" id="msecuritySettingsBox" style="margin-bottom:20px;">
+                        <div class="sub-container fmt-animate-opacity" id="msecuritySettingsBox" style="margin-bottom:20px;">
                             <span class="sub-heading">Security</span>
                             <div>
                                 <span class="caption">Subscription till</span><br/>

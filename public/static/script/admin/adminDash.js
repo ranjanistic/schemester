@@ -112,11 +112,15 @@ var prevScrollpos = window.pageYOffset;
 window.onscroll = function() {
     var currentScrollPos = window.pageYOffset;
     if (prevScrollpos > currentScrollPos) {
-        dateTime.style.color = "#ffffff"
-        dateTime.style.backgroundColor = "#216bf3"
+        dateTime.classList.replace("fmt-animate-opacity-off","fmt-animate-opacity");
+        visibilityOf(dateTime,true);
+        //dateTime.style.color = "#ffffff"
+        //dateTime.style.backgroundColor = "#216bf3"
     } else {
-        dateTime.style.color = "#1f1f1f55"
-        dateTime.style.backgroundColor = "transparent"
+        dateTime.classList.replace("fmt-animate-opacity","fmt-animate-opacity-off");
+
+        //dateTime.style.color = "#1f1f1f55"
+        //dateTime.style.backgroundColor = "transparent"
     }
     prevScrollpos = currentScrollPos;
 }

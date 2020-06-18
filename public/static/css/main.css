@@ -5,8 +5,16 @@ html{
     bottom:0;
     left:0;
     right:0;
+    box-sizing:border-box;
+    -ms-text-size-adjust:100%;
+    -webkit-text-size-adjust:100%;
+}*,*:before,*:after{box-sizing:inherit}
+body{
+    font-size:18px;
+    font-family: 'Jost',sans-serif;
+    background-color: #efefef;
+    margin:0;
 }
-
 /* Custom scrollbar*/
 /* width */
 ::-webkit-scrollbar {
@@ -40,12 +48,6 @@ html{
     transition:0.4s ease 
   }
 
-
-body{
-    font-size:18px;
-    font-family: 'Jost',sans-serif;
-    background-color: #efefef;
-}
 a{
     text-decoration: none;
     

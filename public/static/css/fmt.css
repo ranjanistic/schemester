@@ -1,22 +1,13 @@
 ﻿ /*based on and powered by w3.CSS 4.12 November 2018 by Jan Egil and Borge Refsnes */
-html{box-sizing:border-box}*,*:before,*:after{box-sizing:inherit}
-/* Extract from normalize.css by Nicolas Gallagher and Jonathan Neal git.io/normalize */
-html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}
-article,aside,details,figcaption,figure,footer,header,main,menu,nav,section,summary{display:block}
-audio,canvas,progress,video{display:inline-block}progress{vertical-align:baseline}
-audio:not([controls]){display:none;height:0}[hidden],template{display:none}
 
-dfn{font-style:italic}mark{background:#ff0;color:#000}
-small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
-sub{bottom:-0.25em}sup{top:-0.5em}figure{margin:1em 40px}img{border-style:none}svg:not(:root){overflow:hidden}
-code,kbd,pre,samp{font-family:monospace,monospace;font-size:1em}hr{box-sizing:content-box;height:0;overflow:visible}
+/* Extract from normalize.css by Nicolas Gallagher and Jonathan Neal git.io/normalize */
+
 button,input,select,textarea{font:inherit;margin:0}optgroup{font-weight:bold}
 button,input{overflow:visible}button,select{text-transform:none}
 button,html [type=button],[type=reset],[type=submit]{-webkit-appearance:button}
 button::-moz-focus-inner, [type=button]::-moz-focus-inner, [type=reset]::-moz-focus-inner, [type=submit]::-moz-focus-inner{border-style:none;padding:0}
 button:-moz-focusring, [type=button]:-moz-focusring, [type=reset]:-moz-focusring, [type=submit]:-moz-focusring{outline:1px dotted ButtonText}
 
-legend{color:inherit;display:table;max-width:100%;padding:0;white-space:normal}textarea{overflow:auto}
 [type=checkbox],[type=radio]{padding:0}
 [type=number]::-webkit-inner-spin-button,[type=number]::-webkit-outer-spin-button{height:auto}
 [type=search]{-webkit-appearance:textfield;outline-offset:-2px}
@@ -28,13 +19,16 @@ html,body{font-family:Verdana,sans-serif;font-size:15px;line-height:1.5}html{ove
 h1{font-size:36px}h2{font-size:30px}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}.fmt-serif{font-family:serif}
 h1,h2,h3,h4,h5,h6{font-family:"Segoe UI",Arial,sans-serif;font-weight:400;margin:10px 0}.fmt-wide{letter-spacing:4px}
 hr{border:0;border-top:1px solid #eee;margin:20px 0}
-.fmt-image{max-width:100%;height:auto}img{vertical-align:middle}a{color:inherit}
+.fmt-image{max-width:100%;height:auto}
+img{vertical-align:middle}
+a{color:inherit}
 .fmt-table,.fmt-table-all{border-collapse:collapse;border-spacing:0;width:100%;display:table}.fmt-table-all{border:1px solid #ccc}
 .fmt-bordered tr,.fmt-table-all tr{border-bottom:1px solid #ddd}.fmt-striped tbody tr:nth-child(even){background-color:#f1f1f1}
 .fmt-table-all tr:nth-child(odd){background-color:#fff}.fmt-table-all tr:nth-child(even){background-color:#f1f1f1}
 .fmt-hoverable tbody tr:hover,.fmt-ul.fmt-hoverable li:hover{background-color:#ccc}.fmt-centered tr th,.fmt-centered tr td{text-align:center}
 .fmt-table td,.fmt-table th,.fmt-table-all td,.fmt-table-all th{padding:8px 8px;display:table-cell;text-align:left;vertical-align:top}
 .fmt-table th:first-child,.fmt-table td:first-child,.fmt-table-all th:first-child,.fmt-table-all td:first-child{padding-left:16px}
+
 .fmt-btn,.fmt-button{border:none;display:inline-block;padding:8px 16px;vertical-align:middle;overflow:hidden;text-decoration:none;color:inherit;background-color:inherit;text-align:center;cursor:pointer;white-space:nowrap}
 .fmt-btn:hover{box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}
 .fmt-btn,.fmt-button{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}   
@@ -127,7 +121,7 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-spin-slow{animation:fmt-spin 4s infinite linear}@keyframes fmt-spin{0%{transform:rotate(0deg)}100%{transform:rotate(359deg)}}
 .fmt-animate-fading{animation:fading 10s infinite}@keyframes fading{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
 .fmt-animate-fading-fast{animation:fading 2s infinite}@keyframes fading{0%{opacity:0.3}50%{opacity:1}100%{opacity:0.3}}
-.fmt-animate-opacity{animation:opac 400ms ease;animation-fill-mode: forwards;}@keyframes opac{from{opacity:0} to{opacity:1;display: block;z-index:1;}}
+.fmt-animate-opacity{animation:opac 400ms ease;animation-fill-mode: backwards;}@keyframes opac{from{opacity:0;display: none;} to{opacity:1;display: block;z-index:1;}}
 .fmt-animate-opacity-off{animation:opaco 250ms ease;animation-fill-mode: forwards;}@keyframes opaco{from{opacity:1;display: block;z-index:1;} to{opacity:0;display: none;z-index:-1;}}
 .fmt-animate-top{position:relative;animation:animatetop 0.4s}@keyframes animatetop{from{top:-300px;opacity:0} to{top:0;opacity:1}}
 .fmt-animate-left{position:relative;animation:animateleft 0.4s}@keyframes animateleft{from{left:-300px;opacity:0} to{left:0;opacity:1}}
