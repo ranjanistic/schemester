@@ -45,6 +45,9 @@
                         <div class="leftTabButton" id="scheduleTab">
                             <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
                             Schedule Details</div>
+                        <div class="leftTabButton" id="usersTab">
+                            <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
+                            Manage users</div>
                         <div class="leftTabButton" id="securityTab">
                             <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
                             Security Settings</div>
@@ -52,7 +55,7 @@
                     <!--settings on large and medium screens-->
                     <div class="fmt-col fmt-hide-small fmt-threequarter tabContainerRight" style="margin:4px 0px 4px 0px;" id="settingsContainer">
                         <!--account settings box-->
-                        <div class="sub-container" id="accountSettingsBox">
+                        <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <span class="sub-heading">Administrator</span>
                             <div>
                                 <span class="caption">Admin name</span><br/>
@@ -66,7 +69,7 @@
                             </div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container" id="institutionSettingsBox" style="display: none;">
+                        <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox" style="display: none;">
                             <span class="sub-heading">Basic</span>
                             <div>
                                 <span class="caption">Display name</span><br/>
@@ -80,7 +83,7 @@
                             </div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container" id="scheduleSettingsBox" style="display: none;">
+                        <div class="sub-container fmt-animate-opacity" id="scheduleSettingsBox" style="display: none;">
                             <span class="sub-heading">Timings</span>
                             <div>
                                 <span class="caption">Each period duration</span><br/>
@@ -98,7 +101,7 @@
                             </div>
                         </div>
                         
-                        <div class="sub-container" id="securitySettingsBox" style="display: none;">
+                        <div class="sub-container fmt-animate-opacity" id="securitySettingsBox" style="display: none;">
                             <span class="sub-heading">Security</span>
                             <div>
                                 <span class="caption">Subscription till</span><br/>
@@ -109,8 +112,15 @@
                                 <button class="positive-button" id="changeEmailButton">Add new email address</button><br/>
                             </div>
                         </div>
+                        <div class="sub-container fmt-animate-opacity" id="usersSettingsBox" style="display: none;">
+                            <span class="sub-heading">Teachers</span>
+                            <div>
+                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="searchGlobalTeachers" style="width:100%"/>
+                            </div>
+                        </div>
                     </div>
                     <div class="fmt-hide-large fmt-hide-medium" id="mtabGroup">
+                        <div class="fmt-padding-small"></div>
                         <label class="radio-container">
                             Admin<input type="radio" name="settingSelection" id="madminTab">
                             <span class="checkmark"></span>
@@ -127,6 +137,11 @@
                         </label>
                         <label class="radio-container">
                             Security<input type="radio" name="settingSelection" id="msecurityTab">       
+                            <span class="checkmark"></span>
+                        </label>
+                        <div class="fmt-padding-small"></div>
+                        <label class="radio-container">
+                            Users<input type="radio" name="settingSelection" id="musersTab">
                             <span class="checkmark"></span>
                         </label>
                     </div>
@@ -186,6 +201,12 @@
                                 <button class="positive-button" id="mresetPasswordButton">Get email link</button><br/>
                                 <span class="caption">Change Admin Email ID</span><br/>
                                 <button class="positive-button" id="mchangeEmailButton">Add new email address</button><br/>
+                            </div>
+                        </div>
+                        <div class="sub-container fmt-animate-opacity" id="musersSettingsBox" style="margin-bottom:20px;">
+                            <span class="sub-heading">Teachers</span>
+                            <div>
+                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="msearchGlobalTeachers" style="width:100%"/>
                             </div>
                         </div>
                     </div>

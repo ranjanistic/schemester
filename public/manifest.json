@@ -1,7 +1,24 @@
 {
     "name" : "Schemester",
     "short_name" : "Schemester",
+    "version": "0.0-unborn",
+    "manifest_version": 1,
+    "default_locale": "en",
     "lang": "en-US",
+    "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
+    "start_url" : "/",
+    "background_color" : "#216bf3",
+    "display" : "standalone",
+    "orientation" : "portrait-primary",
+    "scope" : "/",
+    "theme_color" : "#216bf3",
+    "app": [
+      {
+      	"launch": {
+      	  "web_url": "https://schemester.web.app/"
+      	}
+      }
+    ],
     "categories": ["tools", "education"],
     "icons": [
       {
@@ -31,13 +48,6 @@
         "purpose":"any"
       }
     ],
-    "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
-    "start_url" : "/",
-    "background_color" : "#216bf3",
-    "display" : "standalone",
-    "orientation" : "portrait-primary",
-    "scope" : "/",
-    "theme_color" : "#216bf3",
     "shortcuts": [
       {
         "name": "Dashboard",

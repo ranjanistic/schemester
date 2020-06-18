@@ -43,7 +43,7 @@ function initializeElements(){
         window.location.href = "management.html";
     },false);
 
-    dayInput.addEventListener('click',function(){
+    dayInput.addEventListener(click,function(){
         visibilityOf(dayDropdown,false);
     });
 
@@ -89,21 +89,18 @@ function loadRemoteContent(user){
 }
 
 function filterFunction(input,dropdown) {
-    var input, filter, a, i;
+    var input, filter, a;
     filter = input.value.toUpperCase();
     a = dropdown.getElementsByTagName("a");
-    for (i = 0; i < a.length; i++) {
+    for (var i = 0; i < a.length; i++) {
         var txtValue = a[i].textContent || a[i].innerText;
+        visibilityOf(a[i],txtValue.toUpperCase().indexOf(filter) > -1)
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            a[i].style.display = show;
             a[i].onclick = function(){
-                console.log("valeu",txtValue);
                 input.value = txtValue;
                 visibilityOf(dayDropdown,false);
             }
             break;
-        } else {
-            a[i].style.display = hide;
         }
     }
 }
@@ -111,16 +108,6 @@ function filterFunction(input,dropdown) {
 var prevScrollpos = window.pageYOffset;
 window.onscroll = function() {
     var currentScrollPos = window.pageYOffset;
-    if (prevScrollpos > currentScrollPos) {
-        dateTime.classList.replace("fmt-animate-opacity-off","fmt-animate-opacity");
-        visibilityOf(dateTime,true);
-        //dateTime.style.color = "#ffffff"
-        //dateTime.style.backgroundColor = "#216bf3"
-    } else {
-        dateTime.classList.replace("fmt-animate-opacity","fmt-animate-opacity-off");
-
-        //dateTime.style.color = "#1f1f1f55"
-        //dateTime.style.backgroundColor = "transparent"
-    }
+    replaceClass(dateTime,"fmt-animate-opacity-off","fmt-animate-opacity",prevScrollpos > currentScrollPos);
     prevScrollpos = currentScrollPos;
 }

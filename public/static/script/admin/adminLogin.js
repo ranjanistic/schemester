@@ -21,21 +21,21 @@ function initializeElements(){
         window.location.replace('/');
     },false);
     logInButton.addEventListener(click, adminLogin, false);
-    passwordInput.addEventListener('input',function(){
-        setFieldSetof(passwordFieldset,true,null);
+    passwordInput.addEventListener(input,function(){
+        setFieldSetof(passwordFieldset,true);
         visibilityOf(forgotPassword,false);
     },false);
-    emailInput.addEventListener('change',focusToNext,false);
-    passwordInput.addEventListener('change',focusToNext,false);
+    emailInput.addEventListener(change,focusToNext,false);
+    passwordInput.addEventListener(change,focusToNext,false);
     forgotPassword.addEventListener(click,function(){showResetBox(snackButton)},false);
-    puiidInput.addEventListener('change',focusToNext(),false);
-    document.getElementById('resetemailAdmin').addEventListener('change',resetMailValidation,false)
+    puiidInput.addEventListener(change,focusToNext(),false);
+    
 }
 
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            window.location.replace("../");
+            window.location.replace("/");
         }
     });
 }
@@ -43,8 +43,8 @@ function initAuthStateListener() {
 function adminLogin() {
     visibilityOf(logInLoader,true);
     visibilityOf(logInButton,false);
-    setFieldSetof(emailFieldSet,true,emailError);
-    setFieldSetof(passwordFieldset,true,null);
+    setFieldSetof(emailFieldSet,true);
+    setFieldSetof(passwordFieldset,true);
     hideSnackBar();
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
@@ -55,7 +55,7 @@ function adminLogin() {
         console.log(errorCode);
         switch(errorCode){
             case "auth/wrong-password":{
-                setFieldSetof(passwordFieldset,false,null);
+                setFieldSetof(passwordFieldset,false);
                 visibilityOf(forgotPassword,true);
                 logInButton.textContent = "Retry";
             };break;
@@ -75,7 +75,7 @@ function adminLogin() {
             case "auth/user-disabled":{
                 snackButton.onclick = function(){
                     showLoader();
-                    window.location.href = "help.html";
+                    window.location.href = "/about.html#userDisabled";
                 }
                 logInButton.textContent = "Retry";
                 showSnackBar("This account has been disabled. You might want to contact us directly.","Help",false,true);

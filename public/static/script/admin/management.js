@@ -15,28 +15,32 @@ function initializeElements(){
     tabs = Array(document.getElementById("adminTab"),
         document.getElementById("institutionTab"),
         document.getElementById("scheduleTab"),
-        document.getElementById("securityTab")
+        document.getElementById("securityTab"),
+        document.getElementById("usersTab")
     );
     setClassName(tabs[0],"leftTabButtonSelected");
     boxes = Array(
         document.getElementById("accountSettingsBox"),
         document.getElementById("institutionSettingsBox"),
         document.getElementById("scheduleSettingsBox"),
-        document.getElementById("securitySettingsBox")
+        document.getElementById("securitySettingsBox"),
+        document.getElementById("usersSettingsBox")
     );
     showElement(boxes,0)
     chips = Array(
         document.getElementById("madminTab"),
         document.getElementById("minstitutionTab"),
         document.getElementById("mscheduleTab"),
-        document.getElementById("msecurityTab")
+        document.getElementById("msecurityTab"),
+        document.getElementById("musersTab")
     );
     chips[0].click();
     sections = Array(
         document.getElementById("maccountSettingsBox"),
         document.getElementById("minstitutionSettingsBox"),
         document.getElementById("mscheduleSettingsBox"),
-        document.getElementById("msecuritySettingsBox")
+        document.getElementById("msecuritySettingsBox"),
+        document.getElementById("musersSettingsBox")
     );
     showElement(sections,0)
     setEventListeners()

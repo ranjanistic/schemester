@@ -1,64 +1,58 @@
-const click = 'click', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block';
+const appName="Schemester", baseColor = "#216bf3",errorBaseColor = "#c40c0c",
+ click = 'click', input = 'input',change='change', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block';
 
 class Snackbar{
-    constructor(bar,text,button){
-        this.bar = bar;
-        this.text = text;
-        this.button = button;
+    id = 'snackBar';
+    textId = 'snackText';
+    buttonId = 'snackButton';
+    constructor(){
+        this.bar = document.getElementById(this.id);
+        this.text = document.getElementById(this.textId);
+        this.button = document.getElementById(this.buttonId);
     }
-
 }
 
+class ResetInputBox{
+    id = 'passResetBox';
+    inputFieldId = 'resetemail_fieldset';
+    inputId = 'resetemailAdmin';
+    inputErrorId = 'resetemailError';
+    confirmId = 'getLinkButton';
+    cancelID = 'cancelResetMenu';
+    constructor(){
+        this.box = document.getElementById(this.id);
+        this.field = document.getElementById(this.inputFieldId);
+        this.input = document.getElementById(this.inputId);
+        this.inputError = document.getElementById(this.inputErrorId);
+        this.confirm = document.getElementById(this.confirmId);
+        this.cancel = document.getElementById(this.cancelID);
+    }
+}
 
 function showSnackBar(text = String(),buttonText = String(), isNormal = true,hasAction = false){
-    var snack = new Snackbar(
-        document.getElementById('snackBar'),document.getElementById('snackText'),
-        document.getElementById('snackButton')
-    );
+    var snack = new Snackbar();
     snack.text.textContent = text;
     snack.button.textContent = buttonText;
-    if(!isNormal){
-        snack.bar.style.backgroundColor = "#c40c0c"
-    } else {
-        snack.bar.style.backgroundColor = "#216bf3ff"
-    }
-    if(!hasAction){
-        snack.button.style.display = 'none';
-    } else {
-        snack.button.style.display = 'block';
-    }
-    snack.bar.classList.replace('fmt-animate-bottom-off','fmt-animate-bottom');
-    snack.bar.style.display = 'block';
+    setDefaultBackground(snack.bar,isNormal);
+    visibilityOf(snack.button,hasAction);
+    replaceClass(snack.bar,'fmt-animate-bottom-off','fmt-animate-bottom')
+    visibilityOf(snack.bar,true);
 }
+
 function hideSnackBar(){
-    var snack = new Snackbar(
-        document.getElementById('snackBar'),document.getElementById('snackText'),
-        document.getElementById('snackButton')
-    );
-    snack.bar.classList.replace('fmt-animate-bottom','fmt-animate-bottom-off');
-    snack.bar.style.display = 'none';
+    var snack = new Snackbar();
+    replaceClass(snack.bar,'fmt-animate-bottom','fmt-animate-bottom-off')
+    visibilityOf(snack.bar,false);
 }
 
-function visibilityOf(element,visible = Boolean()){
-    if(visible){
-        element.style.display = show
-    } else {
-        element.style.display = hide
-    }
-}
-
-function setFieldSetof(fieldset,isNormal,errorField,errorMsg = nothing){
+function setFieldSetof(fieldset,isNormal,errorField = null,errorMsg = nothing){
     if(errorField!=null){
         errorField.innerHTML = errorMsg;
     }
-    if(isNormal){
-        fieldset.className = "text-field";
-        if(errorField!=null){
-            errorField.innerHTML = nothing;
-        }
-    } else {
-        fieldset.className = "text-field-error";
+    if(isNormal && errorField!=null){
+        errorField.innerHTML = nothing;
     }
+    setClassName(fieldset,'text-field','text-field-error',isNormal);
 }
 
 function setClassName(element,normalClass,eventClass,condition){
@@ -72,11 +66,13 @@ function setClassName(element,normalClass,eventClass,condition){
         element.className = normalClass;
     }
 }
+
 function showElement(elements,index){
     for(var k = 0,j=0;k<elements.length;k++,j++){
         visibilityOf(elements[k],k==index);
     }
 }
+
 function replaceClass(element,class1,class2,replaceC1){
     if(replaceC1!=null){
         if(replaceC1){
@@ -84,6 +80,8 @@ function replaceClass(element,class1,class2,replaceC1){
         } else {
             element.classList.replace(class2,class1);
         }
+    } else {
+        element.classList.replace(class1,class2);
     }
 }
 
@@ -97,32 +95,60 @@ function sendPassResetLink(snackBtn){
     }
 }
 function resetMailValidation(){
-    if(!isEmailValid(document.getElementById('resetemailAdmin').value)){
-        setFieldSetof(document.getElementById('resetemail_fieldset'),false,
-            document.getElementById('resetemailError'),"Invalid email address."
-        );
-        document.getElementById('resetemailAdmin').oninput = function(){
-            resetMailValidation();
+    var reset = new ResetInputBox();
+    if(!isEmailValid(reset.input.value)){
+        setFieldSetof(reset.field,false,reset.inputError,"Invalid email address.");
+        reset.input.oninput = function(){
+            setFieldSetof(reset.field,resetMailValidation(),reset.inputError);
+            visibilityOf(reset.confirm,resetMailValidation());
         }
         return false;
     } else {
-        setFieldSetof(document.getElementById('resetemail_fieldset'),true,document.getElementById('resetemailError'));
+        setFieldSetof(reset.field,true);
     }
     return true
 }
-function showLoader(){
-    visibilityOf(document.getElementById('navLoader'),true);
-}
+
 function showResetBox(snackBtn){
-    setFieldSetof(document.getElementById('resetemail_fieldset'),true,document.getElementById('resetemailError'))
-    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity-off','fmt-animate-opacity');
-    visibilityOf(document.getElementById('passResetBox'),true);
-    document.getElementById('cancelResetMenu').addEventListener(click,hideResetBox,false);
-    document.getElementById('getLinkButton').addEventListener(click,function(){sendPassResetLink(snackBtn)},false);
+    var reset = new ResetInputBox();
+    setFieldSetof(reset.field,true,reset.inputError)
+    replaceClass(reset.box,'fmt-animate-opacity-off','fmt-animate-opacity');
+    visibilityOf(reset.box,true);
+    //this
+    reset.input.onchange = function(){
+        visibilityOf(reset.confirm,resetMailValidation());
+    }
+    reset.cancel.addEventListener(click,hideResetBox,false);
+    reset.confirm.addEventListener(click,function(){sendPassResetLink(snackBtn)},false);
 
 }
 function hideResetBox(){
-    document.getElementById('passResetBox').classList.replace('fmt-animate-opacity','fmt-animate-opacity-off');
+    var reset = new ResetInputBox();
+    replaceClass(reset.box,'fmt-animate-opacity','fmt-animate-opacity-off');
+}
+
+function setDefaultBackground(element,isNormal){
+    if(isNormal!=null){
+        if(isNormal){
+            element.style.backgroundColor = baseColor;
+        } else {
+            element.style.backgroundColor = errorBaseColor;
+        }
+    } else {
+        element.style.backgroundColor = baseColor;
+    }
+}
+
+function showLoader(){
+    visibilityOf(document.getElementById('navLoader'),true);
+}
+
+function visibilityOf(element,visible = Boolean()){
+    if(visible){
+        element.style.display = show
+    } else {
+        element.style.display = hide
+    }
 }
 
 function isEmailValid(emailValue){
