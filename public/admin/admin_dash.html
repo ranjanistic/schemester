@@ -25,10 +25,10 @@
             <a href="../"><img src="../static/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
             <span id="greeting">Loading...</span>
             <div class="fmt-dropdown-hover fmt-right">
-                <span id="settingButton"><img src="../static/graphic/menudotsvertical.svg" width="35"></span>
+                <span id="menuButton"><img src="../static/graphic/menudotsvertical.svg" width="35"></span>
                 <div class="fmt-dropdown-content fmt-shadow" id="settingDropdown" style="right:0;margin-right: 14px;">
-                    <a style="font-size: 22px;" id="settingsAdminButton">Settings</a>
-                    <a href style="font-size: 22px;" id="logoutAdminButton">Logout</a>
+                    <span style="font-size: 22px;" id="settingsAdminButton">Settings</span>
+                    <span style="font-size: 22px;" id="logoutAdminButton">Logout</span>
                 </div>
             </div>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="../static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="container fmt-animate-left" id="summary" style="margin-bottom: 10px;">
-                    <span class="fmt-row heading">This week</span>
+                    <span class="fmt-row heading">Weekly</span>
                 </div>
             </div>
             <div class="fmt-col fmt-half fmt-padding-small">
@@ -86,7 +86,7 @@
                         <legend class="field-caption">Edit day schedule</legend>
 
                         <div class="fmt-row" id="todayScheduleChoices">
-                            <span class="fmt-half">
+                            <span class="">
                                 <label class="radio-container">
                                     Teacher
                                 <input type="radio" name="todaySelection"  id="teacherRadioToday">
@@ -122,7 +122,7 @@
                     <fieldset class="fmt-row box-field">
                         <legend class="field-caption">Full schedule</legend>
                         <div class="fmt-row" id="fullschedulechoices">
-                            <span class="fmt-half">
+                            <span class="">
                                 <label class="radio-container">
                                     Teacher
                                     <input type="radio" name="weekSelection" id="teacherRadioWeek">

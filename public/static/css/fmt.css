@@ -20,7 +20,7 @@ h1{font-size:36px}h2{font-size:30px}h3{font-size:24px}h4{font-size:20px}h5{font-
 h1,h2,h3,h4,h5,h6{font-family:"Segoe UI",Arial,sans-serif;font-weight:400;margin:10px 0}.fmt-wide{letter-spacing:4px}
 hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .fmt-image{max-width:100%;height:auto}
-img{vertical-align:middle}
+
 a{color:inherit}
 .fmt-table,.fmt-table-all{border-collapse:collapse;border-spacing:0;width:100%;display:table}.fmt-table-all{border:1px solid #ccc}
 .fmt-bordered tr,.fmt-table-all tr{border-bottom:1px solid #ddd}.fmt-striped tbody tr:nth-child(even){background-color:#f1f1f1}
@@ -49,7 +49,7 @@ a{color:inherit}
 .fmt-dropdown-content{
     border-radius:8px 0px 8px 8px;
     text-align:center;
-    cursor:auto;color:#000;background-color:#fff;display:none;position:absolute;margin:0;padding:12px;z-index:1
+    cursor:pointer;color:#000;background-color:#fff;display:none;position:absolute;margin:0;padding:12px;z-index:1
 }
 .fmt-check,.fmt-radio{width:24px;height:24px;position:relative;top:6px}
 .fmt-sidebar{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto}
@@ -127,7 +127,8 @@ a{color:inherit}
 .fmt-animate-left{position:relative;animation:animateleft 0.4s}@keyframes animateleft{from{left:-300px;opacity:0} to{left:0;opacity:1}}
 .fmt-animate-right{position:relative;animation:animateright 0.4s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}
 .fmt-animate-right-slow{position:relative;animation:animateright 1s}@keyframes animateright{from{right:-300px;opacity:0} to{right:0;opacity:1}}
-.fmt-animate-bottom-off{animation:animatebottom 0.4s ease;animation-fill-mode: forwards;}@keyframes animatebottom{from{bottom:0;opacity:1} to{bottom:-300px;opacity:0;display:none;}}
+.fmt-animate-bottom-off{animation:animatebottom 0.4s ease;animation-fill-mode: forwards;}
+@keyframes animatebottom{from{bottom:0;opacity:1} to{bottom:-300px;opacity:0;display:none;}}
 .fmt-animate-bottom{position:fixed;animation:animatebottom 0.4s ease}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1}}
 .fmt-animate-bottom-slow{position:fixed;animation:animatebottom 1s}@keyframes animatebottom{from{bottom:-300px;opacity:0} to{bottom:0;opacity:1;}}
 .fmt-animate-zoom {position:relative; animation:animatezoom 0.4s}@keyframes animatezoom{from{transform:scale(1.5)} to{transform:scale(1)}}

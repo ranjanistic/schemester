@@ -85,7 +85,6 @@ function loadRemoteContent(user){
     var providerData = user.providerData;
     document.title = email+" · Admin";
     greeting.textContent = "Welcome";
-    //document.getElementById('adminImage').style.backgroundImage = photoURL
 }
 
 function filterFunction(input,dropdown) {
@@ -111,3 +110,4 @@ window.onscroll = function() {
     replaceClass(dateTime,"fmt-animate-opacity-off","fmt-animate-opacity",prevScrollpos > currentScrollPos);
     prevScrollpos = currentScrollPos;
 }
+

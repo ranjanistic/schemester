@@ -59,7 +59,9 @@
                             <span class="sub-heading">Administrator</span>
                             <div>
                                 <span class="caption">Admin name</span><br/>
-                                <span class="editable" id="adminName">Loading...</span><br/>
+                                <span class="editable" id="adminName">Loading...</span>
+                                <input class="dropdown-input" id="adminNameInput"/>
+                                <br/>
                                 <span class="caption">Email address</span><br/>
                                 <span class="editable" id="adminEmailAddress">Loading...</span>
                                 <button class="warning-button" id="verificationButton">Checking</button>
@@ -218,27 +220,25 @@
             <button class="negative-button fmt-left" id="cancelAndReturn">Cancel</button>
         </div>
 
-        <div id="passResetBox" class="fmt-modal fmt-animate-opacity">
-            <div class="fmt-modal-content container fmt-row fmt-animate-opacity" style="padding:44px 0 22px 0;">
-              <div class="fmt-col fmt-third fmt-center fmt-padding">
-                <img src="../static/graphic/icons/schemester512.svg" width="100"/>
-              </div>
-              <div class="fmt-col fmt-twothird fmt-padding" > 
-                <div class="group-text fmt-text-black fmt-row fmt-padding-small">Tell us your email address and we'll send you a link to help you reset your password.</div>
-                <div class="fmt-row">
-                    <fieldset class="text-field" id="resetemail_fieldset">
-                        <legend class="field-caption">Your email address</legend>
-                        <input class="text-input" placeholder="someone@example.domain" type="email" autocomplete="off" id="resetemailAdmin">
-                        <span class="fmt-right caption" style="color:#bd1919" id="resetemailError"></span>
+
+        <div id="dialogBox" class="fmt-modal fmt-animate-opacity">
+            <div class="fmt-modal-content container fmt-row fmt-animate-opacity" style="padding:44px 0 22px 0;" id="dialogContentBox">
+                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+                <div class="fmt-col fmt-threequarter fmt-padding" id="dialogContent">
+                    <div class="group-text fmt-text-black fmt-row fmt-padding-small" id="dialogText">
+                    </div>
+                    <fieldset class="text-field" id="dialogInputField">
+                        <legend class="field-caption" id="dialogFieldCaption"></legend>
+                        <input class="text-input" type="email" autocomplete="off" id="dialogInput">
+                        <span class="fmt-right caption" style="color:#bd1919" id="dialogInputError"></span>
                     </fieldset>
                     <br/>
-                    <button class="negative-button fmt-right" id="cancelResetMenu">Cancel</button>
-                    <button class="positive-button fmt-right" id="getLinkButton">Send Link</button>
+                    <button class="negative-button fmt-right"  id="dialogNegative"></button>
+                    <button class="positive-button fmt-right" id="dialogPositive"></button>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
+
         <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
             <span class="group-text fmt-padding" id="snackText" style="color:white">
             </span>

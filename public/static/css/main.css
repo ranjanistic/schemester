@@ -59,7 +59,7 @@ a:hover{
 a:focus{
     font-size: 16px;
 }
-
+img{vertical-align:middle}
 .caption{
     font-size: 16px;
     font-weight: 500;
@@ -462,6 +462,7 @@ a:focus{
     z-index: 1;
     cursor:pointer;
     transition:0.3s ease;
+
   }
   
 .dropdown-content a {

@@ -106,8 +106,10 @@ function setEventListeners(){
         //Ask user to save
         undoAndReturn()
     },false);
-    resetPass.addEventListener(click,function(){showResetBox(snackBtn)},false);
-    mResetPass.addEventListener(click,function(){showResetBox(snackBtn)},false);
+    mResetPass.addEventListener(click,function(){resetPasswordBox(true,'Tell us your email address and we\'ll send you a link to help you reset your password.',
+    '/static/graphic/icons/schemester512.svg','Your email address','someone@example.domain','Invalid email address','Send link','Cancel');},false);
+    resetPass.addEventListener(click,function(){resetPasswordBox(true,'Tell us your email address and we\'ll send you a link to help you reset your password.',
+    '/static/graphic/icons/schemester512.svg','Your email address','someone@example.domain','Invalid email address','Send link','Cancel');},false);
 }
 function undoAndReturn(){
     showLoader();

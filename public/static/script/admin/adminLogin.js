@@ -1,6 +1,6 @@
 //The admin login page script
 var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader
-,snackButton,back;
+,back;
 
 function initializeElements(){
     emailFieldSet = document.getElementById('email_fieldset');
@@ -13,7 +13,6 @@ function initializeElements(){
     puiidInput = document.getElementById('puiid');
     logInButton = document.getElementById('loginAdminButton');
     logInLoader = document.getElementById('loginLoader');
-    snackButton = document.getElementById('snackButton');
     back = document.getElementById('backFromLogin');
 
     back.addEventListener(click,function(){
@@ -27,9 +26,13 @@ function initializeElements(){
     },false);
     emailInput.addEventListener(change,focusToNext,false);
     passwordInput.addEventListener(change,focusToNext,false);
-    forgotPassword.addEventListener(click,function(){showResetBox(snackButton)},false);
+    visibilityOf(forgotPassword,false);
+    forgotPassword.addEventListener(click,function(){
+        resetPasswordBox(true,'Tell us your email address and we\'ll send you a link to help you reset your password.',
+        '/static/graphic/icons/schemester512.svg','Your email address','someone@example.domain','Invalid email address','Send link','Cancel');
+    },false);
     puiidInput.addEventListener(change,focusToNext(),false);
-    
+
 }
 
 function initAuthStateListener() {
@@ -60,7 +63,7 @@ function adminLogin() {
                 logInButton.textContent = "Retry";
             };break;
             case "auth/too-many-requests":{
-                showSnackBar('Too many unsuccessfull attempts, try again after a while.','',false);
+                showSnackBar('Too many unsuccessfull attempts, try again after a while.',false,nothing,false);
                 logInButton.textContent = "Disabled";
             };break;
             case "auth/user-not-found":{
@@ -78,17 +81,16 @@ function adminLogin() {
                     window.location.href = "/about.html#userDisabled";
                 }
                 logInButton.textContent = "Retry";
-                showSnackBar("This account has been disabled. You might want to contact us directly.","Help",false,true);
+                showSnackBar("This account has been disabled. You might want to contact us directly.",true,"Help",false);
             };break;
             case "auth/network-request-failed":{
                 logInButton.textContent = "Retry";
-                showSnackBar('No internet connection','',false);
+                showSnackBar('No internet connection',false,nothing,false);
             };break;
             default: {
                 logInButton.textContent = "Retry";
                 visibilityOf(forgotPassword,true);
-                console.log(errorCode+'/'+errorMessage);
-                alert(errorMessage+' '+errorCode);
+                showSnackBar(errorCode+':'+errorMessage,true,'Help',false);
             }
         }
         visibilityOf(logInLoader,false);
@@ -101,6 +103,7 @@ function validateEmailID(email,field,error){
     if(!isEmailValid(email.value)){
         email.focus();
         email.oninput = function(){
+            setFieldSetof(field,true);
             validateEmailID(emailInput,emailFieldSet,emailError);
         }
     }
