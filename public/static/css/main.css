@@ -65,6 +65,11 @@ img{vertical-align:middle}
     font-weight: 500;
     color: #000000af;
 }
+.error-caption{
+    font-size: 16px;
+    font-weight: 500;
+    color: #c40c0c;
+}
 .editable{
     color:#00559b;
     font-size: 22px;
@@ -117,15 +122,14 @@ img{vertical-align:middle}
 }
 .group-heading{
     color:#000000d7;
-    float:left;
-    text-align:left;
+    
+    text-align:center;
     font-family: 'Jost',sans-serif;
     font-size: 32px;
 }
 .group-text{
     color:#00000093;
     text-align:left;
-    float:left;
     font-family: 'Questrial',sans-serif;
     font-size: 18px;
 }
@@ -168,7 +172,7 @@ img{vertical-align:middle}
     background-color: #216bf3;
     border-radius: 18px;
     font-size:22px;
-    padding:14px;
+    padding:8px;
     transition: 0.3s ease;
 }
 
@@ -326,6 +330,73 @@ img{vertical-align:middle}
 .circle-button:focus{
     outline:none;
     background-color: #efefef;
+}
+.snackbar{
+    z-index:3;
+    display:none;
+    position: fixed;
+    bottom:0;
+    padding:4px;
+    float:bottom;
+    box-shadow: 1px 5px 5px #00000044;
+    border-radius:4px;
+    background-color: #216bf3;
+    color:white;
+    margin:12px;
+    transition:0.3s ease;
+}
+.snackbar:hover{
+    padding-left:12px;
+    padding-right:12px;
+}
+.snack-text{
+    color:white;
+    padding:8px;
+    font-size: 18px;
+    font-family: 'Questrial',sans-serif;
+}
+.dialog{
+    z-index:3;
+    display:none;
+    padding-top:80px;
+    padding-bottom:80px;
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    overflow:auto;
+    background-color: #216bf3;
+}
+.dialog-box{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    width:80%;
+}
+@media (max-width:600px){.dialog-box{margin:0 10px;width:auto!important}.dialog{padding-top:30px}}
+@media (max-width:768px){.dialog-box{width:500px}.dialog{padding-top:50px}}
+
+#dialogContent{
+    padding:4px 8px!important;
+}
+#dialogHeading{
+    color:#216bf3;
+    text-align:center;
+    font-family: 'Jost',sans-serif;
+    font-size: 32px;
+}
+#dialogSubHeading{
+    color:#000000;
+    text-align:left;
+    padding: 4px 4px;
+    font-family: 'Questrial',sans-serif;
+    font-size: 20px;
+}
+#dialogActions{
+    padding:8px 4px 0px 4px!important;
 }
 .image-text-button{
     color:black;

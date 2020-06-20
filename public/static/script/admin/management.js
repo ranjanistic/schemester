@@ -16,7 +16,8 @@ function initializeElements(){
         document.getElementById("institutionTab"),
         document.getElementById("scheduleTab"),
         document.getElementById("securityTab"),
-        document.getElementById("usersTab")
+        document.getElementById("usersTab"),
+        document.getElementById("aboutTab")
     );
     setClassName(tabs[0],"leftTabButtonSelected");
     boxes = Array(
@@ -24,7 +25,8 @@ function initializeElements(){
         document.getElementById("institutionSettingsBox"),
         document.getElementById("scheduleSettingsBox"),
         document.getElementById("securitySettingsBox"),
-        document.getElementById("usersSettingsBox")
+        document.getElementById("usersSettingsBox"),
+        document.getElementById("aboutSettingsBox")
     );
     showElement(boxes,0)
     chips = Array(
@@ -32,7 +34,8 @@ function initializeElements(){
         document.getElementById("minstitutionTab"),
         document.getElementById("mscheduleTab"),
         document.getElementById("msecurityTab"),
-        document.getElementById("musersTab")
+        document.getElementById("musersTab"),
+        document.getElementById("maboutTab")
     );
     chips[0].click();
     sections = Array(
@@ -40,7 +43,8 @@ function initializeElements(){
         document.getElementById("minstitutionSettingsBox"),
         document.getElementById("mscheduleSettingsBox"),
         document.getElementById("msecuritySettingsBox"),
-        document.getElementById("musersSettingsBox")
+        document.getElementById("musersSettingsBox"),
+        document.getElementById("maboutSettingsBox")
     );
     showElement(sections,0)
     setEventListeners()
@@ -99,17 +103,13 @@ function setEventListeners(){
             handleTabClicks(event,chips,sections);
         },false);
     }
-    document.getElementById("cancelAndReturn").addEventListener(click,function(){
-        undoAndReturn()
-    },false);
+    document.getElementById('mcontactDevelopers').onclick = function(){feedBackBox(true)}
+    document.getElementById('contactDevelopers').onclick = function(){feedBackBox(true)}
+    mResetPass.addEventListener(click,resetPasswordDialog,false);
+    resetPass.addEventListener(click,resetPasswordDialog,false);
     document.getElementById("backFromSettings").addEventListener(click,function(){
-        //Ask user to save
         undoAndReturn()
     },false);
-    mResetPass.addEventListener(click,function(){resetPasswordBox(true,'Tell us your email address and we\'ll send you a link to help you reset your password.',
-    '/static/graphic/icons/schemester512.svg','Your email address','someone@example.domain','Invalid email address','Send link','Cancel');},false);
-    resetPass.addEventListener(click,function(){resetPasswordBox(true,'Tell us your email address and we\'ll send you a link to help you reset your password.',
-    '/static/graphic/icons/schemester512.svg','Your email address','someone@example.domain','Invalid email address','Send link','Cancel');},false);
 }
 function undoAndReturn(){
     showLoader();

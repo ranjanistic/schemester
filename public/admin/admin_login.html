@@ -59,28 +59,51 @@
         </div>
 
         <!--Dialog box-->
-        <div id="dialogBox" class="fmt-modal fmt-animate-opacity">
-            <div class="fmt-modal-content container fmt-row fmt-animate-opacity" style="padding:44px 0 22px 0;" id="dialogContentBox">
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
                 <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
-                <div class="fmt-col fmt-threequarter fmt-padding" id="dialogContent">
-                    <div class="group-text fmt-text-black fmt-row fmt-padding-small" id="dialogText">
-                    </div>
-                    <fieldset class="text-field" id="dialogInputField">
-                        <legend class="field-caption" id="dialogFieldCaption"></legend>
-                        <input class="text-input" type="email" autocomplete="off" id="dialogInput">
-                        <span class="fmt-right caption" style="color:#bd1919" id="dialogInputError"></span>
+                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                    <div class="fmt-row" id="dialogHeading"></div>
+                    <div class="fmt-row" id="dialogSubHeading"></div>
+                    <fieldset class="fmt-row text-field" id="dialogInputField1">
+                        <legend class="field-caption" id="dialogFieldCaption1"></legend>
+                        <input class="text-input" id="dialogInput1">
+                        <span class="fmt-right error-caption" id="dialogInputError1"></span>
                     </fieldset>
-                    <br/>
-                    <button class="negative-button fmt-right"  id="dialogNegative"></button>
-                    <button class="positive-button fmt-right" id="dialogPositive"></button>
+                    <fieldset class="fmt-row text-field" id="dialogInputField2">
+                        <legend class="field-caption" id="dialogFieldCaption2"></legend>
+                        <input class="text-input" id="dialogInput2">
+                        <span class="fmt-right error-caption" id="dialogInputError2"></span>
+                    </fieldset>
+                    <fieldset class=" fmt-row text-field" id="dialogInputAreaField">
+                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+                    </fieldset>
+                    <div class="fmt-row" id="dialogActions">
+                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird">
+                            <label class="radio-container" id="dialogChipLabel1">
+                                Feedback
+                            <input type="radio" name="dialogChip" id="dialogChip1"><span class="checkmark"></span>
+                            </label>
+                            <label class="radio-container" id="dialogChipLabel2">
+                                Problem
+                                <input type="radio" name="dialogChip" id="dialogChip2"><span class="checkmark"></span>
+                            </label>
+                        </span>
+                        <span  id="dialogActions" class="fmt-half fmt-right">
+                            <button class="negative-button fmt-right"  id="dialogNegative"></button>
+                            <button class="positive-button fmt-right" id="dialogPositive"></button>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
-            <span class="group-text fmt-padding" id="snackText" style="color:white">
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText">
             </span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
+            <button class="fmt-right neutral-button" id="snackButton">Hlye</button>
         </div>
     </body>
 </html>
