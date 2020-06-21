@@ -157,8 +157,8 @@ img{vertical-align:middle}
     cursor: pointer;
 }
 .leftTabButton:focus{
-    background-color: #efefefbb;
-    box-shadow: 1px 1px 1px #00000010;
+    background-color: #216bf39d;
+    box-shadow: 0 #00000000;
 }
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;

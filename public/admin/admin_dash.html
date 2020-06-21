@@ -25,10 +25,14 @@
             <a href="../"><img src="../static/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
             <span id="greeting">Loading...</span>
             <div class="fmt-dropdown-hover fmt-right">
-                <span id="menuButton"><img src="../static/graphic/menudotsvertical.svg" width="35"></span>
-                <div class="fmt-dropdown-content fmt-shadow" id="settingDropdown" style="right:0;margin-right: 14px;">
-                    <span style="font-size: 22px;" id="settingsAdminButton">Settings</span>
-                    <span style="font-size: 22px;" id="logoutAdminButton">Logout</span>
+                <img src="../static/graphic/menudotsvertical.svg" width="35" id="menuButton">
+                <div class="fmt-dropdown-content  fmt-shadow" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;">
+                    <button style="font-size: 22px;" class="sub-display-button" id="settingsAdminButton">
+                        <img src="../static/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Settings
+                    </button>
+                    <button style="font-size: 22px;" class="sub-display-button" id="logoutAdminButton">
+                        <img src="../static/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Logout
+                    </button>
                 </div>
             </div>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="../static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
@@ -37,22 +41,42 @@
 
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
-                    <span class="fmt-row heading">Today</span>
+                    <div class="fmt-row">
+                        <span class=" heading">Today</span>
+                        <button class="fmt-right positive-button" style="background-color: #40a556;">Auto-assign</button>
+                    </div>
                     <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Teachers absent · <span style="color: red;" id="absentees">22</span></legend>
+                        <legend class="field-caption">Teachers absent · <span style="color: red;" id="absentees">2</span></legend>
                         <!--This division contains list of absentee teachers/assignees-->
 
                         <div class="fmt-row" id="absenteelist">
                             <!--This division contains absentee details, for each absentee-->
-                            <div class="fmt-row" id="absentee1">
-                                <span class="fmt-third">Teacher name</span>
-                                <span class="fmt-third">Period(s)</span>
-                                <span class="fmt-third">Teacher Message</span>
+                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
+                                <div class="fmt-twothird">
+                                    <span class="fmt-row" style="color:#216bf3">Dr. Teacher Sharma</span>
+                                    <span class="group-text">4,5,6</span>
+                                    <span class="group-text"> · 8A,10B</span>
+                                </div>
+                                <div class="fmt-third">
+                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
+                                    <span class="fmt-row"></span>
+                                </div>
+                            </div>
+                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
+                                <div class="fmt-third">
+                                    <span class="fmt-row" style="color:#216bf3">Mr. Example Singh</span>
+                                    <span class="group-text">Day off</span>
+                                    <span class="group-text"> · 9A,12C</span>
+                                </div>
+                                <div class="fmt-twothird">
+                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
+                                    <span class="fmt-row"></span>
+                                </div>
                             </div>
                         </div>
                     </fieldset>
                     <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Classes affected · <span style="color: red;" id="absentees">8</span></legend>
+                        <legend class="field-caption">Classes affected · <span style="color: red;" id="absentees">6</span></legend>
                         <!--This division contains list of affected classes due to absentee teachers/assignees-->
                         <div class="fmt-row" id="classAffectedlist">
                             <!--This division contains absentee details, for each absentee-->
@@ -63,7 +87,7 @@
                         </div>
                     </fieldset>
                     <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Free teachers · <span style="color: green;" id="absentees">12</span></legend>
+                        <legend class="field-caption">Free teachers · <span style="color: green;" id="absentees">5</span></legend>
                         <!--This division contains list of affected classes due to absentee teachers/assignees-->
                         <div class="fmt-row" id="freeAssigneeList">
                             <!--This division contains absentee details, for each absentee-->
