@@ -12,6 +12,20 @@ class Snackbar{
     }
 }
 
+function snackBar(isShowing,text = String(),hasAction = false,actionText = String(),isNormal = true){
+    var snack = new Snackbar();
+    if(isShowing){
+        snack.text.textContent = text;
+        if(hasAction){
+            snack.button.textContent = actionText;
+        }
+        setDefaultBackground(snack.bar,isNormal);
+        visibilityOf(snack.button,hasAction);   
+    }
+    replaceClass(snack.bar,'fmt-animate-bottom-off','fmt-animate-bottom',isShowing)
+    visibilityOf(snack.bar,isShowing);
+}
+
 class DialogID{
     viewId = 'dialogView';
     boxId = 'dialogBox';
@@ -38,7 +52,19 @@ class DialogID{
 class Dialog extends DialogID{
     constructor(totalInputs = this.inputFieldId.length,largeTextArea = false,radios = false){
         super(DialogID);
+        try{
+            if(totalInputs>this.inputFieldId.length){
+                throw Error("DILE:Dialog Input Limit Excession");
+            }
+        }catch{
+            snackBar(true,'Internal Error.',true,'Report',false);
+            new Snackbar().button.onclick = function(){
+                feedBackBox();
+                snackBar(false);
+            }
+        }
         this.view = document.getElementById(this.viewId);
+        setDefaultBackground(this.view,true);
         this.box = document.getElementById(this.boxId);
 
         this.image = document.getElementById(this.imageId);
@@ -58,11 +84,10 @@ class Dialog extends DialogID{
             this.inputCaption[k] = document.getElementById(this.fieldCaptionId[k]);
             this.input[k] = document.getElementById(this.inputId[k]);
             this.inputError[k] = document.getElementById(this.inputErrorId[k]);
+            this.input[k].value = null;
+            setFieldSetof(this.inputField[k],true,this.inputError[k]);
         }
-        if(totalInputs>this.inputFieldId.length){
-            console.log('Input Field limit exceeded');
-            throw Error("DILE:Dialog Input Limit Excession");
-        }
+        
         for(var k = 0;k<totalInputs;k++){
             visibilityOf(this.inputField[k],true);
         }
@@ -77,7 +102,7 @@ class Dialog extends DialogID{
             this.textInput = document.getElementById(this.textInputAreaId);
             this.textInputError = document.getElementById(this.textInputErrorId);
         }
-
+        setFieldSetof(this.textField,true,this.textInputError);
     
         this.options = document.getElementById(this.optionsId);
         visibilityOf(this.options,radios);
@@ -93,12 +118,17 @@ class Dialog extends DialogID{
         this.actionNegative = document.getElementById(this.actionNegativeId);
     }
     
-    setImage(source){
-        this.image.src = source;
-    }
-    setDisplay(head, body){
+    setDisplay(head, body,imgsrc = null){
         this.heading.textContent = head;
         this.subHeading.textContent = body;
+        visibilityOf(this.image,imgsrc != null)
+        if(imgsrc == null){
+            this.content.classList.remove('fmt-threequarter');
+        }else {
+            this.content.classList.add('fmt-threequarter');
+        }
+        replaceClass(this.content,'fmt-padding-small','fmt-padding',imgsrc == null);
+        this.image.src = imgsrc;
     }
 
     inputParams(caption,hint,type){
@@ -124,7 +154,7 @@ class Dialog extends DialogID{
 
     setOptions(optionTextArray,defaultCheck){
         for(var k = 0;k<this.optionsRadioId.length;k++){
-            //this.optionsRadioLabel[k].textContent = optionTextArray[k];
+            //TODO: this.optionsRadioLabel[k].textContent = optionTextArray[k];
         }
         this.optionsRadio[defaultCheck].checked = true;
     }
@@ -140,28 +170,14 @@ class Dialog extends DialogID{
     negativeAction(){
         return this.actionNegative;
     }
+    setBackgroundColor(color = baseColor){
+        elementFadeVisibility(this.view,false);
+        this.view.style.backgroundColor = color;
+        elementFadeVisibility(this.view,true);
+    }
     existence(show = true){
         elementFadeVisibility(this.view,show);
     }
-}
-
-
-
-//TODO: add isShowing like Dialog boxes
-function snackBar(isShowing,text = String(),hasAction = false,actionText = String(),isNormal = true){
-    var snack = new Snackbar();
-    if(isShowing){
-        snack.text.textContent = text;
-        if(hasAction){
-            snack.button.textContent = actionText;
-        }
-        setDefaultBackground(snack.bar,isNormal);
-        visibilityOf(snack.button,hasAction);
-        replaceClass(snack.bar,'fmt-animate-bottom-off','fmt-animate-bottom')
-    } else {
-        replaceClass(snack.bar,'fmt-animate-bottom','fmt-animate-bottom-off')
-    }
-    visibilityOf(snack.bar,isShowing);
 }
 
 function sendPassResetLink(){
@@ -175,8 +191,8 @@ function sendPassResetLink(){
 function resetPasswordDialog(isShowing = true){
     var resetDialog = new Dialog(1);
     if(isShowing){            
-        resetDialog.setImage('/static/graphic/icons/schemester512.png');
-        resetDialog.setDisplay('Reset password','Provide us your email address and we\'ll help you to reset your password via an email.');
+        resetDialog.setDisplay('Reset password','Provide us your email address and we\'ll help you to reset your password via an email.'
+        ,'/static/graphic/icons/schemester512.png');
         resetDialog.inputParams('Your email address','someone@example.domain','email','Invalid email address');
         resetDialog.setButtonText('Send Link','Cancel');
         resetDialog.getInput(0).onchange = function(){
@@ -196,7 +212,7 @@ function resetPasswordDialog(isShowing = true){
         resetDialog.positiveAction().onclick = function(){
             if(verificationValid()){
                 sendPassResetLink();
-                snackBar(true,"A link has been sent at your provided email address. Reset your password from there.",true,'Got it');
+                snackBar(true,"You'll receive a link if your email address was correct. Reset your password from there.",true,'Got it');
                 var snack = new Snackbar();
                 snack.button.onclick = function(){snackBar(false);}
                 resetDialog.existence(false);
@@ -206,51 +222,81 @@ function resetPasswordDialog(isShowing = true){
             resetDialog.existence(false);
         }
     }
+    
     resetDialog.existence(isShowing);
 }
 
+function changeEmailBox(isShowing = true){
+    var mailChange = new Dialog(2);
+    mailChange.setDisplay('Change Email Address','You need to verify yourself, and then provide your new email address. You\'ll be logged out after successful change.'
+    ,'/static/graphic/icons/schemester512.png');
+    mailChange.inputParamsMulti(Array('Account password','New email address'),Array('Current password','someone@example.domain'),Array('password','email'));
+    mailChange.setButtonText('Change Email ID','Abort');
 
+    mailChange.getInput(0).oninput = function(){
+        visibilityOf(mailChange.positiveAction(),runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0]));
+    }
+    mailChange.getInput(0).onchange = function(){
+        visibilityOf(mailChange.positiveAction(),runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0]));
+    }
+    mailChange.getInput(1).oninput = function(){
+        visibilityOf(mailChange.positiveAction(),isEmailValid(mailChange.getInput(1)));
+    }
+    mailChange.getInput(1).onchange = function(){
+        visibilityOf(mailChange.positiveAction(),runEmailCheck(mailChange.getInput(1),mailChange.inputField[1],mailChange.inputError[1]));
+    }
+    mailChange.positiveAction().onclick = function(){
+        if(runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0])){
+            if(runEmailCheck(mailChange.getInput(1),mailChange.inputField[1],mailChange.inputError[1])){
+                snackBar(true,"Your email id has been changed to "+mailChange.getInput(1).value,true,'okay');
+                var snack = new Snackbar();
+                snack.button.onclick = function(){
+                    snackBar(true,"You need to login again");
+                    logoutUser(false);
+                }
+                mailChange.existence(false);
+                firebase.auth().signOut();
+            }
+        }
+    }
+    mailChange.negativeAction().onclick = function(){mailChange.existence(false);}
+    mailChange.existence(isShowing);
+}
+
+function logoutUser(sendHome = true){
+    if(sendHome){
+        window.location.replace("/");
+    } else {
+        window.location.replace("/admin/admin_login.html");
+    }
+    firebase.auth().signOut();
+}
 
 function feedBackBox(isShowing = true){
     var feedback = new Dialog(1,true,true);
     feedback.setDisplay('Contact Developers','Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. '
-        +'We are always eager to listen from you.');
-    feedback.setImage('/static/graphic/blueLoader.svg');
+        +'We are always eager to listen from you.',
+        '/static/graphic/icons/schemester512.png');
     feedback.inputParams('Your email address','To help or thank you directly ;)','email','Invalid');
     feedback.largeTextArea('Describe everything','Start typing your experience here','Can\'t be empty');
     feedback.setButtonText('Submit','Abort');
     feedback.setOptions(Array('Feedback','Bug'),0);
     feedback.getInput(0).onchange = function(){
-        if(verficationValidEmail()){
+        visibilityOf(feedback.positiveAction(),runEmailCheck(feedback.getInput(0),feedback.inputField[0],feedback.inputError[0]));
+        if(isEmailValid(feedback.getInput(0).value)){
             feedback.textInput.focus();
         }
     }
+    feedback.textInput.oninput = function(){
+        visibilityOf(feedback.positiveAction(),runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError));
+    }
     feedback.textInput.onchange = function(){
-        verificationValidFeedback();
+        visibilityOf(feedback.positiveAction(),runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError));
     }
-    function verficationValidEmail(){
-        var valid = isEmailValid(feedback.input[0].value);
-        setFieldSetof(feedback.inputField[0],valid,feedback.inputError[0],'Invalid email address');
-        visibilityOf(feedback.positiveAction(),valid);
-        feedback.getInput(0).oninput = function(){
-            setFieldSetof(feedback.inputField[0],isEmailValid(feedback.input[0].value),feedback.inputError[0],'Invalid email address');
-            visibilityOf(feedback.positiveAction(),isEmailValid(feedback.input[0].value));    
-        }
-        return isEmailValid(feedback.input[0].value);
-    }
-    function verificationValidFeedback(){
-        var valid = isNotEmpty(feedback.textInput.value)
-        setFieldSetof(feedback.textField,valid,feedback.textInputError,'This can\'t be empty');
-        visibilityOf(feedback.positiveAction(),valid);
-        feedback.textInput.oninput = function(){
-            setFieldSetof(feedback.textField,isNotEmpty(feedback.textInput.value),feedback.textInputError,'This can\'t be empty');
-            visibilityOf(feedback.positiveAction(),isNotEmpty(feedback.textInput.value));    
-        }
-        return isNotEmpty(feedback.textInput.value);
-    }
+
     feedback.positiveAction().onclick = function(){
-        if(verficationValidEmail()){
-            if(verificationValidFeedback()){
+        if(runEmailCheck(feedback.getInput(0),feedback.inputField[0],feedback.inputError[0])){
+            if(runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError)){
                 snackBar(true,"Thanks for the interaction. We'll look forward to that.",true,'Hide');
                 var snack = new Snackbar();
                 snack.button.onclick = function(){snackBar(false);}
@@ -259,10 +305,10 @@ function feedBackBox(isShowing = true){
         }
     }
     feedback.optionsRadio[0].onclick = function(){
-        setDefaultBackground(feedback.view,true);
+        feedback.setBackgroundColor();
     }
     feedback.optionsRadio[1].onclick = function(){
-        setDefaultBackground(feedback.view,false);
+        feedback.setBackgroundColor(errorBaseColor);
     }
     feedback.negativeAction().onclick = function(){
         feedback.existence(false);
@@ -292,6 +338,22 @@ function setClassName(element,normalClass,eventClass,condition){
     }
 }
 
+function runEmailCheck(input,fieldset,error){
+    setFieldSetof(fieldset,isEmailValid(input.value),error,'Invalid email address');
+    input.oninput = function(){
+        setFieldSetof(fieldset,isEmailValid(input.value),error,'Invalid email address');
+    }
+    return isEmailValid(input.value);
+}
+
+function runEmptyCheck(input,fieldset,error){
+    setFieldSetof(fieldset,isNotEmpty(input.value),error,'This can\'t be empty');
+    input.oninput = function(){
+        setFieldSetof(fieldset,isNotEmpty(input.value),error,'This can\'t be empty');
+    }
+    return isNotEmpty(input.value);
+}
+
 function showElement(elements,index){
     for(var k = 0,j=0;k<elements.length;k++,j++){
         visibilityOf(elements[k],k==index);
@@ -307,16 +369,12 @@ function elementFadeVisibility(element,isVisible){
     visibilityOf(element,isVisible);
 }
 
-function setDefaultBackground(element,isNormal){
-    if(isNormal!=null){
+function setDefaultBackground(element,isNormal = true){
         if(isNormal){
             element.style.backgroundColor = baseColor;
         } else {
             element.style.backgroundColor = errorBaseColor;
         }
-    } else {
-        element.style.backgroundColor = baseColor;
-    }
 }
 
 function showLoader(){

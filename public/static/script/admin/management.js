@@ -1,86 +1,146 @@
 //admin management default script
-var adminName,mAdminName,adminEmail,mAdminEmail,verification,resetPass,mResetPass,snackBtn;
-var tabs,boxes,chips,sections;
-
-
-function initializeElements(){
-    adminName = document.getElementById("adminName");
-    mAdminName = document.getElementById("madminName");
-    adminEmail = document.getElementById("adminEmailAddress");
-    mAdminEmail = document.getElementById("madminEmailAddress");
-    verification = document.getElementById("verificationButton");
-    resetPass = document.getElementById('resetPasswordButton');
-    mResetPass = document.getElementById('mresetPasswordButton');
-    snackBtn = document.getElementById('snackButton');
-    tabs = Array(document.getElementById("adminTab"),
+class Management{
+    displayIndex = 0;
+    constructor(){
+        this.tabs = Array(document.getElementById("adminTab"),
         document.getElementById("institutionTab"),
         document.getElementById("scheduleTab"),
         document.getElementById("securityTab"),
         document.getElementById("usersTab"),
         document.getElementById("aboutTab")
-    );
-    setClassName(tabs[0],"leftTabButtonSelected");
-    boxes = Array(
-        document.getElementById("accountSettingsBox"),
-        document.getElementById("institutionSettingsBox"),
-        document.getElementById("scheduleSettingsBox"),
-        document.getElementById("securitySettingsBox"),
-        document.getElementById("usersSettingsBox"),
-        document.getElementById("aboutSettingsBox")
-    );
-    showElement(boxes,0)
-    chips = Array(
-        document.getElementById("madminTab"),
-        document.getElementById("minstitutionTab"),
-        document.getElementById("mscheduleTab"),
-        document.getElementById("msecurityTab"),
-        document.getElementById("musersTab"),
-        document.getElementById("maboutTab")
-    );
-    chips[0].click();
-    sections = Array(
-        document.getElementById("maccountSettingsBox"),
-        document.getElementById("minstitutionSettingsBox"),
-        document.getElementById("mscheduleSettingsBox"),
-        document.getElementById("msecuritySettingsBox"),
-        document.getElementById("musersSettingsBox"),
-        document.getElementById("maboutSettingsBox")
-    );
-    showElement(sections,0)
-    setEventListeners()
+        );
+        setClassName(this.tabs[this.displayIndex],"leftTabButtonSelected");
+        this.chips = Array(
+            document.getElementById("madminTab"),
+            document.getElementById("minstitutionTab"),
+            document.getElementById("mscheduleTab"),
+            document.getElementById("msecurityTab"),
+            document.getElementById("musersTab"),
+            document.getElementById("maboutTab")
+        );
+        this.chips[this.displayIndex].click();
+        this.boxes = Array(
+            document.getElementById("accountSettingsBox"),
+            document.getElementById("institutionSettingsBox"),
+            document.getElementById("scheduleSettingsBox"),
+            document.getElementById("securitySettingsBox"),
+            document.getElementById("usersSettingsBox"),
+            document.getElementById("aboutSettingsBox")
+        );
+        showElement(this.boxes,this.displayIndex);
+        this.back = document.getElementById("backFromSettings");
+        this.contactDevs = document.getElementById('contactDevelopers');
+    }
+}
+
+class Admin{
+    constructor(){
+        this.name = document.getElementById("adminName");
+        this.email = document.getElementById("adminEmailAddress");
+        this.phone = document.getElementById("adminPhoneNumber");
+        this.creationTime = document.getElementById("adminCreationTime");
+    }
+    setDetails(name,email,phone,creationTime){
+        this.name.textContent = name;
+        this.email.textContent = email;
+        this.phone.textContent = phone;
+        this.creationTime.textContent = creationTime;
+    }
+    getName(){return this.name.textContent}
+    getEmail(){return this.email.textContent;}
+    getPhone(){return this.phone.textContent;}
+    getCreationTime(){return this.creationTime.textContent;}
+}
+
+class Institution{
+    constructor(){
+        this.name = document.getElementById('instituteName');
+        this.uiid = document.getElementById('uiid');
+        this.puiid = document.getElementById('puiid');
+        this.type = document.getElementById('instituteType');
+        this.subscriptionTill = document.getElementById('subscriptionTill');
+    }
+    setDetails(name = null,uiid = null,puiid = null,type = null,subscriptionTill = null){
+        if(name!=null){this.name.textContent = name;}
+        if(uiid != null){this.uiid.textContent = uiid;}
+        if(puiid != null){this.puiid.textContent = puiid;}
+        if(type != null){this.type.textContent = type;}
+        if(subscriptionTill != null){this.subscriptionTill.textContent = subscriptionTill;}
+    }
+    getName(){return this.name.textContent;}
+    getUIID(){return this.uiid.textContent;}
+    getType(){return this.type.textContent;}
+    getSubsciptionTill(){return this.subscriptionTill.textContent;}
+}
+class Schedule{
+    constructor(){
+        this.periodDuration = document.getElementById('periodDuration');
+        this.weekStartDay = document.getElementById('weekStartDay');
+        this.scheduleStartTime = document.getElementById('scheduleStartTime');
+        this.scheduleEndTime = document.getElementById('scheduleEndTime');
+        this.breakStartTime = document.getElementById('breakStartTime');
+        this.breakDuration = document.getElementById('breakDuration');
+    }
+    setDetails(periodDuration,weekStartDay,scheduleStartTime,scheduleEndTime,breakStartTime,breakDuration){
+        this.periodDuration.textContent = periodDuration
+        this.weekStartDay.textContent = weekStartDay
+        this.scheduleStartTime.textContent = scheduleStartTime
+        this.scheduleEndTime.textContent =scheduleEndTime 
+        this.breakStartTime.textContent = breakStartTime
+        this.breakDuration.textContent = breakDuration
+    }
+
+}
+
+class Security{
+    constructor(){
+        this.resetMail = document.getElementById('resetMailButton');
+        this.resetPass = document.getElementById('resetPasswordButton');
+        this.lastLogin = document.getElementById('lastLoginTime');
+    }
+    setButtonText(resetMail,resetPass){
+        this.resetMail.textContent = resetMail;
+        this.resetPass.textContent = resetPass;
+    }
+    getLastLogin(){return this.lastLogin.textContent;}
 }
 
 function initAuthStateListener() {
+    var admin = new Admin();
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            var displayName = user.displayName;
+            var displayName = 'N/A';
+            if(user.displayName!=null){displayName = user.displayName}
             var email = user.email;
             var emailVerified = user.emailVerified;
             var photoURL = user.photoURL;
             var uid = user.uid;
             var providerData = user.providerData;
-            replaceClass(verification,"warning-button","positive-button",emailVerified);
-            if(emailVerified){
-                verification.textContent = "Verified";
-            } else {
-                verification.textContent = "Verify now";
-            }
-            if(displayName==null){
-                adminName.textContent = "Name not provided.";
-                mAdminName.textContent = adminName.textContent;
-                adminName.classList.remove("editable");
-                mAdminName.classList.remove("editable");
-            } else {
-                adminName.textContent = displayName
-                mAdminName.textContent = adminName.textContent
-                mAdminName.classList.add("editable");
-            }
-            adminEmail.textContent = email
-            mAdminEmail.textContent = email
+            var creation = user.createdAt;
+            var providerUid = providerData[0].uid;
+            admin.setDetails(displayName,email,null,creation)
         } else {
             window.location.replace("admin_login.html")
         }
     });
+}
+
+function initializeElements(){
+    var security = new Security();
+    var manage = new Management();
+    
+    for(var i= 0;i<manage.tabs.length;i++){
+        manage.tabs[i].addEventListener(click,function(){
+            handleTabClicks(event,manage.tabs,manage.boxes,"leftTabButtonSelected","leftTabButton");
+        },false);
+        manage.chips[i].addEventListener(click,function(){
+            handleTabClicks(event,manage.chips,manage.boxes,"leftTabButtonSelected","leftTabButton");
+        },false);
+    }
+    manage.contactDevs.addEventListener(click,feedBackBox,false);
+    manage.back.addEventListener(click,undoAndReturn,false);
+    security.resetPass.addEventListener(click,resetPasswordDialog,false);
+    security.resetMail.addEventListener(click,changeEmailBox,false);
 }
 
 function handleTabClicks(event,clickables,showables,showClass,hideClass){
@@ -94,23 +154,6 @@ function handleTabClicks(event,clickables,showables,showClass,hideClass){
     }
 }
 
-function setEventListeners(){
-    for(var i= 0;i<tabs.length;i++){
-        tabs[i].addEventListener(click,function(){
-            handleTabClicks(event,tabs,boxes,"leftTabButtonSelected","leftTabButton");
-        },false);
-        chips[i].addEventListener(click,function(){
-            handleTabClicks(event,chips,sections);
-        },false);
-    }
-    document.getElementById('mcontactDevelopers').onclick = function(){feedBackBox(true)}
-    document.getElementById('contactDevelopers').onclick = function(){feedBackBox(true)}
-    mResetPass.addEventListener(click,resetPasswordDialog,false);
-    resetPass.addEventListener(click,resetPasswordDialog,false);
-    document.getElementById("backFromSettings").addEventListener(click,function(){
-        undoAndReturn()
-    },false);
-}
 function undoAndReturn(){
     showLoader();
     window.location.replace("admin_dash.html");

@@ -34,11 +34,11 @@
             <div class="container">
                 <span class="heading">Settings</span>
                 <div class="fmt-row">
-                    
+                    <!--Tabs on large screens-->
                     <div class="fmt-col fmt-hide-small leftTabGroup fmt-quarter" id="tabGroup">
                         <div class="leftTabButton" id="adminTab">
                             <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
-                            Admin Account</div>
+                            Administrator</div>
                         <div class="leftTabButton" id="institutionTab">
                             <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
                             Institution Defaults</div>
@@ -55,84 +55,7 @@
                             <img class="fmt-left fmt-padding-small" src="../static/graphic/icons/schemester128.png" width="40"/>
                             Schemester</div>
                     </div>
-                    <!--settings on large and medium screens-->
-                    <div class="fmt-col fmt-hide-small fmt-threequarter tabContainerRight" style="margin:4px 0px 4px 0px;" id="settingsContainer">
-                        <!--account settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
-                            <span class="sub-heading">Administrator</span>
-                            <div>
-                                <span class="caption">Admin name</span><br/>
-                                <span class="editable" id="adminName">Loading...</span>
-                                <input class="dropdown-input" id="adminNameInput"/>
-                                <br/>
-                                <span class="caption">Email address</span><br/>
-                                <span class="editable" id="adminEmailAddress">Loading...</span>
-                                <button class="warning-button" id="verificationButton">Checking</button>
-                                <br/>
-                                <span class="caption">Contact Number</span><br/>
-                                <span class="editable" id="adminPhoneNumber">Loading...</span><br/>
-                            </div>
-                        </div>
-                        <!--institution settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox" style="display: none;">
-                            <span class="sub-heading">Basic</span>
-                            <div>
-                                <span class="caption">Display name</span><br/>
-                                <span class="editable" id="instituteName">Test institution of Noida</span><br/>
-                                <span class="caption">UIID</span><br/>
-                                <span class="editable" id="uiid">testInstitute2001</span><br/>
-                                <span class="caption">PUIID</span><br/>
-                                <span  id="puiid">**************</span><br/>
-                                <span class="caption">Institute Type</span><br/>
-                                <span class="editable" id="instituteType">School</span><br/>
-                            </div>
-                        </div>
-                        <!--institution settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="scheduleSettingsBox" style="display: none;">
-                            <span class="sub-heading">Timings</span>
-                            <div>
-                                <span class="caption">Each period duration</span><br/>
-                                <span class="editable" id="periodDuration">45 minutes</span><br/>
-                                <span class="caption">Week starts on</span><br/>
-                                <span class="editable" id="weekStartDay">Monday</span><br/>
-                                <span class="caption">Schedule starts at</span><br/>
-                                <span class="editable" id="scheduleStartTime">8:30 am</span><br/>
-                                <span class="caption">Schedule ends at</span><br/>
-                                <span class="editable" id="scheduleEndTime">2:00 pm</span><br/>
-                                <span class="caption">Break starts at</span><br/>
-                                <span class="editable" id="breakStartTime">10:45 am</span><br/>
-                                <span class="caption">Break duration</span><br/>
-                                <span class="editable" id="breakDuration">15 minutes</span><br/>
-                            </div>
-                        </div>
-                        
-                        <div class="sub-container fmt-animate-opacity" id="securitySettingsBox" style="display: none;">
-                            <span class="sub-heading">Security</span>
-                            <div>
-                                <span class="caption">Subscription till</span><br/>
-                                <span  id="subscriptionTill">Last date</span ><br/>
-                                <span class="caption">Reset Admin Password</span><br/>
-                                <button class="positive-button" id="resetPasswordButton">Get email link</button><br/>
-                                <span class="caption">Change Admin Email ID</span><br/>
-                                <button class="positive-button" id="changeEmailButton">Add new email address</button><br/>
-                            </div>
-                        </div>
-                        <div class="sub-container fmt-animate-opacity" id="usersSettingsBox" style="display: none;">
-                            <span class="sub-heading">Teachers</span>
-                            <div>
-                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="searchGlobalTeachers" style="width:100%"/>
-                            </div>
-                        </div>
-                        <div class="sub-container fmt-animate-opacity" id="aboutSettingsBox" style="display: none;">
-                            <span class="sub-heading">About</span>
-                            <br/>
-                            <div>Aimed at simplifying the way schedule management works in school systems.</div>
-                            <div>Tell us your experience with Schemester by clicking the button below.</div>
-                            <br/>
-                            <button class="positive-button" id="contactDevelopers">Contact Devs.</button>
-                            <img class="fmt-right" src="../static/graphic/icons/schemester256.png"/>
-                        </div>
-                    </div>
+                    <!--Chips on small screens-->
                     <div class="fmt-hide-large fmt-hide-medium" id="mtabGroup">
                         <div class="fmt-padding-small"></div>
                         <label class="radio-container">
@@ -162,90 +85,97 @@
                             Schemester<input type="radio" name="settingSelection" id="maboutTab">
                             <span class="checkmark"></span>
                         </label>
+                        <div class="fmt-padding-small"></div>
                     </div>
-                    <br/>
-                    <!--Settings on small screens-->
-                    <div class="fmt-col fmt-hide-large fmt-hide-medium" style="margin:4px 0px 4px 0px;width:100%">
+
+                    <div class="fmt-col fmt-threequarter tabContainerRight" id="settingsContainer">
                         <!--account settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="maccountSettingsBox"  style="margin-bottom:20px;">
+                        <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <span class="sub-heading">Admin</span>
                             <div>
                                 <span class="caption">Admin name</span><br/>
-                                <span class="editable" id="madminName">Loading...</span><br/>
+                                <span class="editable" id="adminName">...</span><br/>
                                 <span class="caption">Email address</span><br/>
-                                <span class="editable" id="madminEmailAddress">Loading...</span><br/>
+                                <span class="editable" id="adminEmailAddress">...</span><br/>
                                 <span class="caption">Contact Number</span><br/>
-                                <span class="editable" id="madminPhoneNumber">987654321</span><br/>
+                                <span class="editable" id="adminPhoneNumber">...</span><br/>
+                                <span class="caption">Account created at</span><br/>
+                                <span id="adminCreationTime">...</span><br/>
                             </div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="minstitutionSettingsBox" style="margin-bottom:20px;">
-                            <span class="sub-heading">Institution</span>
+                        <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
+                            <span class="sub-heading">Basic</span>
                             <div>
                                 <span class="caption">Display name</span><br/>
-                                <span class="editable" id="minstituteName">Test institution of Noida</span><br/>
+                                <span class="editable" id="instituteName">...</span><br/>
                                 <span class="caption">UIID</span><br/>
-                                <span class="editable" id="muiid">testInstitute2001</span><br/>
+                                <span class="editable" id="uiid">testInstitute2001</span><br/>
                                 <span class="caption">PUIID</span><br/>
-                                <span  id="mpuiid">**************</span><br/>
+                                <span  id="puiid">···············</span><br/>
                                 <span class="caption">Institute Type</span><br/>
-                                <span class="editable" id="minstituteType">School</span><br/>
+                                <span class="editable" id="instituteType">School</span><br/>
+                                <span class="caption">Subscription till</span><br/>
+                                <span  id="subscriptionTill">...</span ><br/>
                             </div>
                         </div>
-                        <!--institution settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="mscheduleSettingsBox" style="margin-bottom:20px;">
-                            <span class="sub-heading">Schedule</span>
+                        <!--schedule settings box-->
+                        <div class="sub-container fmt-animate-opacity" id="scheduleSettingsBox">
+                            <span class="sub-heading">Timings</span>
                             <div>
                                 <span class="caption">Each period duration</span><br/>
-                                <span class="editable" id="mperiodDuration">45 minutes</span><br/>
+                                <span class="editable" id="periodDuration">45 minutes</span><br/>
                                 <span class="caption">Week starts on</span><br/>
-                                <span class="editable" id="mweekStartDay">Monday</span><br/>
+                                <span class="editable" id="weekStartDay">Monday</span><br/>
                                 <span class="caption">Schedule starts at</span><br/>
-                                <span class="editable" id="mscheduleStartTime">8:30 am</span><br/>
+                                <span class="editable" id="scheduleStartTime">8:30 am</span><br/>
                                 <span class="caption">Schedule ends at</span><br/>
-                                <span class="editable" id="mscheduleEndTime">2:00 pm</span><br/>
+                                <span class="editable" id="scheduleEndTime">2:00 pm</span><br/>
                                 <span class="caption">Break starts at</span><br/>
-                                <span class="editable" id="mbreakStartTime">10:45 am</span><br/>
+                                <span class="editable" id="breakStartTime">10:45 am</span><br/>
                                 <span class="caption">Break duration</span><br/>
-                                <span class="editable" id="mbreakDuration">15 minutes</span><br/>
+                                <span class="editable" id="breakDuration">15 minutes</span><br/>
                             </div>
                         </div>
-                        <div class="sub-container fmt-animate-opacity" id="msecuritySettingsBox" style="margin-bottom:20px;">
+                        <!--security settings-->
+                        <div class="sub-container fmt-animate-opacity" id="securitySettingsBox">
                             <span class="sub-heading">Security</span>
                             <div>
-                                <span class="caption">Subscription till</span><br/>
-                                <span  id="msubscriptionTill">Last date</span ><br/>
                                 <span class="caption">Reset Admin Password</span><br/>
-                                <button class="positive-button" id="mresetPasswordButton">Get email link</button><br/>
+                                <button class="positive-button" id="resetPasswordButton">Get email link</button><br/>
                                 <span class="caption">Change Admin Email ID</span><br/>
-                                <button class="positive-button" id="mchangeEmailButton">Add new email address</button><br/>
+                                <button class="positive-button" id="resetMailButton">New email address</button><br/>
+                                <span class="caption">Last login</span><br/>
+                                <span id="lastLoginTime">...</span><br/>
                             </div>
                         </div>
-                        <div class="sub-container fmt-animate-opacity" id="musersSettingsBox" style="margin-bottom:20px;">
+                        <!--users settings-->
+                        <div class="sub-container fmt-animate-opacity" id="usersSettingsBox">
                             <span class="sub-heading">Teachers</span>
                             <div>
-                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="msearchGlobalTeachers" style="width:100%"/>
+                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="searchGlobalTeachers" style="width:100%"/>
                             </div>
                         </div>
-                        <div class="sub-container fmt-animate-opacity" id="maboutSettingsBox" style="margin-bottom:20px;">
+                        <!--about settings-->
+                        <div class="sub-container fmt-animate-opacity" id="aboutSettingsBox">
                             <span class="sub-heading">About</span>
                             <br/>
                             <div>Aimed at simplifying the way schedule management works in school systems.</div>
                             <div>Tell us your experience with Schemester by clicking the button below.</div>
                             <br/>
-                            <button class="positive-button" id="mcontactDevelopers">Developer contact</button>
-                                <img class="fmt-right" src="../static/graphic/icons/schemester128.png"/>
+                            <button class="positive-button" id="contactDevelopers">Contact Devs.</button>
+                            <img class="fmt-right" src="../static/graphic/icons/schemester256.png"/>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-
+        <!--Dialog-->
         <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
                 <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
-                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                <div class="fmt-col fmt-threequarter fmt-padding-small" id="dialogContent">
                     <div class="fmt-row" id="dialogHeading"></div>
                     <div class="fmt-row" id="dialogSubHeading"></div>
                     <fieldset class="fmt-row text-field" id="dialogInputField1">
@@ -264,17 +194,17 @@
                         <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
                     </fieldset>
                     <div class="fmt-row" id="dialogActions">
-                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird">
+                        <span id="dialogOpts" class="fmt-left fmt-twothird">
                             <label class="radio-container" id="dialogChipLabel1">
                                 Feedback
                             <input type="radio" name="dialogChip" id="dialogChip1"><span class="checkmark"></span>
                             </label>
                             <label class="radio-container" id="dialogChipLabel2">
-                                Problem
+                                Bug
                                 <input type="radio" name="dialogChip" id="dialogChip2"><span class="checkmark"></span>
                             </label>
                         </span>
-                        <span  id="dialogActions" class="fmt-half fmt-right">
+                        <span  id="dialogActions" class="fmt-right">
                             <button class="negative-button fmt-right"  id="dialogNegative"></button>
                             <button class="positive-button fmt-right" id="dialogPositive"></button>
                         </span>
@@ -283,10 +213,10 @@
             </div>
         </div>
 
+        <!--snackbar-->
         <div id="snackBar" class="snackbar fmt-animate-bottom">
-            <span class="snack-text fmt-left" id="snackText">
-            </span>
-            <button class="fmt-right neutral-button" id="snackButton">Hlye</button>
+            <span class="snack-text fmt-left" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
 
     </body>

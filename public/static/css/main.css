@@ -152,7 +152,8 @@ img{vertical-align:middle}
 .leftTabButton:hover{
     background-color: #efefef;
     box-shadow: 1px 5px 10px #00000011;
-    color:#121212d8;
+    border-radius: 18px;
+    color:#216bf3;
     cursor: pointer;
 }
 .leftTabButton:focus{
@@ -170,9 +171,9 @@ img{vertical-align:middle}
 .tabContainerRight{
     color: white;
     background-color: #216bf3;
-    border-radius: 18px;
+    border-radius: 12px;
     font-size:22px;
-    padding:8px;
+    padding:4px;
     transition: 0.3s ease;
 }
 

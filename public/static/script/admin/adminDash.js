@@ -35,8 +35,7 @@ function initializeElements(){
     });
     logOut.addEventListener(click, function(){
         showLoader();
-        window.location.replace("/");
-        firebase.auth().signOut();
+        logoutUser();
     }, false);
     settings.addEventListener(click,function(){
         showLoader();
