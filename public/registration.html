@@ -13,6 +13,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
         <script src="static/script/main.js"></script>
+        <script type="text/javascript" src="static/script/idb.js"></script>
+        <script type="text/javascript" src="static/script/db.js"></script>
     </head>
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
@@ -20,8 +22,29 @@
             <span>Registration</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
-        <div class="container fmt-padding" style="margin-top: 72px;">
-            <span class="heading">Beginning</span>
+        <div class="fmt-padding-small" style="margin-top: 72px;">
+            <div class="container ">
+                <span class="heading">Beginning*</span>
+                <h1>Sample to add in IndexedDB.</h1>
+                <button id="addProducts" class="positive-button" onclick="idbApp.addProducts()">Add Sample Day</button></br></br>
+                <h2>Search Products</h2>
+                By Name: <input type="text" id="name" placeholder="Name"> <button id="byName" onclick="idbApp.displayByName()">Search</button></br></br>
+                By Price: <input type="text" id="priceLower" placeholder="Min"><input type="text" id="priceUpper" placeholder="Max"> <button id="byPrice" onclick="idbApp.getByPrice()">Search</button></br></br>
+                By Description: <input type="text" id="desc" placeholder="Description"> <button id="byDesc" onclick="idbApp.getByDesc()">Search</button></br></br>
+                <div id="results"></div>
+                <h2>Orders</h2>
+                <button id="addOrders" onclick="idbApp.addOrders()">Add Orders</button></br></br>
+                <button id="showOrders" onclick="idbApp.showOrders()">Show Orders</button></br></br>
+                <div id="orders"></div>
+                <button id="fulfill" onclick="idbApp.fulfillOrders()">Fulfill</button></br></br>
+                <div id="receipt"></div>
+                <div>*under construction</div>
+            </div>
+        </div>
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText">
+            </span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>
 </html>

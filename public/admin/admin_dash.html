@@ -17,8 +17,8 @@
         <script src="/__/firebase/7.15.0/firebase-app.js"></script>
         <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
         <script src="/__/firebase/init.js"></script>
-        <script src="../static/script/main.js"></script>
-        <script src="../static/script/admin/adminDash.js"></script>
+        <script type="text/javascript" src="../static/script/main.js"></script>
+        <script type="text/javascript" src="../static/script/admin/adminDash.js"></script>
     </head>
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
@@ -164,13 +164,12 @@
             </div>
         </div>
 
-        <span class="fmt-bottom bottom-container  fmt-right fmt-animate-opacity"
-         id="todayDateTime" style="width:fit-content;right:0;">
+        <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
+            id="todayDateTime" style="width:fit-content;right:0;">
         </span>
 
-        <div id="snackBar" class="fmt-snackbar fmt-animate-bottom">
-            <span class="group-text fmt-padding" id="snackText" style="color:white">
-            </span>
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>

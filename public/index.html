@@ -46,9 +46,6 @@
     <script src="/__/firebase/init.js"></script>
     <script type="text/javascript">
       window.onload = function() {
-        if(!navigator.onLine){
-          window.location.replace("/home.html");
-        }
         firebase.auth().onAuthStateChanged(function(user) {
           if (user) {
             window.location.replace("admin/admin_dash.html")

@@ -134,7 +134,7 @@ function initializeElements(){
             handleTabClicks(event,manage.tabs,manage.boxes,"leftTabButtonSelected","leftTabButton");
         },false);
         manage.chips[i].addEventListener(click,function(){
-            handleTabClicks(event,manage.chips,manage.boxes,"leftTabButtonSelected","leftTabButton");
+            handleTabClicks(event,manage.chips,manage.boxes);
         },false);
     }
     manage.contactDevs.addEventListener(click,feedBackBox,false);

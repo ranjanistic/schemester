@@ -82,8 +82,7 @@ function loadRemoteContent(user){
     var photoURL = user.photoURL;
     var uid = user.uid;
     var providerData = user.providerData;
-    document.title = email+" · Admin";
-    greeting.textContent = "Welcome";
+    greeting.textContent = email;
 }
 
 function filterFunction(input,dropdown) {
@@ -109,4 +108,5 @@ window.onscroll = function() {
     replaceClass(dateTime,"fmt-animate-opacity-off","fmt-animate-opacity",prevScrollpos > currentScrollPos);
     prevScrollpos = currentScrollPos;
 }
+
 
