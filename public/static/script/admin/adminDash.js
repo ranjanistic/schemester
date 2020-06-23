@@ -5,6 +5,8 @@ teacherBoxToday, classBoxToday,teacherSearchInput, teacherDropdown, classSearchI
 ,dayInput,dayDropdown;
 
 function initializeElements(){
+
+    
     logOut = document.getElementById('logoutAdminButton');
     dateTime = document.getElementById('todayDateTime');
     greeting = document.getElementById('greeting');
@@ -56,9 +58,28 @@ function initializeElements(){
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            loadRemoteContent(user);
+            if(user.emailVerified){
+                loadRemoteContent(user);
+            }else{
+                accountVerificationDialog(true);
+                var verif = new ConfirmDialog()
+                verif.positiveAction().onclick = function(){
+                    verif.loader();
+                    snackBar(false);
+                    if(firebase.auth().currentUser.emailVerified){
+                        window.location.replace("/");
+                    } else {
+                        snackBar(true,'Not yet verified',false,nothing,false);
+                        verif.loader(false);
+                    }
+                }
+                verif.negativeAction().onclick = function(){
+                    verif.loader();
+                    logoutUser();
+                }
+            }
         } else {
-            window.location.replace("/")
+            window.location.replace("/admin/admin_login.html")
         }
     });
 }

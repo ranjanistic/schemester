@@ -6,8 +6,8 @@ function initializeElements(){
     adminSignup = document.getElementById('registerInstitution');
     adminDash = document.getElementById('adminDashboard');
     adminSignup.addEventListener(click, function(){
-        showLoader();
-        window.location.href ="registration.html";
+        //showLoader();        
+        registrationDialog(true);
     }, false);
     showGreeting();
 }

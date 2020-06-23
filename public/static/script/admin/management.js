@@ -104,7 +104,11 @@ class Security{
     }
     getLastLogin(){return this.lastLogin.textContent;}
 }
-
+class Users{
+    constructor(){
+        this.invite = document.getElementById('inviteUsers');
+    }
+}
 function initAuthStateListener() {
     var admin = new Admin();
     firebase.auth().onAuthStateChanged(function(user) {
@@ -125,10 +129,11 @@ function initAuthStateListener() {
     });
 }
 
+//https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js
 function initializeElements(){
     var security = new Security();
     var manage = new Management();
-    
+    var users = new Users();
     for(var i= 0;i<manage.tabs.length;i++){
         manage.tabs[i].addEventListener(click,function(){
             handleTabClicks(event,manage.tabs,manage.boxes,"leftTabButtonSelected","leftTabButton");
@@ -141,6 +146,15 @@ function initializeElements(){
     manage.back.addEventListener(click,undoAndReturn,false);
     security.resetPass.addEventListener(click,resetPasswordDialog,false);
     security.resetMail.addEventListener(click,changeEmailBox,false);
+    users.invite.addEventListener(click,function(){
+
+        var dialog = new Dialog(0);
+        dialog.setDisplay(firebase.auth().currentUser.uid,'Copy and share the text above, or send the given QR code.');
+        dialog.subHeading.style.textAlign = 'center';
+        dialog.setButtonText('Done');
+        dialog.positiveAction().onclick = function(){dialog.existence(false);}
+        dialog.existence(true);
+    },false);
 }
 
 function handleTabClicks(event,clickables,showables,showClass,hideClass){

@@ -34,7 +34,7 @@ function initializeElements(){
 
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
+        if(user){
             window.location.replace("/");
         }
     });
