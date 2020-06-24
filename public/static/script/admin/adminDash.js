@@ -61,7 +61,7 @@ function initAuthStateListener() {
             if(user.emailVerified){
                 loadRemoteContent(user);
             }else{
-                accountVerificationDialog(true);
+                accountVerificationDialog(true,false);
                 var verif = new ConfirmDialog()
                 verif.positiveAction().onclick = function(){
                     verif.loader();

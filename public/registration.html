@@ -12,39 +12,118 @@
         <link rel="stylesheet" href="static/css/main.css">
         <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
-        <script src="static/script/main.js"></script>
-        <script type="text/javascript" src="static/script/idb.js"></script>
-        <script type="text/javascript" src="static/script/db.js"></script>
+        <script src="/__/firebase/7.15.0/firebase-app.js"></script>
+        <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
+        <script src="/__/firebase/init.js"></script>
+        <script type="text/javascript" src="static/script/main.js"></script>
+        <script type="text/javascript" src="static/script/register.js"></script>
+        <script defer type="text/javascript" src="static/script/db.js"></script>
     </head>
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
             <a href="/"><img src="static/graphic/icons/schemester512.svg" width="40" onclick="showLoader()" alt="Schemester icon"></a>
-            <span>Registration</span>
+            <span>Registration as admin@teting.com</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-padding-small" style="margin-top: 72px;">
-            <div class="container ">
-                <span class="heading">Beginning*</span>
-                <h1>Sample to add in IndexedDB.</h1>
-                <button id="addProducts" class="positive-button" onclick="idbApp.addProducts()">Add Sample Day</button></br></br>
-                <h2>Search Products</h2>
-                By Name: <input type="text" id="name" placeholder="Name"> <button id="byName" onclick="idbApp.displayByName()">Search</button></br></br>
-                By Price: <input type="text" id="priceLower" placeholder="Min"><input type="text" id="priceUpper" placeholder="Max"> <button id="byPrice" onclick="idbApp.getByPrice()">Search</button></br></br>
-                By Description: <input type="text" id="desc" placeholder="Description"> <button id="byDesc" onclick="idbApp.getByDesc()">Search</button></br></br>
-                <div id="results"></div>
-                <h2>Orders</h2>
-                <button id="addOrders" onclick="idbApp.addOrders()">Add Orders</button></br></br>
-                <button id="showOrders" onclick="idbApp.showOrders()">Show Orders</button></br></br>
-                <div id="orders"></div>
-                <button id="fulfill" onclick="idbApp.fulfillOrders()">Fulfill</button></br></br>
-                <div id="receipt"></div>
-                <div>*under construction</div>
+            <div class="container " id="stage1" >
+                <span class="heading" id="s1head"></span>
+                <br/>
+                <!--Admin details-->
+                <div class="group-heading" id="adminHead"></div>
+                <fieldset class="text-field" id="adminNameField">
+                    <legend class="field-caption">Name Visible to people of your institution</legend>
+                    <input class="text-input" required="true" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
+                    <span class="fmt-right caption" style="color:#bd1919" id="adminNameError"></span>
+                </fieldset>
+                <fieldset class="text-field" id="phoneField">
+                    <legend class="field-caption">Phone number for teachers to contact you</legend>
+                    <span>IND +91<input class="text-input" required="true" placeholder="XXX-XXX-XXXX" type="tel" id="adminPhone" name="adminDetails">
+                    </span>
+                    <span class="fmt-right caption" style="color:#bd1919" id="phoneError"></span>
+                </fieldset>
+                <br/>
+                <!--institution-->
+                <div class="group-heading" id="instHead"></div>
+                <fieldset class="text-field" id="instNameField">
+                    <legend class="field-caption">Proper name of Institution</legend>
+                    <input class="text-input" required="true" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
+                    <span class="fmt-right caption" style="color:#bd1919" id="instNameError"></span>
+                </fieldset>
+                <fieldset class="text-field" id="uiidField">
+                    <legend class="field-caption">Set a Unique Id for institution</legend>
+                    <input class="text-input" required="true" placeholder="bestInstitute007" type="text" id="uiid" name="instDetails">
+                    <span class="fmt-right caption" style="color:#bd1919" id="uiidError"></span>
+                </fieldset>
+                <br/>
+                <div class="fmt-row fmt-center">
+                    <button class="positive-button" id="saveStage1">Save & Continue</button>
+                </div>
             </div>
-        </div>
-        <div id="snackBar" class="snackbar fmt-animate-bottom">
-            <span class="snack-text fmt-left" id="snackText">
-            </span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
-        </div>
+
+            <div class="container" id="stage2">
+                <span class="heading" id="s2head"></span>
+                <br/>
+                <div class="fmt-col fmt-half fmt-padding">
+                    <div class="group-heading" id="timeHead"></div>
+                    <div class="fmt-half">
+                        <fieldset class="text-field" id="startTimeField">
+                            <legend class="field-caption">Schedule starts at</legend>
+                            <input class="text-input" required type="time" id="startTime" name="timeDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="startTimeError"></span>
+                        </fieldset>
+                        <fieldset class="text-field" id="nameField">
+                            <legend class="field-caption">Break starts at</legend>
+                            <input class="text-input" required type="time" id="breakStartTime" name="timeDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="breakStartError"></span>
+                        </fieldset>
+                    </div>
+                    <div class="fmt-half">
+                        <fieldset class="text-field" id="endTimeField">
+                            <legend class="field-caption">Schedule Ends at</legend>
+                            <input class="text-input" required placeholder="XXX-XXX-XXXX" type="time" id="endTime" name="timeDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="endTimeError"></span>
+                        </fieldset>
+                        <fieldset class="text-field" id="phoneField">
+                            <legend class="field-caption">First Day of week</legend>
+                            <input class="text-input" required placeholder="Monday" type="" id="firstDay" name="timeDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="firstDayError"></span>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="fmt-col fmt-half fmt-padding" >
+                    <div class="group-heading" id="durationHead"></div>
+                    <div class="fmt-half">
+                        <fieldset class="text-field" id="eachDurationField">
+                            <legend class="field-caption">Duration of each period</legend>
+                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="eachDuration" name="durationDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="eachDurationError"></span>
+                        </fieldset>
+                        <fieldset class="text-field" id="breakDurationField">
+                            <legend class="field-caption">Break Duration</legend>
+                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="breakDuration" name="durationDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="breakDurationError"></span>
+                        </fieldset>
+                    </div>
+                    <div class="fmt-half fmt-row">
+                        <fieldset class="text-field" id="totalDaysField">
+                            <legend class="field-caption">Total working days in a week</legend>
+                            <input class="text-input" required placeholder="Between 1 and 7" min="1" max="7" type="number" id="totalDays" name="durationDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="totalDaysError"></span>
+                        </fieldset>
+                    </div>
+                </div>
+                <br/><br/><br/><br/>
+                <br/><br/><br/>
+                <div class="fmt-row fmt-center">
+                    <button class="positive-button" id="saveStage2">Create schedule</button>
+                </div>
+            </div>
+            
+            <div id="snackBar" class="snackbar fmt-animate-bottom">
+                <span class="snack-text fmt-left" id="snackText">
+                </span>
+                <button class="fmt-right neutral-button" id="snackButton"></button>
+            </div>
     </body>
 </html>

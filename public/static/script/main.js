@@ -1,6 +1,8 @@
 const appName="Schemester", baseColor = "#216bf3",errorBaseColor = "#c40c0c",
- click = 'click', input = 'input',change='change', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block';
-
+ click = 'click', input = 'input',change='change', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block',
+ adminLoginPage = '/admin/admin_login.html',adminDashPage = '/admin/admin_dash.html',homepage = '/home.html',root = '/',
+ adminSettings = '/admin/management.html';
+var cred = Array(2);
 class Snackbar{
     id = 'snackBar';
     textId = 'snackText';
@@ -76,7 +78,7 @@ class Dialog extends DialogID{
         this.view = document.getElementById(this.viewId);
         setDefaultBackground(this.view,true);
         this.box = document.getElementById(this.boxId);
-
+        opacityOf(this.box,'1');
         this.image = document.getElementById(this.imageId);
         this.content = document.getElementById(this.contentId);
 
@@ -145,10 +147,14 @@ class Dialog extends DialogID{
         this.image.src = imgsrc;
     }
     loader(show = true){
-        log('shiit');
         visibilityOf(this.loading,show);
         visibilityOf(this.actionPositive,!show);
         visibilityOf(this.actionNegative,!show);
+        if(show){
+            opacityOf(this.box,"0.5")
+        }else{
+            opacityOf(this.box,"1")
+        }
     }
     inputParams(caption,hint,type){
         this.inputCaption[0].textContent = caption;
@@ -207,6 +213,7 @@ class ConfirmDialog extends ConfirmID{
         this.view = document.getElementById(this.viewId);
         setDefaultBackground(this.view,true);
         this.box = document.getElementById(this.boxId);
+        opacityOf(this.box,'1');
         this.heading = document.getElementById(this.headingId);
         this.subHeading = document.getElementById(this.subHeadId);
         this.actions = document.getElementById(this.actionsId);
@@ -225,6 +232,11 @@ class ConfirmDialog extends ConfirmID{
         visibilityOf(this.loading,show);
         visibilityOf(this.actionPositive,!show);
         visibilityOf(this.actionNegative,!show);
+        if(show){
+            opacityOf(this.box,"0.5")
+        }else{
+            opacityOf(this.box,"1")
+        }
     }
     setButtonText(positive,negative){
         this.actionPositive.textContent = positive;
@@ -361,7 +373,7 @@ function registrationDialog(isShowing = true){
             regDial.loader();
             snackBar(false);
             if(isEmailValid(regDial.getInput(0).value)){
-                if(isPasswordValid(regDial.getInput(1).value)){
+                if(true){//isPasswordValid(regDial.getInput(1).value)){
                     createAccount(regDial,regDial.getInput(0).value ,regDial.getInput(1).value)
                 } else{
                     runPasswordCheck(regDial.getInput(1),regDial.inputField[1],regDial.inputError[1]);
@@ -382,6 +394,7 @@ function log(msg){
 function createAccount(dialog,email,password){
     firebase.auth().createUserWithEmailAndPassword(email, password).then(function(){
         log('true account creations');
+        cred = Array(email,password);
         snackBar(false);
         dialog.loader(false);
         dialog.existence(false);
@@ -415,7 +428,7 @@ function createAccount(dialog,email,password){
                 }
             }break;
             default:{
-                snackBar(true,'An error occurred',true,'Report',false);
+                snackBar(true,errorMessage,true,'Report',false);
                 new Snackbar().button.onclick = function(){
                     feedBackBox();
                     snackBar(false);
@@ -423,22 +436,64 @@ function createAccount(dialog,email,password){
             }
         }
         dialog.loader(false);
-        return false;
     });
 }
 
-function accountVerificationDialog(isShowing = true){
+function accountVerificationDialog(isShowing = true,emailSent = false){
     var verify = new ConfirmDialog();
     var user = firebase.auth().currentUser;
-    verify.setDisplay('Waiting for verification','Check your email box at <b>'+user.email+'</b>, verify your account there, and then click continue here.');
-    verify.setButtonText('Continue','Abort');
-    verify.negativeAction().onclick = function(){
-        verify.loader();
-        user.delete().then(function() {
-            verify.existence(false);
-        }).catch(function(error) {
-            verify.loader(false);
-        });
+    if(emailSent){
+        verify.setDisplay('Waiting for verification','A link has been sent. Check your email box at <b>'+user.email+'</b>, verify your account there, and then click continue here.');
+        verify.setButtonText('Verify & Continue','Abort');
+        verify.negativeAction().onclick = function(){
+            verify.loader();
+            user.delete().then(function() {
+                verify.existence(false);
+                snackBar(true,'Your account was not created.',false,nothing,false);
+            }).catch(function(error) {
+                verify.loader(false);
+                snackBar(true,error,true,'Report',false);
+            });
+        }
+        verify.positiveAction().onclick = function(){
+            if(silentLogin(cred[0],cred[1])){
+                user = firebase.auth().currentUser;
+                if(user.emailVerified){
+                    window.location.replace('/registration.html');
+                } else {
+                    snackBar(true,'Not yet verified',false,nothing,false);
+                    verify.loader(false);
+                }
+            } else {
+                snackBar(true,'Unable to verify',false,nothing,false);   
+            }
+        }
+    } else {
+        verify.setDisplay('Verification Required','We need to verify you. A link will be sent at <b>'+user.email+'</b>, you need to verify your account there. Confirm to send link?');
+        verify.setButtonText('Send link','Cancel');
+        verify.negativeAction().onclick = function(){
+            verify.loader();
+            user.delete().then(function() {
+                verify.existence(false);
+                snackBar(true,'Your account was not created.',false,nothing,false);
+            }).catch(function(error) {
+                verify.loader(false);
+                snackBar(true,error,true,'Report',false);
+            });
+        }
+        verify.positiveAction().onclick = function(){
+            verify.loader();
+            user.sendEmailVerification().then(function() {
+                snackBar(true,'Email sent');
+                accountVerificationDialog(true,true);
+                verify.loader(false);
+            }).catch(function(error) {
+                snackBar(true,error,true,'Report',false);
+                log(error);
+                verify.loader(false);
+            // An error happened.
+            });
+        }
     }
     verify.existence(isShowing);
 }
@@ -450,7 +505,13 @@ function logoutUser(sendHome = true){
     }
     firebase.auth().signOut();
 }
-
+function silentLogin(email,password){
+    firebase.auth().signInWithEmailAndPassword(email,password).then(function(){
+        return true;
+    }).catch(function(error) {
+        return false;    
+    });
+}
 function feedBackBox(isShowing = true){
     var feedback = new Dialog(1,true,true);
     feedback.setDisplay('Contact Developers','Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. '
@@ -572,6 +633,10 @@ function showLoader(){
 }
 function hideLoader(){
     visibilityOf(document.getElementById('navLoader'),false);
+}
+
+function opacityOf(element,value){
+    element.style.opacity = value;
 }
 
 function visibilityOf(element,visible = Boolean()){
