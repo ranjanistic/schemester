@@ -1,4 +1,5 @@
 const defaults = 'defaults',batches = 'batches',users = 'users',assignees = 'assignees';
+var dbVer = 1;
 class Stage1{
     constructor(){
         this.view = document.getElementById('stage1');
@@ -75,7 +76,7 @@ window.onload = function(){
             var stage2 = new Stage2()
             stage2.setDefaults();
             stage2.save.onclick = function(){
-                var data2 = [
+                var data = [
                     {
                         type:'admin',
                         email:'user.email',
@@ -98,9 +99,101 @@ window.onload = function(){
                         totalDays:stage2.totalDays.value
                     }
                 ]
-                createDefaultValues(defaults,data2,'type');
-                //createScheduleValues('schedule',data2,'type');
+                var data2 = [
+                    {
+                        day:'mon',
+                        email:'user.email',
+                        name:stage1.nameInput.value,
+                        phone:stage1.phoneInput.value
+                    },
+                    {
+                        day:'tue',
+                        name:stage1.instNameInput.value,
+                        uiid:stage1.instIdInput.value,
+                    },
+                    {
+                        day:'wed',
+                        startTime:stage2.startTime.value,
+                        endTime:stage2.endTime.value,
+                        breakStartTime:stage2.breakStart.value,
+                        startDay:stage2.day1.value,
+                        periodMinutes:stage2.eachDuration.value,
+                        breakMinutes:stage2.breakDuration.value,
+                        totalDays:stage2.totalDays.value
+                    }
+                ]
+                createDefaultValues(defaults,data,'type',dbVer);
+                createScheduleValues('batches',data2,'day',++dbVer);
+
+                //This creates teacherSchedule json array and loops in it, for creation of all teachers' schedule by administrator.
+                var teachers = Array('1teacher@testing','2teacher@testing');
+
+                for(var tindex = 0;tindex<teachers.length;tindex++){
+                    for(var dayI = 0;dayI<6;dayI++){        //for day index, currently set to 6 days max
+                        for(var perI = 0;perI<5;perI++){    //for periods in each day, currently set to 5 max.
+                            teacherDynamo(teachers[tindex],dayI,perI,'9B','Biology');    //classvalue and subjects are constant temporarily.
+                        }
+                    }
+                }
+                test(); //to log the values of teacherSchedule json array.
             }
             
         }
+}
+//days array for dayIndex
+var days = Array('mon','tue','wed','thu','fri','sat');
+//teacherSchedule json array
+var teacherSchedule = [];
+//previous teacher id
+var lastID = nothing;
+//previous day index
+var lastDay = -1; 
+let teacherDynamo = function(teacherID,dayIndex,periodIndex,classvalue,subject,hold = true){
+    if(lastID!=teacherID){  //if given teacherID has not been pushed in teacherSchedule.
+        teacherSchedule.push(
+        {
+            [teacherID]:[ //teacherID is the json array of days {mon, tue,etc.}
+                {
+                    [days[dayIndex]]:[{ //each day is accessed by dayIndex passed as function parameter, day[dayIndex] is a json array.
+                        [periodIndex]:{ //this is a json Object, holding three unique key pair values passed as parameters. This indicaties the period of current day.
+                            "class":classvalue,
+                            "hold":hold,
+                            "subject":subject
+                        }
+                    }]
+                }
+            ]
+        }
+        );
+        lastID = teacherID;     //as the current teacherID has been pushed, now it doesn't need to be pushed again, so it becomes the lastID (means previous ID).
+    } else if(lastDay != dayIndex) {    //if current teacherID has already been pushed, but the day is changed to next one (dayIndex increment),
+        teacherSchedule[[lastID].push({     // push the new day[dayIndex]
+            [days[dayIndex]]:[{
+                [periodIndex]:{
+                    "class":classvalue,
+                    "hold":hold,
+                    "subject":subject
+                }
+            }]
+        })];
+        lastDay = dayIndex;     //current day has been pushed, so current day is now the lastDay (previous day), no need to push again the same day.
+    } else {        //if current teacher and current day is already pushed,
+        teacherSchedule[[lastID][[days[lastDay]].push({ // then just push the new period (periodIndex) in the current day of current teacherID, which is always unique.
+            [periodIndex]:{
+                "class":classvalue,
+                "hold":hold,
+                "subject":subject
+            }
+        })]];
+    }
+    //createTeacherSchedule('assignees',teacherSchedule,null,++dbVer);  //meant for storage in indexedDB later.
+}
+
+
+function test(){
+    //check console after this function is called.
+    teacherSchedule.forEach(function(teacher){
+        log(teacher);
+    });
+    snackBar(true,"Check console, before the 'Event' log.");
 }
