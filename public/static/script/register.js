@@ -135,13 +135,14 @@ window.onload = function(){
                         }
                     }
                 }
-                test(); //to log the values of teacherSchedule json array.
+                console.log(teacherSchedule);
+                //test(); //to log the values of teacherSchedule json array.
             }
             
         }
 }
 //days array for dayIndex
-var days = Array('mon','tue','wed','thu','fri','sat');
+var days = new Array('mon','tue','wed','thu','fri','sat');
 //teacherSchedule json array
 var teacherSchedule = [];
 //previous teacher id
@@ -149,43 +150,83 @@ var lastID = nothing;
 //previous day index
 var lastDay = -1; 
 let teacherDynamo = function(teacherID,dayIndex,periodIndex,classvalue,subject,hold = true){
-    if(lastID!=teacherID){  //if given teacherID has not been pushed in teacherSchedule.
-        teacherSchedule.push(
+    if(teacherID in teacherSchedule)
+    {   
+        if(days[dayIndex] in teacherSchedule[teacherID])
         {
-            [teacherID]:[ //teacherID is the json array of days {mon, tue,etc.}
-                {
-                    [days[dayIndex]]:[{ //each day is accessed by dayIndex passed as function parameter, day[dayIndex] is a json array.
-                        [periodIndex]:{ //this is a json Object, holding three unique key pair values passed as parameters. This indicaties the period of current day.
-                            "class":classvalue,
-                            "hold":hold,
-                            "subject":subject
-                        }
-                    }]
-                }
-            ]
-        }
-        );
-        lastID = teacherID;     //as the current teacherID has been pushed, now it doesn't need to be pushed again, so it becomes the lastID (means previous ID).
-    } else if(lastDay != dayIndex) {    //if current teacherID has already been pushed, but the day is changed to next one (dayIndex increment),
-        teacherSchedule[[lastID].push({     // push the new day[dayIndex]
-            [days[dayIndex]]:[{
-                [periodIndex]:{
+    teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
                     "class":classvalue,
                     "hold":hold,
                     "subject":subject
-                }
-            }]
-        })];
-        lastDay = dayIndex;     //current day has been pushed, so current day is now the lastDay (previous day), no need to push again the same day.
-    } else {        //if current teacher and current day is already pushed,
-        teacherSchedule[[lastID][[days[lastDay]].push({ // then just push the new period (periodIndex) in the current day of current teacherID, which is always unique.
-            [periodIndex]:{
+            }
+    }
+    else{
+        teacherSchedule[teacherID][days[dayIndex]] = {};
+        teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
+            "class":classvalue,
+            "hold":hold,
+            "subject":subject
+    }
+    }
+}
+
+else{
+    teacherSchedule[teacherID] = {};
+    if(days[dayIndex] in teacherSchedule[teacherID])
+    {
+teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
                 "class":classvalue,
                 "hold":hold,
                 "subject":subject
-            }
-        })]];
-    }
+        }
+}
+else{
+    teacherSchedule[teacherID][days[dayIndex]] = {};
+    teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
+        "class":classvalue,
+        "hold":hold,
+        "subject":subject
+}
+}
+}
+    // if(lastID!=teacherID){  //if given teacherID has not been pushed in teacherSchedule.
+    //      teacherSchedule.push(
+    //     {
+    //         [teacherID]:[ //teacherID is the json array of days {mon, tue,etc.}
+    //             {
+    //                 [days[dayIndex]]:[{ //each day is accessed by dayIndex passed as function parameter, day[dayIndex] is a json array.
+    //                     [periodIndex]:{ //this is a json Object, holding three unique key pair values passed as parameters. This indicaties the period of current day.
+    //                         "class":classvalue,
+    //                         "hold":hold,
+    //                         "subject":subject
+    //                     }
+    //                 }]
+    //             }
+    //         ]
+    //     }
+    //     );
+    //     console.log(teacherSchedule);
+    //     lastID = teacherID;     //as the current teacherID has been pushed, now it doesn't need to be pushed again, so it becomes the lastID (means previous ID).
+    // } else if(lastDay != dayIndex) {    //if current teacherID has already been pushed, but the day is changed to next one (dayIndex increment),
+    //     teacherSchedule[lastID].push({     // push the new day[dayIndex]
+    //         [days[dayIndex]]:[{
+    //             [periodIndex]:{
+    //                 "class":classvalue,
+    //                 "hold":hold,
+    //                 "subject":subject
+    //             }
+    //         }]
+    //     });
+    //     lastDay = dayIndex;     //current day has been pushed, so current day is now the lastDay (previous day), no need to push again the same day.
+    // } else {        //if current teacher and current day is already pushed,
+    //     teacherSchedule[lastID][days[lastDay]].push({ // then just push the new period (periodIndex) in the current day of current teacherID, which is always unique.
+    //         [periodIndex]:{
+    //             "class":classvalue,
+    //             "hold":hold,
+    //             "subject":subject
+    //         }
+    //     });
+    // }
     //createTeacherSchedule('assignees',teacherSchedule,null,++dbVer);  //meant for storage in indexedDB later.
 }
 
