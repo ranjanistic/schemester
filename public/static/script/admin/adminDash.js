@@ -7,22 +7,22 @@ teacherBoxToday, classBoxToday,teacherSearchInput, teacherDropdown, classSearchI
 function initializeElements(){
 
     
-    logOut = document.getElementById('logoutAdminButton');
-    dateTime = document.getElementById('todayDateTime');
-    greeting = document.getElementById('greeting');
-    settings = document.getElementById('settingsAdminButton');
-    dayInput = document.getElementById('dayinput');
-    dayDropdown = document.getElementById('daydropdown');
-    teacherChipToday = document.getElementById('teacherRadioToday');
-    classChipToday = document.getElementById('classRadioToday');
-    workboxtoday = document.getElementById('workSectionToday');
-    teacherBoxToday = document.getElementById('teacherSectionToday');
-    classBoxToday =  document.getElementById('classSectionToday');
-    teacherSearchInput = document.getElementById('teachersearchinput');
-    teacherDropdown = document.getElementById('teacherDropdown');
+    logOut = getElement('logoutAdminButton');
+    dateTime = getElement('todayDateTime');
+    greeting = getElement('greeting');
+    settings = getElement('settingsAdminButton');
+    dayInput = getElement('dayinput');
+    dayDropdown = getElement('daydropdown');
+    teacherChipToday = getElement('teacherRadioToday');
+    classChipToday = getElement('classRadioToday');
+    workboxtoday = getElement('workSectionToday');
+    teacherBoxToday = getElement('teacherSectionToday');
+    classBoxToday =  getElement('classSectionToday');
+    teacherSearchInput = getElement('teachersearchinput');
+    teacherDropdown = getElement('teacherDropdown');
 
-    //classSearchInput = document.getElementById('classsearchinput');
-    //classDropdown = document.getElementById('classDropdown');
+    //classSearchInput = getElement('classsearchinput');
+    //classDropdown = getElement('classDropdown');
     visibilityOf(workboxtoday,false);
     //visibilityOf(teacherBoxToday,false);
     classChipToday.addEventListener(click,function(){

@@ -2,9 +2,9 @@
 var adminLogin, adminSignup,adminDash;
 
 function initializeElements(){
-    adminLogin = document.getElementById('adminLogin');
-    adminSignup = document.getElementById('registerInstitution');
-    adminDash = document.getElementById('adminDashboard');
+    adminLogin = getElement('adminLogin');
+    adminSignup = getElement('registerInstitution');
+    adminDash = getElement('adminDashboard');
     adminSignup.addEventListener(click, function(){
         //showLoader();        
         registrationDialog(true);
@@ -36,7 +36,7 @@ function initAuthStateListener() {
 }
 function showGreeting(){
     var today = new Date();
-    var greeting = document.getElementById('homeGreeting');
+    var greeting = getElement('homeGreeting');
     if(today.getHours()<4){
         greeting.textContent = "Good night!"
     } else if(today.getHours()<11){

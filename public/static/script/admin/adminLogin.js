@@ -3,17 +3,17 @@ var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,pass
 ,back;
 
 function initializeElements(){
-    emailFieldSet = document.getElementById('email_fieldset');
-    passwordFieldset = document.getElementById('password_fieldset');
-    puiidFieldSet = document.getElementById("puiid_fieldset")
-    forgotPassword = document.getElementById('forgotpasswordButton');
-    emailError = document.getElementById("emailError");
-    emailInput = document.getElementById('adminemail');
-    passwordInput = document.getElementById('adminpassword');
-    puiidInput = document.getElementById('puiid');
-    logInButton = document.getElementById('loginAdminButton');
-    logInLoader = document.getElementById('loginLoader');
-    back = document.getElementById('backFromLogin');
+    emailFieldSet = getElement('email_fieldset');
+    passwordFieldset = getElement('password_fieldset');
+    puiidFieldSet = getElement("puiid_fieldset")
+    forgotPassword = getElement('forgotpasswordButton');
+    emailError = getElement("emailError");
+    emailInput = getElement('adminemail');
+    passwordInput = getElement('adminpassword');
+    puiidInput = getElement('puiid');
+    logInButton = getElement('loginAdminButton');
+    logInLoader = getElement('loginLoader');
+    back = getElement('backFromLogin');
 
     back.addEventListener(click,function(){
         showLoader();

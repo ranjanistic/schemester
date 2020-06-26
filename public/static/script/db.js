@@ -1,73 +1,107 @@
-
 if (!window.indexedDB) {
-  log('IDB:0');
-  snackBar(true,'This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.',false,nothing,false);
+  log("IDB:0");
+  snackBar(
+    true,
+    "This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.",
+    false,
+    nothing,
+    false
+  );
 }
 const dbName = appName;
-let createDefaultValues = function(objectName,defaultData,kpath,version){
-  var request = window.indexedDB.open(dbName,version);
-  request.onsuccess = function(event){
-    log('IDB:S:'+event);
-  }
-  request.onupgradeneeded = function(event){
+
+let createDefaultValues = function (defaultData, version) {
+  var request = window.indexedDB.open(dbName, version);
+  request.onsuccess = function (event) {
+
+  };
+  request.onupgradeneeded = function (event) {
     var db = event.target.result;
-    var objectStore = db.createObjectStore(objectName, { keyPath: kpath});
-    objectStore.transaction.oncomplete = function(event) {
-      log(event);
-      var defaultObjectStore = db.transaction(objectName, "readwrite")
-        .objectStore(objectName);
-      defaultData.forEach(function(field) {
-        defaultObjectStore.add(field);
+    var objectStore;
+    try{
+      objectStore = db.createObjectStore(defaults, { keyPath: "type" });
+      objectStore.transaction.oncomplete = function (event) {
+        log(event);
+        var defaultObjectStore = db
+          .transaction(defaults, "readwrite")
+          .objectStore(defaults);
+        defaultData.forEach(function (field) {
+          defaultObjectStore.add(field);
+        });
+        db.close();
+      };
+    } catch{
+      defaultData.forEach(function(field){
+        console.log(field.type);
+        updateDefaultValues(field.type,field);
       });
-      db.close();
+    }
+  };
+  request.onerror = function (event) {
+
+  };
+};
+
+//works first time update
+let updateDefaultValues = function(type,field){
+  var request = window.indexedDB.open(dbName);
+  request.onsuccess = function (event) {
+  var db = event.target.result;
+  var objectStore = db.transaction(defaults, "readwrite").objectStore(defaults);
+  var request = objectStore.get(type);
+  request.onerror = function(event) {
+    // Handle errors!
+  };
+  request.onsuccess = function(event) {
+    var requestUpdate = objectStore.put(field);
+    requestUpdate.onerror = function(event) {
+      console.log(event);
     };
-  }
-  request.onerror = function(event){
-    log('IDB:E:'+event);
-   }
+    requestUpdate.onsuccess = function(event) {
+      
+    };
+  };
+};
 }
-let createScheduleValues = function(objectName,scheduleData,kpath,version){
+
+let createTeacherSchedule = function (
+  objectName,
+  scheduleData,
+  kpath,
+  version
+) {
   var request = indexedDB.open(dbName, version);
-  request.onupgradeneeded = function(event) {
+  request.onupgradeneeded = function (event) {
     var db = event.target.result;
-    log('upgrade');
-    db.createObjectStore(objectName,{keyPath:kpath});
+    console.log("upgradeTeacher");
+    db.createObjectStore(objectName, { keyPath: kpath });
   };
 
-  request.onsuccess = function(event) {
+  request.onsuccess = function (event) {
     var db = event.target.result;
-    log('success');
-    var tx = db.transaction(objectName,"readwrite");
+    log("successTeacher");
+    var tx = db.transaction(objectName, "readwrite");
     var store = tx.objectStore(objectName);
-      scheduleData.forEach(function(field){
-        store.add(field);
-      });  
-      db.close();
-    }
-    request.onerror = function(event){
-      log(event);
-    }       
-}
-
-let createTeacherSchedule = function(objectName,scheduleData,kpath,version){
-  var request = indexedDB.open(dbName, version);
-  request.onupgradeneeded = function(event) {
-    var db = event.target.result;
-    log('upgradeTeacher');
-    db.createObjectStore(objectName,{keyPath:kpath});
+    scheduleData.forEach(function (field) {
+      store.add(field);
+    });
+    db.close();
   };
+  request.onerror = function (event) {
+    log(event);
+  };
+};
 
-  request.onsuccess = function(event) {
-    var db = event.target.result;
-    log('successTeacher');
-    var tx = db.transaction(objectName,"readwrite");
-    var store = tx.objectStore(objectName);
-      scheduleData.forEach(function(field){
-        store.add(field);
-      });  
-      db.close();
-    }
-    request.onerror = function(event){
-      log(event);
-    }       
-}
+let getDefaultPreference = function (type, key) {
+  var ans = null;
+  var request = indexedDB.open(dbName);
+  request.onsuccess = function (event) {
+    event.target.result.transaction(defaults)
+    .objectStore(defaults)
+    .get(type).onsuccess = function (event) {
+        ans = event.target.result[key];
+        console.log(ans);
+    };
+  };
+  return ans;
+};

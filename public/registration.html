@@ -22,11 +22,12 @@
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
             <a href="/"><img src="static/graphic/icons/schemester512.svg" width="40" onclick="showLoader()" alt="Schemester icon"></a>
-            <span>Registration as admin@teting.com</span>
+            <span id="greeting"></span>
+            <button class="fmt-right neutral-button" id="saveandexit">Save & Exit</button>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-padding-small" style="margin-top: 72px;">
-            <div class="container " id="stage1" >
+            <div class="container " id="stage1">
                 <span class="heading" id="s1head"></span>
                 <br/>
                 <!--Admin details-->
@@ -111,6 +112,11 @@
                             <input class="text-input" required placeholder="Between 1 and 7" min="1" max="7" type="number" id="totalDays" name="durationDetail">
                             <span class="fmt-right caption" style="color:#bd1919" id="totalDaysError"></span>
                         </fieldset>
+                        <fieldset class="text-field" id="totalPeriodsField">
+                            <legend class="field-caption">Total Periods in a day</legend>
+                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="totalPeriodsError"></span>
+                        </fieldset>
                     </div>
                 </div>
                 <br/><br/><br/><br/>
@@ -120,10 +126,53 @@
                 </div>
             </div>
             
-            <div id="snackBar" class="snackbar fmt-animate-bottom">
-                <span class="snack-text fmt-left" id="snackText">
-                </span>
-                <button class="fmt-right neutral-button" id="snackButton"></button>
+            <div class="container" id="stage3">
+                <div class="fmt-row">
+                    <div class="fmt-col fmt-half">
+                        <fieldset class="text-field" id="eachDurationField">
+                            <legend class="field-caption">Email address of teacher</legend>
+                            <input class="text-input" required placeholder="someone@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="eachDurationError"></span>
+                        </fieldset>
+                    </div>
+                    <div class="fmt-col fmt-half">
+                    <div class="fmt-right" style="padding:12px">
+                        <button class="positive-button" id="nextButton">Next</button>
+                    </div>
+                    <div class="fmt-half fmt-right">
+                        <fieldset class="text-field" id="teacherDayField">
+                            <legend class="field-caption">Week Day</legend>
+                            <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail">
+                            <span class="fmt-right caption" style="color:#bd1919" id="teacherDayError"></span>
+                        </fieldset>
+                    </div>
+                    </div>
+                </div>
+                <br/>
+                <div class="fmt-row group-heading" style="color:#216bf3;">
+                    <div class="fmt-col" style="width: 20%;">
+                        Period
+                    </div>
+                    <div class="fmt-col n" style="width: 30%;">
+                        Class
+                    </div>
+                    <div class="fmt-col -blue" style="width: 50%;">
+                        Subject
+                    </div>
+                </div>
+
+                <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
+                </div>
+
+                <div class="fmt-row fmt-center" style="padding:12px">
+                    <button class="positive-button" id="finalizeDataButton">Continue to Dashboard</button>
+                </div>
             </div>
+        </div>
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText">
+            </span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
     </body>
 </html>

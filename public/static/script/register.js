@@ -1,240 +1,298 @@
-const defaults = 'defaults',batches = 'batches',users = 'users',assignees = 'assignees';
+const defaults = "defaults",
+  batches = "batches",
+  users = "users",
+  assignees = "assignees";
 var dbVer = 1;
-class Stage1{
+class Default {
+  constructor() {
+    this.admin = "admin";
+    this.institution = "institution";
+    this.timings = "timings";
+  }
+}
+let def = new Default();
+class Register{
     constructor(){
-        this.view = document.getElementById('stage1');
-        this.heading = document.getElementById('s1head');
-        this.adminHead = document.getElementById('adminHead');
-        this.nameField = document.getElementById('adminNameField');
-        this.nameInput = document.getElementById('adminName');
-        this.nameError = document.getElementById('adminNameError');
-        this.phoneField = document.getElementById('phoneField');
-        this.phoneInput = document.getElementById('adminPhone');
-        this.phoneError = document.getElementById('phoneError');
-        this.instHead = document.getElementById('instHead');
-        this.instNameField = document.getElementById('instNameField');
-        this.instNameInput = document.getElementById('instName');
-        this.instNameError = document.getElementById('instNameError');
-        this.instIdField = document.getElementById('uiidField');
-        this.instIdInput = document.getElementById('uiid');
-        this.instIdError = document.getElementById('uiidError');
-        this.save = document.getElementById('saveStage1');
-
+        this.greeting = getElement('greeting');
+        this.finalize = getElement('finalizeDataButton');
+        this.saveExit = getElement('saveandexit');
+        this.setDefaults();
     }
     setDefaults(){
-        this.heading.textContent = 'Basic';
-        this.adminHead.textContent = 'Administrator';
-        this.instHead.textContent = 'Institution';
-        visibilityOf(new Stage1().view,true);
-        visibilityOf(new Stage2().view,false);
+        visibilityOf(this.finalize,false);
     }
 }
-class Stage2{
+class Stage1 {
+  constructor() {
+    this.view = getElement("stage1");
+    this.heading = getElement("s1head");
+    this.adminHead = getElement("adminHead");
+    this.nameField = getElement("adminNameField");
+    this.nameInput = getElement("adminName");
+    this.nameError = getElement("adminNameError");
+    this.phoneField = getElement("phoneField");
+    this.phoneInput = getElement("adminPhone");
+    this.phoneError = getElement("phoneError");
+    this.instHead = getElement("instHead");
+    this.instNameField = getElement("instNameField");
+    this.instNameInput = getElement("instName");
+    this.instNameError = getElement("instNameError");
+    this.instIdField = getElement("uiidField");
+    this.instIdInput = getElement("uiid");
+    this.instIdError = getElement("uiidError");
+    this.save = getElement("saveStage1");
+    this.setDefaults();
+  }
+  setDefaults() {
+    this.heading.textContent = "Basic";
+    this.adminHead.textContent = "Administrator";
+    this.instHead.textContent = "Institution";
+  }
+  getName() {
+    return this.nameInput.value;
+  }
+  getPhone() {
+    return this.phoneInput.value;
+  }
+  getInstName() {
+    return this.instNameInput.value;
+  }
+  getInstID() {
+    return this.instIdInput.value;
+  }
+  exist(show = true) {
+    visibilityOf(this.view, show);
+  }
+}
+class Stage2 {
+  constructor() {
+    this.view = getElement("stage2");
+    this.heading = getElement("s2head");
+    this.timeHead = getElement("timeHead");
+    this.startTimeField = getElement("startTimeField");
+    this.startTime = getElement("startTime");
+    this.startTimeError = getElement("startTimeError");
+    this.endTimeField = getElement("endTimeField");
+    this.endTime = getElement("endTime");
+    this.endTimeError = getElement("endTimeError");
+    this.breakStartField = getElement("breakStartField");
+    this.breakStart = getElement("breakStartTime");
+    this.breakStartError = getElement("breakStartError");
+    this.day1Field = getElement("firstDayField");
+    this.day1 = getElement("firstDay");
+    this.day1Error = getElement("firstDayError");
+    this.durationHead = getElement("durationHead");
+    this.eachDurationField = getElement("eachDurationField");
+    this.eachDuration = getElement("eachDuration");
+    this.eachDurationError = getElement("eachDurationError");
+    this.totalDaysField = getElement("totalDaysField");
+    this.totalDays = getElement("totalDays");
+    this.totalDaysError = getElement("totalDaysError");
+    this.totalPeriodsField = getElement('totalPeriodsField');
+    this.totalPeriods = getElement('totalPeriods');
+    this.totalPeriodsError = getElement('totalPeriodsError');
+    this.breakDurationField = getElement("breakDurationField");
+    this.breakDuration = getElement("breakDuration");
+    this.breakDurationError = getElement("breakDurationError");
+    this.save = getElement("saveStage2");
+    this.setDefaults();
+    this.exist(false);
+  }
+  setDefaults() {
+    this.heading.textContent = "Schedule";
+    this.timeHead.textContent = "Timings";
+    this.durationHead.textContent = "Duration";
+  }
+  getStartTime() {
+    this.startTime.value;
+  }
+  getEndTime() {
+    this.endTime.value;
+  }
+  getBreakStart() {
+    this.breakStart.value;
+  }
+  getFirstDay() {
+    this.day1.value;
+  }
+  getPeriodDuration() {
+    this.eachDuration.value;
+  }
+  getBreakDuration() {
+    this.breakDuration.value;
+  }
+  getTotalDays() {
+    this.totalDays.value;
+  }
+  getTotalPeriods(){
+    this.totalPeriods.value;
+  }
+  exist(show = true) {
+    visibilityOf(this.view, show);
+  }
+}
+
+class TeacherData{
     constructor(){
-        this.view = document.getElementById('stage2');
-        this.heading = document.getElementById('s2head');
-        this.timeHead = document.getElementById('timeHead');
-        this.startTimeField = document.getElementById('startTimeField');
-        this.startTime = document.getElementById('startTime');
-        this.startTimeError = document.getElementById('startTimeError');
-        this.endTimeField = document.getElementById('endTimeField');
-        this.endTime = document.getElementById('endTime');
-        this.endTimeError = document.getElementById('endTimeError');
-        this.breakStartField = document.getElementById('breakStartField');
-        this.breakStart = document.getElementById('breakStartTime');
-        this.breakStartError = document.getElementById('breakStartError');
-        this.day1Field = document.getElementById('firstDayField');
-        this.day1 = document.getElementById('firstDay');
-        this.day1Error = document.getElementById('firstDayError');
-        this.durationHead = document.getElementById('durationHead');
-        this.eachDurationField = document.getElementById('eachDurationField');
-        this.eachDuration = document.getElementById('eachDuration');
-        this.eachDurationError = document.getElementById('eachDurationError');
-        this.totalDaysField = document.getElementById('totalDaysField');
-        this.totalDays = document.getElementById('totalDays');
-        this.totalDaysError = document.getElementById('totalDaysError');
-        this.breakDurationField = document.getElementById('breakDurationField');
-        this.breakDuration = document.getElementById('breakDuration');
-        this.breakDurationError = document.getElementById('breakDurationError');
-        this.save = document.getElementById('saveStage2');
+        this.view = getElement('stage3');
+        this.teacherID = getElement('teacherEmail');        
+        this.dayInput = getElement('teacherDay');
+
+        this.scheduleBox = getElement('teacherFillerBox');
+        this.classInput;
+        this.subjectInput;
+        this.exist(false);
     }
-    setDefaults(){
-        this.heading.textContent = 'Schedule';
-        this.timeHead.textContent = 'Timings';
-        this.durationHead.textContent = 'Duration';
-        visibilityOf(new Stage1().view,false);
-        visibilityOf(new Stage2().view,true);
-    }
-}
-
-
-window.onload = function(){
-    //if stage1 incomplete
-        var stage1 = new Stage1();
-        stage1.setDefaults();
-        stage1.save.onclick = function(){
-            var stage2 = new Stage2()
-            stage2.setDefaults();
-            stage2.save.onclick = function(){
-                var data = [
-                    {
-                        type:'admin',
-                        email:'user.email',
-                        name:stage1.nameInput.value,
-                        phone:stage1.phoneInput.value
-                    },
-                    {
-                        type:'institution',
-                        name:stage1.instNameInput.value,
-                        uiid:stage1.instIdInput.value,
-                    },
-                    {
-                        type:'timings',
-                        startTime:stage2.startTime.value,
-                        endTime:stage2.endTime.value,
-                        breakStartTime:stage2.breakStart.value,
-                        startDay:stage2.day1.value,
-                        periodMinutes:stage2.eachDuration.value,
-                        breakMinutes:stage2.breakDuration.value,
-                        totalDays:stage2.totalDays.value
-                    }
-                ]
-                var data2 = [
-                    {
-                        day:'mon',
-                        email:'user.email',
-                        name:stage1.nameInput.value,
-                        phone:stage1.phoneInput.value
-                    },
-                    {
-                        day:'tue',
-                        name:stage1.instNameInput.value,
-                        uiid:stage1.instIdInput.value,
-                    },
-                    {
-                        day:'wed',
-                        startTime:stage2.startTime.value,
-                        endTime:stage2.endTime.value,
-                        breakStartTime:stage2.breakStart.value,
-                        startDay:stage2.day1.value,
-                        periodMinutes:stage2.eachDuration.value,
-                        breakMinutes:stage2.breakDuration.value,
-                        totalDays:stage2.totalDays.value
-                    }
-                ]
-                createDefaultValues(defaults,data,'type',dbVer);
-                createScheduleValues('batches',data2,'day',++dbVer);
-
-                //This creates teacherSchedule json array and loops in it, for creation of all teachers' schedule by administrator.
-                var teachers = Array('1teacher@testing','2teacher@testing');
-
-                for(var tindex = 0;tindex<teachers.length;tindex++){
-                    for(var dayI = 0;dayI<6;dayI++){        //for day index, currently set to 6 days max
-                        for(var perI = 0;perI<5;perI++){    //for periods in each day, currently set to 5 max.
-                            teacherDynamo(teachers[tindex],dayI,perI,'9B','Biology');    //classvalue and subjects are constant temporarily.
-                        }
-                    }
-                }
-                console.log(teacherSchedule);
-                //test(); //to log the values of teacherSchedule json array.
-            }
-            
+    setDefaults(size){
+        var division = String();
+        for(var i = 0;i<size;i++){
+            division = division + "<div class=\"fmt-row\" style=\"margin-bottom:4px\"><div class=\"fmt-col fmt-center\" style=\"width:20%;padding:18px;color:#216bf3\">"+addNumberSuffixHTML(i+1)+"</div><div class=\"fmt-col fm-purple\" style=\"width:30%\"><fieldset class=\"text-field\" id=\"teacherClassField"+i+"\"><legend class=\"field-caption\">Class assigned</legend><input class=\"text-input group-text\" required placeholder=\"e.g. 8A,12b,9,etc. (only one)\"  type=\"text\" id=\"teacherClass"+i+"\" name=\"teacherScheduleDetail\"></fieldset></div><div class=\"fmt-col\" style=\"width:50%\"><fieldset class=\"text-field\" id=\"teacherSubjectField"+i+"\"><legend class=\"field-caption\">Subject to be taken</legend><input class=\"text-input group-text\" placeholder=\"e.g. Physics, Politics, etc.\"  type=\"text\" id=\"teacherSubject"+i+"\" name=\"teacherScheduleDetail\"></fieldset></div></div>"
         }
+        this.scheduleBox.innerHTML = division;
+
+        this.classInput = Array(size);
+        this.subjectInput = Array(size);
+        for(var i = 0;i<size;i++){
+            this.classInput[i] = getElement('teacherClass'+i);
+            this.subjectInput[i] = getElement('teacherSubject'+i);
+        }
+    }
+    exist(show = true){
+        visibilityOf(this.view,show);
+    }
 }
-//days array for dayIndex
-var days = new Array('mon','tue','wed','thu','fri','sat');
-//teacherSchedule json array
-var teacherSchedule = [];
-//previous teacher id
-var lastID = nothing;
-//previous day index
-var lastDay = -1; 
-let teacherDynamo = function(teacherID,dayIndex,periodIndex,classvalue,subject,hold = true){
-    if(teacherID in teacherSchedule)
-    {   
-        if(days[dayIndex] in teacherSchedule[teacherID])
+
+window.onload = function () {
+  var register = new Register();
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        register.greeting.textContent = "Registration as "+user.email;
+    }
+});
+  var stage1 = new Stage1();
+  var stage2 = new Stage2();
+  
+  new TeacherData().exist(false);
+  stage1.save.onclick = function () {
+    stage1.exist(false);
+    stage2.exist(true);
+    stage2.save.onclick = function () {
+      var data = [
         {
-    teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
-                    "class":classvalue,
-                    "hold":hold,
-                    "subject":subject
-            }
-    }
-    else{
-        teacherSchedule[teacherID][days[dayIndex]] = {};
-        teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
-            "class":classvalue,
-            "hold":hold,
-            "subject":subject
-    }
-    }
-}
+          type: def.admin,
+          email: "firebase.auth().currentUser.email",
+          name: stage1.getName(),
+          phone: stage1.getPhone(),
+        },
+        {
+          type: def.institution,
+          name: stage1.getInstName(),
+          uiid: stage1.getInstID(),
+        },
+        {
+          type: def.timings,
+          startTime: stage2.getStartTime(),
+          endTime: stage2.getEndTime(),
+          breakStartTime: stage2.getBreakStart(),
+          startDay: stage2.getFirstDay(),
+          periodMinutes: stage2.getPeriodDuration(),
+          breakMinutes: stage2.getBreakDuration(),
+          totalDays: stage2.getTotalDays(),
+          totalPeriods: stage2.getTotalPeriods()
+        },
+      ];
+      createDefaultValues(data, dbVer);
+      stage2.exist(false);
 
-else{
-    teacherSchedule[teacherID] = {};
-    if(days[dayIndex] in teacherSchedule[teacherID])
-    {
-teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
-                "class":classvalue,
-                "hold":hold,
-                "subject":subject
+      var teacherData = new TeacherData();
+      teacherData.setDefaults(7);//getDefaultPreference(def.timings, totalPeriods));
+      teacherData.exist(true);
+
+      var teachers = Array("1teacher@testing", "2teacher@testing");
+      for (var tindex = 0; tindex < teachers.length; tindex++) {
+        for (var dayI = 0; dayI < 6; dayI++) {
+          for (var perI = 0; perI < 5; perI++) {
+            teacherDynamo(teachers[tindex], dayI, perI, "9B", "Biology");
+          }
         }
-}
-else{
-    teacherSchedule[teacherID][days[dayIndex]] = {};
-    teacherSchedule[teacherID][days[dayIndex]][periodIndex] = {
-        "class":classvalue,
-        "hold":hold,
-        "subject":subject
-}
-}
-}
-    // if(lastID!=teacherID){  //if given teacherID has not been pushed in teacherSchedule.
-    //      teacherSchedule.push(
-    //     {
-    //         [teacherID]:[ //teacherID is the json array of days {mon, tue,etc.}
-    //             {
-    //                 [days[dayIndex]]:[{ //each day is accessed by dayIndex passed as function parameter, day[dayIndex] is a json array.
-    //                     [periodIndex]:{ //this is a json Object, holding three unique key pair values passed as parameters. This indicaties the period of current day.
-    //                         "class":classvalue,
-    //                         "hold":hold,
-    //                         "subject":subject
-    //                     }
-    //                 }]
-    //             }
-    //         ]
-    //     }
-    //     );
-    //     console.log(teacherSchedule);
-    //     lastID = teacherID;     //as the current teacherID has been pushed, now it doesn't need to be pushed again, so it becomes the lastID (means previous ID).
-    // } else if(lastDay != dayIndex) {    //if current teacherID has already been pushed, but the day is changed to next one (dayIndex increment),
-    //     teacherSchedule[lastID].push({     // push the new day[dayIndex]
-    //         [days[dayIndex]]:[{
-    //             [periodIndex]:{
-    //                 "class":classvalue,
-    //                 "hold":hold,
-    //                 "subject":subject
-    //             }
-    //         }]
-    //     });
-    //     lastDay = dayIndex;     //current day has been pushed, so current day is now the lastDay (previous day), no need to push again the same day.
-    // } else {        //if current teacher and current day is already pushed,
-    //     teacherSchedule[lastID][days[lastDay]].push({ // then just push the new period (periodIndex) in the current day of current teacherID, which is always unique.
-    //         [periodIndex]:{
-    //             "class":classvalue,
-    //             "hold":hold,
-    //             "subject":subject
-    //         }
-    //     });
-    // }
-    //createTeacherSchedule('assignees',teacherSchedule,null,++dbVer);  //meant for storage in indexedDB later.
+      }
+      console.log(teacherSchedule);
+    };
+  };
+};
+
+var teacherSchedule = [];
+let teacherDynamo = function (
+  teacherID,
+  dayIndex,
+  periodIndex,
+  classvalue,
+  subject,
+  hold = true
+) {
+  if (teacherID in teacherSchedule) {
+    if (dayIndex in teacherSchedule[teacherID]) {
+      teacherSchedule[teacherID][dayIndex][periodIndex] = {
+        class: classvalue,
+        hold: hold,
+        subject: subject,
+      };
+    } else {
+      teacherSchedule[teacherID][dayIndex] = {};
+      teacherSchedule[teacherID][dayIndex][periodIndex] = {
+        class: classvalue,
+        hold: hold,
+        subject: subject,
+      };
+    }
+  } else {
+    teacherSchedule[teacherID] = {};
+    if (dayIndex in teacherSchedule[teacherID]) {
+      teacherSchedule[teacherID][dayIndex][periodIndex] = {
+        class: classvalue,
+        hold: hold,
+        subject: subject,
+      };
+    } else {
+      teacherSchedule[teacherID][dayIndex] = {};
+      teacherSchedule[teacherID][dayIndex][periodIndex] = {
+        class: classvalue,
+        hold: hold,
+        subject: subject,
+      };
+    }
+  }
+};
+
+function formatPhone(number = String()) {
+  if (number.length < 10) {
+    return false;
+  }
+  if (number.length > 10) {
+    if (
+      number.charAt(0) == "+" &&
+      number.charAt(1) == "9" &&
+      number.charAt(2) == "1"
+    ) {
+      return number.substring(3, number.length - 1);
+    } else {
+      return false;
+    }
+  }
+  return true;
 }
 
+let usernameValid = function (name = String()) {
+  return /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/.test(
+    name.toLocaleLowerCase()
+  );
+};
 
-function test(){
-    //check console after this function is called.
-    teacherSchedule.forEach(function(teacher){
-        log(teacher);
-    });
-    snackBar(true,"Check console, before the 'Event' log.");
+let addNumberSuffixHTML = function(number){
+    switch(number){
+        case 1: return number+"<sup>st</sup>";
+        case 2: return number+"<sup>nd</sup>";
+        case 3: return number+"<sup>rd</sup>";
+        default:return number+"<sup>th</sup>";
+    }
 }

@@ -2,43 +2,43 @@
 class Management{
     displayIndex = 0;
     constructor(){
-        this.tabs = Array(document.getElementById("adminTab"),
-        document.getElementById("institutionTab"),
-        document.getElementById("scheduleTab"),
-        document.getElementById("securityTab"),
-        document.getElementById("usersTab"),
-        document.getElementById("aboutTab")
+        this.tabs = Array(getElement("adminTab"),
+        getElement("institutionTab"),
+        getElement("scheduleTab"),
+        getElement("securityTab"),
+        getElement("usersTab"),
+        getElement("aboutTab")
         );
         setClassName(this.tabs[this.displayIndex],"leftTabButtonSelected");
         this.chips = Array(
-            document.getElementById("madminTab"),
-            document.getElementById("minstitutionTab"),
-            document.getElementById("mscheduleTab"),
-            document.getElementById("msecurityTab"),
-            document.getElementById("musersTab"),
-            document.getElementById("maboutTab")
+            getElement("madminTab"),
+            getElement("minstitutionTab"),
+            getElement("mscheduleTab"),
+            getElement("msecurityTab"),
+            getElement("musersTab"),
+            getElement("maboutTab")
         );
         this.chips[this.displayIndex].click();
         this.boxes = Array(
-            document.getElementById("accountSettingsBox"),
-            document.getElementById("institutionSettingsBox"),
-            document.getElementById("scheduleSettingsBox"),
-            document.getElementById("securitySettingsBox"),
-            document.getElementById("usersSettingsBox"),
-            document.getElementById("aboutSettingsBox")
+            getElement("accountSettingsBox"),
+            getElement("institutionSettingsBox"),
+            getElement("scheduleSettingsBox"),
+            getElement("securitySettingsBox"),
+            getElement("usersSettingsBox"),
+            getElement("aboutSettingsBox")
         );
         showElement(this.boxes,this.displayIndex);
-        this.back = document.getElementById("backFromSettings");
-        this.contactDevs = document.getElementById('contactDevelopers');
+        this.back = getElement("backFromSettings");
+        this.contactDevs = getElement('contactDevelopers');
     }
 }
 
 class Admin{
     constructor(){
-        this.name = document.getElementById("adminName");
-        this.email = document.getElementById("adminEmailAddress");
-        this.phone = document.getElementById("adminPhoneNumber");
-        this.creationTime = document.getElementById("adminCreationTime");
+        this.name = getElement("adminName");
+        this.email = getElement("adminEmailAddress");
+        this.phone = getElement("adminPhoneNumber");
+        this.creationTime = getElement("adminCreationTime");
     }
     setDetails(name,email,phone,creationTime){
         this.name.textContent = name;
@@ -54,11 +54,11 @@ class Admin{
 
 class Institution{
     constructor(){
-        this.name = document.getElementById('instituteName');
-        this.uiid = document.getElementById('uiid');
-        this.puiid = document.getElementById('puiid');
-        this.type = document.getElementById('instituteType');
-        this.subscriptionTill = document.getElementById('subscriptionTill');
+        this.name = getElement('instituteName');
+        this.uiid = getElement('uiid');
+        this.puiid = getElement('puiid');
+        this.type = getElement('instituteType');
+        this.subscriptionTill = getElement('subscriptionTill');
     }
     setDetails(name = null,uiid = null,puiid = null,type = null,subscriptionTill = null){
         if(name!=null){this.name.textContent = name;}
@@ -74,12 +74,12 @@ class Institution{
 }
 class Schedule{
     constructor(){
-        this.periodDuration = document.getElementById('periodDuration');
-        this.weekStartDay = document.getElementById('weekStartDay');
-        this.scheduleStartTime = document.getElementById('scheduleStartTime');
-        this.scheduleEndTime = document.getElementById('scheduleEndTime');
-        this.breakStartTime = document.getElementById('breakStartTime');
-        this.breakDuration = document.getElementById('breakDuration');
+        this.periodDuration = getElement('periodDuration');
+        this.weekStartDay = getElement('weekStartDay');
+        this.scheduleStartTime = getElement('scheduleStartTime');
+        this.scheduleEndTime = getElement('scheduleEndTime');
+        this.breakStartTime = getElement('breakStartTime');
+        this.breakDuration = getElement('breakDuration');
     }
     setDetails(periodDuration,weekStartDay,scheduleStartTime,scheduleEndTime,breakStartTime,breakDuration){
         this.periodDuration.textContent = periodDuration
@@ -94,9 +94,9 @@ class Schedule{
 
 class Security{
     constructor(){
-        this.resetMail = document.getElementById('resetMailButton');
-        this.resetPass = document.getElementById('resetPasswordButton');
-        this.lastLogin = document.getElementById('lastLoginTime');
+        this.resetMail = getElement('resetMailButton');
+        this.resetPass = getElement('resetPasswordButton');
+        this.lastLogin = getElement('lastLoginTime');
     }
     setButtonText(resetMail,resetPass){
         this.resetMail.textContent = resetMail;
@@ -106,7 +106,7 @@ class Security{
 }
 class Users{
     constructor(){
-        this.invite = document.getElementById('inviteUsers');
+        this.invite = getElement('inviteUsers');
     }
 }
 function initAuthStateListener() {

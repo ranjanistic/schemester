@@ -688,3 +688,7 @@ function getMonthName(mIndex){
         default: return "Error";
     }
 }
+
+let getElement = function(id){
+    return document.getElementById(id);
+}
