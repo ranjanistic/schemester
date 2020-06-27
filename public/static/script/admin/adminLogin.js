@@ -52,7 +52,7 @@ function adminLogin() {
     firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value).catch(function(error) {
         var errorCode = error.code;
         var errorMessage = error.message;
-        console.log(errorCode);
+        clog(errorCode);
         switch(errorCode){
             case "auth/wrong-password":{
                 setFieldSetof(passwordFieldset,false);

@@ -4,9 +4,7 @@ var logOut,settings,dateTime,greeting, teacherChipToday, classChipToday,workboxt
 teacherBoxToday, classBoxToday,teacherSearchInput, teacherDropdown, classSearchInput,classDropdown
 ,dayInput,dayDropdown;
 
-function initializeElements(){
-
-    
+function initializeElements(){    
     logOut = getElement('logoutAdminButton');
     dateTime = getElement('todayDateTime');
     greeting = getElement('greeting');

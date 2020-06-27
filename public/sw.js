@@ -7,7 +7,8 @@ var urlsToCache = [
   '/admin/admin_dash.html',
   '/static/script/main.js',
   '/static/css/fmt.css',
-  '/static/css/main.css'
+  '/static/css/main.css',
+  ''
 ];
 
 self.addEventListener('install', function(event) {

@@ -387,20 +387,20 @@ function registrationDialog(isShowing = true){
         regDial.existence(isShowing);
     }
 }
-function log(msg){
+function clog(msg){
     console.log(msg);
 }
 //TODO: this
 function createAccount(dialog,email,password){
     firebase.auth().createUserWithEmailAndPassword(email, password).then(function(){
-        log('true account creations');
+        clog('true account creations');
         cred = Array(email,password);
         snackBar(false);
         dialog.loader(false);
         dialog.existence(false);
         accountVerificationDialog(true);
     }).catch(function(error) {
-        log('inside account creations error');
+        clog('inside account creations error');
         var errorCode = error.code;
         var errorMessage = error.message;
         switch(errorCode){
@@ -489,7 +489,7 @@ function accountVerificationDialog(isShowing = true,emailSent = false){
                 verify.loader(false);
             }).catch(function(error) {
                 snackBar(true,error,true,'Report',false);
-                log(error);
+                clog(error);
                 verify.loader(false);
             // An error happened.
             });
