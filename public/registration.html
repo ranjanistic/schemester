@@ -17,55 +17,77 @@
         <script src="/__/firebase/init.js"></script>
         <script type="text/javascript" src="static/script/main.js"></script>
         <script type="text/javascript" src="static/script/register.js"></script>
-        <script defer type="text/javascript" src="static/script/db.js"></script>
+        <script defer type="text/javascript" src="static/script/rdb.js"></script>
     </head>
     <body>
-        <div class="fmt-top fmt-shadow" id="topBar">
-            <a href="/"><img src="static/graphic/icons/schemester512.svg" width="40" onclick="showLoader()" alt="Schemester icon"></a>
+        <div class="fmt-top fmt-shadow fmt-center" id="topBar">
+            <button class="neutral-button fmt-left" id="previousStageBtn">Back</button>
             <span id="greeting"></span>
+            <button class="fmt-center positive-button" id="presentStage">Step 3</button>
+            <button class="active-button fmt-right" id="registrationComplete">Done</button>
             <button class="fmt-right neutral-button" id="saveandexit">Save & Exit</button>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
-        <div class="fmt-padding-small" style="margin-top: 72px;">
-            <div class="container " id="stage1">
+        <div class="fmt-padding-small" style="margin-top: 66px;">
+            <div class="container fmt-row " id="stage1">
                 <span class="heading" id="s1head"></span>
                 <br/>
                 <!--Admin details-->
+                <div class="fmt-row">
                 <div class="group-heading" id="adminHead"></div>
                 <fieldset class="text-field" id="adminNameField">
                     <legend class="field-caption">Name Visible to people of your institution</legend>
                     <input class="text-input" required="true" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
                     <span class="fmt-right caption" style="color:#bd1919" id="adminNameError"></span>
                 </fieldset>
-                <fieldset class="text-field" id="phoneField">
-                    <legend class="field-caption">Phone number for teachers to contact you</legend>
-                    <span>IND +91<input class="text-input" required="true" placeholder="XXX-XXX-XXXX" type="tel" id="adminPhone" name="adminDetails">
-                    </span>
-                    <span class="fmt-right caption" style="color:#bd1919" id="phoneError"></span>
-                </fieldset>
+                <div class="fmt-half">
+                    <fieldset class="fmt-col text-field" id="emailField">
+                        <legend class="field-caption">Email Address</legend>
+                        <span style="font-size: 24px;" id="adminEmail">---</span>
+                        <button class="positive-button fmt-right" style="margin:0 4px" id="verifiedEmail">C</button>
+                        <button class="warning-button fmt-right" style="margin:0 4px" id="changeEmail">V</button>
+                    </fieldset>
+                </div>
+                <div class="fmt-half">
+                    <fieldset class="fmt-col fmt-twothird fmt-right text-field" id="phoneField">
+                        <legend class="field-caption">Phone number for teachers to contact you</legend>
+                        <div class="fmt-row">
+                        <div class="fmt-col" style="font-size:24px;width: fit-content;">+91</div>
+                        <div class="fmt-col fmt-left fmt-twothird" >
+                        <input class="text-input" required="true" placeholder="XXX-XXX-XXXX" type="tel" id="adminPhone" name="adminDetails">
+                        </div>
+                        </div>
+                        <span class="fmt-right caption" style="color:#bd1919" id="phoneError"></span>
+                    </fieldset>
+                </div>
+                </div>
                 <br/>
                 <!--institution-->
-                <div class="group-heading" id="instHead"></div>
-                <fieldset class="text-field" id="instNameField">
-                    <legend class="field-caption">Proper name of Institution</legend>
-                    <input class="text-input" required="true" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
-                    <span class="fmt-right caption" style="color:#bd1919" id="instNameError"></span>
-                </fieldset>
-                <fieldset class="text-field" id="uiidField">
-                    <legend class="field-caption">Set a Unique Id for institution</legend>
-                    <input class="text-input" required="true" placeholder="bestInstitute007" type="text" id="uiid" name="instDetails">
-                    <span class="fmt-right caption" style="color:#bd1919" id="uiidError"></span>
-                </fieldset>
+                <div class="fmt-row">
+                    <div class="group-heading" id="instHead"></div>
+                    <fieldset class="text-field" id="instNameField">
+                        <legend class="field-caption">Proper name of Institution</legend>
+                        <input class="text-input" required="true" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
+                        <span class="fmt-right caption" style="color:#bd1919" id="instNameError"></span>
+                    </fieldset>
+                    <fieldset class="text-field" id="uiidField">
+                        <legend class="field-caption">Set a Unique Id for institution</legend>
+                        <input class="text-input" required="true" placeholder="bestInstitute007" type="text" id="uiid" name="instDetails">
+                        <span class="fmt-right caption" style="color:#bd1919" id="uiidError"></span>
+                    </fieldset>
+                </div>
                 <br/>
                 <div class="fmt-row fmt-center">
-                    <button class="positive-button" id="saveStage1">Save & Continue</button>
+                    <img class="fmt-spin-fast" width="50" src="../static/graphic/blueLoader.svg" id="stage1load"/>
+                    <button class="positive-button fmt-center" id="saveStage1">Save & Continue</button>
                 </div>
+                
             </div>
 
             <div class="container" id="stage2">
                 <span class="heading" id="s2head"></span>
                 <br/>
-                <div class="fmt-col fmt-half fmt-padding">
+                <div class="fmt-row fmt-padding">
                     <div class="group-heading" id="timeHead"></div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
@@ -92,7 +114,7 @@
                         </fieldset>
                     </div>
                 </div>
-                <div class="fmt-col fmt-half fmt-padding" >
+                <div class="fmt-row fmt-padding" >
                     <div class="group-heading" id="durationHead"></div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
@@ -119,9 +141,9 @@
                         </fieldset>
                     </div>
                 </div>
-                <br/><br/><br/><br/>
-                <br/><br/><br/>
+                <br/>
                 <div class="fmt-row fmt-center">
+                    <img class="fmt-spin-fast" style="display:none" width="50" src="../static/graphic/blueLoader.svg" id="stage2load"/>
                     <button class="positive-button" id="saveStage2">Create schedule</button>
                 </div>
             </div>
@@ -162,10 +184,6 @@
                 </div>
 
                 <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
-                </div>
-
-                <div class="fmt-row fmt-center" style="padding:12px">
-                    <button class="positive-button" id="finalizeDataButton">Continue to Dashboard</button>
                 </div>
             </div>
         </div>

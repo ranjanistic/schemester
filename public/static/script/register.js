@@ -1,25 +1,21 @@
-const defaults = "defaults",
-  batches = "batches",
-  users = "users",
-  assignees = "assignees";
-var dbVer = 1;
-class Default {
-  constructor() {
-    this.admin = "admin";
-    this.institution = "institution";
-    this.timings = "timings";
-  }
-}
-let def = new Default();
+
 class Register {
   constructor() {
+    this.backStage = getElement('previousStageBtn');
     this.greeting = getElement("greeting");
-    this.finalize = getElement("finalizeDataButton");
+    this.stageView = getElement('presentStage')
     this.saveExit = getElement("saveandexit");
-    this.setDefaults();
+    this.finalize = getElement('registrationComplete');
+    this.stage1Loader = getElement('stage1load');
+    this.stage2Loader = getElement('stage2load');
   }
   setDefaults() {
-    visibilityOf(this.finalize, false);
+    visibilityOf(this.finalize,false);
+    visibilityOf(this.stage1Loader,false);
+    visibilityOf(this.stage2Loader,false);
+  }
+  setStageView(text){
+    this.stageView.textContent = text;
   }
 }
 
@@ -31,6 +27,7 @@ class Stage1 {
     this.nameField = getElement("adminNameField");
     this.nameInput = getElement("adminName");
     this.nameError = getElement("adminNameError");
+    this.emailView = getElement("adminEmail");
     this.phoneField = getElement("phoneField");
     this.phoneInput = getElement("adminPhone");
     this.phoneError = getElement("phoneError");
@@ -44,10 +41,19 @@ class Stage1 {
     this.save = getElement("saveStage1");
     this.setDefaults();
   }
+  setAdminValues(name, phone) {
+    this.nameInput.value = name;
+    this.phoneInput.value = phone;
+  }
+  setInstValues(name, uiid) {
+    this.instNameInput.value = name;
+    this.instIdInput.value = uiid;
+  }
   setDefaults() {
     this.heading.textContent = "Basic";
     this.adminHead.textContent = "Administrator";
     this.instHead.textContent = "Institution";
+    new Register().setStageView('First Step');
   }
   getName() {
     return this.nameInput.value;
@@ -63,6 +69,13 @@ class Stage1 {
   }
   exist(show = true) {
     elementFadeVisibility(this.view, show);
+    if(show){
+      new Register().setStageView('First Step');
+      visibilityOf(new Register().backStage,false);
+      visibilityOf(new Register().stage1Loader,false);
+      visibilityOf(this.save,true);
+      clog('gone');
+    }
   }
 }
 class Stage2 {
@@ -99,6 +112,25 @@ class Stage2 {
     this.setDefaults();
     this.exist(false);
   }
+  setTimingValues(
+    start,
+    end,
+    breakStart,
+    dayStart,
+    periodDuration,
+    breakDuration,
+    totalDays,
+    totalPeriods
+  ) {
+    this.startTime.value = start;
+    this.endTime.value = end;
+    this.breakStart.value = breakStart;
+    this.day1.value = dayStart;
+    this.eachDuration.value = periodDuration;
+    this.breakDuration.value = breakDuration;
+    this.totalDays.value = totalDays;
+    this.totalPeriods.value = totalPeriods;
+  }
   setDefaults() {
     this.heading.textContent = "Schedule";
     this.timeHead.textContent = "Timings";
@@ -130,6 +162,16 @@ class Stage2 {
   }
   exist(show = true) {
     elementFadeVisibility(this.view, show);
+    if(show){
+      new Register().setStageView('Step Two');
+      visibilityOf(new Register().backStage,true);
+      visibilityOf(new Register().stage2Loader,false);
+      visibilityOf(this.save,true);
+      new Register().backStage.onclick = function(){
+        new Stage2().exist(false);
+        new Stage1().exist(true);
+      }
+    }
   }
 }
 
@@ -172,39 +214,92 @@ class TeacherData {
   }
   exist(show = true) {
     visibilityOf(this.view, show);
+    if(show){
+      new Register().setStageView('Add Records');
+      new Register().backStage.onclick = function(){
+        new TeacherData().exist(false);
+        new Stage2().exist(true);
+      }
+    }
   }
 }
 
+//TODO: pass functions as params
+//TODO: dymanicize dialog creation, snackbar creation.
 window.onload = function () {
   initiateIDB();
   var register = new Register();
+  var stage1 = new Stage1();
+  var stage2 = new Stage2();
   var adminEmail;
+  stage1.exist(true);
+  register.setDefaults();
   firebase.auth().onAuthStateChanged(function (user) {
     if (user) {
       adminEmail = user.email;
-      register.greeting.textContent = "Admin, " + adminEmail;
+      stage1.emailView.textContent = adminEmail;
+    } else {
+      relocate(adminLoginPage);
     }
   });
-  var stage1 = new Stage1();
-  var stage2 = new Stage2();
 
   new TeacherData().exist(false);
+
+  register.saveExit.onclick = function(){
+    showLoader();
+    visibilityOf(register.saveExit,false);
+    var data = [
+      {
+        type: def.admin,
+        email: adminEmail,
+        adminname: stage1.getName(),
+        phone: stage1.getPhone(),
+      },
+      {
+        type: def.institution,
+        institutename: stage1.getInstName(),
+        uiid: stage1.getInstID(),
+      },
+      {
+        type: def.timings,
+        startTime: stage2.getStartTime(),
+        endTime: stage2.getEndTime(),
+        breakStartTime: stage2.getBreakStart(),
+        startDay: stage2.getFirstDay(),
+        periodMinutes: stage2.getPeriodDuration(),
+        breakMinutes: stage2.getBreakDuration(),
+        totalDays: stage2.getTotalDays(),
+        totalPeriods: stage2.getTotalPeriods(),
+      },
+    ];
+    saveDefaults(data,function(){
+      relocate(homepage);
+    });
+  }
   stage1.save.onclick = function () {
-    stage1.exist(false);
-    stage2.exist(true);
+    visibilityOf(register.stage1Loader,true);
+    visibilityOf(stage1.save,false);
+    var data = [
+      {
+        type: def.admin,
+        email: adminEmail,
+        adminname: stage1.getName(),
+        phone: stage1.getPhone(),
+      },
+      {
+        type: def.institution,
+        institutename: stage1.getInstName(),
+        uiid: stage1.getInstID(),
+      },
+    ];
+    saveDefaults(data,function(){
+      stage1.exist(false);
+      stage2.exist(true);
+    });
     stage2.save.onclick = function () {
-      var data = [
-        {
-          type: def.admin,
-          email: adminEmail,
-          name: stage1.getName(),
-          phone: stage1.getPhone(),
-        },
-        {
-          type: def.institution,
-          name: stage1.getInstName(),
-          uiid: stage1.getInstID(),
-        },
+      visibilityOf(register.stage2Loader,true);
+      visibilityOf(stage2.save,false);
+      var data2 = [
         {
           type: def.timings,
           startTime: stage2.getStartTime(),
@@ -217,13 +312,14 @@ window.onload = function () {
           totalPeriods: stage2.getTotalPeriods(),
         },
       ];
-      saveDefaults(data);
-      stage2.exist(false);
-      document.getElementById("viewportTag").setAttribute('content', 'inital-scale=1.0');
-      var teacherData = new TeacherData();
-      teacherData.setDefaults(stage2.getTotalPeriods()); //getDefaultPreference(def.timings, totalPeriods));
-      
-      teacherData.exist(true);
+      saveDefaults(data2,function(){
+        stage2.exist(false);
+        document.getElementById("viewportTag").setAttribute("content", "initial-scale=1.0");
+        visibilityOf(register.finalize,true);
+        var teacherData = new TeacherData();
+        teacherData.setDefaults(stage2.getTotalPeriods()); //getDefaultPreference(def.timings, totalPeriods));
+        teacherData.exist(true);
+      });
 
       var teachers = Array("1teacher@testing", "2teacher@testing");
       for (var tindex = 0; tindex < teachers.length; tindex++) {

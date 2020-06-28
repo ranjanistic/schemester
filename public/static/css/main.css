@@ -271,6 +271,22 @@ img{vertical-align:middle}
     background-color: #94a5db;
     box-shadow: 1px 5px 10px #00000011;
 }
+.active-button{
+    background-color: #22a54e;
+    color:white;
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+.active-button:focus{
+    outline:none;
+    background-color: #81be7c;
+    box-shadow: 1px 5px 10px #00000011;
+}
 .neutral-button{
     background-color: white;
     color:#216bf3;
@@ -304,8 +320,8 @@ img{vertical-align:middle}
     box-shadow: 1px 5px 10px #00000011;
 }
 .warning-button{
-    background-color: #d6b915;
-    color:black;
+    background-color: #d66a04;
+    color:rgb(255, 255, 255);
     margin: 4px;
     border-width: 0;
     border-radius: 4px;
@@ -316,7 +332,7 @@ img{vertical-align:middle}
 }
 .warning-button:focus{
     outline:none;
-    background-color: #81700c;
+    background-color: #7e4a06;
     box-shadow: 1px 5px 10px #00000011;
 }
 .circle-button{

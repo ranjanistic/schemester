@@ -1,83 +1,17 @@
-const dbName = appName;
-let idb;
-let transaction;
-class Modes {
-  edit = "readwrite";
-  view = "readonly";
-}
-const mode = new Modes();
-
-class ObjectStores {
-  default;
-  teachers;
-  batches;
-  today;
-  constructor() {
-    this.defaultDataName = "defaults";
-    this.defaultKey = "type";
-    this.teacherScheduleName = "teachers";
-    this.teachersKey = "day";
-    this.batchesScheduleName = "batches";
-    this.batchesKey = "day";
-    this.todayScheduleName = "today";
-    this.todayKey = "period";
-  }
-}
-let objStore = new ObjectStores();
-class Transactions {
-  constructor(database) {
-    this.default;
-    this.teachers;
-    this.batches;
-    this.today;
-    this.db = database;
-  }
-  getDefaultTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.defaultDataName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.defaultDataName));
-  }
-  getTeachersTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.teacherScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.teacherScheduleName));
-  }
-  getBatchesTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.batchesScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.batchesScheduleName));
-  }
-  getTodayTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.todayScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.todayScheduleName));
-  }
-}
 
 //to create/update all records in default objectstore at once.
-function saveDefaults(defaultData) {
+function saveDefaults(defaultData,executor) {
   let defTrans = transaction.getDefaultTx(mode.edit);
+  defTrans.onerror = function(e){
+    
+  }
   let obStore = defTrans.objectStore(objStore.defaultDataName);
   defaultData.forEach(function (type) {
+    clog(type.type);
     let request = obStore.put(type);
     request.onsuccess = function () {
-      clog("success added :" + type);
+      clog("success added :" + type.type);
+      executor();
     };
     request.oncomplete = function () {
       clog("complete adding defaults");
@@ -105,6 +39,7 @@ let saveCustomDefaults = function (type, key, newValue) {
       cursor.continue();
     }
   };
+
 };
 
 let initiateIDB = function () {
@@ -128,6 +63,36 @@ let initiateIDB = function () {
       clog("Database opened successfully");
       idb = request.result;
       transaction = new Transactions(idb);
+      let object = transaction.getDefaultTx().objectStore(objStore.defaultDataName);
+      object.openCursor().onsuccess = function(e){
+        let s1  = new Stage1();
+        let s2  = new Stage2();
+        let cursor = e.target.result;
+        if(cursor){
+          switch(cursor.value.type){
+            case def.admin:{
+              s1.setAdminValues(cursor.value.adminname,cursor.value.phone);
+            };break;
+            case def.institution:{
+              s1.setInstValues(cursor.value.institutename,cursor.value.uiid);
+            };break;
+            case def.timings:{
+              s2.setTimingValues(
+                cursor.value.startTime,
+                cursor.value.endTime,
+                cursor.value.breakStartTime,
+                cursor.value.startDay,
+                cursor.value.periodMinutes,
+                cursor.value.breakMinutes,
+                cursor.value.totalDays,
+                cursor.value.totalPeriods
+              );
+            };break;
+          }
+          cursor.continue();
+        }
+      }
+      
     };
 
     request.onupgradeneeded = function (e) {

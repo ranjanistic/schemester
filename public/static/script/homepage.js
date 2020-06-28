@@ -16,20 +16,20 @@ function initAuthStateListener() {
         if (user) {
             adminLogin.addEventListener(click, function(){
                 showLoader();
-                window.location.href = "admin/admin_dash.html";
+                refer(adminDashPage);
             }, false);
             adminDash.addEventListener(click, function(){
                 showLoader();
-                window.location.replace("admin/admin_dash.html");
+                relocate(adminDashPage);
             }, false);
         } else {
             adminLogin.addEventListener(click, function(){
                 showLoader();
-                window.location.href = "admin/admin_login.html";
+                refer(adminLoginPage);
             }, false);
             adminDash.addEventListener(click, function(){
                 showLoader();
-                window.location.href = "admin/admin_login.html";
+                refer(adminLoginPage);
             }, false);
         }
     });

@@ -39,7 +39,7 @@ function initializeElements(){
     }, false);
     settings.addEventListener(click,function(){
         showLoader();
-        window.location.href = "management.html";
+        refer(adminSettings);
     },false);
 
     dayInput.addEventListener(click,function(){
@@ -65,7 +65,7 @@ function initAuthStateListener() {
                     verif.loader();
                     snackBar(false);
                     if(firebase.auth().currentUser.emailVerified){
-                        window.location.replace("/");
+                        relocate(root);
                     } else {
                         snackBar(true,'Not yet verified',false,nothing,false);
                         verif.loader(false);
@@ -77,7 +77,7 @@ function initAuthStateListener() {
                 }
             }
         } else {
-            window.location.replace("/admin/admin_login.html")
+            relocate(adminLoginPage);
         }
     });
 }

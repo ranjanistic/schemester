@@ -1,7 +1,9 @@
 const appName="Schemester", baseColor = "#216bf3",errorBaseColor = "#c40c0c",
  click = 'click', input = 'input',change='change', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block',
  adminLoginPage = '/admin/admin_login.html',adminDashPage = '/admin/admin_dash.html',homepage = '/home.html',root = '/',
+ registrationPage = '/registration.html',
  adminSettings = '/admin/management.html';
+
 var cred = Array(2);
 class Snackbar{
     id = 'snackBar';
@@ -258,6 +260,88 @@ class ConfirmDialog extends ConfirmID{
     }
 }
 
+//idb classes
+const dbName = appName;
+let idb;
+let transaction;
+let dbVer = 1;
+class Default {
+  constructor() {
+    this.admin = "admin";
+    this.institution = "institution";
+    this.timings = "timings";
+  }
+}
+let def = new Default();
+class Modes {
+  edit = "readwrite";
+  view = "readonly";
+}
+const mode = new Modes();
+
+class ObjectStores {
+  default;
+  teachers;
+  batches;
+  today;
+  constructor() {
+    this.defaultDataName = "defaults";
+    this.defaultKey = "type";
+    this.teacherScheduleName = "teachers";
+    this.teachersKey = "day";
+    this.batchesScheduleName = "batches";
+    this.batchesKey = "day";
+    this.todayScheduleName = "today";
+    this.todayKey = "period";
+  }
+}
+let objStore = new ObjectStores();
+class Transactions {
+  constructor(database) {
+    this.default;
+    this.teachers;
+    this.batches;
+    this.today;
+    this.db = database;
+  }
+  getDefaultTx(mode) {
+    if (mode != null) {
+      return (this.default = this.db.transaction(
+        objStore.defaultDataName,
+        mode
+      ));
+    }
+    return (this.default = this.db.transaction(objStore.defaultDataName));
+  }
+  getTeachersTx(mode) {
+    if (mode != null) {
+      return (this.default = this.db.transaction(
+        objStore.teacherScheduleName,
+        mode
+      ));
+    }
+    return (this.default = this.db.transaction(objStore.teacherScheduleName));
+  }
+  getBatchesTx(mode) {
+    if (mode != null) {
+      return (this.default = this.db.transaction(
+        objStore.batchesScheduleName,
+        mode
+      ));
+    }
+    return (this.default = this.db.transaction(objStore.batchesScheduleName));
+  }
+  getTodayTx(mode) {
+    if (mode != null) {
+      return (this.default = this.db.transaction(
+        objStore.todayScheduleName,
+        mode
+      ));
+    }
+    return (this.default = this.db.transaction(objStore.todayScheduleName));
+  }
+}
+
 function sendPassResetLink(){
     var snack = new Snackbar()
     snack.button.onclick = function(){
@@ -408,13 +492,13 @@ function createAccount(dialog,email,password){
             case 'auth/weak-password': snackBar(true,'Weak password',false,nothing,false);break;
             case 'auth/email-already-in-use':{snackBar(true,'This email address is already being used by another institution.',true,'Login',false);
             new Snackbar().button.onclick = function(){
-                window.location.href = '/admin/admin_login.html';
+                refer(adminLoginPage);
             }
             }break;
             case 'auth/account-exists-with-different-credential':{
                 snackBar(true,'This account already exists.',true,'Login');
                 new Snackbar().button.onclick = function(){
-                    window.location.href = '/admin/admin_login.html';
+                    refer(adminLoginPage);
                 }
             }break;
             case 'auth/timeout':{
@@ -459,7 +543,7 @@ function accountVerificationDialog(isShowing = true,emailSent = false){
             if(silentLogin(cred[0],cred[1])){
                 user = firebase.auth().currentUser;
                 if(user.emailVerified){
-                    window.location.replace('/registration.html');
+                    relocate(registrationPage);
                 } else {
                     snackBar(true,'Not yet verified',false,nothing,false);
                     verify.loader(false);
@@ -499,9 +583,9 @@ function accountVerificationDialog(isShowing = true,emailSent = false){
 }
 function logoutUser(sendHome = true){
     if(sendHome){
-        window.location.replace("/");
+        relocate(root);
     } else {
-        window.location.replace("/admin/admin_login.html");
+        relocate(adminLoginPage);
     }
     firebase.auth().signOut();
 }
@@ -537,7 +621,7 @@ function feedBackBox(isShowing = true){
     feedback.positiveAction().onclick = function(){
         if(runEmailCheck(feedback.getInput(0),feedback.inputField[0],feedback.inputError[0])){
             if(runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError)){
-                window.location.href = "mailto:schemester@outlook.in?subject=From "+feedback.getInput(0).value+"&body="+feedback.textInput.value;
+                refer("mailto:schemester@outlook.in?subject=From "+feedback.getInput(0).value+"&body="+feedback.textInput.value);
                 snackBar(true,"Thanks for the interaction. We'll look forward to that.",true,'Hide');
                 var snack = new Snackbar();
                 snack.button.onclick = function(){snackBar(false);}
@@ -691,4 +775,10 @@ function getMonthName(mIndex){
 
 let getElement = function(id){
     return document.getElementById(id);
+}
+let relocate = function(path){
+    window.location.replace(path);
+}
+let refer = function(href){
+    window.location.href = href;
 }

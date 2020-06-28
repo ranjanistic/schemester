@@ -17,7 +17,7 @@ function initializeElements(){
 
     back.addEventListener(click,function(){
         showLoader();
-        window.location.replace('/');
+        relocate(root);
     },false);
     logInButton.addEventListener(click, adminLogin, false);
     passwordInput.addEventListener(input,function(){
@@ -35,7 +35,7 @@ function initializeElements(){
 function initAuthStateListener() {
     firebase.auth().onAuthStateChanged(function(user) {
         if(user){
-            window.location.replace("/");
+            relocate(root);
         }
     });
 }
@@ -75,7 +75,7 @@ function adminLogin() {
             case "auth/user-disabled":{
                 snackButton.onclick = function(){
                     showLoader();
-                    window.location.href = "/about.html#userDisabled";
+                    refer("/about.html#userDisabled");
                 }
                 logInButton.textContent = "Retry";
                 snackBar(true,"This account has been disabled. You might want to contact us directly.",true,"Help",false);

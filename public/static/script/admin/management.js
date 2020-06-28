@@ -1,4 +1,10 @@
 //admin management default script
+let admin;
+let inst;
+let schedule;
+let security;
+let manage;
+let users;
 class Management{
     displayIndex = 0;
     constructor(){
@@ -80,14 +86,19 @@ class Schedule{
         this.scheduleEndTime = getElement('scheduleEndTime');
         this.breakStartTime = getElement('breakStartTime');
         this.breakDuration = getElement('breakDuration');
+        this.workDays = getElement('workdays');
+        this.totalPeriods = getElement('totalPeriods');
     }
-    setDetails(periodDuration,weekStartDay,scheduleStartTime,scheduleEndTime,breakStartTime,breakDuration){
-        this.periodDuration.textContent = periodDuration
-        this.weekStartDay.textContent = weekStartDay
-        this.scheduleStartTime.textContent = scheduleStartTime
-        this.scheduleEndTime.textContent =scheduleEndTime 
-        this.breakStartTime.textContent = breakStartTime
-        this.breakDuration.textContent = breakDuration
+    setDetails(periodDuration,weekStartDay,scheduleStartTime,scheduleEndTime,breakStartTime,breakDuration
+        ,totalWorkDays,totalPeriodsInDay){
+        this.periodDuration.textContent = periodDuration;
+        this.weekStartDay.textContent = weekStartDay;
+        this.scheduleStartTime.textContent = scheduleStartTime;
+        this.scheduleEndTime.textContent =scheduleEndTime;
+        this.breakStartTime.textContent = breakStartTime;
+        this.breakDuration.textContent = breakDuration;
+        this.workDays.textContent = totalWorkDays;
+        this.totalPeriods.textContent = totalPeriodsInDay;
     }
 
 }
@@ -109,31 +120,32 @@ class Users{
         this.invite = getElement('inviteUsers');
     }
 }
+
 function initAuthStateListener() {
-    var admin = new Admin();
+    
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
-            var displayName = 'N/A';
-            if(user.displayName!=null){displayName = user.displayName}
-            var email = user.email;
-            var emailVerified = user.emailVerified;
-            var photoURL = user.photoURL;
-            var uid = user.uid;
-            var providerData = user.providerData;
-            var creation = user.createdAt;
-            var providerUid = providerData[0].uid;
-            admin.setDetails(displayName,email,null,creation)
+            let displayName = user.displayName
+            let email = user.email;
+            let emailVerified = user.emailVerified;
+            let photoURL = user.photoURL;
+            let uid = user.uid;
+            let providerData = user.providerData;
+            let creation = user.createdAt;
+            reopenDB();
         } else {
-            window.location.replace("admin_login.html")
+            relocate(adminLoginPage);
         }
     });
 }
 
-//https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js
 function initializeElements(){
-    var security = new Security();
-    var manage = new Management();
-    var users = new Users();
+    admin = new Admin();
+    inst = new Institution();
+    schedule = new Schedule();
+    security = new Security();
+    manage = new Management();
+    users = new Users();
     for(var i= 0;i<manage.tabs.length;i++){
         manage.tabs[i].addEventListener(click,function(){
             handleTabClicks(event,manage.tabs,manage.boxes,"leftTabButtonSelected","leftTabButton");
@@ -170,5 +182,9 @@ function handleTabClicks(event,clickables,showables,showClass,hideClass){
 
 function undoAndReturn(){
     showLoader();
-    window.location.replace("admin_dash.html");
+    relocate(adminDashPage);
 }
+window.onload = function() {
+    initializeElements();
+    initAuthStateListener();
+};
