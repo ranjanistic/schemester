@@ -60,21 +60,6 @@ function initAuthStateListener() {
                 loadRemoteContent(user);
             }else{
                 accountVerificationDialog(true,false);
-                var verif = new ConfirmDialog()
-                verif.positiveAction().onclick = function(){
-                    verif.loader();
-                    snackBar(false);
-                    if(firebase.auth().currentUser.emailVerified){
-                        relocate(root);
-                    } else {
-                        snackBar(true,'Not yet verified',false,nothing,false);
-                        verif.loader(false);
-                    }
-                }
-                verif.negativeAction().onclick = function(){
-                    verif.loader();
-                    logoutUser();
-                }
             }
         } else {
             relocate(adminLoginPage);

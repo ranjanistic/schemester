@@ -159,12 +159,11 @@ function initializeElements(){
     security.resetPass.addEventListener(click,resetPasswordDialog,false);
     security.resetMail.addEventListener(click,changeEmailBox,false);
     users.invite.addEventListener(click,function(){
-
-        var dialog = new Dialog(0);
+        let dialog = new Dialog();
         dialog.setDisplay(firebase.auth().currentUser.uid,'Copy and share the text above, or send the given QR code.');
         dialog.subHeading.style.textAlign = 'center';
-        dialog.setButtonText('Done');
-        dialog.positiveAction().onclick = function(){dialog.existence(false);}
+        dialog.createActions(Array('Done'),Array(actionType.positive));
+        dialog.onButtonClick(0,function(){dialog.existence(false);});
         dialog.existence(true);
     },false);
 }

@@ -19,7 +19,7 @@ function initializeElements(){
         showLoader();
         relocate(root);
     },false);
-    logInButton.addEventListener(click, adminLogin, false);
+    logInButton.addEventListener(click, logInAdministrator, false);
     passwordInput.addEventListener(input,function(){
         setFieldSetof(passwordFieldset,true);
         visibilityOf(forgotPassword,false);
@@ -40,12 +40,12 @@ function initAuthStateListener() {
     });
 }
 
-function adminLogin() {
+let logInAdministrator = function() {
     visibilityOf(logInLoader,true);
     visibilityOf(logInButton,false);
     setFieldSetof(emailFieldSet,true);
     setFieldSetof(passwordFieldset,true);
-    snackBar(false);
+    new Snackbar().hide();
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
     }
@@ -60,7 +60,7 @@ function adminLogin() {
                 logInButton.textContent = "Retry";
             };break;
             case "auth/too-many-requests":{
-                snackBar(true,'Too many unsuccessfull attempts, try again after a while.',false,nothing,false);
+                snackBar('Too many unsuccessfull attempts, try again after a while.',null,false);
                 logInButton.textContent = "Disabled";
             };break;
             case "auth/user-not-found":{
@@ -73,21 +73,23 @@ function adminLogin() {
                 validateEmailID(emailInput,emailFieldSet,emailError);
             };break;
             case "auth/user-disabled":{
-                snackButton.onclick = function(){
-                    showLoader();
-                    refer("/about.html#userDisabled");
-                }
                 logInButton.textContent = "Retry";
-                snackBar(true,"This account has been disabled. You might want to contact us directly.",true,"Help",false);
+                snackBar("This account has been disabled. You might want to contact us directly.","Help",false,function(){
+                    feedBackBox();
+                    new Snackbar().hide();
+                });
             };break;
             case "auth/network-request-failed":{
                 logInButton.textContent = "Retry";
-                snackBar(true,'No internet connection',false,nothing,false);
+                snackBar('No internet connection',null,false);
             };break;
             default: {
                 logInButton.textContent = "Retry";
                 visibilityOf(forgotPassword,true);
-                snackBar(true,errorCode+':'+errorMessage,true,'Help',false);
+                snackBar(errorCode+':'+errorMessage,'Help',false,function(){
+                    feedBackBox();
+                    new Snackbar().hide();
+                });
             }
         }
         visibilityOf(logInLoader,false);

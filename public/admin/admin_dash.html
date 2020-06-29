@@ -168,19 +168,24 @@
         <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
             id="todayDateTime" style="width:fit-content;right:0;">
         </span>
-
-        <div id="confirmView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px" id="confirmBox">
-                <div class="fmt-row heading" id="confirmHeading">Log out?</div>
-                <div class="fmt-row group-text" id="confirmSubHeading">
-                    
-                </div>
-                <div class="fmt-row" id="confirmActions">
-                    <span  id="confirmActions" class="fmt-half fmt-right">
-                        <button class="negative-button fmt-right"  id="confirmNegative"></button>
-                        <button class="positive-button fmt-right" id="confirmPositive"></button>
-                        <img class="fmt-spin-fast fmt-right" width="50" src="../static/graphic/blueLoader.svg" id="confirmLoader"/>
-                    </span>
+        
+        <!--Dialog box-->
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                    <div class="fmt-row" id="dialogHeading"></div>
+                    <div class="fmt-row" id="dialogSubHeading"></div>
+                    <div id="inputFields"></div>
+                    <fieldset class="fmt-row text-field" id="dialogInputAreaField">
+                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+                    </fieldset>
+                    <div class="fmt-row" id="dialogActions">
+                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+                        <span id="dialogButtons" class="fmt-half fmt-right"></span>
+                    </div>
                 </div>
             </div>
         </div>

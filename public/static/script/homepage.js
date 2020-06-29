@@ -5,8 +5,7 @@ function initializeElements(){
     adminLogin = getElement('adminLogin');
     adminSignup = getElement('registerInstitution');
     adminDash = getElement('adminDashboard');
-    adminSignup.addEventListener(click, function(){
-        //showLoader();        
+    adminSignup.addEventListener(click, function(){      
         registrationDialog(true);
     }, false);
     showGreeting();

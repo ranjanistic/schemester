@@ -179,58 +179,19 @@
             <div class="fmt-col fmt-threequarter" id="dialogContent">
                 <div class="fmt-row" id="dialogHeading"></div>
                 <div class="fmt-row" id="dialogSubHeading"></div>
-                <fieldset class="fmt-row text-field" id="dialogInputField1">
-                    <legend class="field-caption" id="dialogFieldCaption1"></legend>
-                    <input class="text-input" id="dialogInput1">
-                    <span class="fmt-right error-caption" id="dialogInputError1"></span>
-                </fieldset>
-                <fieldset class="fmt-row text-field" id="dialogInputField2">
-                    <legend class="field-caption" id="dialogFieldCaption2"></legend>
-                    <input class="text-input" id="dialogInput2">
-                    <span class="fmt-right error-caption" id="dialogInputError2"></span>
-                </fieldset>
-                <fieldset class=" fmt-row text-field" id="dialogInputAreaField">
+                <div id="inputFields"></div>
+                <fieldset class="fmt-row text-field" id="dialogInputAreaField">
                     <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
                     <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
                     <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
                 </fieldset>
                 <div class="fmt-row" id="dialogActions">
-                    <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird">
-                        <label class="radio-container" id="dialogChipLabel1">
-                            Feedback
-                        <input type="radio" name="dialogChip" id="dialogChip1"><span class="checkmark"></span>
-                        </label>
-                        <label class="radio-container" id="dialogChipLabel2">
-                            Error
-                            <input type="radio" name="dialogChip" id="dialogChip2"><span class="checkmark"></span>
-                        </label>
-                    </span>
-                    <span class="fmt-half fmt-right">
-                        <button class="negative-button fmt-right"  id="dialogNegative"></button>
-                        <button class="positive-button fmt-right" id="dialogPositive"></button>
-                        <img class="fmt-spin-fast fmt-right" width="50" src="../static/graphic/blueLoader.svg" id="dialogLoader"/>
-                    </span>
+                    <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+                    <span id="dialogButtons" class="fmt-half fmt-right"></span>
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="confirmView" class="dialog fmt-animate-opacity">
-        <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px" id="confirmBox">
-            <div class="fmt-row heading" id="confirmHeading">Log out?</div>
-            <div class="fmt-row group-text" id="confirmSubHeading">
-                
-            </div>
-            <div class="fmt-row">
-                <span  id="confirmActions" class="fmt-half fmt-right">
-                    <button class="negative-button fmt-right"  id="confirmNegative"></button>
-                    <button class="positive-button fmt-right" id="confirmPositive"></button>
-                    <img class="fmt-spin-fast fmt-right" width="50" src="../static/graphic/blueLoader.svg" id="confirmLoader"/>
-                </span>
-            </div>
-        </div>
-    </div>
-
 
     <script>
     if ('serviceWorker' in navigator) {
