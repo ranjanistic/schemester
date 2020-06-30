@@ -2,7 +2,7 @@
 var emailFieldSet, emailError, passwordFieldset, forgotPassword, emailInput,passwordInput,logInButton,logInLoader
 ,back;
 
-function initializeElements(){
+let initializeElements=()=>{
     emailFieldSet = getElement('email_fieldset');
     passwordFieldset = getElement('password_fieldset');
     puiidFieldSet = getElement("puiid_fieldset")
@@ -15,12 +15,12 @@ function initializeElements(){
     logInLoader = getElement('loginLoader');
     back = getElement('backFromLogin');
 
-    back.addEventListener(click,function(){
+    back.addEventListener(click,()=>{
         showLoader();
         relocate(root);
     },false);
     logInButton.addEventListener(click, logInAdministrator, false);
-    passwordInput.addEventListener(input,function(){
+    passwordInput.addEventListener(input,()=>{
         setFieldSetof(passwordFieldset,true);
         visibilityOf(forgotPassword,false);
     },false);
@@ -32,15 +32,15 @@ function initializeElements(){
 
 }
 
-function initAuthStateListener() {
-    firebase.auth().onAuthStateChanged(function(user) {
+let initAuthStateListener = ()=> {
+    firebase.auth().onAuthStateChanged((user)=> {
         if(user){
             relocate(root);
         }
     });
 }
 
-let logInAdministrator = function() {
+let logInAdministrator = ()=> {
     visibilityOf(logInLoader,true);
     visibilityOf(logInButton,false);
     setFieldSetof(emailFieldSet,true);
@@ -49,7 +49,7 @@ let logInAdministrator = function() {
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
     }
-    firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value).catch(function(error) {
+    firebase.auth().signInWithEmailAndPassword(emailInput.value, passwordInput.value).catch((error)=> {
         var errorCode = error.code;
         var errorMessage = error.message;
         clog(errorCode);
@@ -74,7 +74,7 @@ let logInAdministrator = function() {
             };break;
             case "auth/user-disabled":{
                 logInButton.textContent = "Retry";
-                snackBar("This account has been disabled. You might want to contact us directly.","Help",false,function(){
+                snackBar("This account has been disabled. You might want to contact us directly.","Help",false,()=>{
                     feedBackBox();
                     new Snackbar().hide();
                 });
@@ -86,7 +86,7 @@ let logInAdministrator = function() {
             default: {
                 logInButton.textContent = "Retry";
                 visibilityOf(forgotPassword,true);
-                snackBar(errorCode+':'+errorMessage,'Help',false,function(){
+                snackBar(errorCode+':'+errorMessage,'Help',false,()=>{
                     feedBackBox();
                     new Snackbar().hide();
                 });
@@ -97,18 +97,18 @@ let logInAdministrator = function() {
     });
 }
 
-function validateEmailID(email,field,error){
+let validateEmailID = (email,field,error)=>{
     setFieldSetof(field,isEmailValid(email.value),error,"Invalid email address.");
     if(!isEmailValid(email.value)){
         email.focus();
-        email.oninput = function(){
+        email.oninput = ()=>{
             setFieldSetof(field,true);
             validateEmailID(emailInput,emailFieldSet,emailError);
         }
     }
 }
 
-function focusToNext(){
+let focusToNext = ()=>{
     if(!isEmailValid(emailInput.value)){
         if(emailInput.value != nothing){
             validateEmailID(emailInput,emailFieldSet,emailError);

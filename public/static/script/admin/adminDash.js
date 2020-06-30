@@ -4,7 +4,7 @@ var logOut,settings,dateTime,greeting, teacherChipToday, classChipToday,workboxt
 teacherBoxToday, classBoxToday,teacherSearchInput, teacherDropdown, classSearchInput,classDropdown
 ,dayInput,dayDropdown;
 
-function initializeElements(){    
+let initializeElements=()=>{
     logOut = getElement('logoutAdminButton');
     dateTime = getElement('todayDateTime');
     greeting = getElement('greeting');
@@ -23,43 +23,45 @@ function initializeElements(){
     //classDropdown = getElement('classDropdown');
     visibilityOf(workboxtoday,false);
     //visibilityOf(teacherBoxToday,false);
-    classChipToday.addEventListener(click,function(){
+    classChipToday.addEventListener(click,()=>{
         visibilityOf(workboxtoday,true);
         visibilityOf(teacherBoxToday,false);
         visibilityOf(classBoxToday,true);
     });
-    teacherChipToday.addEventListener(click,function(){
+    teacherChipToday.addEventListener(click,()=>{
         visibilityOf(workboxtoday,true);
         visibilityOf(classBoxToday,false);
         visibilityOf(teacherBoxToday,true);
     });
-    logOut.addEventListener(click, function(){
+    logOut.addEventListener(click, ()=>{
         showLoader();
         logoutUser();
     }, false);
-    settings.addEventListener(click,function(){
+    settings.addEventListener(click,()=>{
         showLoader();
         refer(adminSettings);
     },false);
 
-    dayInput.addEventListener(click,function(){
+    dayInput.addEventListener(click,()=>{
         visibilityOf(dayDropdown,false);
     });
 
-    dayInput.oninput = function(){
+    dayInput.oninput = ()=>{
         visibilityOf(dayDropdown,true)
         filterFunction(dayInput,dayDropdown);
     }
     loadLocalContent()
 }
 
-function initAuthStateListener() {
-    firebase.auth().onAuthStateChanged(function(user) {
+let initAuthStateListener=()=>{
+    firebase.auth().onAuthStateChanged((user)=> {
         if (user) {
             if(user.emailVerified){
                 loadRemoteContent(user);
             }else{
-                accountVerificationDialog(true,false);
+                accountVerificationDialog(true,false,()=>{
+                    logoutUser();
+                });
             }
         } else {
             relocate(adminLoginPage);
@@ -67,19 +69,19 @@ function initAuthStateListener() {
     });
 }
 
-window.onload = function() {    
+window.onload = ()=> {    
     initializeElements()
     initAuthStateListener();
 };
 
-function loadLocalContent(){
+let loadLocalContent=()=>{
     var today = new Date();
     var date = getDayName(today.getDay())+','+space+getMonthName(today.getMonth()) + space + today.getDate() +','+space + today.getFullYear()+","+space+ today.getHours()+':'+today.getMinutes();
     dateTime.textContent = date;
     dayInput.placeholder = getDayName(today.getDay());
 }
 
-function loadRemoteContent(user){
+let loadRemoteContent=(user)=>{
     var displayName = user.displayName;
     var email = user.email;
     var emailVerified = user.emailVerified;
@@ -89,7 +91,7 @@ function loadRemoteContent(user){
     greeting.textContent = email;
 }
 
-function filterFunction(input,dropdown) {
+let filterFunction = (input,dropdown) =>{
     var input, filter, a;
     filter = input.value.toUpperCase();
     a = dropdown.getElementsByTagName("a");
@@ -97,7 +99,7 @@ function filterFunction(input,dropdown) {
         var txtValue = a[i].textContent || a[i].innerText;
         visibilityOf(a[i],txtValue.toUpperCase().indexOf(filter) > -1)
         if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            a[i].onclick = function(){
+            a[i].onclick = ()=>{
                 input.value = txtValue;
                 visibilityOf(dayDropdown,false);
             }
@@ -107,7 +109,7 @@ function filterFunction(input,dropdown) {
 }
 
 var prevScrollpos = window.pageYOffset;
-window.onscroll = function() {
+window.onscroll = ()=> {
     var currentScrollPos = window.pageYOffset;
     replaceClass(dateTime,"fmt-animate-opacity-off","fmt-animate-opacity",prevScrollpos > currentScrollPos);
     prevScrollpos = currentScrollPos;

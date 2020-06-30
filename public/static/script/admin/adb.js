@@ -1,4 +1,4 @@
-let reopenDB = function () {
+let reopenDB = ()=> {
     if (!window.indexedDB) {
       clog("IDB:0");
       snackBar(
@@ -11,16 +11,16 @@ let reopenDB = function () {
     } else {
       let request = window.indexedDB.open(dbName, 1);
   
-      request.onerror = function () {
+      request.onerror = ()=> {
         clog("Database failed to open");
       };
   
-      request.onsuccess = function () {
+      request.onsuccess = ()=> {
         clog("Database opened successfully");
         idb = request.result;
         transaction = new Transactions(idb);
         let object = transaction.getDefaultTx().objectStore(objStore.defaultDataName);
-        object.openCursor().onsuccess = function(e){
+        object.openCursor().onsuccess = (e)=>{
           let cursor = e.target.result;
           if(cursor){
             switch(cursor.value.type){
@@ -49,8 +49,26 @@ let reopenDB = function () {
         
       };
   
-      request.onupgradeneeded = function (e) {
+      request.onupgradeneeded = (e) =>{
         clog("Database needs upgrade");
+        idb = e.target.result;
+        objStore.default = idb.createObjectStore(objStore.defaultDataName, {
+          keyPath: objStore.defaultKey,
+        });
+        objStore.teachers = idb.createObjectStore(objStore.teacherScheduleName, {
+          keyPath: objStore.teachersKey,
+          autoIncrement: true,
+        });
+        objStore.batches = idb.createObjectStore(objStore.batchesScheduleName, {
+          keyPath: objStore.batchesKey,
+          autoIncrement: true,
+        });
+        objStore.today = idb.createObjectStore(objStore.todayScheduleName, {
+          keyPath: objStore.todayKey,
+          autoIncrement: true,
+        });
+        transaction = new Transactions(idb);
+        clog("Database setup complete");
         relocate(registrationPage);
       };
     }

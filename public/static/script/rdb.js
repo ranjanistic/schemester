@@ -1,38 +1,37 @@
 
 //to create/update all records in default objectstore at once.
-function saveDefaults(defaultData,executor) {
+let saveDefaults = (defaultData,executor)=> {
   let defTrans = transaction.getDefaultTx(mode.edit);
-  defTrans.onerror = function(e){
-    
+  defTrans.onerror = (e)=>{
   }
   let obStore = defTrans.objectStore(objStore.defaultDataName);
-  defaultData.forEach(function (type) {
+  defaultData.forEach((type)=> {
     clog(type.type);
     let request = obStore.put(type);
-    request.onsuccess = function () {
+    request.onsuccess = ()=> {
       clog("success added :" + type.type);
       executor();
     };
-    request.oncomplete = function () {
+    request.oncomplete = ()=> {
       clog("complete adding defaults");
     };
-    request.onerror = function () {
+    request.onerror = ()=> {
       clog("error adding defaults");
     };
   });
 }
 
 //to update given key value in given type under default objectstore.
-let saveCustomDefaults = function (type, key, newValue) {
+let saveCustomDefaults = (type, key, newValue)=>{
   let defTrans = transaction.getDefaultTx(mode.edit);
   let obStore = defTrans.objectStore(objStore.defaultDataName);
-  obStore.openCursor().onsuccess = function (event) {
+  obStore.openCursor().onsuccess = (event)=> {
     let cursor = event.target.result;
     clog("cursortype:" + cursor.value.type);
     if (cursor.value.type == type) {
       const updateData = cursor.value;
       updateData[key] = newValue;
-      cursor.update(updateData).onsuccess = function () {
+      cursor.update(updateData).onsuccess = ()=> {
         clog("done");
       };
     } else {
@@ -42,7 +41,7 @@ let saveCustomDefaults = function (type, key, newValue) {
 
 };
 
-let initiateIDB = function () {
+let initiateIDB = ()=> {
   if (!window.indexedDB) {
     clog("IDB:0");
     snackBar(
@@ -55,16 +54,16 @@ let initiateIDB = function () {
   } else {
     let request = window.indexedDB.open(dbName, 1);
 
-    request.onerror = function () {
+    request.onerror = ()=> {
       clog("Database failed to open");
     };
 
-    request.onsuccess = function () {
+    request.onsuccess = ()=> {
       clog("Database opened successfully");
       idb = request.result;
       transaction = new Transactions(idb);
       let object = transaction.getDefaultTx().objectStore(objStore.defaultDataName);
-      object.openCursor().onsuccess = function(e){
+      object.openCursor().onsuccess = (e)=>{
         let s1  = new Stage1();
         let s2  = new Stage2();
         let cursor = e.target.result;
@@ -95,7 +94,7 @@ let initiateIDB = function () {
       
     };
 
-    request.onupgradeneeded = function (e) {
+    request.onupgradeneeded = (e)=> {
       idb = e.target.result;
       objStore.default = idb.createObjectStore(objStore.defaultDataName, {
         keyPath: objStore.defaultKey,

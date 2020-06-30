@@ -46,14 +46,12 @@
     <script src="/__/firebase/init.js"></script>
     <script type="text/javascript">
       window.onload = function() {
-        firebase.auth().onAuthStateChanged(function(user) {
+        firebase.auth().onAuthStateChanged(function(user) {          
           if (user) {
-            window.location.replace("admin/admin_dash.html")
+            window.location.replace("/admin/dash");
           } else {
-            window.location.replace("/home.html")
+            window.location.replace("/home");
           }
-        }).catch(function(){
-          window.location.replace("/offline.html");
         });
       };
     </script>

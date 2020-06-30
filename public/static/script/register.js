@@ -167,7 +167,7 @@ class Stage2 {
       visibilityOf(new Register().backStage,true);
       visibilityOf(new Register().stage2Loader,false);
       visibilityOf(this.save,true);
-      new Register().backStage.onclick = function(){
+      new Register().backStage.onclick = ()=>{
         new Stage2().exist(false);
         new Stage1().exist(true);
       }
@@ -216,7 +216,7 @@ class TeacherData {
     visibilityOf(this.view, show);
     if(show){
       new Register().setStageView('Add Records');
-      new Register().backStage.onclick = function(){
+      new Register().backStage.onclick = ()=>{
         new TeacherData().exist(false);
         new Stage2().exist(true);
       }
@@ -226,7 +226,7 @@ class TeacherData {
 
 //TODO: pass functions as params
 //TODO: dymanicize dialog creation, snackbar creation.
-window.onload = function () {
+window.onload = ()=> {
   initiateIDB();
   var register = new Register();
   var stage1 = new Stage1();
@@ -234,7 +234,7 @@ window.onload = function () {
   var adminEmail;
   stage1.exist(true);
   register.setDefaults();
-  firebase.auth().onAuthStateChanged(function (user) {
+  firebase.auth().onAuthStateChanged((user)=>{
     if (user) {
       adminEmail = user.email;
       stage1.emailView.textContent = adminEmail;
@@ -245,7 +245,7 @@ window.onload = function () {
 
   new TeacherData().exist(false);
 
-  register.saveExit.onclick = function(){
+  register.saveExit.onclick = ()=>{
     showLoader();
     visibilityOf(register.saveExit,false);
     var data = [
@@ -272,11 +272,11 @@ window.onload = function () {
         totalPeriods: stage2.getTotalPeriods(),
       },
     ];
-    saveDefaults(data,function(){
+    saveDefaults(data,()=>{
       relocate(homepage);
     });
   }
-  stage1.save.onclick = function () {
+  stage1.save.onclick = ()=> {
     visibilityOf(register.stage1Loader,true);
     visibilityOf(stage1.save,false);
     var data = [
@@ -292,11 +292,11 @@ window.onload = function () {
         uiid: stage1.getInstID(),
       },
     ];
-    saveDefaults(data,function(){
+    saveDefaults(data,()=>{
       stage1.exist(false);
       stage2.exist(true);
     });
-    stage2.save.onclick = function () {
+    stage2.save.onclick = ()=> {
       visibilityOf(register.stage2Loader,true);
       visibilityOf(stage2.save,false);
       var data2 = [
@@ -312,7 +312,7 @@ window.onload = function () {
           totalPeriods: stage2.getTotalPeriods(),
         },
       ];
-      saveDefaults(data2,function(){
+      saveDefaults(data2,()=>{
         stage2.exist(false);
         document.getElementById("viewportTag").setAttribute("content", "initial-scale=1.0");
         visibilityOf(register.finalize,true);
@@ -335,14 +335,14 @@ window.onload = function () {
 };
 
 var teacherSchedule = [];
-let teacherDynamo = function (
+let teacherDynamo = (
   teacherID,
   dayIndex,
   periodIndex,
   classvalue,
   subject,
   hold = true
-) {
+)=>{
   if (teacherID in teacherSchedule) {
     if (dayIndex in teacherSchedule[teacherID]) {
       teacherSchedule[teacherID][dayIndex][periodIndex] = {
@@ -377,7 +377,7 @@ let teacherDynamo = function (
   }
 };
 
-function formatPhone(number = String()) {
+let formatPhone = (number = String())=> {
   if (number.length < 10) {
     return false;
   }
@@ -395,13 +395,9 @@ function formatPhone(number = String()) {
   return true;
 }
 
-let usernameValid = function (name = String()) {
-  return /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/.test(
-    name.toLocaleLowerCase()
-  );
-};
+let usernameValid = (name = String())=> /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/.test(name.toLocaleLowerCase());
 
-let addNumberSuffixHTML = function (number) {
+let addNumberSuffixHTML = (number)=>{
   var str = String(number);
   switch (number) {
     case 1:

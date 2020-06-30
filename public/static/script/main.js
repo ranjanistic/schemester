@@ -1,256 +1,320 @@
-const appName="Schemester", baseColor = "#216bf3",errorBaseColor = "#c40c0c",
- click = 'click', input = 'input',change='change', nothing = '',space = ' ',tab = '   ',hide = 'none',show = 'block',
- adminLoginPage = '/admin/admin_login.html',adminDashPage = '/admin/admin_dash.html',homepage = '/home.html',root = '/',
- registrationPage = '/registration.html',
- adminSettings = '/admin/management.html';
+const appName = "Schemester",
+  baseColor = "#216bf3",
+  errorBaseColor = "#c40c0c",
+  click = "click",
+  input = "input",
+  change = "change",
+  nothing = "",
+  space = " ",
+  tab = "   ",
+  hide = "none",
+  show = "block",
+  adminLoginPage = "/admin/login",
+  adminDashPage = "/admin/dash",
+  homepage = "/home",
+  root = "/",
+  registrationPage = "/admin/register",
+  adminSettings = "/admin/manage";
 
 var cred = Array(2);
-class Snackbar{
-    id = 'snackBar';
-    textId = 'snackText';
-    buttonId = 'snackButton';
-    constructor(){
-        this.bar = getElement(this.id);
-        this.text = getElement(this.textId);
-        this.button = getElement(this.buttonId);
-    }
-    hide(){
-        visibilityOf(this.bar,false);
-    }
+class Snackbar {
+  id = "snackBar";
+  textId = "snackText";
+  buttonId = "snackButton";
+  constructor() {
+    this.bar = getElement(this.id);
+    this.text = getElement(this.textId);
+    this.button = getElement(this.buttonId);
+  }
+  hide() {
+    visibilityOf(this.bar, false);
+  }
 }
 
-function snackBar(text = String(),actionText = String(),isNormal = true,action = function(){new Snackbar().hide()}){
-    var snack = new Snackbar();
-    if(text!=null){
-        snack.text.textContent = text;
-        if(actionText!=null){
-            snack.button.textContent = actionText;
-            snack.button.onclick = function(){
-                action();
-            }
-        }
-        setDefaultBackground(snack.bar,isNormal);
-        visibilityOf(snack.button,actionText!=null);
+let snackBar = (
+  text = String(),
+  actionText = String(),
+  isNormal = true,
+  action = ()=>{
+    new Snackbar().hide();
+  }
+)=>{
+  var snack = new Snackbar();
+  if (text != null) {
+    snack.text.textContent = text;
+    if (actionText != null) {
+      snack.button.textContent = actionText;
+      snack.button.onclick = ()=> {
+        action();
+      };
     }
-    replaceClass(snack.bar,'fmt-animate-bottom-off','fmt-animate-bottom',text!=null)
-    visibilityOf(snack.bar,text!=null);
+    setDefaultBackground(snack.bar, isNormal);
+    visibilityOf(snack.button, actionText != null);
+  }
+  replaceClass(
+    snack.bar,
+    "fmt-animate-bottom-off",
+    "fmt-animate-bottom",
+    text != null
+  );
+  visibilityOf(snack.bar, text != null);
 }
 
-class DialogID{
-    viewId = 'dialogView';
-    boxId = 'dialogBox';
-    imageId = 'dialogImage';
-    contentId  = 'dialogContent';
-    headingId = 'dialogHeading';
-    subHeadId = 'dialogSubHeading';
-    inputs = 'inputFields';
-    dialogInputField(index){
-        return 'dialogInputField'+index;
-    }
-    dialogFieldCaption(index){
-        return 'dialogFieldCaption'+index;
-    }
-    dialogInput(index){
-        return 'dialogInput'+index;
-    }
-    dialogInputError(index){
-        return 'dialogInputError'+index;
-    }
-    textFieldId = 'dialogInputAreaField';
-    textFieldCaptionId = 'dialogAreaFieldCaption';
-    textInputAreaId = 'dialogInputArea';
-    textInputErrorId = 'dialogInputAreaError';
+class DialogID {
+  viewId = "dialogView";
+  boxId = "dialogBox";
+  imageId = "dialogImage";
+  contentId = "dialogContent";
+  headingId = "dialogHeading";
+  subHeadId = "dialogSubHeading";
+  inputs = "inputFields";
+  dialogInputField(index) {
+    return "dialogInputField" + index;
+  }
+  dialogFieldCaption(index) {
+    return "dialogFieldCaption" + index;
+  }
+  dialogInput(index) {
+    return "dialogInput" + index;
+  }
+  dialogInputError(index) {
+    return "dialogInputError" + index;
+  }
+  textFieldId = "dialogInputAreaField";
+  textFieldCaptionId = "dialogAreaFieldCaption";
+  textInputAreaId = "dialogInputArea";
+  textInputErrorId = "dialogInputAreaError";
 
-    optionsId = 'dialogOpts';
-    dialogChipLabel(index){
-        return 'dialogChipLabel'+index;
-    }
-    dialogChip(index){
-        return 'dialogChip'+index;
-    }
-    actionsId = 'dialogButtons';
-    actionLoader = 'dialogLoader';
-    dialogButton(index){
-        return 'dialogButton'+index;
-    }
+  optionsId = "dialogOpts";
+  dialogChipLabel(index) {
+    return "dialogChipLabel" + index;
+  }
+  dialogChip(index) {
+    return "dialogChip" + index;
+  }
+  actionsId = "dialogButtons";
+  actionLoader = "dialogLoader";
+  dialogButton(index) {
+    return "dialogButton" + index;
+  }
 }
 
-class ActionType{
-    constructor(){
-        this.neutral = 'neutral';
-        this.positive = 'positive';
-        this.negative = 'negative';
-        this.warning = 'warning';
+class ActionType {
+  constructor() {
+    this.neutral = "neutral";
+    this.positive = "positive";
+    this.negative = "negative";
+    this.warning = "warning";
+  }
+  getStyleClass(type) {
+    switch (type) {
+      case this.neutral:
+        return "neutral-button";
+      case this.positive:
+        return "positive-button";
+      case this.negative:
+        return "negative-button";
+      case this.warning:
+        return "warning-button";
+      default:
+        return "positive-button";
     }
-    getStyleClass(type){
-        switch(type){
-            case this.neutral:return 'neutral-button';
-            case this.positive:return 'positive-button';
-            case this.negative:return 'negative-button';
-            case this.warning:return 'warning-button';
-            default:return 'positive-button';
-        }
-    }
+  }
 }
 var actionType = new ActionType();
 
-class Dialog extends DialogID{
-    constructor(totalInputs = 0,largeTextArea = 0,radio = 0){
-        super(DialogID);
-        this.view = getElement(this.viewId);
-        setDefaultBackground(this.view,true);
-        this.box = getElement(this.boxId);
-        opacityOf(this.box,1);
-        this.image = getElement(this.imageId);
-        this.content = getElement(this.contentId);
+class Dialog extends DialogID {
+  constructor(totalInputs = 0, largeTextArea = 0, radio = 0) {
+    super(DialogID);
+    this.view = getElement(this.viewId);
+    setDefaultBackground(this.view, true);
+    this.box = getElement(this.boxId);
+    opacityOf(this.box, 1);
+    this.image = getElement(this.imageId);
+    this.content = getElement(this.contentId);
 
-        this.heading = getElement(this.headingId);
-        this.subHeading = getElement(this.subHeadId);
+    this.heading = getElement(this.headingId);
+    this.subHeading = getElement(this.subHeadId);
 
-        this.inputFields = getElement(this.inputs);
-        this.options = getElement(this.optionsId);
-        visibilityOf(this.options,false);
-        visibilityOf(this.inputFields,totalInputs>0);
-        if(totalInputs>0){
-            this.createInputs(totalInputs);
-            this.inputField = Array(totalInputs);
-            this.inputCaption = Array(totalInputs);
-            this.input = Array(totalInputs);
-            this.inputError = Array(totalInputs); 
-            for(var k = 0;k<totalInputs;k++){
-                this.inputField[k] = getElement(this.dialogInputField(k))
-                this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
-                this.input[k] = getElement(this.dialogInput(k));
-                this.inputError[k] = getElement(this.dialogInputError(k));
-                this.input[k].value = null;
-                setFieldSetof(this.inputField[k],true,this.inputError[k]);
-            }
-        }
-        this.textField = getElement(this.textFieldId);
-        visibilityOf(this.textField,largeTextArea>0);
-        if(largeTextArea>0){
-            this.textFieldCaption = getElement(this.textFieldCaptionId);
-            this.textInput = getElement(this.textInputAreaId);
-            this.textInputError = getElement(this.textInputErrorId);
-        }
-        setFieldSetof(this.textField,true,this.textInputError);
+    this.inputFields = getElement(this.inputs);
+    this.options = getElement(this.optionsId);
+    visibilityOf(this.options, false);
+    visibilityOf(this.inputFields, totalInputs > 0);
+    if (totalInputs > 0) {
+      this.createInputs(totalInputs);
+      this.inputField = Array(totalInputs);
+      this.inputCaption = Array(totalInputs);
+      this.input = Array(totalInputs);
+      this.inputError = Array(totalInputs);
+      for (var k = 0; k < totalInputs; k++) {
+        this.inputField[k] = getElement(this.dialogInputField(k));
+        this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
+        this.input[k] = getElement(this.dialogInput(k));
+        this.inputError[k] = getElement(this.dialogInputError(k));
+        this.input[k].value = null;
+        setFieldSetof(this.inputField[k], true, this.inputError[k]);
+      }
     }
-    createInputs(total){
-        let fieldSet = String();
-        for(var i = 0;i<total;i++){
-            fieldSet = fieldSet + "<fieldset class=\"fmt-row text-field\" id=\""+this.dialogInputField(i)+"\">"+
-            "<legend class=\"field-caption\" id=\""+this.dialogFieldCaption(i)+"\"></legend>"+
-            "<input class=\"text-input\" id=\""+this.dialogInput(i)+"\">"+
-            "<span class=\"fmt-right error-caption\" id=\""+this.dialogInputError(i)+"\"></span></fieldset>";
-        }
-        this.inputFields.innerHTML = fieldSet;
+    this.textField = getElement(this.textFieldId);
+    visibilityOf(this.textField, largeTextArea > 0);
+    if (largeTextArea > 0) {
+      this.textFieldCaption = getElement(this.textFieldCaptionId);
+      this.textInput = getElement(this.textInputAreaId);
+      this.textInputError = getElement(this.textInputErrorId);
     }
-    createRadios(labels,clicked){
-        let total = labels.length;
-        visibilityOf(this.options,this.radioVisible);
-        let radioSet = String();
-        for(var i = 0;i<total;i++){
-            radioSet = radioSet + "<label class=\"radio-container\" id=\""+this.dialogChipLabel(i)+"\">"+
-            labels[i]+ "<input type=\"radio\" name=\"dialogChip\" id=\""+this.dialogChip(i)+"\"><span class=\"checkmark\"></span></label>"
-        }
-        this.options.innerHTML = radioSet;
-        visibilityOf(this.options,total>0);
-        this.optionsRadio = Array(total);
-        this.optionsRadioLabel = Array(total);
-        for(var k = 0;k<total;k++){
-            this.optionsRadioLabel[k] = getElement(this.dialogChipLabel(k));
-            this.optionsRadio[k] = getElement(this.dialogChip(k));
-        }
-        this.optionsRadioLabel[labels.indexOf(clicked)].click();
+    setFieldSetof(this.textField, true, this.textInputError);
+  }
+  createInputs(total) {
+    let fieldSet = String();
+    for (var i = 0; i < total; i++) {
+      fieldSet =
+        fieldSet +
+        '<fieldset class="fmt-row text-field" id="' +
+        this.dialogInputField(i) +
+        '">' +
+        '<legend class="field-caption" id="' +
+        this.dialogFieldCaption(i) +
+        '"></legend>' +
+        '<input class="text-input" id="' +
+        this.dialogInput(i) +
+        '">' +
+        '<span class="fmt-right error-caption" id="' +
+        this.dialogInputError(i) +
+        '"></span></fieldset>';
+    }
+    this.inputFields.innerHTML = fieldSet;
+  }
+  createRadios(labels, clicked) {
+    let total = labels.length;
+    visibilityOf(this.options, this.radioVisible);
+    let radioSet = String();
+    for (var i = 0; i < total; i++) {
+      radioSet =
+        radioSet +
+        '<label class="radio-container" id="' +
+        this.dialogChipLabel(i) +
+        '">' +
+        labels[i] +
+        '<input type="radio" name="dialogChip" id="' +
+        this.dialogChip(i) +
+        '"><span class="checkmark"></span></label>';
+    }
+    this.options.innerHTML = radioSet;
+    visibilityOf(this.options, total > 0);
+    this.optionsRadio = Array(total);
+    this.optionsRadioLabel = Array(total);
+    for (var k = 0; k < total; k++) {
+      this.optionsRadioLabel[k] = getElement(this.dialogChipLabel(k));
+      this.optionsRadio[k] = getElement(this.dialogChip(k));
+    }
+    this.optionsRadioLabel[labels.indexOf(clicked)].click();
+  }
+  createActions(labels, types) {
+    let total = labels.length;
+    this.actions = getElement(this.actionsId);
+    let actionSet = String();
+    for (var i = total - 1; i >= 0; i--) {
+      actionSet =
+        actionSet +
+        '<button class="' +
+        actionType.getStyleClass(types[i]) +
+        ' fmt-right" id="' +
+        this.dialogButton(i) +
+        '">' +
+        labels[i] +
+        "</button>";
+    }
+    actionSet +=
+      '<img class="fmt-spin-fast fmt-right" width="50" src="../static/graphic/blueLoader.svg" id="' +
+      this.actionLoader +
+      '"/>';
+    this.actions.innerHTML = actionSet;
+    this.dialogButtons = Array(total);
+    for (var k = total - 1; k >= 0; k--) {
+      this.dialogButtons[k] = getElement(this.dialogButton(k));
+    }
+    this.loading = getElement(this.actionLoader);
+    this.loader(false);
+  }
 
+  setDisplay(head, body, imgsrc) {
+    this.heading.textContent = head;
+    this.subHeading.innerHTML = body;
+    visibilityOf(this.image, imgsrc != null);
+    if (imgsrc == null) {
+      this.content.classList.remove("fmt-threequarter");
+    } else {
+      this.content.classList.add("fmt-threequarter");
     }
-    createActions(labels,types){
-        let total = labels.length;
-        this.actions = getElement(this.actionsId);
-        let actionSet = String();
-        for(var i = total-1;i>=0;i--){
-            actionSet = actionSet+"<button class=\""+actionType.getStyleClass(types[i])+" fmt-right\" id=\""+this.dialogButton(i)+"\">"+labels[i]+"</button>"
-        }
-        actionSet += "<img class=\"fmt-spin-fast fmt-right\" width=\"50\" src=\"../static/graphic/blueLoader.svg\" id=\""+this.actionLoader+"\"/>"
-        this.actions.innerHTML = actionSet;
-        this.dialogButtons = Array(total);
-        for(var k = total-1;k>=0;k--){
-            this.dialogButtons[k] = getElement(this.dialogButton(k));
-        }
-        this.loading = getElement(this.actionLoader);
-        this.loader(false);
+    replaceClass(
+      this.content,
+      "fmt-padding-small",
+      "fmt-padding",
+      imgsrc == null
+    );
+    this.image.src = imgsrc;
+  }
+  loader(show = true) {
+    visibilityOf(this.loading, show);
+    for (var k = 0; k < this.dialogButtons.length; k++) {
+      visibilityOf(this.dialogButtons[k], !show);
     }
+    if (show) {
+      opacityOf(this.box, 0.5);
+    } else {
+      opacityOf(this.box, 1);
+    }
+  }
 
-    setDisplay(head, body,imgsrc){
-        this.heading.textContent = head;
-        this.subHeading.innerHTML = body;
-        visibilityOf(this.image,imgsrc != null)
-        if(imgsrc == null){
-            this.content.classList.remove('fmt-threequarter');
-        }else {
-            this.content.classList.add('fmt-threequarter');
-        }
-        replaceClass(this.content,'fmt-padding-small','fmt-padding',imgsrc == null);
-        this.image.src = imgsrc;
+  inputParams(captions, hints, types, contents) {
+    for (var k = 0; k < this.inputField.length; k++) {
+      this.inputCaption[k].textContent = captions[k];
+      this.input[k].placeholder = hints[k];
+      this.input[k].type = types[k];
+      if (contents != null) {
+        this.input[k].value = contents[k];
+      }
     }
-    loader(show = true){
-        visibilityOf(this.loading,show);
-        for(var k = 0;k<this.dialogButtons.length;k++){
-            visibilityOf(this.dialogButtons[k],!show);
-        }
-        if(show){
-            opacityOf(this.box,0.5)
-        }else{
-            opacityOf(this.box,1)
-        }
-    }
+  }
+  largeTextArea(caption, hint) {
+    this.textFieldCaption.textContent = caption;
+    this.textInput.placeholder = hint;
+  }
 
-    inputParams(captions,hints,types,contents){
-        for(var k = 0;k<this.inputField.length;k++){
-            this.inputCaption[k].textContent = captions[k];
-            this.input[k].placeholder = hints[k];
-            this.input[k].type = types[k];
-            if(contents!=null){
-                this.input[k].value = contents[k];
-            }
-        }
-    }
-    largeTextArea(caption,hint){
-        this.textFieldCaption.textContent = caption;
-        this.textInput.placeholder = hint;
-    }
-
-    getInput(index){
-        return this.input[index];
-    }
-    getInputValue(index){
-        return this.input[index].value;
-    }
-    getDialogChip(index){
-        return this.optionsRadio[index];
-    }
-    getDialogButton(index){
-        return this.dialogButtons[index];
-    }
-    onChipClick(index,action){
-        this.optionsRadio[index].onclick = function(){action();}
-    }
-    onButtonClick(index,action){
-        this.dialogButtons[index].onclick = function(){action();}
-    }
-    setBackgroundColor(color = baseColor){
-        elementFadeVisibility(this.view,false);
-        this.view.style.backgroundColor = color;
-        elementFadeVisibility(this.view,true);
-    }
-    existence(show = true){
-        elementFadeVisibility(this.view,show);
-    }
+  getInput(index) {
+    return this.input[index];
+  }
+  getInputValue(index) {
+    return this.input[index].value;
+  }
+  getDialogChip(index) {
+    return this.optionsRadio[index];
+  }
+  getDialogButton(index) {
+    return this.dialogButtons[index];
+  }
+  onChipClick(index, action) {
+    this.optionsRadio[index].onclick = ()=> {
+      action();
+    };
+  }
+  onButtonClick(index, action) {
+    this.dialogButtons[index].onclick = ()=> {
+      action();
+    };
+  }
+  setBackgroundColor(color = baseColor) {
+    elementFadeVisibility(this.view, false);
+    this.view.style.backgroundColor = color;
+    elementFadeVisibility(this.view, true);
+  }
+  existence(show = true) {
+    elementFadeVisibility(this.view, show);
+  }
 }
 
-
-function clog(msg){
-    console.log(msg);
+let clog = (msg)=> {
+  console.log(msg);
 }
 //idb classes
 const dbName = appName;
@@ -334,416 +398,728 @@ class Transactions {
   }
 }
 
-function sendPassResetLink(){
-    snackBar("A link has been sent at your provided email address. Reset your password from there.",'Got it');
+let sendPassResetLink = ()=> {
+  snackBar(
+    "A link has been sent at your provided email address. Reset your password from there.",
+    "Got it"
+  );
 }
 
-function resetPasswordDialog(isShowing = true){
-    var resetDialog = new Dialog(1);
-    if(isShowing){
-        resetDialog.setDisplay('Reset password','Provide us your email address and we\'ll help you to reset your password via an email.'
-        ,'/static/graphic/icons/schemester512.png');
-        resetDialog.inputParams(Array('Your email address'),Array('you@example.domain'),Array('email'));
-        resetDialog.createActions(Array('Send Link','Cancel'),Array(actionType.positive,actionType.negative));
-        resetDialog.getInput(0).onchange = function(){
-            verificationValid();
-        }
-        function verificationValid(){
-            var valid = isEmailValid(resetDialog.input[0].value);
-            setFieldSetof(resetDialog.inputField[0],valid,resetDialog.inputError[0],'Invalid email address');
-            visibilityOf(resetDialog.getDialogButton(0),valid);
-            resetDialog.getInput(0).oninput = function(){
-                setFieldSetof(resetDialog.inputField[0],isEmailValid(resetDialog.input[0].value),resetDialog.inputError[0],'Invalid email address');
-                visibilityOf(resetDialog.getDialogButton(0),isEmailValid(resetDialog.input[0].value));
-            }
-            return isEmailValid(resetDialog.getInputValue(0));
-        }
-        resetDialog.onButtonClick(0,function(){
-            if(verificationValid()){
-                sendPassResetLink();
-                snackBar("You'll receive a link if your email address was correct. Reset your password from there.",'Got it');
-                resetDialog.existence(false);
-            }
-        });
-        resetDialog.onButtonClick(1,function(){
-            resetDialog.existence(false);
-        });
+let resetPasswordDialog = (isShowing = true)=> {
+  var resetDialog = new Dialog(1);
+  if (isShowing) {
+    resetDialog.setDisplay(
+      "Reset password",
+      "Provide us your email address and we'll help you to reset your password via an email.",
+      "/static/graphic/icons/schemester512.png"
+    );
+    resetDialog.inputParams(
+      Array("Your email address"),
+      Array("you@example.domain"),
+      Array("email")
+    );
+    resetDialog.createActions(
+      Array("Send Link", "Cancel"),
+      Array(actionType.positive, actionType.negative)
+    );
+    resetDialog.getInput(0).onchange = ()=> {
+      verificationValid();
+    };
+    let verificationValid = ()=> {
+      var valid = isEmailValid(resetDialog.input[0].value);
+      setFieldSetof(
+        resetDialog.inputField[0],
+        valid,
+        resetDialog.inputError[0],
+        "Invalid email address"
+      );
+      visibilityOf(resetDialog.getDialogButton(0), valid);
+      resetDialog.getInput(0).oninput = ()=> {
+        setFieldSetof(
+          resetDialog.inputField[0],
+          isEmailValid(resetDialog.input[0].value),
+          resetDialog.inputError[0],
+          "Invalid email address"
+        );
+        visibilityOf(
+          resetDialog.getDialogButton(0),
+          isEmailValid(resetDialog.input[0].value)
+        );
+      };
+      return isEmailValid(resetDialog.getInputValue(0));
     }
-    
-    resetDialog.existence(isShowing);
-}
-
-function changeEmailBox(isShowing = true){
-    var mailChange = new Dialog(2);
-    mailChange.setDisplay('Change Email Address','You need to verify yourself, and then provide your new email address. You\'ll be logged out after successful change.'
-    ,'/static/graphic/icons/schemester512.png');
-    mailChange.inputParams(Array('Account password','New email address'),Array('Current password','someone@example.domain'),Array('password','email'));
-    mailChange.createActions(Array('Change Email ID','Abort'),Array(actionType.positive,actionType.negative));
-
-    mailChange.getInput(0).oninput = function(){
-        visibilityOf(mailChange.getDialogButton(0),runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0]));
-    }
-    mailChange.getInput(0).onchange = function(){
-        visibilityOf(mailChange.getDialogButton(0),runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0]));
-    }
-    mailChange.getInput(1).oninput = function(){
-        visibilityOf(mailChange.getDialogButton(0),isEmailValid(mailChange.getInput(1)));
-    }
-    mailChange.getInput(1).onchange = function(){
-        visibilityOf(mailChange.getDialogButton(0),runEmailCheck(mailChange.getInput(1),mailChange.inputField[1],mailChange.inputError[1]));
-    }
-    mailChange.onButtonClick(0,function(){
-        if(runEmptyCheck(mailChange.getInput(0),mailChange.inputField[0],mailChange.inputError[0])){
-            if(runEmailCheck(mailChange.getInput(1),mailChange.inputField[1],mailChange.inputError[1])){
-                snackBar("Your email id has been changed to "+mailChange.getInputValue(1),'okay',function(){
-                    snackBar("You need to login again");
-                    logoutUser(false);
-                });
-                mailChange.existence(false);
-                firebase.auth().signOut();
-            }
-        }
+    resetDialog.onButtonClick(0, ()=> {
+      if (verificationValid()) {
+        sendPassResetLink();
+        snackBar(
+          "You'll receive a link if your email address was correct. Reset your password from there.",
+          "Got it"
+        );
+        resetDialog.existence(false);
+      }
     });
-    mailChange.onButtonClick(1,function(){mailChange.existence(false);});
-    mailChange.existence(isShowing);
+    resetDialog.onButtonClick(1, ()=> {
+      resetDialog.existence(false);
+    });
+  }
+
+  resetDialog.existence(isShowing);
 }
 
-function registrationDialog(isShowing = true){
-    var user = firebase.auth().currentUser;
-    if (user) {
-            var confirmLogout = new Dialog();
-            confirmLogout.setDisplay('Already Logged In.','You are currently logged in as <b>' + user.email +'</b>. You need to log out before creating a new account. Confirm log out?');
-            confirmLogout.createActions(Array('Stay logged in','Log out'),Array(actionType.positive,actionType.negative));
-            confirmLogout.onButtonClick(0,function(){
-                confirmLogout.existence(false);
-            });
-            confirmLogout.onButtonClick(1,function(){
-                confirmLogout.loader();
-                logoutUser();
-            });
-            confirmLogout.existence(true);
-    } else {
-        var regDial = new Dialog(2);
-        regDial.setDisplay('Create Admin Account','Create a new account with a working email address (individual or institution).');
-        regDial.createActions(Array('Next','Cancel'),Array(actionType.positive,actionType.negative));
-        regDial.inputParams(Array('Email Address','New Password'),Array('youremail@example.domain','Strong password'),Array('email','password'));
-        regDial.onButtonClick(1,function(){regDial.existence(false);new Snackbar().hide();});
-        regDial.getInput(0).onchange = function(){
-            if( runEmailCheck(regDial.getInput(0),regDial.inputField[0],regDial.inputError[0])){
-                regDial.getInput(1).focus();
-            }
+let changeEmailBox = (isShowing = true)=> {
+  var mailChange = new Dialog(2);
+  mailChange.setDisplay(
+    "Change Email Address",
+    "You need to verify yourself, and then provide your new email address. You'll be logged out after successful change.",
+    "/static/graphic/icons/schemester512.png"
+  );
+  mailChange.inputParams(
+    Array("Account password", "New email address"),
+    Array("Current password", "someone@example.domain"),
+    Array("password", "email")
+  );
+  mailChange.createActions(
+    Array("Change Email ID", "Abort"),
+    Array(actionType.positive, actionType.negative)
+  );
+
+  mailChange.getInput(0).oninput = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      runEmptyCheck(
+        mailChange.getInput(0),
+        mailChange.inputField[0],
+        mailChange.inputError[0]
+      )
+    );
+  };
+  mailChange.getInput(0).onchange = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      runEmptyCheck(
+        mailChange.getInput(0),
+        mailChange.inputField[0],
+        mailChange.inputError[0]
+      )
+    );
+  };
+  mailChange.getInput(1).oninput = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      isEmailValid(mailChange.getInput(1))
+    );
+  };
+  mailChange.getInput(1).onchange = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      runEmailCheck(
+        mailChange.getInput(1),
+        mailChange.inputField[1],
+        mailChange.inputError[1]
+      )
+    );
+  };
+  mailChange.onButtonClick(0, ()=> {
+    if (
+      runEmptyCheck(
+        mailChange.getInput(0),
+        mailChange.inputField[0],
+        mailChange.inputError[0]
+      )
+    ) {
+      if (
+        runEmailCheck(
+          mailChange.getInput(1),
+          mailChange.inputField[1],
+          mailChange.inputError[1]
+        )
+      ) {
+        snackBar(
+          "Your email id has been changed to " + mailChange.getInputValue(1),
+          "okay",
+          ()=> {
+            snackBar("You need to login again");
+            logoutUser(false);
+          }
+        );
+        mailChange.existence(false);
+        firebase.auth().signOut();
+      }
+    }
+  });
+  mailChange.onButtonClick(1, ()=> {
+    mailChange.existence(false);
+  });
+  mailChange.existence(isShowing);
+}
+
+let registrationDialog = (isShowing = true)=> {
+  var user = firebase.auth().currentUser;
+  if (user) {
+    var confirmLogout = new Dialog();
+    confirmLogout.setDisplay(
+      "Already Logged In.",
+      "You are currently logged in as <b>" +
+        user.email +
+        "</b>. You need to log out before creating a new account. Confirm log out?"
+    );
+    confirmLogout.createActions(
+      Array("Stay logged in", "Log out"),
+      Array(actionType.positive, actionType.negative)
+    );
+    confirmLogout.onButtonClick(0, ()=> {
+      confirmLogout.existence(false);
+    });
+    confirmLogout.onButtonClick(1, ()=> {
+      confirmLogout.loader();
+      logoutUser();
+    });
+    confirmLogout.existence(true);
+  } else {
+    var regDial = new Dialog(2);
+    regDial.setDisplay(
+      "Create Admin Account",
+      "Create a new account with a working email address (individual or institution)."
+    );
+    regDial.createActions(
+      Array("Next", "Cancel"),
+      Array(actionType.positive, actionType.negative)
+    );
+    regDial.inputParams(
+      Array("Email Address", "New Password"),
+      Array("youremail@example.domain", "Strong password"),
+      Array("email", "password")
+    );
+    regDial.onButtonClick(1, ()=> {
+      regDial.existence(false);
+      new Snackbar().hide();
+    });
+    regDial.getInput(0).onchange = ()=> {
+      if (
+        runEmailCheck(
+          regDial.getInput(0),
+          regDial.inputField[0],
+          regDial.inputError[0]
+        )
+      ) {
+        regDial.getInput(1).focus();
+      }
+    };
+    regDial.onButtonClick(0, ()=> {
+      regDial.loader();
+      new Snackbar().hide();
+      if (isEmailValid(regDial.getInputValue(0))) {
+        if (true) {
+          ///isPasswordValid(regDial.getInput(1).value || true)){
+          createAccount(
+            regDial,
+            regDial.getInputValue(0),
+            regDial.getInput(1).value
+          );
+        } else {
+          runPasswordCheck(
+            regDial.getInput(1),
+            regDial.inputField[1],
+            regDial.inputError[1]
+          );
+          regDial.loader(false);
         }
-        regDial.onButtonClick(0,function(){
-            regDial.loader();
+      } else {
+        runEmailCheck(
+          regDial.getInput(0),
+          regDial.inputField[0],
+          regDial.inputError[0]
+        );
+        regDial.loader(false);
+      }
+    });
+    regDial.existence(isShowing);
+  }
+}
+
+let createAccount = (dialog, email, password)=> {
+  firebase
+    .auth()
+    .createUserWithEmailAndPassword(email, password)
+    .then(()=> {
+      clog("true account creations");
+      cred = Array(email, password);
+      new Snackbar().hide();
+      dialog.loader(false);
+      dialog.existence(false);
+      accountVerificationDialog(true);
+    })
+    .catch((error)=> {
+      clog("inside account creations error");
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      switch (errorCode) {
+        case "auth/invalid-email":
+          snackBar("Email address was invalid", false, null, false);
+          break;
+        case "auth/weak-password":
+          snackBar("Weak password", false, null, false);
+          break;
+        case "auth/email-already-in-use":
+          {
+            snackBar(
+              "This email address is already being used by another institution.",
+              "Login",
+              false,
+              ()=> {
+                refer(adminLoginPage);
+              }
+            );
+          }
+          break;
+        case "auth/account-exists-with-different-credential":
+          {
+            snackBar(
+              "This account already exists.",
+              "Login",
+              false,
+              ()=> {
+                refer(adminLoginPage);
+              }
+            );
+          }
+          break;
+        case "auth/timeout":
+          {
+            snackBar("Connection timed out.", null, false);
+          }
+          break;
+        case "auth/operation-not-allowed":
+          {
+            snackBar("Server error", "Report", false, ()=> {
+              feedBackBox();
+              new Snackbar().hide();
+            });
+          }
+          break;
+        default: {
+          snackBar(errorMessage, "Report", false, ()=> {
+            feedBackBox();
             new Snackbar().hide();
-            if(isEmailValid(regDial.getInputValue(0))){
-                if(true){///isPasswordValid(regDial.getInput(1).value || true)){
-                    createAccount(regDial,regDial.getInputValue(0) ,regDial.getInput(1).value)
-                } else{
-                    runPasswordCheck(regDial.getInput(1),regDial.inputField[1],regDial.inputError[1]);
-                    regDial.loader(false);
-                }
-            } else{
-                runEmailCheck(regDial.getInput(0),regDial.inputField[0],regDial.inputError[0]);
-                regDial.loader(false);
-            }
-        });
-        regDial.existence(isShowing);
-    }
-}
-
-
-function createAccount(dialog,email,password){
-    firebase.auth().createUserWithEmailAndPassword(email, password).then(function(){
-        clog('true account creations');
-        cred = Array(email,password);
-        new Snackbar().hide();
-        dialog.loader(false);
-        dialog.existence(false);
-        accountVerificationDialog(true);
-    }).catch(function(error) {
-        clog('inside account creations error');
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        switch(errorCode){
-            case 'auth/invalid-email': snackBar('Email address was invalid',false,null,false);break;
-            case 'auth/weak-password': snackBar('Weak password',false,null,false);break;
-            case 'auth/email-already-in-use':{snackBar('This email address is already being used by another institution.','Login',false,function(){refer(adminLoginPage);});
-            }break;
-            case 'auth/account-exists-with-different-credential':{
-                snackBar('This account already exists.','Login',false,function(){refer(adminLoginPage);});
-            }break;
-            case 'auth/timeout':{
-                snackBar('Connection timed out.',null,false);
-            }break;
-            case 'auth/operation-not-allowed':{
-                snackBar('Server error','Report',false,function(){
-                    feedBackBox();
-                    new Snackbar().hide();
-                });
-            }break;
-            default:{
-                snackBar(errorMessage,'Report',false,function(){
-                    feedBackBox();
-                    new Snackbar().hide();
-                });
-            }
+          });
         }
-        dialog.loader(false);
+      }
+      dialog.loader(false);
     });
 }
 
-function accountVerificationDialog(isShowing = true,emailSent = false){
-    var verify = new Dialog();
-    var user = firebase.auth().currentUser;
-    if(emailSent){
-        verify.setDisplay('Waiting for verification','A link has been sent. Check your email box at <b>'+user.email+'</b>, verify your account there, and then click continue here.');
-        verify.createActions(Array('Verify & Continue','Abort'),Array(actionType.positive,actionType.negative));
-        verify.onButtonClick(1,function(){
-            verify.loader();
-            user.delete().then(function() {
-                verify.existence(false);
-                snackBar('Your account was not created.',null,false);
-            }).catch(function(error) {
-                verify.loader(false);
-                snackBar(error,'Report',false);
-            });
+let accountVerificationDialog = (isShowing = true, emailSent = false)=> {
+  var verify = new Dialog();
+  var user = firebase.auth().currentUser;
+  if (emailSent) {
+    verify.setDisplay(
+      "Waiting for verification",
+      "A link has been sent. Check your email box at <b>" +
+        user.email +
+        "</b>, verify your account there, and then click continue here."
+    );
+    verify.createActions(
+      Array("Verify & Continue", "Abort"),
+      Array(actionType.positive, actionType.negative)
+    );
+    verify.onButtonClick(1, ()=> {
+      verify.loader();
+      if(negativeaction==null){
+      user.delete()
+        .then(()=> {
+          verify.existence(false);
+          snackBar("Your account was not created.", null, false);
+        })
+        .catch( (error)=> {
+          verify.loader(false);
+          snackBar(error, "Report", false);
         });
-        verify.onButtonClick(0, function(){
-            if(silentLogin(cred[0],cred[1])){
-                user = firebase.auth().currentUser;
-                if(user.emailVerified){
-                    relocate(registrationPage);
-                } else {
-                    snackBar('Not yet verified',null,false);
-                    verify.loader(false);
-                }
-            } else {
-                snackBar('Unable to verify',null,false);   
-            }
+      } else {
+        negativeaction();
+      }
+    });
+    verify.onButtonClick(0, ()=> {
+      if (silentLogin(cred[0], cred[1])) {
+        user = firebase.auth().currentUser;
+        if (user.emailVerified) {
+          relocate(registrationPage);
+        } else {
+          snackBar("Not yet verified", null, false);
+          verify.loader(false);
+        }
+      } else {
+        snackBar("Unable to verify", null, false);
+      }
+    });
+  } else {
+    verify.setDisplay(
+      "Verification Required",
+      "We need to verify you. A link will be sent at <b>" +
+        user.email +
+        "</b>, you need to verify your account there. Confirm to send link?"
+    );
+    verify.createActions(
+      Array("Send link", "Cancel"),
+      Array(actionType.positive, actionType.negative)
+    );
+    verify.onButtonClick(1, ()=> {
+      verify.loader();
+      user
+        .delete()
+        .then(()=> {
+          verify.existence(false);
+          snackBar("Your account was not created.", null, false);
+        })
+        .catch( (error)=> {
+          verify.loader(false);
+          snackBar(error, "Report", false);
         });
-    } else {
-        verify.setDisplay('Verification Required','We need to verify you. A link will be sent at <b>'+user.email+'</b>, you need to verify your account there. Confirm to send link?');
-        verify.createActions(Array('Send link','Cancel'),Array(actionType.positive,actionType.negative));
-        verify.onButtonClick(1, function(){
-            verify.loader();
-            user.delete().then(function() {
-                verify.existence(false);
-                snackBar('Your account was not created.',null,false);
-            }).catch(function(error) {
-                verify.loader(false);
-                snackBar(error,'Report',false);
-            });
+    });
+    verify.onButtonClick(0, ()=> {
+      verify.loader();
+      user
+        .sendEmailVerification()
+        .then(()=> {
+          snackBar("Email sent");
+          accountVerificationDialog(true, true);
+          verify.loader(false);
+        })
+        .catch( (error)=> {
+          snackBar(error, "Report", false);
+          clog(error);
+          verify.loader(false);
+          // An error happened.
         });
-        verify.onButtonClick(0, function(){
-            verify.loader();
-            user.sendEmailVerification().then(function() {
-                snackBar('Email sent');
-                accountVerificationDialog(true,true);
-                verify.loader(false);
-            }).catch(function(error) {
-                snackBar(error,'Report',false);
-                clog(error);
-                verify.loader(false);
-            // An error happened.
-            });
-        });
-    }
-    verify.existence(isShowing);
+    });
+  }
+  verify.existence(isShowing);
 }
-function logoutUser(sendHome = true){
-    if(sendHome){
-        relocate(root);
-    } else {
-        relocate(adminLoginPage);
-    }
-    firebase.auth().signOut();
+let logoutUser = (sendHome = true)=> {
+  if (sendHome) {
+    relocate(root);
+  } else {
+    relocate(adminLoginPage);
+  }
+  firebase.auth().signOut();
 }
-function silentLogin(email,password){
-    firebase.auth().signInWithEmailAndPassword(email,password).then(function(){
-        return true;
-    }).catch(function(error) {
-        return false;
+let silentLogin = (email, password)=> {
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(email, password)
+    .then(()=> {
+      return true;
+    })
+    .catch( (error)=> {
+      return false;
     });
 }
-function feedBackBox(isShowing = true){
-    var feedback = new Dialog(1,true,true);
-    feedback.setDisplay('Contact Developers','Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. '
-        +'We are always eager to listen from you.',
-        '/static/graphic/icons/schemester512.png');
-    feedback.inputParams(Array('Your email address'),Array('To help or thank you directly ;)'),Array('email'));
-    feedback.largeTextArea('Describe everything','Start typing your experience here','Can\'t be empty');
-    feedback.createRadios(Array('Feedback','Error'),'Feedback');
-    feedback.createActions(Array('Submit','Abort'),Array(actionType.positive,actionType.negative));
-    feedback.onChipClick(0,function(){feedback.setBackgroundColor();});
-    feedback.onChipClick(1,function(){feedback.setBackgroundColor(errorBaseColor);});
+let feedBackBox = (isShowing = true) =>{
+  var feedback = new Dialog(1, true, true);
+  feedback.setDisplay(
+    "Contact Developers",
+    "Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. " +
+      "We are always eager to listen from you.",
+    "/static/graphic/icons/schemester512.png"
+  );
+  feedback.inputParams(
+    Array("Your email address"),
+    Array("To help or thank you directly ;)"),
+    Array("email")
+  );
+  feedback.largeTextArea(
+    "Describe everything",
+    "Start typing your experience here",
+    "Can't be empty"
+  );
+  feedback.createRadios(Array("Feedback", "Error"), "Feedback");
+  feedback.createActions(
+    Array("Submit", "Abort"),
+    Array(actionType.positive, actionType.negative)
+  );
+  feedback.onChipClick(0, ()=> {
+    feedback.setBackgroundColor();
+  });
+  feedback.onChipClick(1, ()=> {
+    feedback.setBackgroundColor(errorBaseColor);
+  });
 
-    feedback.getInput(0).onchange = function(){
-        visibilityOf(feedback.positiveAction(),runEmailCheck(feedback.getInput(0),feedback.inputField[0],feedback.inputError[0]));
-        if(isEmailValid(feedback.getInputValue(0))){
-            feedback.textInput.focus();
-        }
+  feedback.getInput(0).onchange = ()=> {
+    visibilityOf(
+      feedback.positiveAction(),
+      runEmailCheck(
+        feedback.getInput(0),
+        feedback.inputField[0],
+        feedback.inputError[0]
+      )
+    );
+    if (isEmailValid(feedback.getInputValue(0))) {
+      feedback.textInput.focus();
     }
-    feedback.textInput.oninput = function(){
-        visibilityOf(feedback.positiveAction(),runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError));
-    }
-    feedback.textInput.onchange = function(){
-        visibilityOf(feedback.positiveAction(),runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError));
-    }
+  };
+  feedback.textInput.oninput = ()=> {
+    visibilityOf(
+      feedback.positiveAction(),
+      runEmptyCheck(
+        feedback.textInput,
+        feedback.textField,
+        feedback.textInputError
+      )
+    );
+  };
+  feedback.textInput.onchange = ()=> {
+    visibilityOf(
+      feedback.positiveAction(),
+      runEmptyCheck(
+        feedback.textInput,
+        feedback.textField,
+        feedback.textInputError
+      )
+    );
+  };
 
-    feedback.onButtonClick(0,function(){
-        if(runEmailCheck(feedback.getInput(0),feedback.inputField[0],feedback.inputError[0])){
-            if(runEmptyCheck(feedback.textInput,feedback.textField,feedback.textInputError)){
-                refer("mailto:schemester@outlook.in?subject=From "+feedback.getInputValue(0)+"&body="+feedback.textInput.value);
-                snackBar("Thanks for the interaction. We'll look forward to that.",'Hide');
-                feedback.existence(false);
-            }
-        }
-    });
-    feedback.onButtonClick(1,function(){
+  feedback.onButtonClick(0, ()=> {
+    if (
+      runEmailCheck(
+        feedback.getInput(0),
+        feedback.inputField[0],
+        feedback.inputError[0]
+      )
+    ) {
+      if (
+        runEmptyCheck(
+          feedback.textInput,
+          feedback.textField,
+          feedback.textInputError
+        )
+      ) {
+        refer(
+          "mailto:schemester@outlook.in?subject=From " +
+            feedback.getInputValue(0) +
+            "&body=" +
+            feedback.textInput.value
+        );
+        snackBar(
+          "Thanks for the interaction. We'll look forward to that.",
+          "Hide"
+        );
         feedback.existence(false);
-    });
-    feedback.existence(isShowing);
+      }
+    }
+  });
+  feedback.onButtonClick(1, ()=> {
+    feedback.existence(false);
+  });
+  feedback.existence(isShowing);
 }
 
-function setFieldSetof(fieldset,isNormal = true,errorField = null,errorMsg = null){
-    if(errorField!=null && errorMsg!=null){
-        errorField.innerHTML = errorMsg;
-    }
-    if(isNormal && errorField!=null){
-        errorField.innerHTML = nothing;
-    }
-    setClassName(fieldset,'text-field','text-field-error',isNormal);
+let setFieldSetof = (
+  fieldset,
+  isNormal = true,
+  errorField = null,
+  errorMsg = null
+) => {
+  if (errorField != null && errorMsg != null) {
+    errorField.innerHTML = errorMsg;
+  }
+  if (isNormal && errorField != null) {
+    errorField.innerHTML = nothing;
+  }
+  setClassName(fieldset, "text-field", "text-field-error", isNormal);
 }
 
-function setClassName(element,normalClass,eventClass,condition){
-    if(condition!=null){
-        if(condition){
-            element.className = normalClass;
-        } else {
-            element.className = eventClass;
-        }
+let setClassName = (element, normalClass, eventClass, condition) =>{
+  if (condition != null) {
+    if (condition) {
+      element.className = normalClass;
     } else {
-        element.className = normalClass;
+      element.className = eventClass;
     }
+  } else {
+    element.className = normalClass;
+  }
 }
 
-function runEmailCheck(input,fieldset,error){
-    setFieldSetof(fieldset,isEmailValid(input.value),error,'Invalid email address');
-    input.oninput = function(){
-        setFieldSetof(fieldset,isEmailValid(input.value),error,'Invalid email address');
-    }
-    return isEmailValid(input.value);
+let runEmailCheck = (input, fieldset, error)=> {
+  setFieldSetof(
+    fieldset,
+    isEmailValid(input.value),
+    error,
+    "Invalid email address"
+  );
+  input.oninput = ()=> {
+    setFieldSetof(
+      fieldset,
+      isEmailValid(input.value),
+      error,
+      "Invalid email address"
+    );
+  };
+  return isEmailValid(input.value);
 }
 
-function runPasswordCheck(input,fieldset,error){
-    setFieldSetof(fieldset,isPasswordValid(input.value),error,'Password should atleast contain:\n'+
-    '· Uppercase and lowercase letters\n· Numbers\n· Special charecters');
-    input.oninput = function(){
-        setFieldSetof(fieldset,input.value.length>=8,error,'Password should be atleast 8 charecters long');
-        setFieldSetof(fieldset,isPasswordValid(input.value),error,'Password should atleast contain:\n'+
-            '· Uppercase and lowercase letters\n· Numbers\n· Special charecters');
-    }
+let runPasswordCheck = (input, fieldset, error)=>{
+  setFieldSetof(
+    fieldset,
+    isPasswordValid(input.value),
+    error,
+    "Password should atleast contain:\n" +
+      "· Uppercase and lowercase letters\n· Numbers\n· Special charecters"
+  );
+  input.oninput = ()=> {
+    setFieldSetof(
+      fieldset,
+      input.value.length >= 8,
+      error,
+      "Password should be atleast 8 charecters long"
+    );
+    setFieldSetof(
+      fieldset,
+      isPasswordValid(input.value),
+      error,
+      "Password should atleast contain:\n" +
+        "· Uppercase and lowercase letters\n· Numbers\n· Special charecters"
+    );
+  };
 }
 
-function runEmptyCheck(input,fieldset,error){
-    setFieldSetof(fieldset,isNotEmpty(input.value),error,'This can\'t be empty');
-    input.oninput = function(){
-        setFieldSetof(fieldset,isNotEmpty(input.value),error,'This can\'t be empty');
-    }
-    return isNotEmpty(input.value);
+let runEmptyCheck = (input, fieldset, error)=>{
+  setFieldSetof(
+    fieldset,
+    isNotEmpty(input.value),
+    error,
+    "This can't be empty"
+  );
+  input.oninput = ()=> {
+    setFieldSetof(
+      fieldset,
+      isNotEmpty(input.value),
+      error,
+      "This can't be empty"
+    );
+  };
+  return isNotEmpty(input.value);
 }
 
-function showElement(elements,index){
-    for(var k = 0,j=0;k<elements.length;k++,j++){
-        visibilityOf(elements[k],k==index);
-    }
+let showElement = (elements, index)=> {
+  for (var k = 0, j = 0; k < elements.length; k++, j++) {
+    visibilityOf(elements[k], k == index);
+  }
 }
 
-function replaceClass(element,class1,class2,replaceC1 = true){
-    replaceC1?element.classList.replace(class1,class2):element.classList.replace(class2,class1);
+let replaceClass= (element, class1, class2, replaceC1 = true)=> {
+  replaceC1
+    ? element.classList.replace(class1, class2)
+    : element.classList.replace(class2, class1);
 }
 
-function elementFadeVisibility(element,isVisible){
-    replaceClass(element,'fmt-animate-opacity-off','fmt-animate-opacity',isVisible);
-    visibilityOf(element,isVisible);
+let elementFadeVisibility= (element, isVisible)=> {
+  replaceClass(
+    element,
+    "fmt-animate-opacity-off",
+    "fmt-animate-opacity",
+    isVisible
+  );
+  visibilityOf(element, isVisible);
 }
 
-function setDefaultBackground(element,isNormal = true){
-        if(isNormal){
-            element.style.backgroundColor = baseColor;
-        } else {
-            element.style.backgroundColor = errorBaseColor;
-        }
+let setDefaultBackground = (element, isNormal = true)=> {
+  if (isNormal) {
+    element.style.backgroundColor = baseColor;
+  } else {
+    element.style.backgroundColor = errorBaseColor;
+  }
 }
 
-function showLoader(){
-    visibilityOf(getElement('navLoader'),true);
+let showLoader = ()=> {
+  visibilityOf(getElement("navLoader"), true);
 }
-function hideLoader(){
-    visibilityOf(getElement('navLoader'),false);
-}
-
-function opacityOf(element,value){
-    element.style.opacity = String(value);
+let hideLoader=()=> {
+  visibilityOf(getElement("navLoader"), false);
 }
 
-function visibilityOf(element,visible = Boolean()){
-    if(visible){
-        element.style.display = show
-    } else {
-        element.style.display = hide
-    }
+let opacityOf=(element, value)=> {
+  element.style.opacity = String(value);
 }
 
-function isNotEmpty(text){
-    return text!=null&&text!=nothing&& text.length>0&&text.trim()!=null
+let visibilityOf=(element, visible = Boolean())=> {
+  if (visible) {
+    element.style.display = show;
+  } else {
+    element.style.display = hide;
+  }
 }
 
-function isEmailValid(emailValue){
-    const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return emailRegex.test(String(emailValue).toLowerCase());
-}
-function isPasswordValid(passValue){
-    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/
-    return passRegex.test(String(passValue));
-}
-function getDayName(dIndex){
-    switch(dIndex){
-        case 0: return "Sunday";
-        case 1: return "Monday";
-        case 2: return "Tuesday";
-        case 3: return "Wednesday";
-        case 4: return "Thursday";
-        case 5: return "Friday";
-        case 6: return "Saturday";
-        default:return "Error";
-    }
-}
-function getMonthName(mIndex){
-    switch(mIndex){
-        case 0: return "January";
-        case 1: return "February";
-        case 2: return "March";
-        case 3: return "April";
-        case 4: return "May";
-        case 5: return "June";
-        case 6: return "July";
-        case 7: return "August";
-        case 8: return "September";
-        case 9: return "October";
-        case 10: return "November";
-        case 11: return "December";
-        default: return "Error";
-    }
+let isNotEmpty=(text)=> {
+  return (
+    text != null && text != nothing && text.length > 0 && text.trim() != null
+  );
 }
 
-let getElement = function(id){
-    return document.getElementById(id);
+let isEmailValid=(emailValue)=> {
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return emailRegex.test(String(emailValue).toLowerCase());
 }
-let relocate = function(path){
-    window.location.replace(path);
+let isPasswordValid=(passValue) =>{
+  const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
+  return passRegex.test(String(passValue));
 }
-let refer = function(href){
-    window.location.href = href;
+let getDayName=(dIndex)=> {
+  switch (dIndex) {
+    case 0:
+      return "Sunday";
+    case 1:
+      return "Monday";
+    case 2:
+      return "Tuesday";
+    case 3:
+      return "Wednesday";
+    case 4:
+      return "Thursday";
+    case 5:
+      return "Friday";
+    case 6:
+      return "Saturday";
+    default:
+      return "Error";
+  }
 }
+let getMonthName=(mIndex)=>{
+  switch (mIndex) {
+    case 0:
+      return "January";
+    case 1:
+      return "February";
+    case 2:
+      return "March";
+    case 3:
+      return "April";
+    case 4:
+      return "May";
+    case 5:
+      return "June";
+    case 6:
+      return "July";
+    case 7:
+      return "August";
+    case 8:
+      return "September";
+    case 9:
+      return "October";
+    case 10:
+      return "November";
+    case 11:
+      return "December";
+    default:
+      return "Error";
+  }
+}
+
+let getElement = (id)=> {
+  return document.getElementById(id);
+};
+let relocate = (path)=> {
+  window.location.replace(path);
+};
+let refer = (href)=> {
+  window.location.href = href;
+};

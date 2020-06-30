@@ -1,39 +1,41 @@
 //Homepage default script
-var adminLogin, adminSignup,adminDash;
+var adminLogin, adminSignup,adminDash,getstarted;
 
-function initializeElements(){
+let initializeElements=()=>{
     adminLogin = getElement('adminLogin');
     adminSignup = getElement('registerInstitution');
     adminDash = getElement('adminDashboard');
-    adminSignup.addEventListener(click, function(){      
+    getstarted = getElement('getStarted');
+    adminSignup.addEventListener(click, ()=>{      
         registrationDialog(true);
     }, false);
+    getstarted.addEventListener(click,()=>{refer(registrationPage)},false);
     showGreeting();
 }
-function initAuthStateListener() {
-    firebase.auth().onAuthStateChanged(function(user) {
+let initAuthStateListener=()=> {
+    firebase.auth().onAuthStateChanged((user)=> {
         if (user) {
-            adminLogin.addEventListener(click, function(){
+            adminLogin.addEventListener(click, ()=>{
                 showLoader();
                 refer(adminDashPage);
             }, false);
-            adminDash.addEventListener(click, function(){
+            adminDash.addEventListener(click, ()=>{
                 showLoader();
                 relocate(adminDashPage);
             }, false);
         } else {
-            adminLogin.addEventListener(click, function(){
+            adminLogin.addEventListener(click, ()=>{
                 showLoader();
                 refer(adminLoginPage);
             }, false);
-            adminDash.addEventListener(click, function(){
+            adminDash.addEventListener(click, ()=>{
                 showLoader();
                 refer(adminLoginPage);
             }, false);
         }
     });
 }
-function showGreeting(){
+let showGreeting=()=>{
     var today = new Date();
     var greeting = getElement('homeGreeting');
     if(today.getHours()<4){
@@ -50,7 +52,7 @@ function showGreeting(){
 }
 
 
-window.onload = function() {
+window.onload = ()=> {
     initializeElements();
     initAuthStateListener();
 };

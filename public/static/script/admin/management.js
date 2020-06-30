@@ -36,6 +36,7 @@ class Management{
         showElement(this.boxes,this.displayIndex);
         this.back = getElement("backFromSettings");
         this.contactDevs = getElement('contactDevelopers');
+        this.logout = getElement('logoutAdmin');
     }
 }
 
@@ -121,9 +122,9 @@ class Users{
     }
 }
 
-function initAuthStateListener() {
+let initAuthStateListener=() =>{
     
-    firebase.auth().onAuthStateChanged(function(user) {
+    firebase.auth().onAuthStateChanged((user)=> {
         if (user) {
             let displayName = user.displayName
             let email = user.email;
@@ -139,7 +140,7 @@ function initAuthStateListener() {
     });
 }
 
-function initializeElements(){
+let initializeElements=()=>{
     admin = new Admin();
     inst = new Institution();
     schedule = new Schedule();
@@ -147,28 +148,32 @@ function initializeElements(){
     manage = new Management();
     users = new Users();
     for(var i= 0;i<manage.tabs.length;i++){
-        manage.tabs[i].addEventListener(click,function(){
+        manage.tabs[i].addEventListener(click,()=>{
             handleTabClicks(event,manage.tabs,manage.boxes,"leftTabButtonSelected","leftTabButton");
         },false);
-        manage.chips[i].addEventListener(click,function(){
+        manage.chips[i].addEventListener(click,()=>{
             handleTabClicks(event,manage.chips,manage.boxes);
         },false);
     }
     manage.contactDevs.addEventListener(click,feedBackBox,false);
     manage.back.addEventListener(click,undoAndReturn,false);
+    manage.logout.addEventListener(click,()=>{
+        showLoader();
+        logoutUser(false)
+    },false);
     security.resetPass.addEventListener(click,resetPasswordDialog,false);
     security.resetMail.addEventListener(click,changeEmailBox,false);
-    users.invite.addEventListener(click,function(){
+    users.invite.addEventListener(click,()=>{
         let dialog = new Dialog();
         dialog.setDisplay(firebase.auth().currentUser.uid,'Copy and share the text above, or send the given QR code.');
         dialog.subHeading.style.textAlign = 'center';
         dialog.createActions(Array('Done'),Array(actionType.positive));
-        dialog.onButtonClick(0,function(){dialog.existence(false);});
+        dialog.onButtonClick(0,()=>{dialog.existence(false);});
         dialog.existence(true);
     },false);
 }
 
-function handleTabClicks(event,clickables,showables,showClass,hideClass){
+let handleTabClicks = (event,clickables,showables,showClass,hideClass)=>{
     var e = event.currentTarget;
     for(var k=0;k<clickables.length;k++){
         var condition = e == clickables[k];
@@ -179,11 +184,11 @@ function handleTabClicks(event,clickables,showables,showClass,hideClass){
     }
 }
 
-function undoAndReturn(){
+let undoAndReturn = ()=>{
     showLoader();
     relocate(adminDashPage);
 }
-window.onload = function() {
+window.onload = ()=> {
     initializeElements();
     initAuthStateListener();
 };

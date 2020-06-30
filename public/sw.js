@@ -1,10 +1,10 @@
-var CACHE_NAME = 'schemester-cache-v2';
+var CACHE_NAME = 'schemester-cache-v3';
 var urlsToCache = [
-  '/index.html',
-  '/home.html',
+  '/loader.hbs',
+  '/home.hbs',
   '/offline.html',
-  '/admin/admin_login.html',
-  '/admin/admin_dash.html',
+  '/admin/admin_login.hbs',
+  '/admin/admin_dash.hbs',
   '/static/script/main.js',
   '/static/css/fmt.css',
   '/static/css/main.css',
