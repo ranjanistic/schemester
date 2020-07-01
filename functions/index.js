@@ -3,13 +3,14 @@ const express = require('express');
 const engines = require('consolidate');
 var hbs = require('handlebars');
 const admin = require('firebase-admin');
+var path = require('path');
 
 const app = express();
 app.engine('hbs',engines.handlebars);
-app.set('views','../public');
+app.set('views','./views');
 app.set('view engine','hbs');
 
-var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-0158c5a06d.json");
+var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-f64cfd6fb3.json");
 admin.initializeApp({
 credential: admin.credential.cert(serviceAccount),
 databaseURL: "https://schemester.firebaseio.com"

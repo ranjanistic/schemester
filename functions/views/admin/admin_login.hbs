@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login · Admin · Schemester</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="../static/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="../static/css/fmt.css">
+        <link rel = "stylesheet" href="../static/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+        <script src="/__/firebase/7.15.0/firebase-app.js"></script>
+        <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
+        <script src="/__/firebase/init.js"></script>
+        <script src="../static/script/main.js"></script>
+        <script src="../static/script/admin/adminlogin.js"></script>
+        <script type="text/javascript">        
+            window.onload = function() {
+                initializeElements();
+                initAuthStateListener();
+            };
+        </script>
+
+    </head>
+    <body>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <img src="../static/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
+            <span>Admin Login</span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="../static/graphic/onethreeload.svg" id="navLoader"/>
+        </div>
+        <div class="fmt-padding"  style="margin-top: 72px;">
+            <div class="container">
+                <span class="heading fmt-hide-small">Administrator</span>
+                <span class="heading fmt-hide-medium fmt-hide-large">Admin</span>
+                <fieldset class="text-field" id="email_fieldset">
+                    <legend class="field-caption" >Username · Email Address</legend>
+                    <input class="text-input" required="true" placeholder="someone@example.domain" type="email" id="adminemail" name="credential">
+                    <span class="fmt-right caption" style="color:#bd1919" id="emailError"></span>
+                </fieldset>
+                <br/>
+                <fieldset class="text-field" id="password_fieldset">
+                    <legend class="field-caption">Password</legend>
+                    <input class="text-input" required="true" placeholder="Your account password." type="password" id="adminpassword" name="credential">
+                    <button class="positive-button fmt-right" id="forgotpasswordButton">Forgot?</button>    
+                </fieldset>
+                <br/>
+                <fieldset class="text-field" id="puiid_fieldset">
+                    <legend class="field-caption">PUIID · Private UIID</legend>
+                    <input class="text-input" placeholder="Your institution's private identifier." type="password" id="puiid" name="credential">
+                </fieldset>
+                <br/>
+            </div>
+            <br/>
+            <button class="positive-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
+            <img class="fmt-spin-fast fmt-right" style="display:none" width="50" src="../static/graphic/blueLoader.svg" id="loginLoader"/>
+        </div>
+
+        <!--Dialog box-->
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                    <div class="fmt-row" id="dialogHeading"></div>
+                    <div class="fmt-row" id="dialogSubHeading"></div>
+                    <div id="inputFields"></div>
+                    <fieldset class="fmt-row text-field" id="dialogInputAreaField">
+                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+                    </fieldset>
+                    <div class="fmt-row" id="dialogActions">
+                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+                        <span id="dialogButtons" class="fmt-half fmt-right"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+    </body>
+</html>

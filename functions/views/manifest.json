@@ -1,0 +1,67 @@
+{
+    "name" : "Schemester",
+    "short_name" : "Schemester",
+    "version": "0.0-unborn",
+    "manifest_version": 1,
+    "default_locale": "en",
+    "lang": "en-US",
+    "content_security_policy": "script-src 'self' 'sha256-dC/SLS96tASJUDajuT2FJv3TQkt4fDchPZaePgRbyGk='",
+    "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
+    "start_url" : "/",
+    "background_color" : "#216bf3",
+    "display" : "standalone",
+    "orientation" : "portrait-primary",
+    "scope" : "/",
+    "theme_color" : "#216bf3",
+    "app": [
+      {
+      	"launch": {
+      	  "web_url": "https://schemester.web.app/"
+      	}
+      }
+    ],
+    "categories": ["tools", "education"],
+    "icons": [
+      {
+        "src" : "static/graphic/icons/schemester128.png",
+        "type": "image/png",
+        "sizes": "128x128"
+      },
+      {
+        "src" : "static/graphic/icons/schemester192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src" : "static/graphic/icons/schemester256.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      },
+      {
+        "src": "static/graphic/icons/schemester512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      },
+      {
+        "src": "static/graphic/icons/schemester512.svg",
+        "type": "image/svg+xml",
+        "sizes": "512x512",
+        "purpose":"any"
+      }
+    ],
+    "shortcuts": [
+      {
+        "name": "Dashboard",
+        "description": "View the list of podcasts you saved for later",
+        "url": "/admin/admin_dash.html",
+        "icons": [
+          {
+            "src": "static/graphic/icons/schemester512.svg",
+            "type": "image/svg+xml",
+            "sizes": "512x512",
+            "purpose": "any"
+          }
+        ]
+      }
+    ]
+}

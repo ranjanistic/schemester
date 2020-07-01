@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <title>Schemester</title>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+    <meta name="theme-color" content="#216bf3">
+    <meta name="description" content="An autonomous schedule management workflow with additional features primarily meant for educational institutions.">
+    <meta name="robots" content="noindex, nofollow"><!--TODO: change this-->
+    <link rel="canonical" href="https://schemester.web.app/"/>
+    <link rel="canonical" href="https://schemester.web.app/"/>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+    <link rel = "stylesheet" href="static/css/fmt.css">
+    <link rel = "stylesheet" href="static/css/main.css">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Schemester">
+    <meta property="og:title" content="Schemester · Get Scheduled">
+    <meta property="og:type" content="tools">
+    <meta property="og:url" content="https://schemester.web.app/">
+    <meta property="og:locale" content="en-US">
+    <meta property="og:description" content="An autonomous schedule management workflow with additional features primarily meant for educational institutions.">
+    <meta property="og:image" content="https://schemester.web.app/static/graphic/icons/schemester512.png">
+    <meta property="og:site_name" content="Schemester · Get Scheduled" />
+    <meta name="favicon" content="https://schemester.web.app/static/graphic/icons/schemester512.png">
+    <meta name="twitter:title" content="Schemester · Get Scheduled">
+    <meta name="twitter:description" content="An autonomous schedule management workflow with additional features primarily meant for educational institutions. Get 
+        our service at your institution for a hassle free schedule management system.">
+    <meta name="twitter:image" content="https://schemester.web.app/static/graphic/icons/schemester512.png">
+    <meta name="twitter:site" content="@schemester">
+    <meta name="twitter:creator" content="@ranjanistic">
+    <meta name="twitter:url" content="https://schemester.web.app/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="linkedin:card" content="https://schemester.web.app/static/graphic/icons/schemester512.png">
+    <link rel="icon" href="static/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+    <link rel="apple-touch-icon" href="static/graphic/icons/schemester128.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3">
+    <meta name="apple-mobile-web-app-title" content="Schemester">
+    <meta name="msapplication-TileColor" content="#216bf3">
+    <meta name="msapplication-TileImage" content="static/graphic/schemester.png">
+    <!-- update the version number as needed -->
+    <script src="/__/firebase/7.15.0/firebase-app.js"></script>
+    <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        firebase.auth().onAuthStateChanged(function(user) {          
+          if (user) {
+            window.location.replace("/admin/dash");
+          } else {
+            window.location.replace("/home");
+          }
+        });
+      };
+    </script>
+    <style>
+      body{
+        overflow: hidden;
+        background-color: #216bf3;padding:44px; cursor: wait;
+        display: flex;justify-content:center;align-items:center;
+        float:center;align-items: center;align-content: center;vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+      <div class="fmt-hide-small fmt-hide-medium fmt-row" style="width:100%;padding:0 300px">
+        <img class="fmt-col fmt-spin-fast"  src="static/graphic/onethreeload.svg"/>
+      </div>
+      <div class="fmt-hide-large fmt-center" style="padding-top:150px;">
+          <img class="fmt-spin-fast" src="static/graphic/onethreeload.svg"/>
+      </div>    
+  </body>
+</html>
