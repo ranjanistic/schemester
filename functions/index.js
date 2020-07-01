@@ -57,10 +57,13 @@ app.post('/insert_data',async (request,response) =>{
 app.get('/home', (_request,response)=>{
     response.render('home');
 });
+app.get('/plans',(_request,response)=>{
+    response.render('plans');
+});
 app.get('/admin/register',(_request,response)=>{
     response.render('admin/edit_detail');
 });
-app.get('/admin/login',(_request,response)=>{
+app.get('/admin/auth',(_request,response)=>{
     response.render('admin/admin_login');
 });
 app.get('/admin/dash',(_request,response)=>{
@@ -69,21 +72,46 @@ app.get('/admin/dash',(_request,response)=>{
 app.get('/admin/manage',(_request,response)=>{
     response.render('admin/management');
 });
-app.get('/404',(_request,response)=>{
-    response.render('404');
-});
 app.get(/.*.hbs$/, (req, res) =>{
-    
     res.render('404');
 });
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+app.get('/404', (req, res, next)=>{
+    next();
+});
 
+app.get('/403', (req, res, next)=>{
+var err = new Error('not allowed!');
+err.status = 403;
+next(err);
+});
+
+app.get('/500', (req, res, next)=>{
+next(new Error('keyboard cat!'));
+});
+
+// Error handlers
+
+app.use((req, res, next)=>{
+res.status(404);
+res.format({
+    html: function () {
+    res.render('404', { url: req.url })
+    },
+    json: function () {
+    res.json({ error: 'Not found' })
+    },
+    default: function () {
+    res.type('txt').send('Not found')
+    }
+})
+});
+
+app.use((err, req, res, next)=>{
+res.status(err.status || 500);
+res.render('500', { error: err });
+});
+  
 /** Need the following basic fucntions to-
  * 
  * Authenticate users of a collection using their credentials stored at firestore.

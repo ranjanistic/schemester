@@ -9,12 +9,14 @@ const appName = "Schemester",
   tab = "   ",
   hide = "none",
   show = "block",
-  adminLoginPage = "/admin/login",
+  adminLoginPage = "/admin/auth",
   adminDashPage = "/admin/dash",
   homepage = "/home",
   root = "/",
   registrationPage = "/admin/register",
-  adminSettings = "/admin/manage";
+  planspage = "/plans",
+  adminSettings = "/admin/manage",
+  localDB = appName;
 
 var cred = Array(2);
 class Snackbar {
@@ -42,14 +44,14 @@ let snackBar = (
   var snack = new Snackbar();
   if (text != null) {
     snack.text.textContent = text;
-    if (actionText != null) {
+    if (actionText != null && actionText!=nothing) {
       snack.button.textContent = actionText;
       snack.button.onclick = ()=> {
         action();
       };
     }
     setDefaultBackground(snack.bar, isNormal);
-    visibilityOf(snack.button, actionText != null);
+    visibilityOf(snack.button, actionText != null && actionText!=nothing);
   }
   replaceClass(
     snack.bar,
@@ -318,17 +320,18 @@ let clog = (msg)=> {
 }
 //idb classes
 const dbName = appName;
-let idb;
-let transaction;
+let idb,lidb;
+let transaction,localTransaction;
 let dbVer = 1;
-class Default {
+class KeyPath {
   constructor() {
     this.admin = "admin";
     this.institution = "institution";
     this.timings = "timings";
+    this.localUIID = "localuiid";
   }
 }
-let def = new Default();
+let kpath = new KeyPath();
 class Modes {
   edit = "readwrite";
   view = "readonly";
@@ -341,6 +344,8 @@ class ObjectStores {
   batches;
   today;
   constructor() {
+    this.localDataName = "localDB";
+    this.localDBKey = "localuiid";
     this.defaultDataName = "defaults";
     this.defaultKey = "type";
     this.teacherScheduleName = "teachers";
@@ -354,13 +359,23 @@ class ObjectStores {
 let objStore = new ObjectStores();
 class Transactions {
   constructor(database) {
+    this.local;
     this.default;
     this.teachers;
     this.batches;
     this.today;
     this.db = database;
   }
-  getDefaultTx(mode) {
+  getLocalTx(mode = null){
+    if (mode != null) {
+      return (this.local = this.db.transaction(
+        objStore.localDataName,
+        mode
+      ));
+    }
+    return (this.local = this.db.transaction(objStore.localDataName));
+  }
+  getDefaultTx(mode = null) {
     if (mode != null) {
       return (this.default = this.db.transaction(
         objStore.defaultDataName,
@@ -724,7 +739,6 @@ let accountVerificationDialog = (isShowing = true, emailSent = false)=> {
     );
     verify.onButtonClick(1, ()=> {
       verify.loader();
-      if(negativeaction==null){
       user.delete()
         .then(()=> {
           verify.existence(false);
@@ -734,22 +748,13 @@ let accountVerificationDialog = (isShowing = true, emailSent = false)=> {
           verify.loader(false);
           snackBar(error, "Report", false);
         });
-      } else {
-        negativeaction();
-      }
+      
     });
     verify.onButtonClick(0, ()=> {
-      if (silentLogin(cred[0], cred[1])) {
-        user = firebase.auth().currentUser;
-        if (user.emailVerified) {
-          relocate(registrationPage);
-        } else {
-          snackBar("Not yet verified", null, false);
-          verify.loader(false);
-        }
-      } else {
-        snackBar("Unable to verify", null, false);
-      }
+      verify.loader();
+      clog('cred:'+cred);
+      firebase.auth().signOut();
+      silentLogin(cred[0], cred[1]);
     });
   } else {
     verify.setDisplay(
@@ -795,22 +800,26 @@ let accountVerificationDialog = (isShowing = true, emailSent = false)=> {
   verify.existence(isShowing);
 }
 let logoutUser = (sendHome = true)=> {
+  firebase.auth().signOut();
   if (sendHome) {
     relocate(root);
   } else {
     relocate(adminLoginPage);
   }
-  firebase.auth().signOut();
 }
-let silentLogin = (email, password)=> {
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(email, password)
+let silentLogin = (email, password) => {  
+  firebase.auth().signInWithEmailAndPassword(email, password)
     .then(()=> {
-      return true;
+      user = firebase.auth().currentUser;
+      if (user.emailVerified) {
+        relocate(planspage);
+      } else {
+        snackBar("Not yet verified", null, false);
+        verify.loader(false);
+      }
     })
     .catch( (error)=> {
-      return false;
+      snackBar(error, null, false);
     });
 }
 let feedBackBox = (isShowing = true) =>{
@@ -1122,4 +1131,43 @@ let relocate = (path)=> {
 };
 let refer = (href)=> {
   window.location.href = href;
+};
+
+let idbSupported =()=>{
+  if (!window.indexedDB) {
+    clog("IDB:0");
+    snackBar("This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.",nothing,false);
+  }
+  return window.indexedDB;
+}
+let addNumberSuffixHTML = (number)=>{
+  var str = String(number);
+  switch (number) {
+    case 1:
+      return number + "<sup>st</sup>";
+    case 2:
+      return number + "<sup>nd</sup>";
+    case 3:
+      return number + "<sup>rd</sup>";
+    default: {
+      if (number > 9) {
+        if (str.charAt(str.length - 2) == "1") {
+          return number + "<sup>th</sup>";
+        } else {
+          switch (str.charAt(str.length - 1)) {
+            case "1":
+              return number + "<sup>st</sup>";
+            case "2":
+              return number + "<sup>nd</sup>";
+            case "3":
+              return number + "<sup>rd</sup>";
+            default:
+              return number + "<sup>th</sup>";
+          }
+        }
+      } else {
+        return number + "<sup>th</sup>";
+      }
+    }
+  }
 };

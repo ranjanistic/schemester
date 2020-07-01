@@ -71,10 +71,11 @@ class Stage1 {
     elementFadeVisibility(this.view, show);
     if(show){
       new Register().setStageView('First Step');
-      visibilityOf(new Register().backStage,false);
+      new Register().backStage.textContent = "Cancel";
       visibilityOf(new Register().stage1Loader,false);
       visibilityOf(this.save,true);
-      clog('gone');
+    } else {
+      new Register().backStage.textContent = "Next";
     }
   }
 }
@@ -164,7 +165,6 @@ class Stage2 {
     elementFadeVisibility(this.view, show);
     if(show){
       new Register().setStageView('Step Two');
-      visibilityOf(new Register().backStage,true);
       visibilityOf(new Register().stage2Loader,false);
       visibilityOf(this.save,true);
       new Register().backStage.onclick = ()=>{
@@ -227,7 +227,6 @@ class TeacherData {
 //TODO: pass functions as params
 //TODO: dymanicize dialog creation, snackbar creation.
 window.onload = ()=> {
-  initiateIDB();
   var register = new Register();
   var stage1 = new Stage1();
   var stage2 = new Stage2();
@@ -247,21 +246,22 @@ window.onload = ()=> {
 
   register.saveExit.onclick = ()=>{
     showLoader();
+    initiateIDB();
     visibilityOf(register.saveExit,false);
     var data = [
       {
-        type: def.admin,
+        type: kpath.admin,
         email: adminEmail,
         adminname: stage1.getName(),
         phone: stage1.getPhone(),
       },
       {
-        type: def.institution,
+        type: kpath.institution,
         institutename: stage1.getInstName(),
         uiid: stage1.getInstID(),
       },
       {
-        type: def.timings,
+        type: kpath.timings,
         startTime: stage2.getStartTime(),
         endTime: stage2.getEndTime(),
         breakStartTime: stage2.getBreakStart(),
@@ -279,20 +279,21 @@ window.onload = ()=> {
   stage1.save.onclick = ()=> {
     visibilityOf(register.stage1Loader,true);
     visibilityOf(stage1.save,false);
-    var data = [
+    initiateIDB();
+    var data1 = [
       {
-        type: def.admin,
+        type: kpath.admin,
         email: adminEmail,
         adminname: stage1.getName(),
         phone: stage1.getPhone(),
       },
       {
-        type: def.institution,
+        type: kpath.institution,
         institutename: stage1.getInstName(),
         uiid: stage1.getInstID(),
       },
     ];
-    saveDefaults(data,()=>{
+    saveDefaults(data1,()=>{
       stage1.exist(false);
       stage2.exist(true);
     });
@@ -301,7 +302,7 @@ window.onload = ()=> {
       visibilityOf(stage2.save,false);
       var data2 = [
         {
-          type: def.timings,
+          type: kpath.timings,
           startTime: stage2.getStartTime(),
           endTime: stage2.getEndTime(),
           breakStartTime: stage2.getBreakStart(),
@@ -396,35 +397,3 @@ let formatPhone = (number = String())=> {
 }
 
 let usernameValid = (name = String())=> /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/.test(name.toLocaleLowerCase());
-
-let addNumberSuffixHTML = (number)=>{
-  var str = String(number);
-  switch (number) {
-    case 1:
-      return number + "<sup>st</sup>";
-    case 2:
-      return number + "<sup>nd</sup>";
-    case 3:
-      return number + "<sup>rd</sup>";
-    default: {
-      if (number > 9) {
-        if (str.charAt(str.length - 2) == "1") {
-          return number + "<sup>th</sup>";
-        } else {
-          switch (str.charAt(str.length - 1)) {
-            case "1":
-              return number + "<sup>st</sup>";
-            case "2":
-              return number + "<sup>nd</sup>";
-            case "3":
-              return number + "<sup>rd</sup>";
-            default:
-              return number + "<sup>th</sup>";
-          }
-        }
-      } else {
-        return number + "<sup>th</sup>";
-      }
-    }
-  }
-};
