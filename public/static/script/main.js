@@ -237,7 +237,7 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  setDisplay(head, body, imgsrc) {
+  setDisplay(head, body, imgsrc = null) {
     this.heading.textContent = head;
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);
@@ -245,6 +245,7 @@ class Dialog extends DialogID {
       this.content.classList.remove("fmt-threequarter");
     } else {
       this.content.classList.add("fmt-threequarter");
+      this.image.src = imgsrc;
     }
     replaceClass(
       this.content,
@@ -252,7 +253,6 @@ class Dialog extends DialogID {
       "fmt-padding",
       imgsrc == null
     );
-    this.image.src = imgsrc;
   }
   loader(show = true) {
     visibilityOf(this.loading, show);

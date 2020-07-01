@@ -5,12 +5,11 @@
     "manifest_version": 1,
     "default_locale": "en",
     "lang": "en-US",
-    "content_security_policy": "script-src 'self' 'sha256-dC/SLS96tASJUDajuT2FJv3TQkt4fDchPZaePgRbyGk='",
     "description": "An autonomous schedule management workflow with additional features primarily meant for educational institutions.",
     "start_url" : "/",
     "background_color" : "#216bf3",
     "display" : "standalone",
-    "orientation" : "portrait-primary",
+    "orientation" : "natural",
     "scope" : "/",
     "theme_color" : "#216bf3",
     "app": [

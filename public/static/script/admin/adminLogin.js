@@ -122,3 +122,7 @@ let focusToNext = ()=>{
         }
     }
 }
+window.onload = function() {
+    initializeElements();
+    initAuthStateListener();
+};

@@ -63,20 +63,15 @@ class Institution{
     constructor(){
         this.name = getElement('instituteName');
         this.uiid = getElement('uiid');
-        this.puiid = getElement('puiid');
-        this.type = getElement('instituteType');
         this.subscriptionTill = getElement('subscriptionTill');
     }
     setDetails(name = null,uiid = null,puiid = null,type = null,subscriptionTill = null){
         if(name!=null){this.name.textContent = name;}
         if(uiid != null){this.uiid.textContent = uiid;}
-        if(puiid != null){this.puiid.textContent = puiid;}
-        if(type != null){this.type.textContent = type;}
         if(subscriptionTill != null){this.subscriptionTill.textContent = subscriptionTill;}
     }
     getName(){return this.name.textContent;}
     getUIID(){return this.uiid.textContent;}
-    getType(){return this.type.textContent;}
     getSubsciptionTill(){return this.subscriptionTill.textContent;}
 }
 class Schedule{

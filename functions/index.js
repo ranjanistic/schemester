@@ -15,7 +15,7 @@ admin.initializeApp({
 credential: admin.credential.cert(serviceAccount),
 databaseURL: "https://schemester.firebaseio.com"
 });
-
+/*
 async function getFirestore(){
     const firestore_con  = await admin.firestore();
     const writeResult = firestore_con.collection('TestInstitute').doc('Defaults')
@@ -30,14 +30,14 @@ async function getFirestore(){
         console.log('Error getting document', err);
     })
 }
-
+*/
 app.get('/',async (_request,response) =>{
-    var db_result = await getFirestore();
-    response.render('loader',{db_result});
+//    var db_result = await getFirestore();
+    response.render('loader');//,{db_result});
 });
 
 exports.app = functions.https.onRequest(app);
-
+/*
 async function insertFormData(request){
     const writeResult = await admin.firestore().collection('sample').add({
     firstname: request.body.firstname,
@@ -53,7 +53,7 @@ app.post('/insert_data',async (request,response) =>{
     var insert = await insertFormData(request);
     response.sendStatus(200);
 });
-
+*/
 app.get('/home', (_request,response)=>{
     response.render('home');
 });
@@ -73,6 +73,7 @@ app.get('/404',(_request,response)=>{
     response.render('404');
 });
 app.get(/.*.hbs$/, (req, res) =>{
+    
     res.render('404');
 });
 
