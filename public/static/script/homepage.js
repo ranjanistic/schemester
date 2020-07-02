@@ -1,38 +1,28 @@
 //Homepage default script
-var adminLogin, adminSignup,adminDash,getstarted;
+var adminLogin, adminSignup,plans,getstarted;
 
 let initializeElements=()=>{
     adminLogin = getElement('adminLogin');
     adminSignup = getElement('registerInstitution');
-    adminDash = getElement('adminDashboard');
+    plans = getElement('plansPricing');
     getstarted = getElement('getStarted');
     adminSignup.addEventListener(click, ()=>{      
         registrationDialog(true);
     }, false);
+    plans.addEventListener(click,()=>{refer(planspage);},false);
     getstarted.addEventListener(click,()=>{refer(registrationPage)},false);
     showGreeting();
 }
 let initAuthStateListener=()=> {
     firebase.auth().onAuthStateChanged((user)=> {
-        if (user) {
-            adminLogin.addEventListener(click, ()=>{
-                showLoader();
+        adminLogin.addEventListener(click, ()=>{
+            showLoader();
+            if (user) {
                 refer(adminDashPage);
-            }, false);
-            adminDash.addEventListener(click, ()=>{
-                showLoader();
-                relocate(adminDashPage);
-            }, false);
-        } else {
-            adminLogin.addEventListener(click, ()=>{
-                showLoader();
+            } else{
                 refer(adminLoginPage);
-            }, false);
-            adminDash.addEventListener(click, ()=>{
-                showLoader();
-                refer(adminLoginPage);
-            }, false);
-        }
+            }
+        }, false);
     });
 }
 let showGreeting=()=>{

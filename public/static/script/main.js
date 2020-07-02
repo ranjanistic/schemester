@@ -754,7 +754,15 @@ let accountVerificationDialog = (isShowing = true, emailSent = false)=> {
       verify.loader();
       clog('cred:'+cred);
       firebase.auth().signOut();
-      silentLogin(cred[0], cred[1]);
+      silentLogin(cred[0], cred[1],()=>{
+        user = firebase.auth().currentUser;
+        if (user.emailVerified) {
+          relocate(planspage);
+        } else {
+          snackBar("Not yet verified", null, false);
+          verify.loader(false);
+        }
+      });
     });
   } else {
     verify.setDisplay(
@@ -807,16 +815,10 @@ let logoutUser = (sendHome = true)=> {
     relocate(adminLoginPage);
   }
 }
-let silentLogin = (email, password) => {  
+let silentLogin = (email, password,action) => {  
   firebase.auth().signInWithEmailAndPassword(email, password)
     .then(()=> {
-      user = firebase.auth().currentUser;
-      if (user.emailVerified) {
-        relocate(planspage);
-      } else {
-        snackBar("Not yet verified", null, false);
-        verify.loader(false);
-      }
+      action()
     })
     .catch( (error)=> {
       snackBar(error, null, false);

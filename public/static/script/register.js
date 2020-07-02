@@ -246,7 +246,6 @@ window.onload = ()=> {
 
   register.saveExit.onclick = ()=>{
     showLoader();
-    initiateIDB();
     visibilityOf(register.saveExit,false);
     var data = [
       {
@@ -272,14 +271,15 @@ window.onload = ()=> {
         totalPeriods: stage2.getTotalPeriods(),
       },
     ];
-    saveDefaults(data,()=>{
-      relocate(homepage);
+    initiateIDB(stage1.getInstID(),()=>{
+      saveDefaults(data,()=>{
+        relocate(homepage);
+      });
     });
   }
   stage1.save.onclick = ()=> {
     visibilityOf(register.stage1Loader,true);
     visibilityOf(stage1.save,false);
-    initiateIDB();
     var data1 = [
       {
         type: kpath.admin,
@@ -293,9 +293,11 @@ window.onload = ()=> {
         uiid: stage1.getInstID(),
       },
     ];
-    saveDefaults(data1,()=>{
-      stage1.exist(false);
-      stage2.exist(true);
+    initiateIDB(stage1.getInstID(),()=>{
+      saveDefaults(data1,()=>{
+        stage1.exist(false);
+        stage2.exist(true);
+      });
     });
     stage2.save.onclick = ()=> {
       visibilityOf(register.stage2Loader,true);

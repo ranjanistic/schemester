@@ -1,10 +1,10 @@
 const functions = require('firebase-functions');
+
 const express = require('express');
 const engines = require('consolidate');
 var hbs = require('handlebars');
 const admin = require('firebase-admin');
 var path = require('path');
-
 const app = express();
 app.engine('hbs',engines.handlebars);
 app.set('views','./views');
@@ -71,6 +71,33 @@ app.get('/admin/dash',(_request,response)=>{
 });
 app.get('/admin/manage',(_request,response)=>{
     response.render('admin/management');
+});
+
+app.post('/confirm_subscription',async (request,response)=>{
+    var collection = 'sampleschool';
+    try {
+        await admin.database().ref(collection + '/defaults').update({
+            admin: {
+                email: 'adminEmail',
+            },
+            institution: {
+                active: true,
+            },
+        }).then(()=>{
+            console.log('New Message written');
+            response.render('admin/edit_detail');
+            return true;
+        }).catch(()=>{
+            console.log('error catched');
+        }).finally(()=>{
+            console.log('finally');
+        });
+    }
+    catch (error) {
+        console.log(error);
+        response.render('plans');
+        //throw new functions.https.HttpsError('Couldn\'t write', error.message, error);
+    }
 });
 app.get(/.*.hbs$/, (req, res) =>{
     res.render('404');

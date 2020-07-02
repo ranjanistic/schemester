@@ -9,28 +9,34 @@
         <meta name="theme-color" content="#216bf3">
         <link rel="icon" href="../static/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel="manifest" href="/manifest.json">
-        <link rel = "stylesheet" href="../static/css/fmt.css">
-        <link rel = "stylesheet" href="../static/css/main.css">
+        <link rel = "stylesheet" href="/static/css/fmt.css">
+        <link rel = "stylesheet" href="/static/css/main.css">
         <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
-        <script src="/__/firebase/7.15.0/firebase-app.js"></script>
-        <script src="/__/firebase/7.15.0/firebase-auth.js"></script>
+        <script src="/__/firebase/7.15.5/firebase-app.js"></script>
+        <script src="/__/firebase/7.15.5/firebase-auth.js"></script>
+        <script src="/__/firebase/7.15.5/firebase-functions.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-functions.js"></script>
         <script src="/__/firebase/init.js"></script>
         <script type="text/javascript" src="/static/script/main.js"></script>
         <script type="text/javascript" src="/static/script/plans.js"></script>
     </head>
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
-            <a href="../"><img src="../static/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
-            <span id="greeting">P</span>
-            <div class="fmt-top fmt-shadow" id="topBar">
-            <img class="circle-button" src="/static/graphic/leftArrow.svg" width="40" id="backFromSettings">
-            <span>Settings</span>
+            <img class="circle-button" src="/static/graphic/leftArrow.svg" width="40" id="backFromPlans">
+            <span>Plans</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" width="40" src="/static/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <button class="neutral-button fmt-right" id="logoutAdmin">Log out</button>
         </div>
         <div class="fmt-row" style="margin-top: 82px;">
-            <button class="display-button" id="selectPlan">Select Plan</button>
+            <button class="display-button" id="selectPlan">Confirm transaction</button>
         </div>
+        <form action="/confirm_subscription" method="POST">
+            <fieldset class="text-field" id="creat_uiid_fieldset">
+                <legend class="field-caption">Create permanent UIID</legend>
+                <input class="text-input" placeholder="Set a unique ID for your institution" type="text" id="createuiid">
+            </fieldset>
+            <input class="positive-button" type="submit">
+        </form>
     </body>
 </html>

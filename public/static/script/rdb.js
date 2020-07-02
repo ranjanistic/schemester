@@ -1,8 +1,6 @@
 //to create/update all records in default objectstore at once.
 let saveDefaults = (defaultData, executor) => {
-  let defTrans = transaction.getDefaultTx(mode.edit);
-  defTrans.onerror = (e) => {};
-  let obStore = defTrans.objectStore(objStore.defaultDataName);
+  let obStore = transaction.getDefaultTx(mode.edit).objectStore(objStore.defaultDataName);
   defaultData.forEach((type) => {
     clog(type.type);
     let request = obStore.put(type);
@@ -38,7 +36,7 @@ let saveCustomDefaults = (type, key, newValue) => {
   };
 };
 
-let initiateIDB = () => {
+let initiateIDB = (uiidbname,action) => {
   if (idbSupported()) {
     let lrequest = window.indexedDB.open(localDB, 1);
     lrequest.onerror = () => {
@@ -50,13 +48,39 @@ let initiateIDB = () => {
       lidb = lrequest.result;
       localTransaction = new Transactions(lidb);
       let lobject = localTransaction.getLocalTx().objectStore(objStore.localDataName);
-      lobject.openCursor().onsuccess = (e) => {
+      lobject.openCursor().onsuccess = (e)=>{
+        clog('L cursor open success');
         let lcursor = e.target.result;
+        clog('L cursor:'+lcursor);
+        clog('L e:'+e.target.result);
         if (lcursor) {
-          switch (lcursor.value.type) {
+          clog('L cursor switch ');
+          switch (lcursor.value.localuiid) {
             case kpath.localUIID:{
+              clog('L cursor kpath case localuiid');
+              if (lcursor.value.uiid != null) {
+                clog('L uiid !null ');
+                if (lcursor.value.uiid != uiidbname) {
+                  alert("You cannot change the uiid");
+                }
+                openAdminDatabase(lcursor.value.uiid,()=>{action()}); //open database of given stored institituion uiid name.
+              } else {
+                clog('L uiid null ');
+                let editobStore = localTransaction.getLocalTx(mode.edit).objectStore(objStore.defaultDataName);
+                let data = {
+                  [objStore.defaultKey]:uiidbname
+                }
+                clog(data);
+                let lerequest = editobStore.put(data);
+                lerequest.onsuccess = ()=>{
+                  clog("success added :" + data+",opening db" + lcursor.value.uiid);
+                  openAdminDatabase(lcursor.value.uiid,()=>{action()});
+                };
+                lerequest.onerror = ()=>{
+                  clog("error adding :" + data);
+                }
+              }
               //TODO: create uiid path value from admin input of uiid, then call the following function.
-              openAdminDatabase(lcursor.value.uiid);  //open database of given stored institituion uiid name.
             }break;
             default: {
               clog("L no local uiid path register");
@@ -66,23 +90,24 @@ let initiateIDB = () => {
         }
       };
     };
-    lrequest.onupgradeneeded = (e) =>{
-      clog('L needs upgrade in register');
+    lrequest.onupgradeneeded = (e)=>{
+      clog("L needs upgrade in register");
       lidb = e.target.result;
       lidb.createObjectStore(objStore.localDataName, {
         keyPath: objStore.localDBKey,
       });
       localTransaction = new Transactions(lidb);
-    }
+    };
   }
 };
 
-let openAdminDatabase = (uiidDbName) => {
+let openAdminDatabase = (uiidDbName,action) => {
   let request = window.indexedDB.open(uiidDbName, 1);
   request.onerror = () => {
-    clog("Database failed to open");
+    clog("Admin Database failed to open");
   };
   request.onsuccess = () => {
+    clog('admin db open success:'+uiiDbName);
     let s1 = new Stage1();
     let s2 = new Stage2();
     idb = request.result;
@@ -120,8 +145,11 @@ let openAdminDatabase = (uiidDbName) => {
         cursor.continue();
       }
     };
+    clog('executing save action in openDB');
+    action();
   };
   request.onupgradeneeded = (e) => {
+    clog('admin db upgrade');
     idb = e.target.result;
     idb.createObjectStore(objStore.defaultDataName, {
       keyPath: objStore.defaultKey,
@@ -139,6 +167,7 @@ let openAdminDatabase = (uiidDbName) => {
       autoIncrement: true,
     });
     transaction = new Transactions(idb);
-    clog("Database setup complete");
+    clog("Database setup complete, executing save action");
+    action();
   };
 };

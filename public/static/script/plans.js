@@ -1,31 +1,29 @@
-let initializeElements = () => {
-  let logout = getElement("logoutAdmin");
-  let selectPlan = getElement("selectPlan");
-  logout.onclick = () =>{
-      firebase.auth().signOut();
+//const { app } = require("firebase");
+class Plans {
+  constructor() {
+    this.logout = getElement("logoutAdmin");
+    this.selectPlan = getElement("selectPlan");
+    this.newuiid = getElement('createuiid');
+    this.back = getElement('backFromPlans');
+    this.logout.addEventListener(click, this.signOut);
+    this.back.addEventListener(click, ()=>relocate(homepage));
+    firebase.auth().onAuthStateChanged(this.authstateListener.bind(this));
   }
-  selectPlan.onclick = () => {
-    clog("Payment done");
-    createLocalDB(()=>{relocate(registrationPage);});
-  };
+  signOut() {
+    firebase.auth().signOut();
+  }
+  authstateListener(user) {
+    visibilityOf(this.logout,user);
+  }
+  createCollection(uiid) {      
+  }
 };
 
-let authstateListener = () =>{
-    firebase.auth().onAuthStateChanged((user) => {
-        if (!user) {
-            relocate(adminLoginPage);
-        }
-    });
-}
-let createLocalDB = (action) => {
+let createLocalDB = (uiid,action) => {
   if (idbSupported()) {
     let request = window.indexedDB.open(localDB, 1);
     request.onerror = () => {
       clog("L Database failed to open plans");
-    };
-    request.onsuccess = () => {
-      clog("L Database opened success plans");
-      action();
     };
     request.onupgradeneeded = (e) => {
       clog("L Database need upgrade plans");
@@ -34,11 +32,9 @@ let createLocalDB = (action) => {
         keyPath: objStore.localDBKey,
       });
       localTransaction = new Transactions(lidb);
-      action();
     };
   }
 };
 window.onload = ()=>{
-    initializeElements();
-    createLocalDB();
+    window.app = new Plans();
 }
