@@ -88,6 +88,7 @@
                         <!--account settings box-->
                         <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <span class="sub-heading">Admin</span>
+                            <button class="fmt-right positive-button" id="editAdminSection">Edit</button>
                             <div>
                                 <span class="caption">Admin name</span><br/>
                                 <span class="editable" id="adminName">...</span><br/>
@@ -102,6 +103,7 @@
                         <!--institution settings box-->
                         <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
                             <span class="sub-heading">Basic</span>
+                            <button class="fmt-right positive-button" id="editInstSection">Edit</button>
                             <div>
                                 <span class="caption">Display name</span><br/>
                                 <span class="editable" id="instituteName">...</span><br/>
@@ -114,6 +116,7 @@
                         <!--schedule settings box-->
                         <div class="sub-container fmt-animate-opacity" id="scheduleSettingsBox">
                             <span class="sub-heading">Timings</span>
+                            <button class="fmt-right negative-button" id="reschedule">Re-schedule</button>
                             <div>
                                 <span class="caption">Each period duration</span><br/>
                                 <span class="editable" id="periodDuration"></span><br/>
@@ -139,10 +142,10 @@
                             <div>
                                 <span class="caption">Reset Admin Password</span><br/>
                                 <button class="positive-button" id="resetPasswordButton">Get email link</button><br/>
-                                <span class="caption">Change Admin Email ID</span><br/>
-                                <button class="positive-button" id="resetMailButton">New email address</button><br/>
-                                <span class="caption">Last login</span><br/>
-                                <span id="lastLoginTime">...</span><br/>
+                                <span class="caption">Transfer Ownership</span><br/>
+                                <button class="negative-button" id="resetMailButton">Reset email address</button><br/>
+                                <span class="caption">End Service</span><br/>
+                                <button class="negative-button" id="deleteAccountButton">Delete account</button><br/>
                             </div>
                         </div>
                         <!--users settings-->

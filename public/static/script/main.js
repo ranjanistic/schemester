@@ -525,20 +525,20 @@ let resetPasswordDialog = (isShowing = true)=> {
 }
 
 let changeEmailBox = (isShowing = true)=> {
-  var mailChange = new Dialog(2);
+  var mailChange = new Dialog(3);
   mailChange.setDisplay(
     "Change Email Address",
     "You need to verify yourself, and then provide your new email address. You'll be logged out after successful change.",
     "/static/graphic/icons/schemester512.png"
   );
   mailChange.inputParams(
-    Array("Account password", "New email address"),
-    Array("Current password", "someone@example.domain"),
-    Array("password", "email")
+    Array("Existing Account password", "Existing email address","New email address"),
+    Array("Current password", "youremail@example.domain","someone@example.com"),
+    Array("password", "email", "email")
   );
   mailChange.createActions(
     Array("Change Email ID", "Abort"),
-    Array(actionType.positive, actionType.negative)
+    Array(actionType.negative, actionType.positive)
   );
 
   mailChange.getInput(0).oninput = ()=> {
@@ -577,6 +577,22 @@ let changeEmailBox = (isShowing = true)=> {
       )
     );
   };
+  mailChange.getInput(2).oninput = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      isEmailValid(mailChange.getInput(1))
+    );
+  };
+  mailChange.getInput(2).onchange = ()=> {
+    visibilityOf(
+      mailChange.getDialogButton(0),
+      runEmailCheck(
+        mailChange.getInput(2),
+        mailChange.inputField[1],
+        mailChange.inputError[1]
+      )
+    );
+  };
   mailChange.onButtonClick(0, ()=> {
     if (
       runEmptyCheck(
@@ -592,16 +608,24 @@ let changeEmailBox = (isShowing = true)=> {
           mailChange.inputError[1]
         )
       ) {
-        snackBar(
-          "Your email id has been changed to " + mailChange.getInputValue(1),
-          "okay",
-          ()=> {
-            snackBar("You need to login again");
-            logoutUser(false);
-          }
-        );
-        mailChange.existence(false);
-        firebase.auth().signOut();
+        if (
+          runEmailCheck(
+            mailChange.getInput(2),
+            mailChange.inputField[2],
+            mailChange.inputError[2]
+          )
+        ) {
+          snackBar(
+            "Your email id has been changed to " + mailChange.getInputValue(2),
+            "okay",
+            ()=> {
+              snackBar("You need to login again");
+              logoutUser(false);
+            }
+          );
+          mailChange.existence(false);
+          firebase.auth().signOut();
+        }
       }
     }
   });
