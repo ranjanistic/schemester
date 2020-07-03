@@ -1,4 +1,6 @@
 //const { app } = require("firebase");
+
+var db;
 class Plans {
   constructor() {
     this.logout = getElement("logoutAdmin");
@@ -7,6 +9,7 @@ class Plans {
     this.back = getElement('backFromPlans');
     this.logout.addEventListener(click, this.signOut);
     this.back.addEventListener(click, ()=>relocate(homepage));
+    this.selectPlan.addEventListener(click,this.createCollection(this.newuiid.value));
     firebase.auth().onAuthStateChanged(this.authstateListener.bind(this));
   }
   signOut() {
@@ -15,7 +18,20 @@ class Plans {
   authstateListener(user) {
     visibilityOf(this.logout,user);
   }
-  createCollection(uiid) {      
+  createCollection(uiid) {
+    // const docRef = db.doc('membership/ahem');
+    // docRef.get().then(function(doc) {
+    //   if (doc.exists) {
+    //     const data = doc.data()
+    //       data[UIID] = uiid
+    //       docRef.set(data);
+    //       clog('oh yeaass');
+    //   } else {
+    //     clog('oh noo');
+    //   }
+    // }).catch(()=>{
+    //   clog('oooooof catch');
+    // });
   }
 };
 
@@ -35,6 +51,7 @@ let createLocalDB = (uiid,action) => {
     };
   }
 };
+
 window.onload = ()=>{
     window.app = new Plans();
 }

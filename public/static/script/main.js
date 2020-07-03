@@ -19,6 +19,43 @@ const appName = "Schemester",
   localDB = appName;
 
 var cred = Array(2);
+
+class TextInput{
+  constructor(fieldId = String(),captionId = String(),inputId = String(),errorId = String()){
+    this.fieldset = getElement(fieldId);
+    this.caption = getElement(captionId);
+    this.input = getElement(inputId);
+    this.error = getElement(errorId);
+  }
+  setFieldCaption(caption){
+    this.caption.textContent = caption;
+  }
+  onTextInput(action){
+    this.input.oninput = ()=>{
+      action();
+    }
+  }
+  onTextDefocus(action){
+    this.input.onchange = ()=>{
+      action();
+    }
+  }
+  showError(errorMsg){
+    setFieldSetof(this.fieldset,false,this.error,errorMsg);
+  }
+  normalize(){
+    setFieldSetof(this.fieldset,true);
+  }
+  setInputAttrs(hint,type,defaultValue){
+    this.input.placeholder = hint;
+    this.input.type = type;
+    this.input.value = defaultValue;
+  }
+  getInputValue(){
+    return this.input.value;
+  }
+}
+
 class Snackbar {
   id = "snackBar";
   textId = "snackText";
@@ -144,11 +181,17 @@ class Dialog extends DialogID {
     visibilityOf(this.inputFields, totalInputs > 0);
     if (totalInputs > 0) {
       this.createInputs(totalInputs);
+      this.inputTextField = Array(totalInputs);
       this.inputField = Array(totalInputs);
       this.inputCaption = Array(totalInputs);
       this.input = Array(totalInputs);
       this.inputError = Array(totalInputs);
       for (var k = 0; k < totalInputs; k++) {
+        //TODO: this;
+        this.inputTextField[k] = new TextInput(this.dialogInputField(k),this.dialogFieldCaption(k),
+          this.dialogInput(k),this.dialogInputError(k)
+        );
+        this.inputTextField[k].normalize()
         this.inputField[k] = getElement(this.dialogInputField(k));
         this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
         this.input[k] = getElement(this.dialogInput(k));

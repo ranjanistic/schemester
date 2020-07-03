@@ -1,5 +1,4 @@
 const functions = require('firebase-functions');
-
 const express = require('express');
 const engines = require('consolidate');
 var hbs = require('handlebars');
@@ -11,10 +10,21 @@ app.set('views','./views');
 app.set('view engine','hbs');
 
 var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-f64cfd6fb3.json");
-admin.initializeApp({
-credential: admin.credential.cert(serviceAccount),
-databaseURL: "https://schemester.firebaseio.com"
-});
+var config = {
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://schemester.firebaseio.com",
+    apiKey: "AIzaSyBLW5MynJe7wrITc3UhTDtO_6P-RvMkisA",
+    authDomain: "schemester.firebaseapp.com",
+    projectId: "schemester",
+    storageBucket: "schemester.appspot.com",
+    messagingSenderId: "763392707863",
+    appId: "1:763392707863:web:afd8883a09ce3070f97b52",
+    measurementId: "G-F2N1TNPSBV"
+}
+admin.initializeApp(config);
+
+//firebase.initializeApp(config);
+//const db = admin.firestore();
 /*
 async function getFirestore(){
     const firestore_con  = await admin.firestore();
@@ -37,71 +47,36 @@ app.get('/',async (_request,response) =>{
 });
 
 exports.app = functions.https.onRequest(app);
-/*
-async function insertFormData(request){
-    const writeResult = await admin.firestore().collection('sample').add({
-    firstname: request.body.firstname,
-    lastname: request.body.lastname
-    }).then(() => {
-        console.log("Document successfully written!");
-        return 1;
-    }).catch((error) => {
-        console.error("Error writing document: ", error);
-    });
-}
-app.post('/insert_data',async (request,response) =>{
-    var insert = await insertFormData(request);
-    response.sendStatus(200);
-});
-*/
+
 app.get('/home', (_request,response)=>{
     response.render('home');
 });
+
 app.get('/plans',(_request,response)=>{
     response.render('plans');
 });
+
 app.get('/admin/register',(_request,response)=>{
     response.render('admin/edit_detail');
 });
+
 app.get('/admin/auth',(_request,response)=>{
     response.render('admin/admin_login');
 });
+
 app.get('/admin/dash',(_request,response)=>{
     response.render('admin/admin_dash');
 });
+
 app.get('/admin/manage',(_request,response)=>{
     response.render('admin/management');
 });
 
 app.post('/confirm_subscription',async (request,response)=>{
-    var collection = 'sampleschool';
-    try {
-        await admin.database().ref(collection + '/defaults').update({
-            admin: {
-                email: 'adminEmail',
-            },
-            institution: {
-                active: true,
-            },
-        }).then(()=>{
-            console.log('New Message written');
-            response.render('admin/edit_detail');
-            return true;
-        }).catch(()=>{
-            console.log('error catched');
-        }).finally(()=>{
-            console.log('finally');
-        });
-    }
-    catch (error) {
-        console.log(error);
-        response.render('plans');
-        //throw new functions.https.HttpsError('Couldn\'t write', error.message, error);
-    }
+    var collection = 'TestInstitute';
+    
 });
-app.get(/.*.hbs$/, (req, res) =>{
-    res.render('404');
-});
+
 
 app.get('/404', (req, res, next)=>{
     next();
