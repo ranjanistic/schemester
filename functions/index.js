@@ -8,7 +8,16 @@ const app = express();
 app.engine('hbs',engines.handlebars);
 app.set('views','./views');
 app.set('view engine','hbs');
-
+/*
+const MongoClient = require('mongodb').MongoClient;
+const uri = "mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/institutions?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true });
+client.connect(err => {
+  const collection = client.db("test").collection("devices");
+  // perform actions on the collection object
+  client.close();
+});
+*/
 var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-f64cfd6fb3.json");
 var config = {
     credential: admin.credential.cert(serviceAccount),
