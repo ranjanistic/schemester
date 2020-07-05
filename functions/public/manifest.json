@@ -22,27 +22,27 @@
     "categories": ["tools", "education"],
     "icons": [
       {
-        "src" : "static/graphic/icons/schemester128.png",
+        "src" : "/graphic/icons/schemester128.png",
         "type": "image/png",
         "sizes": "128x128"
       },
       {
-        "src" : "static/graphic/icons/schemester192.png",
+        "src" : "/graphic/icons/schemester192.png",
         "type": "image/png",
         "sizes": "192x192"
       },
       {
-        "src" : "static/graphic/icons/schemester256.png",
+        "src" : "/graphic/icons/schemester256.png",
         "type": "image/png",
         "sizes": "256x256"
       },
       {
-        "src": "static/graphic/icons/schemester512.png",
+        "src": "/graphic/icons/schemester512.png",
         "type": "image/png",
         "sizes": "512x512"
       },
       {
-        "src": "static/graphic/icons/schemester512.svg",
+        "src": "/graphic/icons/schemester512.svg",
         "type": "image/svg+xml",
         "sizes": "512x512",
         "purpose":"any"
@@ -55,7 +55,7 @@
         "url": "/admin/admin_dash.html",
         "icons": [
           {
-            "src": "static/graphic/icons/schemester512.svg",
+            "src": "/graphic/icons/schemester512.svg",
             "type": "image/svg+xml",
             "sizes": "512x512",
             "purpose": "any"

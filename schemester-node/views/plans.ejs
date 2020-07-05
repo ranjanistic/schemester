@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Plans · Schemester</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel="manifest" href="/manifest.json">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+        <script type="text/javascript" src="/script/main.js"></script>
+        <script type="text/javascript" src="/script/plans.js"></script>
+    </head>
+    <body>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <img class="circle-button" src="/graphic/leftArrow.svg" width="40" id="backFromPlans">
+            <span>Plans</span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <button class="neutral-button fmt-right" id="logoutAdmin">Log out</button>
+        </div>
+        <div class="fmt-row" style="margin-top: 82px;">
+            <button class="display-button" id="selectPlan">Confirm transaction</button>
+        </div>
+        <form action="/confirm_subscription" method="POST">
+            <fieldset class="text-field" id="creat_uiid_fieldset">
+                <legend class="field-caption">Create permanent UIID</legend>
+                <input class="text-input" placeholder="Set a unique ID for your institution" type="text" id="createuiid">
+            </fieldset>
+            <input class="positive-button" type="submit">
+        </form>
+    </body>
+</html>

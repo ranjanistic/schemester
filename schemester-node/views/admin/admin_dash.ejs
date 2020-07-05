@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dashboard · Schemester</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel="manifest" href="/manifest.json">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+        <script type="text/javascript" src="/script/main.js"></script>
+        <script type="text/javascript" src="/script/admin/adminDash.js"></script>
+        <script type="text/javascript" src="/script/admin/adb.js"></script>
+    </head>
+    <body>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <a href="/"><img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
+            <span id="greeting">Loading...</span>
+            <div class="fmt-dropdown-hover fmt-right">
+                <img src="/graphic/menudotsvertical.svg" width="35" id="menuButton">
+                <div class="fmt-dropdown-content  fmt-shadow" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;">
+                    <button style="font-size: 22px;" class="sub-display-button" id="settingsAdminButton">
+                        <img src="/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Settings
+                    </button>
+                    <button style="font-size: 22px;" class="sub-display-button" id="logoutAdminButton">
+                        <img src="/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Logout
+                    </button>
+                </div>
+            </div>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+        </div>
+        <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
+
+            <div class="fmt-col fmt-half fmt-padding-small">
+                <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
+                    <div class="fmt-row">
+                        <span class=" heading">Today</span>
+                        <button class="fmt-right positive-button" style="background-color: #40a556;">Auto-assign</button>
+                    </div>
+                    <fieldset class="fmt-row box-field">
+                        <legend class="field-caption">Teachers absent · <span style="color: red;" id="absentees">2</span></legend>
+                        <!--This division contains list of absentee teachers/assignees-->
+
+                        <div class="fmt-row" id="absenteelist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
+                                <div class="fmt-twothird">
+                                    <span class="fmt-row" style="color:#216bf3">Dr. Teacher Sharma</span>
+                                    <span class="group-text">4,5,6</span>
+                                    <span class="group-text"> · 8A,10B</span>
+                                </div>
+                                <div class="fmt-third">
+                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
+                                    <span class="fmt-row"></span>
+                                </div>
+                            </div>
+                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
+                                <div class="fmt-third">
+                                    <span class="fmt-row" style="color:#216bf3">Mr. Example Singh</span>
+                                    <span class="group-text">Day off</span>
+                                    <span class="group-text"> · 9A,12C</span>
+                                </div>
+                                <div class="fmt-twothird">
+                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
+                                    <span class="fmt-row"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="fmt-row box-field">
+                        <legend class="field-caption">Classes affected · <span style="color: red;" id="absentees">6</span></legend>
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row" id="classAffectedlist">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="affectedClass1">
+                                <span class="fmt-half">Class</span>
+                                <span class="fmt-half">Period(s)</span>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="fmt-row box-field">
+                        <legend class="field-caption">Free teachers · <span style="color: green;" id="absentees">5</span></legend>
+                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
+                        <div class="fmt-row" id="freeAssigneeList">
+                            <!--This division contains absentee details, for each absentee-->
+                            <div class="fmt-row" id="freeAssignee1">
+                                <span class="fmt-half">Free teacher's name</span>
+                                <span class="fmt-half">Free periods</span>
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="container fmt-animate-left" id="summary" style="margin-bottom: 10px;">
+                    <span class="fmt-row heading">Weekly</span>
+                </div>
+            </div>
+            <div class="fmt-col fmt-half fmt-padding-small">
+                <div class="container fmt-animate-right" id="actions">
+                    <span class="fmt-row heading">Everyday</span>
+                    <fieldset class="fmt-row box-field">
+                        <legend class="field-caption">Edit day schedule</legend>
+
+                        <div class="fmt-row" id="todayScheduleChoices">
+                            <span class="">
+                                <label class="radio-container">
+                                    Teacher
+                                <input type="radio" name="todaySelection"  id="teacherRadioToday">
+                                <span class="checkmark"></span>
+                                </label>
+                                <label class="radio-container">
+                                    Class
+                                <input type="radio" name="todaySelection"  id="classRadioToday">
+                                <span class="checkmark"></span>
+                                </label>
+                            </span>
+                            <input type="text" class="dropdown-input fmt-half fmt-right" placeholder="" id="dayinput" style="width:fit-content"/>
+                            <div id="daydropdown" class="dropdown-content" style="display: none;right:0">
+                                <a id="sun">Sunday</a>
+                                <a id="mon">Monday</a>
+                                <a id="tue">Tuesday</a>
+                                <a id="wed">Wednesday</a>
+                                <a id="thu">Thursday</a>
+                                <a id="fri">Friday</a>
+                                <a id="sat">Saturday</a>
+                            </div>    
+                        </div>
+                        <div id="workSectionToday" style="margin-top:22px">
+                            <div class="fmt-row" id="teacherSectionToday">
+                                <input type="text" class="dropdown-input fmt-right" placeholder="Search teacher" id="teacherInputToday" style="width:100%"/>
+                            </div>
+                            <div class="fmt-row" id="classSectionToday">
+                                <input type="text" class="dropdown-input fmt-right" placeholder="Search class" id="classInputToday" style="width:100%"/>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <br/>
+                    <fieldset class="fmt-row box-field">
+                        <legend class="field-caption">Full schedule</legend>
+                        <div class="fmt-row" id="fullschedulechoices">
+                            <span class="">
+                                <label class="radio-container">
+                                    Teacher
+                                    <input type="radio" name="weekSelection" id="teacherRadioWeek">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <label class="radio-container" >
+                                    Class
+                                <input type="radio" name="weekSelection" id="classRadioWeek" >
+                                <span class="checkmark"></span>
+                                </label>
+                            </span>
+                        </div>
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+
+        <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
+            id="todayDateTime" style="width:fit-content;right:0;">
+        </span>
+        
+        <!--Dialog box-->
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                    <div class="fmt-row" id="dialogHeading"></div>
+                    <div class="fmt-row" id="dialogSubHeading"></div>
+                    <div id="inputFields"></div>
+                    <fieldset class="fmt-row text-field" id="dialogInputAreaField">
+                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+                    </fieldset>
+                    <div class="fmt-row" id="dialogActions">
+                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+                        <span id="dialogButtons" class="fmt-half fmt-right"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+    <title>Management · Admin · Schemester</title>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+        
+        <script src="/script/main.js"></script>
+        <script src="/script/admin/management.js"></script>
+        <script src="/script/admin/adb.js"></script>
+    </head>
+    <body>
+        <div class="fmt-top fmt-shadow" id="topBar">
+            <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromSettings">
+            <span>Settings</span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <button class="neutral-button fmt-right" id="logoutAdmin">Log out</button>
+        </div>
+        <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
+            <div class="container">
+                <span class="heading">Settings</span>
+                <div class="fmt-row">
+                    <!--Tabs on large screens-->
+                    <div class="fmt-col fmt-hide-small leftTabGroup fmt-quarter" id="tabGroup">
+                        <div class="leftTabButton" id="adminTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
+                            Administrator</div>
+                        <div class="leftTabButton" id="institutionTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
+                            Institution Defaults</div>
+                        <div class="leftTabButton" id="scheduleTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
+                            Schedule Details</div>
+                        <div class="leftTabButton" id="usersTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/blueLoader.svg" width="40"/>
+                            Manage users</div>
+                        <div class="leftTabButton" id="securityTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
+                            Security Settings</div>
+                        <div class="leftTabButton" id="aboutTab">
+                            <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
+                            Schemester</div>
+                    </div>
+                    <!--Chips on small screens-->
+                    <div class="fmt-hide-large fmt-hide-medium" id="mtabGroup">
+                        <div class="fmt-padding-small"></div>
+                        <label class="radio-container">
+                            Admin<input type="radio" name="settingSelection" id="madminTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="radio-container">
+                            Institution<input type="radio" name="settingSelection" id="minstitutionTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <br/>
+                        <div class="fmt-padding-small"></div>
+                        <label class="radio-container">
+                            Schedule<input type="radio" name="settingSelection" id="mscheduleTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="radio-container">
+                            Security<input type="radio" name="settingSelection" id="msecurityTab">       
+                            <span class="checkmark"></span>
+                        </label>
+                        <div class="fmt-padding-small"></div>
+                        <label class="radio-container">
+                            Users<input type="radio" name="settingSelection" id="musersTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="radio-container">
+                            Schemester<input type="radio" name="settingSelection" id="maboutTab">
+                            <span class="checkmark"></span>
+                        </label>
+                        <div class="fmt-padding-small"></div>
+                    </div>
+
+                    <div class="fmt-col fmt-threequarter tabContainerRight" id="settingsContainer">
+                        <!--account settings box-->
+                        <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
+                            <span class="sub-heading">Admin</span>
+                            <button class="fmt-right positive-button" id="editAdminSection">Edit</button>
+                            <div>
+                                <span class="caption">Admin name</span><br/>
+                                <span class="editable" id="adminName">...</span><br/>
+                                <span class="caption">Email address</span><br/>
+                                <span class="editable" id="adminEmailAddress">...</span><br/>
+                                <span class="caption">Contact Number</span><br/>
+                                <span class="editable" id="adminPhoneNumber">...</span><br/>
+                                <span class="caption">Account created at</span><br/>
+                                <span id="adminCreationTime">...</span><br/>
+                            </div>
+                        </div>
+                        <!--institution settings box-->
+                        <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
+                            <span class="sub-heading">Basic</span>
+                            <button class="fmt-right positive-button" id="editInstSection">Edit</button>
+                            <div>
+                                <span class="caption">Display name</span><br/>
+                                <span class="editable" id="instituteName">...</span><br/>
+                                <span class="caption">UIID</span><br/>
+                                <span class="editable" id="uiid">testInstitute2001</span><br/>
+                                <span class="caption">Subscription till</span><br/>
+                                <span  id="subscriptionTill">...</span ><br/>
+                            </div>
+                        </div>
+                        <!--schedule settings box-->
+                        <div class="sub-container fmt-animate-opacity" id="scheduleSettingsBox">
+                            <span class="sub-heading">Timings</span>
+                            <button class="fmt-right negative-button" id="reschedule">Re-schedule</button>
+                            <div>
+                                <span class="caption">Each period duration</span><br/>
+                                <span class="editable" id="periodDuration"></span><br/>
+                                <span class="caption">Week starts on</span><br/>
+                                <span class="editable" id="weekStartDay"></span><br/>
+                                <span class="caption">Schedule starts at</span><br/>
+                                <span class="editable" id="scheduleStartTime"></span><br/>
+                                <span class="caption">Schedule ends at</span><br/>
+                                <span class="editable" id="scheduleEndTime"></span><br/>
+                                <span class="caption">Break starts at</span><br/>
+                                <span class="editable" id="breakStartTime"></span><br/>
+                                <span class="caption">Break duration</span><br/>
+                                <span class="editable" id="breakDuration"></span><br/>
+                                <span class="caption">Working days in a week</span><br/>
+                                <span class="editable" id="workdays"></span><br/>
+                                <span class="caption">Periods in a day</span><br/>
+                                <span class="editable" id="totalPeriods"></span><br/>
+                            </div>
+                        </div>
+                        <!--security settings-->
+                        <div class="sub-container fmt-animate-opacity" id="securitySettingsBox">
+                            <span class="sub-heading">Security</span>
+                            <div>
+                                <span class="caption">Reset Admin Password</span><br/>
+                                <button class="positive-button" id="resetPasswordButton">Get email link</button><br/>
+                                <span class="caption">Transfer Ownership</span><br/>
+                                <button class="negative-button" id="resetMailButton">Reset email address</button><br/>
+                                <span class="caption">End Service</span><br/>
+                                <button class="negative-button" id="deleteAccountButton">Delete account</button><br/>
+                            </div>
+                        </div>
+                        <!--users settings-->
+                        <div class="sub-container fmt-animate-opacity" id="usersSettingsBox">
+                            <span class="sub-heading">Teachers</span>
+                            <button class="fmt-right positive-button" id="inviteUsers">Invite teachers</button>
+                            <div>
+                                <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="searchGlobalTeachers" style="width:100%"/>
+                            </div>
+                        </div>
+                        <!--about settings-->
+                        <div class="sub-container fmt-animate-opacity" id="aboutSettingsBox">
+                            <span class="sub-heading">About</span>
+                            <br/>
+                            <div>Aimed at simplifying the way schedule management works in school systems.</div>
+                            <div>Tell us your experience with Schemester by clicking the button below.</div>
+                            <br/>
+                            <button class="positive-button" id="contactDevelopers">Contact Devs.</button>
+                            <img class="fmt-right" src="/graphic/icons/schemester256.png"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Dialog box-->
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+                <div class="fmt-col fmt-threequarter" id="dialogContent">
+                    <div class="fmt-row" id="dialogHeading"></div>
+                    <div class="fmt-row" id="dialogSubHeading"></div>
+                    <div id="inputFields"></div>
+                    <fieldset class="fmt-row text-field" id="dialogInputAreaField">
+                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+                    </fieldset>
+                    <div class="fmt-row" id="dialogActions">
+                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+                        <span id="dialogButtons" class="fmt-half fmt-right"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--snackbar-->
+        <div id="snackBar" class="snackbar fmt-animate-bottom">
+            <span class="snack-text fmt-left" id="snackText">
+            </span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+
+    </body>
+</html>

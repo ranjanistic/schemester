@@ -1,68 +1,94 @@
-const functions = require('firebase-functions');
+//const functions = require('firebase-functions');
 const express = require('express');
-const engines = require('consolidate');
-var hbs = require('handlebars');
-const admin = require('firebase-admin');
-var path = require('path');
+//const engines = require('consolidate');
+//var hbs = require('handlebars');
+//const admin = require('firebase-admin');
+//var path = require('path');
 const app = express();
-app.engine('hbs',engines.handlebars);
+//app.engine('hbs',engines.handlebars);
 app.set('views','./views');
-app.set('view engine','hbs');
-/*
-const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/institutions?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true });
-client.connect(err => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
-*/
-var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-f64cfd6fb3.json");
-var config = {
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://schemester.firebaseio.com",
-    apiKey: "AIzaSyBLW5MynJe7wrITc3UhTDtO_6P-RvMkisA",
-    authDomain: "schemester.firebaseapp.com",
-    projectId: "schemester",
-    storageBucket: "schemester.appspot.com",
-    messagingSenderId: "763392707863",
-    appId: "1:763392707863:web:afd8883a09ce3070f97b52",
-    measurementId: "G-F2N1TNPSBV"
-}
-admin.initializeApp(config);
+//const MongoClient = require('mongodb').MongoClient;
+const bodyParser= require('body-parser')
+const mongoose = require('mongoose');
+app.set('view engine', 'ejs')
+app.use(express.static('public'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+//const url = 'mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/Schools?retryWrites=true&w=majority'
+const url = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/Institutions?retryWrites=true&w=majority'
+const Defaults = require('./models/Defaults.js');
+mongoose.connect(url,{useNewUrlParser: true,useUnifiedTopology: true });
+var db = mongoose.connection;
+
+// var serviceAccount = require("./schemester-firebase-adminsdk-gj5yx-f64cfd6fb3.json");
+// var config = {
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: "https://schemester.firebaseio.com",
+//     apiKey: "AIzaSyBLW5MynJe7wrITc3UhTDtO_6P-RvMkisA",
+//     authDomain: "schemester.firebaseapp.com",
+//     projectId: "schemester",
+//     storageBucket: "schemester.appspot.com",
+//     messagingSenderId: "763392707863",
+//     appId: "1:763392707863:web:afd8883a09ce3070f97b52",
+//     measurementId: "G-F2N1TNPSBV"
+// }
+// admin.initializeApp(config);
 
 //firebase.initializeApp(config);
-//const db = admin.firestore();
-/*
-async function getFirestore(){
-    const firestore_con  = await admin.firestore();
-    const writeResult = firestore_con.collection('TestInstitute').doc('Defaults')
-    .get().then(doc => {
-        if (!doc.exists){
-            console.log('No such document!'); 
-        }else{
-            return doc.data();
-        }
-        return writeResult;
-    }).catch(err => {
-        console.log('Error getting document', err);
+db.once('open',_=>{
+    console.log('Database connected');
+    // app.get('/saveDefaults',(req,res)=>{
+    // })
+    var defaults = mongoose.model('NIPSNOIDA',new Defaults().defaultSchema)
+    const def = new defaults({
+        defaults:{
+            admin:{
+                adminName:"Empajj",
+                email:"someemail@com",
+                phone:"34987394"
+            },
+            institute:{
+                instituteName:"School of soe",
+                uiid:"soeScholl",
+                subscriptionTill:"9-12-2020 23:59",
+                active:true
+            },
+            timings:{
+                startTime:"0830",
+                endTime:"1400",
+                breakStartTime:"1045",
+                startDay:"Monday",
+                periodMinutes:45,
+                breakMinutes:15,
+                periodsInDay:6,
+                daysInWeek:5
+            }
+    }
     })
-}
-*/
-app.get('/',async (_request,response) =>{
-//    var db_result = await getFirestore();
-    response.render('loader');//,{db_result});
+    def.save((error,document)=>{
+        if(error) console.error(error)
+        console.log(document);
+    })
+    app.get('/',(req,res)=>{
+        res.render('loader.ejs');
+    });
+})
+db.on('error', err => {
+    console.error('connection error:', err)
+})
+
+app.get('/',(_request,response) =>{
+    response.render('loader.ejs');
 });
 
-exports.app = functions.https.onRequest(app);
+//exports.app = functions.https.onRequest(app);
 
 app.get('/home', (_request,response)=>{
-    response.render('home');
+    response.render('home.ejs');
 });
 
 app.get('/plans',(_request,response)=>{
-    response.render('plans');
+    response.render('plans.ejs');
 });
 
 app.get('/admin/register',(_request,response)=>{
@@ -123,6 +149,7 @@ res.status(err.status || 500);
 res.render('500', { error: err });
 });
   
+
 /** Need the following basic fucntions to-
  * 
  * Authenticate users of a collection using their credentials stored at firestore.

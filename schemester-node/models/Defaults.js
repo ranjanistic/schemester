@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-module.exports = class Default {
+class Default {
   constructor() {
     var admin = {
       adminName: String,
@@ -9,7 +9,7 @@ module.exports = class Default {
     };
     var institute = {
       instituteName: String,
-      uiid: String,
+      uiid: {type:String, unique:true},
       subscriptionTill: Date,
       active: Boolean,
     };
@@ -29,7 +29,10 @@ module.exports = class Default {
         institute,
         timings,
       },
-    });    
+    }); 
+  }
+  getModelOf(InstCollection){
+    return mongoose.model(InstCollection,this.defaultSchema);
   }
 }
-
+module.exports = new Default();

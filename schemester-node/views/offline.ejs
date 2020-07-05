@@ -1,0 +1,84 @@
+
+<html>
+    <title>Offline · Schemester</title>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+            html{
+                scroll-behavior: smooth;
+                position: relative;
+                top:0;
+                bottom:0;
+                left:0;
+                right:0;
+                box-sizing:border-box;
+                -ms-text-size-adjust:100%;
+                -webkit-text-size-adjust:100%;
+            }*,*:before,*:after{box-sizing:inherit}
+            body{
+                font-size:18px;
+                font-family: 'Jost',sans-serif;
+                background-color: #efefef;
+                margin:0;
+            }
+           .sub-display-button{
+                background-color: white;
+                color:#216bf3;
+                border-width: 0;
+                border-radius: 4px;
+                box-shadow: 1px 5px 10px #00000044;
+                padding: 8px 32px 8px 32px; font-size:24px;
+                transition: 0.2s ease;
+                cursor: pointer;
+            }
+            .sub-display-button:focus{
+                outline: none;
+                background-color: #ededed;
+
+            }
+
+            .group-text{
+                color:#00000093;
+                text-align:left;
+                font-family: 'Questrial',sans-serif;
+                font-size: 18px;
+            }
+        </style>
+    </head>
+    <body style="background-color: #216bf3;padding: 38px;">
+        <div class="fmt-row fmt-center" >
+            <div style="color:white;font-size: 72px;">
+                Plugged out.
+            </div>
+            <div class="fmt-center" style="color:white;font-size:44px">
+                Network disconnected.
+            </div>
+            <p class="group-text" style="font-size: 24px;color:white;" >
+                Sometimes it is good to take a break from this online world.
+                By the way, don't you think we should associate the real world with 'online' and the internet world with 'offline', as we feel more connected in the real world?<br/><br/>
+                That's debatable. Back to the error - you can check for any disruptions in your network connection, as we are pretty sure, 
+                this time the error is from your side ;)
+                <br/><br/>Also, you can still explore some part of us left in you, as 'offline'.
+            </p>
+        </div>
+        <br/>
+        <div class="fmt-row fmt-center" >
+            <button class="sub-display-button" style="font-size:32px;font-family: 'Questrial',sans-serif;" id="exploreOffline">Explore offline</button>
+        </div >
+        <script type="text/javascript">
+            document.getElementById('exploreOffline').addEventListener('click',function(){
+                window.location.replace('/');
+            },false);
+        </script>
+    </body>
+
+</html>
