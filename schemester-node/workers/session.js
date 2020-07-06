@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
-const Admins = require('../models/Admins.js');
+const Admins = require('../modelschema/Admins.js');
 const code = require('../hardcodes/events.js');
 
 //'mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/Schools?retryWrites=true&w=majority'
 const adminurl = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/Admins?retryWrites=true&w=majority';
-mongoose.connect(adminurl, { useNewUrlParser: true , useUnifiedTopology: true });
+const localadminurl = 'mongodb://localhost/Admins';
+mongoose.connect(localadminurl, { useNewUrlParser: true , useUnifiedTopology: false });
 const adb = mongoose.connection;
 
 console.log(dboperate(_=>{console.log('ADB opened success');}))
@@ -36,13 +37,13 @@ module.exports.logoutAdmin = (email)=>{
 module.exports.createAdmin = (email,password)=>{
     dboperate(_=>{
         //if email invalid
-        code.auth.EMAIL_INVALID;
+        //code.auth.EMAIL_INVALID;
         //if collection exists, return 
-        code.auth.USER_EXIST;
+        //code.auth.USER_EXIST;
         //if password weak
-        code.auth.WEAK_PASSWORD;
+        //code.auth.WEAK_PASSWORD;
         //else create collection, set active:true, store ip address in server.js, return
-        code.auth.ACCOUNT_CREATED;
+        return code.auth.ACCOUNT_CREATED;
         //and proceed to payment or registration
     });
 }

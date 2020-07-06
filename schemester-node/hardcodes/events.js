@@ -27,12 +27,26 @@ class Authcodes{
     }
 }
 
+class Mailcodes{
+    constructor(){
+        this.ACCOUNT_VERIFICATION = 'mail/account-verification';
+        this.RESET_PASSWORD = 'mail/reset-password';
+        this.PASSWORD_CHANGED = 'mail/password-changed';
+        this.EMAIL_CHANGED = 'mail/email-address-changed';
+        this.ACCOUNT_DELETED = 'mail/account-deleted';
+        this.INSTITUTION_INVITATION = 'mail/invite-to-institution';
+        this.ERROR_MAIL_NOTSENT = 'mail/email-not-sent';
+    }
+}
+
 class Codes{
     constructor(){
         this.auth = new Authcodes();
         this.client = new Clientcodes();
         this.server = new Servercodes();
+        this.mail = new Mailcodes();
     }
 }
+
 
 module.exports = new Codes();

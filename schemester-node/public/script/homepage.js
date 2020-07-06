@@ -1,44 +1,30 @@
-//Homepage default script
-var adminLogin, adminSignup,plans,getstarted;
+class Homepage{
+    constructor(){
+        this.adminLogin = getElement('adminLogin');
+        this.adminSignup = getElement('registerInstitution');
+        this.plans = getElement('plansPricing');
+        this.getstarted = getElement('getStarted');
 
-let initializeElements=()=>{
-    adminLogin = getElement('adminLogin');
-    adminSignup = getElement('registerInstitution');
-    plans = getElement('plansPricing');
-    getstarted = getElement('getStarted');
-    adminSignup.addEventListener(click, ()=>{      
-        registrationDialog(true);
-    }, false);
-    plans.addEventListener(click,()=>{refer(planspage);},false);
-    getstarted.addEventListener(click,()=>{refer(registrationPage)},false);
-    showGreeting();
-}
-//remove
-let initAuthStateListener=()=> {
-    firebase.auth().onAuthStateChanged((user)=> {
-        adminLogin.addEventListener(click, ()=>{
-            showLoader();
-            if (user) {
-                refer(adminDashPage);
-            } else{
-                refer(adminLoginPage);
-            }
-        }, false);
-    });
-}
-let showGreeting=()=>{
-    var today = new Date();
-    var greeting = getElement('homeGreeting');
-    if(today.getHours()<4){
-        greeting.textContent = "Good night!"
-    } else if(today.getHours()<11){
-        greeting.textContent = "Good morning!"
-    } else if(today.getHours()<15){
-        greeting.textContent = "Good afternoon"
-    } else if(today.getHours()<20){
-        greeting.textContent = "Good evening"
-    }else {
-        greeting.textContent = "Schemester"
+        this.adminSignup.addEventListener(click,_=>registrationDialog());
+        this.plans.addEventListener(click,_=>refer(planspage));
+        this.getstarted.addEventListener(click,_=>refer(registrationPage));
+        this.adminLogin.addEventListener(click,_=>refer(adminLoginPage));
+        this.showGreeting();
+    }
+    showGreeting(){
+        var today = new Date();
+        var greeting = getElement('homeGreeting');
+        if(today.getHours()<4){
+            greeting.textContent = "Good night!"
+        } else if(today.getHours()<11){
+            greeting.textContent = "Good morning!"
+        } else if(today.getHours()<15){
+            greeting.textContent = "Good afternoon"
+        } else if(today.getHours()<20){
+            greeting.textContent = "Good evening"
+        }else {
+            greeting.textContent = "Schemester"
+        }
     }
 }
 
@@ -52,7 +38,6 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
-window.onload = ()=> {
-    initializeElements();
-  //  initAuthStateListener();
+window.onload = _=> {
+    window.app = new Homepage();
 };

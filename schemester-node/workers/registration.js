@@ -1,4 +1,4 @@
-const defaults = require('../models/Defaults.js');
+const defaults = require('../modelschema/Defaults.js');
 const code = require('../hardcodes/events.js');
 class Registration{
     /**

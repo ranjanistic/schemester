@@ -11,6 +11,9 @@ class Admins{
             ip:String
         })
     }
+    getSchema(){
+        return this.adminschema;
+    }
     getModelOf(adminemailCollection){
         return mongoose.model(adminemailCollection,this.adminschema);
     }

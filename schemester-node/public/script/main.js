@@ -163,7 +163,7 @@ class ActionType {
 var actionType = new ActionType();
 
 class Dialog extends DialogID {
-  constructor(totalInputs = 0, largeTextArea = 0, radio = 0) {
+  constructor(totalInputs = 0, largeTextArea = 0) {
     super(DialogID);
     this.view = getElement(this.viewId);
     setDefaultBackground(this.view, true);
@@ -186,12 +186,7 @@ class Dialog extends DialogID {
       this.inputCaption = Array(totalInputs);
       this.input = Array(totalInputs);
       this.inputError = Array(totalInputs);
-      for (var k = 0; k < totalInputs; k++) {
-        //TODO: this;
-        this.inputTextField[k] = new TextInput(this.dialogInputField(k),this.dialogFieldCaption(k),
-          this.dialogInput(k),this.dialogInputError(k)
-        );
-        this.inputTextField[k].normalize()
+      for (var k = 0; k < totalInputs; k++) {        
         this.inputField[k] = getElement(this.dialogInputField(k));
         this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
         this.input[k] = getElement(this.dialogInput(k));
@@ -312,6 +307,7 @@ class Dialog extends DialogID {
   }
 
   inputParams(captions, hints, types, contents, autocompletes) {
+
     for (var k = 0; k < this.inputField.length; k++) {
       this.inputCaption[k].textContent = captions[k];
       this.input[k].placeholder = hints[k];
@@ -464,6 +460,21 @@ let sendPassResetLink = ()=> {
     "A link has been sent at your provided email address. Reset your password from there.",
     "Got it"
   );
+}
+
+//todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
+let adminloginDialog = (isShowing = true)=>{
+  var loginDialog = new Dialog(2);
+  if(isShowing){
+    loginDialog.setDisplay('Authentication Required','You are about to perform a sensitive action. Please provide your login credentials.');
+    loginDialog.inputParams(Array('Email address','Password'),Array('youremail@example.com','Your password'),Array('email','password'));
+    loginDialog.createActions(Array('Continue','Cancel'),Array(actionType.positive,actionType.negative));
+    loginDialog.onButtonClick(0,_=>{
+      //login  
+    });
+    loginDialog.onButtonClick(1,_=>{loginDialog.existence(false);});
+  }
+  loginDialog.existence(isShowing);
 }
 
 let resetPasswordDialog = (isShowing = true)=> {
@@ -721,10 +732,26 @@ let registrationDialog = (isShowing = true)=> {
   }
 }
 
+//not working todo
 let createAccount = (dialog, email, password)=> {
-  firebase
-    .auth()
-    .createUserWithEmailAndPassword(email, password)
+  fetch('http://localhost:3000/admin/auth/signup', {
+    method: 'post',
+    headers: {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({email: [email], password: [password]})
+  })
+  .then(res=>res.json())
+  .then(res => {clog(res);
+      dialog.loader(false);
+      dialog.existence(false);
+    }
+  ).catch(error=>clog(error));
+  
+  /*
+  fetch('/createNewAdmin',)
+
     .then(()=> {
       clog("true account creations");
       cred = Array(email, password);
@@ -790,6 +817,7 @@ let createAccount = (dialog, email, password)=> {
       }
       dialog.loader(false);
     });
+    */
 }
 
 let accountVerificationDialog = (isShowing = true, emailSent = false)=> {

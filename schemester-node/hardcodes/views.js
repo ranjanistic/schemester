@@ -12,6 +12,9 @@ class View{
         this.forbidden = '403.ejs';
         this.offline = 'offline.ejs';
     }
+    render(response,viewpage){
+        response.render(viewpage);
+    }
 }
 
 module.exports = new View();
