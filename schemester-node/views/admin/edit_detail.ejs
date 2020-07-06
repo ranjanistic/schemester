@@ -33,13 +33,13 @@
                 <div class="fmt-row">
                 <div class="group-heading" id="adminHead"></div>
                 <fieldset class="text-field" id="adminNameField">
-                    <legend class="field-caption">Name Visible to people of your institution</legend>
-                    <input class="text-input" required="true" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
-                    <span class="fmt-right caption" style="color:#bd1919" id="adminNameError"></span>
+                    <legend class="field-error-caption">Name Visible to people of your institution</legend>
+                    <input class="text-input" required autocomplete="name" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
+                    <span class="fmt-right error-caption"  id="adminNameError"></span>
                 </fieldset>
                 <div class="fmt-half">
                     <fieldset class="fmt-col text-field" id="emailField">
-                        <legend class="field-caption">Email Address</legend>
+                        <legend class="field-error-caption">Email Address</legend>
                         <span style="font-size: 24px;" id="adminEmail">---</span>
                         <button class="positive-button fmt-right" style="margin:0 4px" id="verifiedEmail">C</button>
                         <button class="warning-button fmt-right" style="margin:0 4px" id="changeEmail">V</button>
@@ -47,14 +47,14 @@
                 </div>
                 <div class="fmt-half">
                     <fieldset class="fmt-col fmt-twothird fmt-right text-field" id="phoneField">
-                        <legend class="field-caption">Phone number for teachers to contact you</legend>
+                        <legend class="field-error-caption">Phone number for teachers to contact you</legend>
                         <div class="fmt-row">
                         <div class="fmt-col" style="font-size:24px;width: fit-content;">+91</div>
                         <div class="fmt-col fmt-left fmt-twothird" >
-                        <input class="text-input" required="true" placeholder="XXX-XXX-XXXX" type="tel" id="adminPhone" name="adminDetails">
+                        <input class="text-input" autocomplete="tel" required placeholder="XXX-XXX-XXXX" type="tel" id="adminPhone" name="adminDetails">
                         </div>
                         </div>
-                        <span class="fmt-right caption" style="color:#bd1919" id="phoneError"></span>
+                        <span class="fmt-right error-caption"  id="phoneError"></span>
                     </fieldset>
                 </div>
                 </div>
@@ -63,14 +63,14 @@
                 <div class="fmt-row">
                     <div class="group-heading" id="instHead"></div>
                     <fieldset class="text-field" id="instNameField">
-                        <legend class="field-caption">Proper name of Institution</legend>
-                        <input class="text-input" required="true" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
-                        <span class="fmt-right caption" style="color:#bd1919" id="instNameError"></span>
+                        <legend class="field-error-caption">Proper name of Institution</legend>
+                        <input class="text-input" required autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
+                        <span class="fmt-right error-caption"  id="instNameError"></span>
                     </fieldset>
                     <fieldset class="text-field" id="uiidField">
-                        <legend class="field-caption">Set a Unique Id for institution</legend>
-                        <input class="text-input" required="true" placeholder="bestInstitute007" type="text" id="uiid" name="instDetails">
-                        <span class="fmt-right caption" style="color:#bd1919" id="uiidError"></span>
+                        <legend class="field-error-caption">UIID Permanent</legend>
+                        <span style="font-size: 24px;" id="instuiid">---</span>
+                        <span class="fmt-right error-caption"  id="uiidError"></span>
                     </fieldset>
                 </div>
                 <br/>
@@ -78,7 +78,6 @@
                     <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="stage1load"/>
                     <button class="positive-button fmt-center" id="saveStage1">Save &amp; Continue</button>
                 </div>
-                
             </div>
 
             <div class="container" id="stage2">
@@ -88,26 +87,26 @@
                     <div class="group-heading" id="timeHead"></div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
-                            <legend class="field-caption">Schedule starts at</legend>
+                            <legend class="field-error-caption">Schedule starts at</legend>
                             <input class="text-input" required type="time" id="startTime" name="timeDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="startTimeError"></span>
+                            <span class="fmt-right error-caption"  id="startTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="nameField">
-                            <legend class="field-caption">Break starts at</legend>
+                            <legend class="field-error-caption">Break starts at</legend>
                             <input class="text-input" required type="time" id="breakStartTime" name="timeDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="breakStartError"></span>
+                            <span class="fmt-right error-caption"  id="breakStartError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="endTimeField">
-                            <legend class="field-caption">Schedule Ends at</legend>
+                            <legend class="field-error-caption">Schedule Ends at</legend>
                             <input class="text-input" required placeholder="XXX-XXX-XXXX" type="time" id="endTime" name="timeDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="endTimeError"></span>
+                            <span class="fmt-right error-caption"  id="endTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="phoneField">
-                            <legend class="field-caption">First Day of week</legend>
-                            <input class="text-input" required placeholder="Monday" type="text" id="firstDay" name="timeDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="firstDayError"></span>
+                            <legend class="field-error-caption">First Day of week</legend>
+                            <input class="text-input" autocomplete="bday-day" required placeholder="Monday" type="text" id="firstDay" name="timeDetail">
+                            <span class="fmt-right error-caption"  id="firstDayError"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -115,26 +114,26 @@
                     <div class="group-heading" id="durationHead"></div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
-                            <legend class="field-caption">Duration of each period</legend>
+                            <legend class="field-error-caption">Duration of each period</legend>
                             <input class="text-input" required placeholder="In minutes" min="1" type="number" id="eachDuration" name="durationDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="eachDurationError"></span>
+                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakDurationField">
-                            <legend class="field-caption">Break Duration</legend>
+                            <legend class="field-error-caption">Break Duration</legend>
                             <input class="text-input" required placeholder="In minutes" min="1" type="number" id="breakDuration" name="durationDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="breakDurationError"></span>
+                            <span class="fmt-right error-caption"  id="breakDurationError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-half fmt-row">
                         <fieldset class="text-field" id="totalDaysField">
-                            <legend class="field-caption">Total working days in a week</legend>
+                            <legend class="field-error-caption">Total working days in a week</legend>
                             <input class="text-input" required placeholder="Between 1 and 7" min="1" max="7" type="number" id="totalDays" name="durationDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="totalDaysError"></span>
+                            <span class="fmt-right error-caption"  id="totalDaysError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="totalPeriodsField">
-                            <legend class="field-caption">Total Periods in a day</legend>
+                            <legend class="field-error-caption">Total Periods in a day</legend>
                             <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="totalPeriodsError"></span>
+                            <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -149,9 +148,9 @@
                 <div class="fmt-row">
                     <div class="fmt-col fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
-                            <legend class="field-caption">Email address of teacher</legend>
+                            <legend class="field-error-caption">Email address of teacher</legend>
                             <input class="text-input" required placeholder="someone@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="eachDurationError"></span>
+                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-col fmt-half">
@@ -160,9 +159,9 @@
                     </div>
                     <div class="fmt-half fmt-right">
                         <fieldset class="text-field" id="teacherDayField">
-                            <legend class="field-caption">Week Day</legend>
+                            <legend class="field-error-caption">Week Day</legend>
                             <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail">
-                            <span class="fmt-right caption" style="color:#bd1919" id="teacherDayError"></span>
+                            <span class="fmt-right error-caption"  id="teacherDayError"></span>
                         </fieldset>
                     </div>
                     </div>

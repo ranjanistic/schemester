@@ -17,21 +17,113 @@
         <script type="text/javascript" src="/script/plans.js"></script>
     </head>
     <body>
-        <div class="fmt-top fmt-shadow" id="topBar">
-            <img class="circle-button" src="/graphic/leftArrow.svg" width="40" id="backFromPlans">
-            <span>Plans</span>
+        <div class="fmt-top fmt-shadow fmt-center" id="topBar">
+            <img class="circle-button fmt-left" src="/graphic/leftArrow.svg" width="40" id="backFromPlans" alt="Go back">
+            <span class="fmt-center group-text fmt-text-white">Plans &amp; Pricings</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <button class="neutral-button fmt-right" id="logoutAdmin">Log out</button>
+            <img class="circle-button fmt-right" src="/graphic/blueloader.svg" width="40" id="logoutAdmin" alt="Log out">
         </div>
-        <div class="fmt-row" style="margin-top: 82px;">
-            <button class="display-button" id="selectPlan">Confirm transaction</button>
+        <div class="fmt-row fmt-padding" style="margin-top: 62px;">
+            <div class="fmt-row fmt-center">
+                <div class="sub-heading">Choose One</div>
+                <div class="fmt-col fmt-half fmt-padding-small">
+                    <label class="radio-box-container">
+                        <input type="radio" name="subscriptionType">
+                        <div class="radio-box-mark">
+                                <span class="heading fmt-row">Try Free</span>
+                                <span class="group-text fmt-row">
+                                    Valid for 1 month.
+                                </span>
+                        </div>
+                    </label>
+                </div>
+                <div class="fmt-col fmt-half fmt-padding-small">
+                    <label class="radio-box-container">
+                        <input type="radio" name="subscriptionType">
+                        <div class="radio-box-mark" style="background-image: url('/graphic/leftArrow.svg');">
+                            <span class="heading fmt-row">₹199</span>
+                            <span class="group-text fmt-row">
+                                Per month. Cancel any time.
+                            </span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="container fmt-center">
+                <div>Logged in as 
+                    <span>admin@testing.com</span>
+                    <a href="#">Logout</a>
+                </div>
+                <div>
+                <span>Create a </span>
+                <button class="positive-button" id="loginAdminButton">New Account</button>
+                </div>
+                <div>
+                <span>Or Sign In with</span>
+                <button class="active-button" id="loginAdminButton">Existing Account</button>
+                </div>
+            </div>
+            <br/>
+            <!--Hide if logged in-->
+            <div class="fmt-row container" id="plansLogin">
+                <span class="heading">Login</span>
+                <fieldset class="text-field" id="email_fieldset">
+                    <legend class="field-caption" >Username · Email Address</legend>
+                    <input class="text-input" required="true" autocomplete="email" placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
+                    <span class="fmt-right error-caption" id="emailError"></span>
+                </fieldset>
+                <br/>
+                <fieldset class="text-field" id="password_fieldset">
+                    <legend class="field-caption">Password</legend>
+                    <input class="text-input" required="true" autocomplete="current-password" placeholder="Your account password." type="password" id="adminpassword" name="password">
+                    <button class="positive-button fmt-right" hidden id="forgotpasswordButton">Forgot?</button>    
+                </fieldset>
+                <br/>
+                <button class="active-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
+                <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
+            </div>
+            <br/>
+            <!--Payment details-->
+            <div class="fmt-row container" id="plansLogin">
+                <span class="heading">Billing</span>
+                <div  id="billingmethods">
+                    <label class="radio-container">
+                        Credit<input type="radio" checked name="billingmethodselection" id="credit">
+                        <span class="checkmark"></span>
+                    </label>
+                    <label class="radio-container">
+                        Debit<input type="radio" name="billingmethodselection" id="debit">
+                        <span class="checkmark"></span>
+                    </label>
+                    <label class="radio-container">
+                        Paypal<input type="radio" name="billingmethodselection" id="paypal">
+                        <span class="checkmark"></span>
+                    </label>
+                    <label class="radio-container">
+                        Paytm<input type="radio" name="billingmethodselection" id="paytm">
+                        <span class="checkmark"></span>
+                    </label>
+                    <label class="radio-container">
+                        Bhim UPI<input type="radio" name="billingmethodselection" id="bhimupi">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+            </div>
+            <br/>
+            <div class="fmt-row container">
+                <div class="fmt-col fmt-half">
+                <fieldset class="text-field" id="creat_uiid_fieldset">
+                    <legend class="field-caption">Create permanent UIID</legend>
+                    <input class="text-input" autocomplete="off" spellcheck="false" placeholder="A unique ID for your institution" type="text" id="createuiid">
+                    <span class="fmt-right error-caption" id="uiidError">
+                        <img class="fmt-spin-fast fmt-circle fmt-right" width="20" src="/graphic/blueLoader.svg" alt="Loader"/>
+                    </span>
+                </fieldset>
+                </div>
+                <div class="fmt-padding fmt-col fmt-half">
+                    <button class="active-button" id="selectPlan">Confirm transaction</button>
+                </div>
+            </div>
         </div>
-        <form action="/confirm_subscription" method="POST">
-            <fieldset class="text-field" id="creat_uiid_fieldset">
-                <legend class="field-caption">Create permanent UIID</legend>
-                <input class="text-input" placeholder="Set a unique ID for your institution" type="text" id="createuiid">
-            </fieldset>
-            <input class="positive-button" type="submit">
-        </form>
     </body>
 </html>

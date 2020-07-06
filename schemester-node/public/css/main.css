@@ -50,13 +50,17 @@ body{
 
 a{
     text-decoration: none;
-    
+    font-family:'Questrial',sans-serif;
+    color:#216bf3;
+    transition:0.3s ease;
 }
 a:hover{
-    color:#216bf3;
+    transition:0.3s ease;
+    font-weight: bold;
 }
 
 a:focus{
+    color:#034ace;
     font-size: 16px;
 }
 img{vertical-align:middle}
@@ -443,14 +447,16 @@ img{vertical-align:middle}
     box-shadow: 2px 2px 2px 2px #00000011;
 }
 
+/* Create custom radio button*/
 .radio-container {
     position: relative;
     cursor: pointer;
     font-size: 18px;
-    padding: 4px 8px 4px 34px;
+    padding: 8px 8px 6px 34px;
     margin:4px;
     background-color: #efefef;
     border-radius:18px;
+    font-family:'Questrial',sans-serif;
     -webkit-user-select: none;
     width:fit-content;
     -moz-user-select: none;
@@ -478,6 +484,7 @@ img{vertical-align:middle}
     background-color: #216bf3;
     border-radius: 50%;
     box-shadow: 1px 5px 10px #00000022;
+    transition:0.3s ease;
   }
   
   .radio-container:hover{
@@ -503,6 +510,7 @@ img{vertical-align:middle}
     content: "";
     position: absolute;
     display: none;
+    transition:0.3s ease;
   }
   
   /* Show the indicator (dot/circle) when checked */
@@ -521,6 +529,129 @@ img{vertical-align:middle}
     background: #efefef;
   }
 
+  /* The container */
+.check-container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Hide the browser's default checkbox */
+  .check-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+  
+  /* Create a custom checkbox */
+  .tickmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    border-radius:12px;
+    background-color: #eeeeee;
+  }
+  
+  /* On mouse-over, add a grey background color */
+  .check-container:hover input ~ .tickmark {
+    background-color: #efefef;
+  }
+  
+  /* When the checkbox is checked, add a blue background */
+  .check-container input:checked ~ .tickmark {
+    background-color: #216bf3;
+  }
+  
+  /* Create the checkmark/indicator (hidden when not checked) */
+  .tickmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  /* Show the checkmark when checked */
+  .check-container input:checked ~ .tickmark:after {
+    display: block;
+  }
+  
+  /* Style the checkmark/indicator */
+  .check-container .tickmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
+
+/* The container */
+.radio-box-container {
+    display: block;
+    position: relative;
+    margin-bottom: 12px;
+    cursor: pointer;
+    width:100%;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition:0.3s ease;
+  }
+  
+  /* Hide the browser's default radio button */
+  .radio-box-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* Create a custom radio button */
+  .radio-box-mark {
+    position: relative;
+    height: fit-content;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width: 100%;
+    padding:8px;
+    border: 2px solid #fff;
+    background-color: #fff;
+    border-radius:8px;
+    transition:0.3s ease;
+  }
+  
+  /* On mouse-over, add a grey background color */
+  .radio-box-container:hover input ~ .radio-box-mark {
+    background-color: #216bf333;
+    border: 2px solid #216bf333;
+    color:#fff;
+    transition:0.3s ease;
+    box-shadow:0 3px 8px 0 #00000023;
+  }
+  
+  /* When the radio button is checked, add a blue background */
+  .radio-box-container input:checked ~ .radio-box-mark {
+    background-color: #fff;
+    color:#216bf3;
+    padding:12px;
+    border: 2px solid #216bf3;
+    transition:0.3s ease;
+  }
+  
 .dropdown {
     position: relative;
     display: inline-flex;

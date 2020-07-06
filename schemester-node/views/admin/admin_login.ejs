@@ -28,8 +28,8 @@
                 <form action="/adminlogin" method="POST">
                 <fieldset class="text-field" id="email_fieldset">
                     <legend class="field-caption" >Username · Email Address</legend>
-                    <input class="text-input" required="true" placeholder="someone@example.domain" type="email" id="adminemail" name="email">
-                    <span class="fmt-right caption" style="color:#bd1919" id="emailError"></span>
+                    <input class="text-input" required="true" placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
+                    <span class="fmt-right error-caption" id="emailError"></span>
                 </fieldset>
                 <br/>
                 <fieldset class="text-field" id="password_fieldset">
@@ -40,7 +40,8 @@
                 <br/>
                 <fieldset class="text-field" id="puiid_fieldset">
                     <legend class="field-caption">UIID</legend>
-                    <input class="text-input" placeholder="Your institution's private identifier." type="password" id="uiid" name="uiid">
+                    <input class="text-input" spellcheck="false" placeholder="Your institution's private identifier." type="password" id="uiid" name="uiid">
+                    <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
                 </form>
                 <br/>

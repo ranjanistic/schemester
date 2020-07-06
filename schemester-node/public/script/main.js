@@ -311,13 +311,16 @@ class Dialog extends DialogID {
     }
   }
 
-  inputParams(captions, hints, types, contents) {
+  inputParams(captions, hints, types, contents, autocompletes) {
     for (var k = 0; k < this.inputField.length; k++) {
       this.inputCaption[k].textContent = captions[k];
       this.input[k].placeholder = hints[k];
       this.input[k].type = types[k];
       if (contents != null) {
         this.input[k].value = contents[k];
+      }
+      if(autocompletes!=null){
+        this.input[k].autocomplete = autocompletes[k];
       }
     }
   }
@@ -636,8 +639,7 @@ let changeEmailBox = (isShowing = true)=> {
 }
 
 let registrationDialog = (isShowing = true)=> {
-  var user = firebase.auth().currentUser;
-  if (user) {
+  if (false) {//if already logged in
     var confirmLogout = new Dialog();
     confirmLogout.setDisplay(
       "Already Logged In.",
@@ -670,7 +672,7 @@ let registrationDialog = (isShowing = true)=> {
     regDial.inputParams(
       Array("Email Address", "New Password"),
       Array("youremail@example.domain", "Strong password"),
-      Array("email", "password")
+      Array("email", "password"),null,Array("email","current-password")
     );
     regDial.onButtonClick(1, ()=> {
       regDial.existence(false);
@@ -1240,3 +1242,10 @@ let addNumberSuffixHTML = (number)=>{
     }
   }
 };
+let checkmark = (text)=>{
+  return `<label class=\"check-container\">${text}<input type=\"checkbox\"><span class=\"tickmark\"></span></label>`;
+}
+
+let radiobox = (content)=>{
+  return `<label class=\"radio-box-container\"><input type=\"radio\" checked=\"checked\" name=\"radio\"><div class=\"radio-box-mark\">${content}</div></label>`
+}

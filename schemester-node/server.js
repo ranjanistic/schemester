@@ -34,7 +34,40 @@ app.get('/admin/register',(_request,res)=>{
 app.get('/admin/auth',(_request,res)=>{
     renderView(res,view.adminlogin);
 });
+app.get('/admin/dash',(_request,res)=>{
+    //if logged in
+    renderView(res,view.admindash);
+});
 
+app.get('/admin/manage',(_request,res)=>{
+    renderView(res,view.adminsettings);
+});
+
+app.post("/adminsignup", async (req, res) => {
+    const { email, password } = req.body;
+    auth.createAdmin(email,password).then(result=>{
+        console.log(result);
+    });
+});
+  
+app.post("/adminlogin", async (req, res) => {
+    const { email, password, uiid} = req.body;
+    try {
+        const user = await userService.authenticate(email, password);
+        if(auth.loginAdmin){//logged in
+            console.log(req.ip);//store ip address
+            //relocate to 
+        }
+        res.json(user);
+    } catch (err) {
+        res.status(401).json({ error: err.message });
+    }
+});
+
+app.post('/createInstitution',(req,res)=>{
+    const register = require('./workers/registration.js');
+    res.send(register.createInstitutionDefaults(req.body));
+})
 db.once('open', _ => {
   onDatabaseConnected();
 });
@@ -45,40 +78,7 @@ db.on('error', err => {
 
 var onDatabaseConnected = _=>{
     console.log('Database connected');
-    app.get('/admin/dash',(_request,res)=>{
-        //if logged in
-        renderView(res,view.admindash);
-    });
     
-    app.get('/admin/manage',(_request,res)=>{
-        renderView(res,view.adminsettings);
-    });
-
-    app.post("/adminsignup", async (req, res) => {
-        const { email, password } = req.body;
-        auth.createAdmin(email,password).then(result=>{
-            console.log(result);
-        });
-    });
-      
-    app.post("/adminlogin", async (req, res) => {
-        const { email, password, uiid} = req.body;
-        try {
-            const user = await userService.authenticate(email, password);
-            if(auth.loginAdmin){//logged in
-                console.log(req.ip);//store ip address
-                //relocate to 
-            }
-            res.json(user);
-        } catch (err) {
-            res.status(401).json({ error: err.message });
-        }
-    });
-
-    app.post('/createInstitution',(req,res)=>{
-        const register = require('./workers/registration.js');
-        register.createInstitutionDefaults(req.body);
-    })
 }
 
 
