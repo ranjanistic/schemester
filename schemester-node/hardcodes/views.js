@@ -6,6 +6,7 @@ class View{
         this.admindash = 'admin/admin_dash.ejs';
         this.adminsettings = 'admin/management.ejs';
         this.adminsetup = 'admin/edit_detail.ejs';
+        this.userinvitaion = 'admin/invitation.ejs';
         this.plans = 'plans.ejs';
         this.notfound = '404.ejs';
         this.servererror = '500.ejs';

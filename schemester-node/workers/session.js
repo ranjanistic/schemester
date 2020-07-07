@@ -1,12 +1,11 @@
-const mongoose = require('mongoose');
+const adb = require('./dbadmin');
 const Admins = require('../modelschema/Admins.js');
 const code = require('../hardcodes/events.js');
 
 //'mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/Schools?retryWrites=true&w=majority'
-const adminurl = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/Admins?retryWrites=true&w=majority';
-const localadminurl = 'mongodb://localhost/Admins';
-mongoose.connect(localadminurl, { useNewUrlParser: true , useUnifiedTopology: false });
-const adb = mongoose.connection;
+const adminurl = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/administrators?retryWrites=true&w=majority';
+//const localadminurl = 'mongodb://localhost:27017/admnisitrators';
+//mongoose.connect(localadminurl, { useNewUrlParser: true });
 
 console.log(dboperate(_=>{console.log('ADB opened success');}))
 

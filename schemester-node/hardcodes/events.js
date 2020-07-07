@@ -23,7 +23,9 @@ class Authcodes{
         this.AUTH_FAILED = 'auth/authentication-failed';
         this.EMAIL_INVALID = 'auth/invalid-email';
         this.LOGGED_OUT = 'auth/logged-out';
-        this.ACCOUNT_CREATED = 'auth/account-created'
+        this.ACCOUNT_CREATED = 'auth/account-created';
+        this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
+        this.AUTH_SUCCESS = 'auth/sign-in-success';
     }
 }
 

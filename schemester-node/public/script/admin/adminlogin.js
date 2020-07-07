@@ -1,51 +1,99 @@
 //The admin login page script
-var emailFieldSet,
-  emailError,
-  passwordFieldset,
-  forgotPassword,
-  emailInput,
-  passwordInput,
-  uiidInput,
-  logInButton,
-  logInLoader,
-  back;
+class AdminLogin{
+  constructor(){
+    this.emailFieldSet = getElement("email_fieldset");
+    this.passwordFieldset = getElement("password_fieldset");
+    this.puiidFieldSet = getElement("puiid_fieldset");
+    this.forgotPassword = getElement("forgotpasswordButton");
+    this.emailError = getElement("emailError");
+    this.emailInput = getElement("adminemail");
+    this.passwordInput = getElement("adminpassword");
+    this.uiidInput = getElement("uiid");
+    this.logInButton = getElement("loginAdminButton");
+    this.logInLoader = getElement("loginLoader");
+    this.back = getElement("backFromLogin");
 
-let initializeElements = () => {
-  emailFieldSet = getElement("email_fieldset");
-  passwordFieldset = getElement("password_fieldset");
-  puiidFieldSet = getElement("puiid_fieldset");
-  forgotPassword = getElement("forgotpasswordButton");
-  emailError = getElement("emailError");
-  emailInput = getElement("adminemail");
-  passwordInput = getElement("adminpassword");
-  uiidInput = getElement("uiid");
-  logInButton = getElement("loginAdminButton");
-  logInLoader = getElement("loginLoader");
-  back = getElement("backFromLogin");
-
-  back.addEventListener(
-    click,
-    () => {
+    this.back.addEventListener(click,_=> {
       showLoader();
       relocate(root);
-    },
-    false
-  );
-  logInButton.addEventListener(click, logInAdministrator, false);
-  passwordInput.addEventListener(
-    input,
-    () => {
-      setFieldSetof(passwordFieldset, true);
-      visibilityOf(forgotPassword, false);
-    },
-    false
-  );
-  emailInput.addEventListener(change, focusToNext, false);
-  passwordInput.addEventListener(change, focusToNext, false);
-  visibilityOf(forgotPassword, false);
-  forgotPassword.addEventListener(click, resetPasswordDialog, false);
-  uiidInput.addEventListener(change, focusToNext, false);
-};
+    });
+    this.logInButton.addEventListener(click, this.logInAdministrator, false);
+    this.passwordInput.addEventListener(input,_=>{
+      setFieldSetof(this.passwordFieldset, true);visibilityOf(this.forgotPassword, false);
+    });
+    this.emailInput.addEventListener(change, this.focusToNext);
+    this.passwordInput.addEventListener(change, this.focusToNext);
+    visibilityOf(forgotPassword, false);
+    this.forgotPassword.addEventListener(click, resetPasswordDialog, false);
+    this.uiidInput.addEventListener(change, focusToNext, false);
+  }
+
+  validateEmailID(email, field, error){
+    setFieldSetof(
+      field,
+      isEmailValid(email.value),
+      error,
+      "Invalid email address."
+    );
+    if (!isEmailValid(email.value)) {
+      email.focus();
+      email.oninput = () => {
+        setFieldSetof(field, true);
+        validateEmailID(this.emailInput, this.emailFieldSet, this.emailError);
+      };
+    }
+  };
+
+  focusToNext = () => {
+    if (!isEmailValid(emailInput.value)) {
+      if (emailInput.value != nothing) {
+        validateEmailID(emailInput, emailFieldSet, emailError);
+      }
+      emailInput.focus();
+    } else {
+      if (passwordInput.value == nothing) {
+        passwordInput.focus();
+      } else if (uiidInput.value == nothing) {
+        uiidInput.focus();
+      }
+    }
+  };
+
+  logInAdministrator(){
+    visibilityOf(this.logInLoader, true);
+    visibilityOf(this.logInButton, false);
+    setFieldSetof(this.emailFieldSet, true);
+    setFieldSetof(this.passwordFieldset, true);
+    snackBar(null)
+    // if (firebase.auth().currentUser) {
+    //   firebase.auth().signOut();
+    // }
+  
+    fetch('/admin/auth/login',{
+      method: "post",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: [emailInput.value],
+        password: [passwordInput.value]
+      })
+    })
+    .then((response) => { 
+      visibilityOf(logInLoader, false);
+      visibilityOf(logInButton, true);
+       if(response.ok){
+         console.log(response.json());
+       } else {
+  
+       }
+    }).catch((error)=>{
+      console.log(error);
+    });
+  };
+  
+}
 
 // let loginAuthStateListener = () => {
 //   firebase.auth().onAuthStateChanged((user) => {
@@ -92,44 +140,7 @@ let initializeElements = () => {
 //     }
 //   });
 // };
-
-let logInAdministrator = () => {
-  visibilityOf(logInLoader, true);
-  visibilityOf(logInButton, false);
-  setFieldSetof(emailFieldSet, true);
-  setFieldSetof(passwordFieldset, true);
-  new Snackbar().hide();
-  // if (firebase.auth().currentUser) {
-  //   firebase.auth().signOut();
-  // }
-
-  fetch('/adminlogin',{
-    method: "post",
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    //make sure to serialize your JSON body
-    body: JSON.stringify({
-      email: [emailInput.value],
-      password: [passwordInput.value]
-    })
-  })
-  .then( (response) => { 
-    visibilityOf(logInLoader, false);
-    visibilityOf(logInButton, true);
-     if(response.ok){
-       console.log(response.json);
-     } else {
-
-     }
-  }).catch((error)=>{
-    console.log(error);
-  });
-};
-
 function clientAuth(){
-  
   firebase
     .auth()
     .signInWithEmailAndPassword(emailInput.value, passwordInput.value)
@@ -207,37 +218,6 @@ function clientAuth(){
     });
 }
 
-let validateEmailID = (email, field, error) => {
-  setFieldSetof(
-    field,
-    isEmailValid(email.value),
-    error,
-    "Invalid email address."
-  );
-  if (!isEmailValid(email.value)) {
-    email.focus();
-    email.oninput = () => {
-      setFieldSetof(field, true);
-      validateEmailID(emailInput, emailFieldSet, emailError);
-    };
-  }
-};
-
-let focusToNext = () => {
-  if (!isEmailValid(emailInput.value)) {
-    if (emailInput.value != nothing) {
-      validateEmailID(emailInput, emailFieldSet, emailError);
-    }
-    emailInput.focus();
-  } else {
-    if (passwordInput.value == nothing) {
-      passwordInput.focus();
-    } else if (uiidInput.value == nothing) {
-      uiidInput.focus();
-    }
-  }
-};
 window.onload = function () {
-  initializeElements();
-//  loginAuthStateListener();
+  window.app = new AdminLogin();
 };
