@@ -17,65 +17,20 @@
     <body>
         <div class="fmt-top fmt-shadow" id="topBar">
             <a href="/"><img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
-            <span>Invitation</span>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
-        </div>
-        <div class="fmt-padding" style="margin-top: 72px;">
-            <div class="container" id="userinvitaionbox">
-                <div class="heading fmt-row fmt-center">Invitation</div>
-                <div class="group-text fmt-row">
-                    <b><%= invite.adminname %></b> has invited you to join <b><%= invite.instname %></b> as a teacher.
-                    Fill up your details, create a password, and join, if you are a
-                    teacher at <%= invite.instname %> (code name: <b><%= invite.uiid %></b>).
-                </div>
-                <br/>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption" >Your email address</legend>
-                    <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="newuseremail" name="useremail">
-                    <span class="fmt-right error-caption" id="passerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption" >Create your password</legend>
-                    <input class="text-input" required autocomplete="new-password" placeholder="A strong password" type="password" id="newuserpassword" name="userpassword">
-                    <span class="fmt-right error-caption" id="passerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption" >Type again to confirm</legend>
-                    <input class="text-input" required autocomplete="new-password" placeholder="Confirm password" type="password" id="userconfirmpassword" name="userpassword">
-                    <span class="fmt-right error-caption" id="passerror"></span>
-                </fieldset>
-                <br/>
-                <div class="fmt-row">
-                    <button class="positive-button fmt-right" id="acceptInvitation">Join <%= invite.instname %></button>
-                    <button class="negative-button fmt-right" id="loginAdminButton">Reject Invitation</button>
-                    <img class="fmt-spin-fast fmt-right" style="display:none" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
-                </div>
-            </div>
+            <span>Schemester · Invite</span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+          </div>
         
-            <div class="container" id="invitationExpiredBox">
-                <div class="heading fmt-center">Expired</div>
-                <div class="group-text fmt-row">
-                    The link that brought you here is no longer accepting invitations. If you think this was a mistake,
-                    then request your admin a new invitation, by filling the details below.
-                </div>
-                <br/>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption">Your email address</legend>
-                    <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="useremail" name="useremail">
-                    <span class="fmt-right error-caption" id="useremailerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption" >Message for Admin</legend>
-                    <textarea class="text-input" placeholder="Any message for admin?(Optional)" rows="4" id="usermessage" name="usermessage"></textarea>
-                    <span class="fmt-right error-caption" id="passerror"></span>
-                </fieldset>
-                <br/>
-                <div class="fmt-row">
-                    <button class="active-button" style="display:block" id="loginAdminButton">Request Invitation</button>
-                    <img class="fmt-spin-fast" style="display:none" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
-                </div>
-            </div>
+        <div class="fmt-padding" style="margin-top: 72px;" id="invitebodyparent">
         </div>
+        <span hidden>
+        <span id="active"><%= invite.active %></span>
+        <span id="adminemail"><%= invite.adminEmail %></span>
+        <span id="instname"><%= invite.instituteName %></span>
+        <span id="adminname"><%= invite.adminName %></span>
+        <span id="uiid"><%= invite.uiid %></span>
+        <span id="expirydate"><%= invite.exp %></span>
+        </span>
     </body>
 </html>
         

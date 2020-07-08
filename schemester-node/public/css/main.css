@@ -270,8 +270,11 @@ img{vertical-align:middle}
     border-radius: 4px;
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
-    transition: 0.2s ease;
+    transition: 0.3s ease;
     cursor: pointer;
+}
+.positive-button:hover{
+    box-shadow: 1px 5px 18px #00000044;
 }
 .positive-button:focus{
     outline:none;
@@ -289,6 +292,9 @@ img{vertical-align:middle}
     transition: 0.2s ease;
     cursor: pointer;
 }
+.active-button:hover{
+    box-shadow: 1px 5px 18px #00000044;
+}
 .active-button:focus{
     outline:none;
     background-color: #81be7c;
@@ -304,6 +310,9 @@ img{vertical-align:middle}
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
     cursor: pointer;
+}
+.neutral-button:hover{
+    box-shadow: 1px 5px 18px #00000044;
 }
 .neutral-button:focus{
     outline:none;
@@ -321,6 +330,9 @@ img{vertical-align:middle}
     transition: 0.2s ease;
     cursor: pointer;
 }
+.negative-button:hover{
+    box-shadow: 1px 5px 18px #00000044;
+}
 .negative-button:focus{
     outline:none;
     background-color: #db94a5;
@@ -328,7 +340,7 @@ img{vertical-align:middle}
 }
 .warning-button{
     background-color: #d66a04;
-    color:rgb(255, 255, 255);
+    color:#ffffff;
     margin: 4px;
     border-width: 0;
     border-radius: 4px;
@@ -336,6 +348,9 @@ img{vertical-align:middle}
     padding:4px 12px 4px 12px;
     transition: 0.2s ease;
     cursor: pointer;
+}
+.warning-button:hover{
+    box-shadow: 1px 5px 18px #00000044;
 }
 .warning-button:focus{
     outline:none;

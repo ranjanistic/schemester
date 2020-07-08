@@ -1,6 +1,4 @@
 const appName = "Schemester",
-  baseColor = "#216bf3",
-  errorBaseColor = "#c40c0c",
   click = "click",
   input = "input",
   change = "change",
@@ -20,17 +18,43 @@ const appName = "Schemester",
 
 var cred = Array(2);
 
+class Colors{
+  constructor(){
+    this.base = "#216bf3";
+    this.positive = this.base;
+    this.error = "#c40c0c";
+    this.active = "green";
+    this.white = "#ffffff";
+    this.black = "#000000";
+  }
+  getColorByType(type){
+    switch(type){
+      case actionType.positive:
+        return this.positive;
+      case actionType.negative:
+        return this.error;
+      case actionType.neutral:
+        return this.white;
+      case actionType.active:
+        return this.active;
+      default:return this.base;
+    }
+  }
+}
+var colors = new Colors();
+
 class TextInput {
   constructor(
     fieldId = String(),
-    captionId = String(),
     inputId = String(),
-    errorId = String()
+    errorId = String(),
+    captionId = null
   ) {
     this.fieldset = getElement(fieldId);
-    this.caption = getElement(captionId);
+    this.caption = captionId ? getElement(captionId) : null;
     this.input = getElement(inputId);
     this.error = getElement(errorId);
+    setFieldSetof(this.fieldset, false);
   }
   setFieldCaption(caption) {
     this.caption.textContent = caption;
@@ -45,18 +69,15 @@ class TextInput {
       action();
     };
   }
-  showError(errorMsg) {
-    setFieldSetof(this.fieldset, false, this.error, errorMsg);
-  }
-  normalize() {
-    setFieldSetof(this.fieldset, true);
+  setFieldView(errorMsg = null) {
+    setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
   }
   setInputAttrs(hint, type, defaultValue) {
     this.input.placeholder = hint;
     this.input.type = type;
     this.input.value = defaultValue;
   }
-  getInputValue() {
+  getInput() {
     return this.input.value;
   }
 }
@@ -70,7 +91,39 @@ class Snackbar {
     this.text = getElement(this.textId);
     this.button = getElement(this.buttonId);
   }
-  hide() {
+  createSnack(text,type){
+    this.text.innerHTML = text;
+    setDefaultBackground(this.bar,type);
+  }
+  createButton(buttontext,action = null){
+    this.button.innerHTML = buttontext;
+    if(action!=null){
+      this.button.onclick = _=>{
+        action();
+      }
+    } else {
+      this.button.onclick = _=>{
+        this.hide();
+      }
+    }
+  }
+
+  show() {
+    replaceClass(
+      this.bar,
+      "fmt-animate-bottom-off",
+      "fmt-animate-bottom",
+      true
+    );
+  }
+  hide(){
+    replaceClass(
+      this
+      .bar,
+      "fmt-animate-bottom-off",
+      "fmt-animate-bottom",
+      false
+    );
     visibilityOf(this.bar, false);
   }
 }
@@ -84,24 +137,29 @@ let snackBar = (
   }
 ) => {
   var snack = new Snackbar();
-  if (text != null) {
+  if (text != nothing) {
     snack.text.textContent = text;
-    if (actionText != null && actionText != nothing) {
+    if (actionText != nothing && actionText != nothing) {
       snack.button.textContent = actionText;
       snack.button.onclick = () => {
+        new Snackbar().hide();
         action();
       };
     }
     setDefaultBackground(snack.bar, isNormal);
     visibilityOf(snack.button, actionText != null && actionText != nothing);
+    setTimeout(_=>{
+      new Snackbar().hide();
+    }, (5000));
   }
   replaceClass(
     snack.bar,
     "fmt-animate-bottom-off",
     "fmt-animate-bottom",
-    text != null
+    text != nothing
   );
-  visibilityOf(snack.bar, text != null);
+  visibilityOf(snack.bar, text != nothing);
+  
 };
 
 class DialogID {
@@ -149,6 +207,7 @@ class ActionType {
     this.positive = "positive";
     this.negative = "negative";
     this.warning = "warning";
+    this.active = "active";
   }
   getStyleClass(type) {
     switch (type) {
@@ -160,6 +219,8 @@ class ActionType {
         return "negative-button";
       case this.warning:
         return "warning-button";
+      case this.active:
+        return "active-button";
       default:
         return "positive-button";
     }
@@ -168,10 +229,10 @@ class ActionType {
 var actionType = new ActionType();
 
 class Dialog extends DialogID {
-  constructor(totalInputs = 0, largeTextArea = 0) {
+  constructor(largeTextArea = 0) {
     super(DialogID);
     this.view = getElement(this.viewId);
-    setDefaultBackground(this.view, true);
+    setDefaultBackground(this.view);
     this.box = getElement(this.boxId);
     opacityOf(this.box, 1);
     this.image = getElement(this.imageId);
@@ -181,35 +242,14 @@ class Dialog extends DialogID {
     this.subHeading = getElement(this.subHeadId);
 
     this.inputFields = getElement(this.inputs);
+    visibilityOf(this.inputFields,false);
     this.options = getElement(this.optionsId);
     visibilityOf(this.options, false);
-    visibilityOf(this.inputFields, totalInputs > 0);
-    if (totalInputs > 0) {
-      this.createInputs(totalInputs);
-      this.inputTextField = Array(totalInputs);
-      this.inputField = Array(totalInputs);
-      this.inputCaption = Array(totalInputs);
-      this.input = Array(totalInputs);
-      this.inputError = Array(totalInputs);
-      for (var k = 0; k < totalInputs; k++) {
-        this.inputField[k] = getElement(this.dialogInputField(k));
-        this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
-        this.input[k] = getElement(this.dialogInput(k));
-        this.inputError[k] = getElement(this.dialogInputError(k));
-        this.input[k].value = null;
-        setFieldSetof(this.inputField[k], true, this.inputError[k]);
-      }
-    }
     this.textField = getElement(this.textFieldId);
-    visibilityOf(this.textField, largeTextArea > 0);
-    if (largeTextArea > 0) {
-      this.textFieldCaption = getElement(this.textFieldCaptionId);
-      this.textInput = getElement(this.textInputAreaId);
-      this.textInputError = getElement(this.textInputErrorId);
-    }
-    setFieldSetof(this.textField, true, this.textInputError);
+    visibilityOf(this.textField,false);
   }
-  createInputs(total) {
+  createInputs(captions, hints, types, contents, autocompletes) {
+    let total = captions.length;
     let fieldSet = String();
     for (var i = 0; i < total; i++) {
       fieldSet =
@@ -228,6 +268,30 @@ class Dialog extends DialogID {
         '"></span></fieldset>';
     }
     this.inputFields.innerHTML = fieldSet;
+    visibilityOf(this.inputFields, total > 0);
+    this.inputField = Array(total);
+    this.inputCaption = Array(total);
+    this.input = Array(total);
+    this.inputError = Array(total);
+    for (var k = 0; k < total; k++) {
+      this.inputField[k] = getElement(this.dialogInputField(k));
+      this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
+      this.input[k] = getElement(this.dialogInput(k));
+      this.inputError[k] = getElement(this.dialogInputError(k));
+      this.input[k].value = null;
+      setFieldSetof(this.inputField[k], true, this.inputError[k]);
+    }
+    for (var k = 0; k < total; k++) {
+      this.inputCaption[k].textContent = captions[k];
+      this.input[k].placeholder = hints[k];
+      this.input[k].type = types[k];
+      if (contents != null) {
+        this.input[k].value = contents[k];
+      }
+      if (autocompletes != null) {
+        this.input[k].autocomplete = autocompletes[k];
+      }
+    }
   }
   createRadios(labels, clicked) {
     let total = labels.length;
@@ -299,6 +363,7 @@ class Dialog extends DialogID {
       imgsrc == null
     );
   }
+
   loader(show = true) {
     visibilityOf(this.loading, show);
     for (var k = 0; k < this.dialogButtons.length; k++) {
@@ -311,22 +376,14 @@ class Dialog extends DialogID {
     }
   }
 
-  inputParams(captions, hints, types, contents, autocompletes) {
-    for (var k = 0; k < this.inputField.length; k++) {
-      this.inputCaption[k].textContent = captions[k];
-      this.input[k].placeholder = hints[k];
-      this.input[k].type = types[k];
-      if (contents != null) {
-        this.input[k].value = contents[k];
-      }
-      if (autocompletes != null) {
-        this.input[k].autocomplete = autocompletes[k];
-      }
-    }
-  }
   largeTextArea(caption, hint) {
+    this.textFieldCaption = getElement(this.textFieldCaptionId);
+    this.textInput = getElement(this.textInputAreaId);
+    this.textInputError = getElement(this.textInputErrorId);
+    setFieldSetof(this.textField, true, this.textInputError);
     this.textFieldCaption.textContent = caption;
     this.textInput.placeholder = hint;
+    visibilityOf(this.textField,true);
   }
 
   getInput(index) {
@@ -351,7 +408,7 @@ class Dialog extends DialogID {
       action();
     };
   }
-  setBackgroundColor(color = baseColor) {
+  setBackgroundColor(color = colors.base) {
     elementFadeVisibility(this.view, false);
     this.view.style.backgroundColor = color;
     elementFadeVisibility(this.view, true);
@@ -364,6 +421,7 @@ class Dialog extends DialogID {
 let clog = (msg) => {
   console.log(msg);
 };
+
 //idb classes
 const dbName = appName;
 let idb, lidb;
@@ -471,7 +529,7 @@ let adminloginDialog = (isShowing = true) => {
       "Authentication Required",
       "You are about to perform a sensitive action. Please provide your login credentials."
     );
-    loginDialog.inputParams(
+    loginDialog.createInputs(
       Array("Email address", "Password"),
       Array("youremail@example.com", "Your password"),
       Array("email", "password")
@@ -498,7 +556,7 @@ let resetPasswordDialog = (isShowing = true) => {
       "Provide us your email address and we'll help you to reset your password via an email.",
       "/graphic/icons/schemester512.png"
     );
-    resetDialog.inputParams(
+    resetDialog.createInputs(
       Array("Your email address"),
       Array("you@example.domain"),
       Array("email")
@@ -558,7 +616,7 @@ let changeEmailBox = (isShowing = true) => {
     "You need to verify yourself, and then provide your new email address. You'll be logged out after successful change.",
     "/graphic/icons/schemester512.png"
   );
-  mailChange.inputParams(
+  mailChange.createInputs(
     Array(
       "Existing Account password",
       "Existing email address",
@@ -702,7 +760,7 @@ let registrationDialog = (isShowing = true) => {
       Array("Next", "Cancel"),
       Array(actionType.positive, actionType.negative)
     );
-    regDial.inputParams(
+    regDial.createInputs(
       Array("Email Address", "New Password"),
       Array("youremail@example.domain", "Strong password"),
       Array("email", "password"),
@@ -765,22 +823,23 @@ let createAccount = (dialog, email, password) => {
     },
     body: `email=${email}&password=${password}`,
   })
-  .then((res) => res.json())
-  .then((res) => {
-    clog(res);
-    dialog.loader(false);
-    dialog.existence(false);
-    alert(res.event);
-    switch (res.event) {
-      case code.auth.ACCOUNT_CREATED:{
-          alert(code.auth.ACCOUNT_CREATED);
-        }
-        break;
-      default:
-        alert(code.auth.ACCOUNT_CREATION_FAILED);
-    }
-  })
-  .catch((error) => clog(error));
+    .then((res) => res.json())
+    .then((res) => {
+      clog(res);
+      dialog.loader(false);
+      dialog.existence(false);
+      alert(res.event);
+      switch (res.event) {
+        case code.auth.ACCOUNT_CREATED:
+          {
+            alert(code.auth.ACCOUNT_CREATED);
+          }
+          break;
+        default:
+          alert(code.auth.ACCOUNT_CREATION_FAILED);
+      }
+    })
+    .catch((error) => clog(error));
 };
 
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
@@ -886,39 +945,40 @@ let silentLogin = (email, password, action) => {
       snackBar(error, null, false);
     });
 };
-let feedBackBox = (isShowing = true) => {
-  var feedback = new Dialog(1, true, true);
+let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
+  var feedback = new Dialog();
   feedback.setDisplay(
     "Contact Developers",
     "Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. " +
       "We are always eager to listen from you.",
     "/graphic/icons/schemester512.png"
   );
-  feedback.inputParams(
+  feedback.createInputs(
     Array("Your email address"),
     Array("To help or thank you directly ;)"),
-    Array("email")
+    Array("email"),Array(nothing),Array('email')
   );
   feedback.largeTextArea(
     "Describe everything",
-    "Start typing your experience here",
-    "Can't be empty"
+    "Start typing your experience here"
   );
-  feedback.createRadios(Array("Feedback", "Error"), "Feedback");
+  feedback.createRadios(
+    Array("Feedback", "Error"),
+    error ? "Error" : "Feedback"
+  );
   feedback.createActions(
     Array("Submit", "Abort"),
     Array(actionType.positive, actionType.negative)
   );
-  feedback.onChipClick(0, () => {
+  feedback.onChipClick(0, (_) => {
     feedback.setBackgroundColor();
   });
-  feedback.onChipClick(1, () => {
-    feedback.setBackgroundColor(errorBaseColor);
+  feedback.onChipClick(1, (_) => {
+    feedback.setBackgroundColor(colors.error);
   });
-
   feedback.getInput(0).onchange = () => {
     visibilityOf(
-      feedback.positiveAction(),
+      feedback.getDialogButton(0),
       runEmailCheck(
         feedback.getInput(0),
         feedback.inputField[0],
@@ -929,9 +989,10 @@ let feedBackBox = (isShowing = true) => {
       feedback.textInput.focus();
     }
   };
+  feedback.textInput.value = defaultText;
   feedback.textInput.oninput = () => {
     visibilityOf(
-      feedback.positiveAction(),
+      feedback.getDialogButton(0),
       runEmptyCheck(
         feedback.textInput,
         feedback.textField,
@@ -941,7 +1002,7 @@ let feedBackBox = (isShowing = true) => {
   };
   feedback.textInput.onchange = () => {
     visibilityOf(
-      feedback.positiveAction(),
+      feedback.getDialogButton(0),
       runEmptyCheck(
         feedback.textInput,
         feedback.textField,
@@ -1095,11 +1156,11 @@ let elementFadeVisibility = (element, isVisible) => {
   visibilityOf(element, isVisible);
 };
 
-let setDefaultBackground = (element, isNormal = true) => {
-  if (isNormal) {
-    element.style.backgroundColor = baseColor;
-  } else {
-    element.style.backgroundColor = errorBaseColor;
+let setDefaultBackground = (element,type = actionType.positive) => {
+  element.style.backgroundColor = colors.getColorByType(type);
+  switch(type){
+    case actionType.neutral:element.style.color = colors.black;break;
+    default:element.style.color = colors.white;
   }
 };
 
@@ -1246,6 +1307,18 @@ let checkmark = (text) => {
 let radiobox = (content) => {
   return `<label class=\"radio-box-container\"><input type=\"radio\" checked=\"checked\" name=\"radio\"><div class=\"radio-box-mark\">${content}</div></label>`;
 };
+
+let getProperDate =(dateTillMillis = String())=>{
+  let year =  dateTillMillis.substring(0,4);
+  let month = dateTillMillis.substring(4,6);
+  let date = dateTillMillis.substring(6,8);
+  let hour = dateTillMillis.substring(8,10);
+  let min = dateTillMillis.substring(10,12);
+  let sec = dateTillMillis.substring(12,14);
+  //let mill = dateTillMillis.substring(14,18);
+  clog(dateTillMillis.substring(6,8));
+  return `${getMonthName(month-1)} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
+}
 
 class Codes {
   constructor() {
