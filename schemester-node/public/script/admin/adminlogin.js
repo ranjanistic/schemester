@@ -1,95 +1,65 @@
 //The admin login page script
 class AdminLogin{
   constructor(){
-    this.emailFieldSet = getElement("email_fieldset");
-    this.passwordFieldset = getElement("password_fieldset");
-    this.puiidFieldSet = getElement("puiid_fieldset");
+    this.emailField = new TextInput("email_fieldset","adminemail","emailError");
+    this.passField = new TextInput("password_fieldset","adminpassword");
+    this.uiidField = new TextInput("uiid_fieldset","uiid");
+
     this.forgotPassword = getElement("forgotpasswordButton");
-    this.emailError = getElement("emailError");
-    this.emailInput = getElement("adminemail");
-    this.passwordInput = getElement("adminpassword");
-    this.uiidInput = getElement("uiid");
+    visibilityOf(this.forgotPassword, false);
+
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
     this.back = getElement("backFromLogin");
 
-    this.back.addEventListener(click,_=> {
-      showLoader();
-      relocate(root);
-    });
+    this.back.addEventListener(click,_=> {showLoader();relocate(root);});
     this.logInButton.addEventListener(click, this.logInAdministrator, false);
-    this.passwordInput.addEventListener(input,_=>{
-      setFieldSetof(this.passwordFieldset, true);visibilityOf(this.forgotPassword, false);
+
+    this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.input.focus()})});
+    this.passField.onTextDefocus(_=>{validateTextField(this.passField,null,_=>{this.uiidField.input.focus()})});
+
+    this.passField.onTextInput(_=>{
+      setFieldSetof(this.passField.fieldset, true);
+      visibilityOf(this.forgotPassword, false);
     });
-    this.emailInput.addEventListener(change, this.focusToNext);
-    this.passwordInput.addEventListener(change, this.focusToNext);
-    visibilityOf(forgotPassword, false);
-    this.forgotPassword.addEventListener(click, resetPasswordDialog, false);
-    this.uiidInput.addEventListener(change, focusToNext, false);
+    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog();}, false);
   }
 
-  validateEmailID(email, field, error){
-    setFieldSetof(
-      field,
-      isEmailValid(email.value),
-      error,
-      "Invalid email address."
-    );
-    if (!isEmailValid(email.value)) {
-      email.focus();
-      email.oninput = () => {
-        setFieldSetof(field, true);
-        validateEmailID(this.emailInput, this.emailFieldSet, this.emailError);
-      };
-    }
-  };
-
-  focusToNext = () => {
-    if (!isEmailValid(emailInput.value)) {
-      if (emailInput.value != nothing) {
-        validateEmailID(emailInput, emailFieldSet, emailError);
+  focusToNext =_=>{
+    if (!isEmailValid(this.emailField.getInput())) {
+      if (this.emailField.getInput() != nothing) {
+        validateTextField(this.emailField,inputType.email);
       }
-      emailInput.focus();
+      this.emailField.input.focus();
     } else {
-      if (passwordInput.value == nothing) {
-        passwordInput.focus();
-      } else if (uiidInput.value == nothing) {
-        uiidInput.focus();
+      if (this.passField.getInput() == nothing) {
+        this.passField.input.focus();
+      } else if (this.uiidField.getInput() == nothing) {
+        this.uiidField.input.focus();
       }
     }
   };
 
-  logInAdministrator(){
+  logInAdministrator=_=>{
     visibilityOf(this.logInLoader, true);
     visibilityOf(this.logInButton, false);
-    setFieldSetof(this.emailFieldSet, true);
-    setFieldSetof(this.passwordFieldset, true);
+    setFieldSetof(this.emailField.fieldset, true);
+    setFieldSetof(this.passField.fieldset, true);
     snackBar(null)
-    // if (firebase.auth().currentUser) {
-    //   firebase.auth().signOut();
-    // }
-  
     fetch('/admin/auth/login',{
       method: "post",
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
       },
-      body: JSON.stringify({
-        email: [emailInput.value],
-        password: [passwordInput.value]
-      })
+      body: `email=${this.emailField.getInput()}&password=${this.passField.getInput()}&uiid=${this.uiidField.getInput()}`
     })
-    .then((response) => { 
+    .then((res) =>res.json())
+    .then((res)=>{ 
       visibilityOf(logInLoader, false);
       visibilityOf(logInButton, true);
-       if(response.ok){
-         console.log(response.json());
-       } else {
-  
-       }
+      clog(res);
     }).catch((error)=>{
-      console.log(error);
+      clog(error);
     });
   };
   
@@ -121,10 +91,10 @@ class AdminLogin{
 //           if (lcursor) {
 //             switch (lcursor.value.type) {
 //               case kpath.localUIID:{
-//                   if(uiidInput == lcursor.value.uiid){
+//                   if(uiidField.input == lcursor.value.uiid){
 //                       relocate(adminDashPage);
 //                   } else {
-//                       clog('uiidinput didn\'t match');
+//                       clog('uiidField.input didn\'t match');
 //                   }
 //                 //openAdminDatabase(lcursor.value.uiid);  //open database of given stored institituion uiid name.
 //               }break;
@@ -143,7 +113,7 @@ class AdminLogin{
 function clientAuth(){
   firebase
     .auth()
-    .signInWithEmailAndPassword(emailInput.value, passwordInput.value)
+    .signInWithEmailAndPassword(emailInput.value, passField.getInput())
     .catch((error) => {
       var errorCode = error.code;
       var errorMessage = error.message;
@@ -151,7 +121,7 @@ function clientAuth(){
       switch (errorCode) {
         case "auth/wrong-password":
           {
-            setFieldSetof(passwordFieldset, false);
+            setFieldSetof(this.passField.fieldset, false);
             visibilityOf(forgotPassword, true);
             logInButton.textContent = "Retry";
           }
@@ -181,7 +151,7 @@ function clientAuth(){
           break;
         case "auth/invalid-email":
           {
-            validateEmailID(emailInput, emailFieldSet, emailError);
+            //validateTextField(emailInput, emailFieldSet, emailError);
           }
           break;
         case "auth/user-disabled":

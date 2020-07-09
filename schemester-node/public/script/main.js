@@ -42,6 +42,14 @@ class Colors{
   }
 }
 var colors = new Colors();
+class InputType{
+  constructor(){
+    this.email = 'email';
+    this.password = 'password';
+    this.nonempty = 'nonempty';
+  }
+}
+let inputType = new InputType();
 
 class TextInput {
   constructor(
@@ -53,13 +61,13 @@ class TextInput {
     this.fieldset = getElement(fieldId);
     this.caption = captionId ? getElement(captionId) : null;
     this.input = getElement(inputId);
-    this.error = getElement(errorId);
-    setFieldSetof(this.fieldset, false);
+    this.error = (errorId!=nothing&&errorId!=null)?getElement(errorId):null;
+    setFieldSetof(this.fieldset);
   }
   setFieldCaption(caption) {
     this.caption.textContent = caption;
   }
-  onTextInput(action) {
+  onTextInput(action=_=>{}) {
     this.input.oninput = () => {
       action();
     };
@@ -69,7 +77,7 @@ class TextInput {
       action();
     };
   }
-  setFieldView(errorMsg = null) {
+  showError(errorMsg = null) {
     setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
   }
   setInputAttrs(hint, type, defaultValue) {
@@ -1045,6 +1053,62 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   });
   feedback.existence(isShowing);
 };
+
+
+let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,afterValidAction=_=>{clog(nothing)})=>{
+  var error;
+    switch(type){
+      case inputType.email:{
+        error = "Invalid email address.";
+      }break;
+      default:{
+        error = "This can't be empty";
+      }
+    }
+  
+  let getChecker=_=>{
+    switch(type){
+      case inputType.email:
+        return isEmailValid(textfield.getInput());
+      default:
+        return textfield.getInput()!=null&&textfield.getInput()!="";
+    }
+  }
+
+  textfield.showError(error);
+  if (!getChecker()) {
+    textfield.input.focus();
+    textfield.onTextInput(_=>{
+      textfield.showError(null);
+      if(textfield.getInput()!=nothing){
+        validateTextField(textfield,type,_=>{afterValidAction()});
+      } else {
+        textfield.onTextInput(_=>{
+          textfield.showError(null);
+        }); 
+        textfield.onTextDefocus(_=>{
+          if (getChecker()) {
+            afterValidAction();
+          }else {
+            textfield.showError(error);
+            validateTextField(textfield,type,_=>{afterValidAction()});
+          }
+        });
+      }
+    });
+  } else {
+    textfield.showError(null);
+    textfield.onTextDefocus(_=>{
+      if (getChecker()) {
+        afterValidAction();
+      }else {
+        textfield.showError(error);
+        validateTextField(textfield,type,_=>{afterValidAction()});
+      }
+    });
+  }
+};
+
 
 let setFieldSetof = (
   fieldset,

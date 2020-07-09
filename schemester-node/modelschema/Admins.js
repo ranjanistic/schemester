@@ -14,8 +14,8 @@ class Admins{
     getSchema(){
         return this.adminschema;
     }
-    getModelOf(adminemailCollection){
-        return mongoose.model(adminemailCollection,this.adminschema);
+    getModelOf(adminemailCollection,create = false){
+        return mongoose.model(adminemailCollection,this.adminschema,adminemailCollection,!create);
     }
 }
 

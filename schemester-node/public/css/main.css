@@ -52,6 +52,7 @@ a{
     text-decoration: none;
     font-family:'Questrial',sans-serif;
     color:#216bf3;
+    font-size: 18px;
     transition:0.3s ease;
 }
 a:hover{
@@ -61,7 +62,8 @@ a:hover{
 
 a:focus{
     color:#034ace;
-    font-size: 16px;
+    font-size: 17px;
+    transition:0.3s ease;
 }
 img{vertical-align:middle}
 .caption{

@@ -196,10 +196,10 @@ class Security{
 class Users {
   constructor() {
     this.invite = getElement("inviteUsers");
-    this.invite.addEventListener(click,this.linkGenerator,false);
+    this.invite.addEventListener(click,_=>{this.linkGenerator('teacher')},false);
   }
-  linkGenerator =_=> {
-    fetch("/admin/invitation/teachers/generatelink", {
+  linkGenerator =(target)=> {
+    fetch(`/admin/external/?type=invitation&target=${target}`, {
       method: "post",
     })
       .then((res) => res.json())
@@ -221,19 +221,25 @@ class Users {
         dialog.onButtonClick(0, _=> {
           dialog.setDisplay(
             "Generate link",
-            `<center>Create a link and share that with teachers of your institution.</center>`
+            `<center>Create a link and share that with ${target} of your institution.</center>`
           );
           dialog.createActions(
             Array("Create Link", "Cancel"),
             Array(actionType.active, actionType.negative)
           );
           dialog.onButtonClick(0, _=> {
-            this.linkGenerator();
+            this.linkGenerator(target);
+          });
+          dialog.onButtonClick(1, _=> {
+            dialog.existence(false);  
           });
         });
         dialog.onButtonClick(1, _=> {
-          snackBar("Link Copied to clipboard.");
-          dialog.existence(false);
+          navigator.clipboard.writeText(result.link).
+          then(_=>{snackBar("Link Copied to clipboard.");dialog.existence(false);})
+          .catch((err)=>{
+            snackBar("Failed to copy, please do it manually.","Report",false,_=>{feedBackBox(true,err+":Failed to copy, please do it manually.")})
+          });
         });
         dialog.onButtonClick(2, _=> {
           dialog.existence(false);

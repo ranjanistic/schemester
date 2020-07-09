@@ -25,10 +25,10 @@
             <div class="container">
                 <span class="heading fmt-hide-small">Administrator</span>
                 <span class="heading fmt-hide-medium fmt-hide-large">Admin</span>
-                <form action="/adminlogin" method="POST">
+                
                 <fieldset class="text-field" id="email_fieldset">
-                    <legend class="field-caption" >Username · Email Address</legend>
-                    <input class="text-input" required="true" placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
+                    <legend class="field-caption" >Email Address</legend>
+                    <input class="text-input" required placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
                     <span class="fmt-right error-caption" id="emailError"></span>
                 </fieldset>
                 <br/>
@@ -38,12 +38,11 @@
                     <button class="positive-button fmt-right" id="forgotpasswordButton">Forgot?</button>    
                 </fieldset>
                 <br/>
-                <fieldset class="text-field" id="puiid_fieldset">
+                <fieldset class="text-field" id="uiid_fieldset">
                     <legend class="field-caption">UIID</legend>
-                    <input class="text-input" spellcheck="false" placeholder="Your institution's private identifier." type="password" id="uiid" name="uiid">
+                    <input class="text-input" spellcheck="false" placeholder="Your institution's identifier." type="password" id="uiid" name="uiid">
                     <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
-                </form>
                 <br/>
             </div>
             <br/>

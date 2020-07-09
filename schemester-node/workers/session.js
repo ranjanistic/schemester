@@ -1,16 +1,14 @@
 const adb = require('./dbadmin');
-const Admins = require('../modelschema/Admins.js');
+const admins = require('../modelschema/Admins.js');
 const code = require('../hardcodes/events.js');
 
-//'mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/Schools?retryWrites=true&w=majority'
-const adminurl = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/administrators?retryWrites=true&w=majority';
-//const localadminurl = 'mongodb://localhost:27017/admnisitrators';
-//mongoose.connect(localadminurl, { useNewUrlParser: true });
-
-console.log(dboperate(_=>{console.log('ADB opened success');}))
+console.log(dboperate(_=>{
+    console.log('ADB opened success');
+}))
 
 module.exports.loginAdmin =(email,password,uiid)=>{
-    dboperate(_ => {
+    
+
         //check and return
          code.auth.EMAIL_INVALID
         //if doesn't exist, return with particular code.
@@ -23,7 +21,6 @@ module.exports.loginAdmin =(email,password,uiid)=>{
             //else show dashboard.
         //if set active failed return 
             code.auth.AUTH_FAILED
-    });    
 }
 
 module.exports.logoutAdmin = (email)=>{
@@ -52,6 +49,40 @@ module.exports.isLoggedIn = (email)=>{
         //check in email collection, return active;
     })
 }
+
+class Session{
+    constructor(){
+        this.uid = null;
+        this.password = null;
+        this.name = null;
+        this.uiid = null;
+        this.ipaddress = null;
+        this.event = code.auth.LOGGED_OUT;
+    }
+    login(email,pass,uiid,ip){
+        //login from admins schema
+        this.event = code.auth.AUTH_SUCCESS;
+        this.uid = email;
+        this.password = pass;
+        this.uiid = uiid;
+        this.ipaddress = ip;
+        return JSON.stringify({
+          event:[this.event],
+          email:[this.uid],
+          name:[this.name],
+          uiid:[this.uiid]
+        });
+    };
+}
+
+adb.once('open',_=>{
+    var session = new Session();
+    module.exports = session;//try superclass for local session
+})
+adb.on('error', err => {
+    return code.server.DATABASE_ERROR + err;
+});
+
 
 function dboperate(action){
     adb.once('open',_=>{
