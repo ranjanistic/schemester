@@ -9,7 +9,7 @@ class Admins{
             verified:Boolean,
             active:Boolean,
             ip:String
-        })
+        });
     }
     getSchema(){
         return this.adminschema;

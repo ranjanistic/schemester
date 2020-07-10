@@ -182,8 +182,10 @@ class Security{
     this.resetPass = getElement("resetPasswordButton");
     this.resetMail = getElement("resetMailButton");
     this.lastLogin = getElement("lastLoginTime");
+    this.deleteAccount = getElement('deleteAdminAccount');
     this.resetPass.addEventListener(click, resetPasswordDialog, false);
     this.resetMail.addEventListener(click, changeEmailBox, false);
+    this.deleteAccount.addEventListener(click,adminloginDialog,false);
   }
   setButtonText(resetMail, resetPass) {
     this.resetMail.textContent = resetMail;

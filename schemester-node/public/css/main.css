@@ -30,7 +30,8 @@ body{
     transition:0.4s ease
 
   }
-   
+
+  
   /* Handle */
   ::-webkit-scrollbar-thumb {
     border-radius:4px;
@@ -57,7 +58,7 @@ a{
 }
 a:hover{
     transition:0.3s ease;
-    font-weight: bold;
+    color:#13397e;
 }
 
 a:focus{
@@ -81,11 +82,46 @@ img{vertical-align:middle}
     font-size: 22px;
 }
 #topBar{
+    font-family:'Questrial',sans-serif;
     color:white;
     background-color: #216bf3;
     font-size: 18px;
     padding: 8px;
+    position:fixed;width:100%;z-index:1;
+    top:0;
+    box-shadow:0 4px 10px 0 #00000033,0 4px 20px 0 #00000030;
 }
+
+.searcher {
+    width: 40px;
+    height:40px;
+    box-sizing: border-box;
+    border:0;
+    padding:0px;
+    border-radius: 50%;
+    color:white;
+    font-size: 18px;
+    outline:none;
+    background-image: url('/graphic/searchicon.svg');
+    background-position: 100%;
+    background-color: #ffffff00;
+    background-repeat: no-repeat;
+    -webkit-transition: width 0.4s ease-in-out;
+    transition: 0.4s ease-in-out;
+  }
+  .searcher:hover{
+      box-shadow: 1px 5px 5px #00000022;
+      cursor: pointer;
+  }
+  .searcher:focus {
+    padding:4px 40px 4px 12px;
+    background-color: #153e8bb2;
+    border-radius: 8px;
+    width: 50%;
+    box-shadow: 1px 5px 5px #00000032;
+    cursor: text;
+  }
+
 #navLoader{
     display:none;
     width:40;

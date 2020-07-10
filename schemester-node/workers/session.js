@@ -59,29 +59,27 @@ class Session{
         this.ipaddress = null;
         this.event = code.auth.LOGGED_OUT;
     }
-    login(email,pass,uiid,ip){
+    login = (email,pass,uiid,ip)=>{
         //login from admins schema
         this.event = code.auth.AUTH_SUCCESS;
         this.uid = email;
         this.password = pass;
         this.uiid = uiid;
         this.ipaddress = ip;
-        return JSON.stringify({
-          event:[this.event],
-          email:[this.uid],
-          name:[this.name],
-          uiid:[this.uiid]
-        });
+        return this.getResult(this.event,this.uid,this.name,this.uiid);
+
     };
+    getResult=(event=null,uid=null,name=null,uiid=null)=> JSON.stringify({
+        event:[event],
+        email:[uid],
+        name:[name],
+        uiid:[uiid]
+    });
 }
 
-adb.once('open',_=>{
-    var session = new Session();
-    module.exports = session;//try superclass for local session
-})
-adb.on('error', err => {
-    return code.server.DATABASE_ERROR + err;
-});
+//adb.once('open',_=>{
+var session = new Session();
+module.exports = session;//try superclass for local session
 
 
 function dboperate(action){

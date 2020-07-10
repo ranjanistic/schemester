@@ -32,11 +32,15 @@ router.post("/auth/signup", async (req, res) => {
   console.log(req.body);
 });
 
-router.post("/auth/login", async (req, res) => {
+router.post("/auth/login", (req, res) => {
   const { email, password, uiid } = req.body;
-  console.log(req.body);
-  let result = session.login(email, password, uiid, req.ip);
-  console.log(result);
+  let result;
+  console.log(req.ip);
+  if(!isValidEmail(email)){
+    //result = session.getResult(code.auth.EMAIL_INVALID);
+  }else{
+    result = session.login(email, password, uiid, req.ip);
+  }
   res.json({result});
 });
 
@@ -189,7 +193,7 @@ var getTheMoment = (stringForm = true, dayincrement = 0) => {
     );
   }
 };
-var isLeap = (year) => new Date(year, 1, 29).getMonth() == 1;
+
 var daysInMonth = (month, year) => new Date(year, month, 0).getDate();
 var isInvalidQuery = (query) =>
   query.id == null ||
@@ -200,5 +204,10 @@ var isInvalidQuery = (query) =>
   query.dom == "" ||
   query.exp == "" ||
   query.uiid == "";
+
+let isValidEmail = (emailValue) => {
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return emailRegex.test(String(emailValue).toLowerCase());
+};
 
 module.exports = router;

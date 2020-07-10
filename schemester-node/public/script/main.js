@@ -7,7 +7,7 @@ const appName = "Schemester",
   tab = "   ",
   hide = "none",
   show = "block",
-  adminLoginPage = "/admin/auth",
+  adminLoginPage = "/admin/auth/login",
   adminDashPage = "/admin/dash",
   homepage = "/home",
   root = "/",
@@ -26,6 +26,7 @@ class Colors{
     this.active = "green";
     this.white = "#ffffff";
     this.black = "#000000";
+    this.transparent = "transparent";
   }
   getColorByType(type){
     switch(type){
@@ -62,7 +63,10 @@ class TextInput {
     this.caption = captionId ? getElement(captionId) : null;
     this.input = getElement(inputId);
     this.error = (errorId!=nothing&&errorId!=null)?getElement(errorId):null;
-    setFieldSetof(this.fieldset);
+    this.normalize();
+  }
+  normalize(isNormal = true,errormsg = null){
+    setFieldSetof(this.fieldset,isNormal,this.error,errormsg);
   }
   setFieldCaption(caption) {
     this.caption.textContent = caption;
@@ -77,13 +81,22 @@ class TextInput {
       action();
     };
   }
-  showError(errorMsg = null) {
+  showError(errorMsg = null,inputfocus = true) {
     setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
+    if(inputfocus){
+      this.input.focus();
+    }
   }
-  setInputAttrs(hint, type, defaultValue) {
-    this.input.placeholder = hint;
-    this.input.type = type;
-    this.input.value = defaultValue;
+  setInputAttrs(hint = null, type = null, defaultValue = null) {
+    if(hint!=null){
+      this.input.placeholder = hint;
+    }
+    if(type!=null){
+      this.input.type = type;
+    }
+    if(defaultValue!=null){
+      this.input.value = defaultValue;
+    }
   }
   getInput() {
     return this.input.value;
@@ -136,7 +149,7 @@ class Snackbar {
   }
 }
 
-let snackBar = (
+var snackBar = (
   text = String(),
   actionText = String(),
   isNormal = true,
@@ -145,29 +158,30 @@ let snackBar = (
   }
 ) => {
   var snack = new Snackbar();
+  snack.hide();
   if (text != nothing) {
     snack.text.textContent = text;
-    if (actionText != nothing && actionText != nothing) {
+    if (actionText != null && actionText != nothing) {
       snack.button.textContent = actionText;
       snack.button.onclick = () => {
         new Snackbar().hide();
         action();
       };
+    }else{
+      setTimeout(_=>{
+        new Snackbar().hide();
+      }, (7000));
     }
     setDefaultBackground(snack.bar, isNormal);
     visibilityOf(snack.button, actionText != null && actionText != nothing);
-    setTimeout(_=>{
-      new Snackbar().hide();
-    }, (5000));
   }
   replaceClass(
     snack.bar,
     "fmt-animate-bottom-off",
     "fmt-animate-bottom",
     text != nothing
-  );
-  visibilityOf(snack.bar, text != nothing);
-  
+  );  
+  visibilityOf(snack.bar, text != nothing&&text!=null);
 };
 
 class DialogID {
@@ -237,7 +251,7 @@ class ActionType {
 var actionType = new ActionType();
 
 class Dialog extends DialogID {
-  constructor(largeTextArea = 0) {
+  constructor() {
     super(DialogID);
     this.view = getElement(this.viewId);
     setDefaultBackground(this.view);
@@ -248,56 +262,47 @@ class Dialog extends DialogID {
 
     this.heading = getElement(this.headingId);
     this.subHeading = getElement(this.subHeadId);
-
     this.inputFields = getElement(this.inputs);
+
     visibilityOf(this.inputFields,false);
     this.options = getElement(this.optionsId);
     visibilityOf(this.options, false);
     this.textField = getElement(this.textFieldId);
     visibilityOf(this.textField,false);
   }
-  createInputs(captions, hints, types, contents, autocompletes) {
+  createInputs(captions, hints, types, contents = null, autocompletes) {
     let total = captions.length;
     let fieldSet = String();
     for (var i = 0; i < total; i++) {
-      fieldSet =
-        fieldSet +
-        '<fieldset class="fmt-row text-field" id="' +
-        this.dialogInputField(i) +
-        '">' +
-        '<legend class="field-caption" id="' +
-        this.dialogFieldCaption(i) +
-        '"></legend>' +
-        '<input class="text-input" id="' +
-        this.dialogInput(i) +
-        '">' +
-        '<span class="fmt-right error-caption" id="' +
-        this.dialogInputError(i) +
-        '"></span></fieldset>';
+      fieldSet =`${fieldSet}
+        <fieldset class="fmt-row text-field" id="${this.dialogInputField(i)}"> 
+        <legend class="field-caption" id="${this.dialogFieldCaption(i)}"></legend> 
+        <input class="text-input" id="${this.dialogInput(i)}">
+        <span class="fmt-right error-caption" id="${this.dialogInputError(i)}"></span></fieldset>`;
     }
     this.inputFields.innerHTML = fieldSet;
     visibilityOf(this.inputFields, total > 0);
     this.inputField = Array(total);
-    this.inputCaption = Array(total);
-    this.input = Array(total);
-    this.inputError = Array(total);
     for (var k = 0; k < total; k++) {
-      this.inputField[k] = getElement(this.dialogInputField(k));
-      this.inputCaption[k] = getElement(this.dialogFieldCaption(k));
-      this.input[k] = getElement(this.dialogInput(k));
-      this.inputError[k] = getElement(this.dialogInputError(k));
-      this.input[k].value = null;
-      setFieldSetof(this.inputField[k], true, this.inputError[k]);
+      this.inputField[k] = new TextInput(
+        this.dialogInputField(k),
+        this.dialogInput(k),
+        this.dialogInputError(k),
+        this.dialogFieldCaption(k)
+      );
     }
+    //this.ip = new TextInput();
+    //this.ip.setInputAttrs()
     for (var k = 0; k < total; k++) {
-      this.inputCaption[k].textContent = captions[k];
-      this.input[k].placeholder = hints[k];
-      this.input[k].type = types[k];
+      this.inputField[k].caption.textContent = captions[k];
+      this.inputField[k].setInputAttrs(hints[k],types[k])      
       if (contents != null) {
-        this.input[k].value = contents[k];
+        if(contents[k]!=null&&contents[k]!=nothing){
+          this.inputField[k].input.value = contents[k];
+        }
       }
       if (autocompletes != null) {
-        this.input[k].autocomplete = autocompletes[k];
+        this.inputField[k].input.autocomplete = autocompletes[k];
       }
     }
   }
@@ -354,7 +359,7 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  setDisplay(head, body, imgsrc = null) {
+  setDisplay(head, body = null, imgsrc = null) {
     this.heading.textContent = head;
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);
@@ -385,20 +390,18 @@ class Dialog extends DialogID {
   }
 
   largeTextArea(caption, hint) {
-    this.textFieldCaption = getElement(this.textFieldCaptionId);
-    this.textInput = getElement(this.textInputAreaId);
-    this.textInputError = getElement(this.textInputErrorId);
-    setFieldSetof(this.textField, true, this.textInputError);
-    this.textFieldCaption.textContent = caption;
-    this.textInput.placeholder = hint;
-    visibilityOf(this.textField,true);
+    this.largeTextField = new TextInput(this.textFieldId,this.textInputAreaId,this.textInputErrorId,this.textFieldCaptionId);
+    this.largeTextField.normalize();
+    this.largeTextField.setInputAttrs(hint);
+    this.largeTextField.caption.textContent = caption;
+    visibilityOf(this.largeTextField.fieldset,true);
   }
 
   getInput(index) {
-    return this.input[index];
+    return this.inputField[index].input;
   }
   getInputValue(index) {
-    return this.input[index].value;
+    return this.inputField[index].getInput();
   }
   getDialogChip(index) {
     return this.optionsRadio[index];
@@ -530,8 +533,8 @@ let sendPassResetLink = () => {
 };
 
 //todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
-let adminloginDialog = (isShowing = true) => {
-  var loginDialog = new Dialog(2);
+let adminloginDialog = (isShowing = true, sensitive = true) => {
+  var loginDialog = new Dialog();
   if (isShowing) {
     loginDialog.setDisplay(
       "Authentication Required",
@@ -544,10 +547,25 @@ let adminloginDialog = (isShowing = true) => {
     );
     loginDialog.createActions(
       Array("Continue", "Cancel"),
-      Array(actionType.positive, actionType.negative)
+      Array(actionType.neutral, actionType.positive)
     );
+    if(sensitive){
+      loginDialog.setBackgroundColor(colors.error);
+    }
+    loginDialog.getInput(0).onchange = _=>{
+      validateTextField(loginDialog.inputField[0],inputType.email,_=>{loginDialog.inputField[1].input.focus()});
+    }
+    loginDialog.getInput(1).onchange = _=>{
+      validateTextField(loginDialog.inputField[1],inputType.nonempty);
+    }
     loginDialog.onButtonClick(0, (_) => {
-      //login
+      if(!(isEmailValid(loginDialog.getInputValue(0))&&isNonEmpty(loginDialog.getInputValue(1)))){
+        validateTextField(loginDialog.inputField[1],inputType.nonempty,_=>{loginDialog.inputField[0].input.focus()});
+        validateTextField(loginDialog.inputField[0],inputType.email,_=>{loginDialog.inputField[1].input.focus()});
+      } else {
+        snackBar("TBD");
+        //todo: authenticate
+      }
     });
     loginDialog.onButtonClick(1, (_) => {
       loginDialog.existence(false);
@@ -557,7 +575,7 @@ let adminloginDialog = (isShowing = true) => {
 };
 
 let resetPasswordDialog = (isShowing = true) => {
-  var resetDialog = new Dialog(1);
+  var resetDialog = new Dialog();
   if (isShowing) {
     resetDialog.setDisplay(
       "Reset password",
@@ -574,51 +592,31 @@ let resetPasswordDialog = (isShowing = true) => {
       Array(actionType.positive, actionType.negative)
     );
     resetDialog.getInput(0).onchange = () => {
-      verificationValid();
-    };
-    let verificationValid = () => {
-      var valid = isEmailValid(resetDialog.input[0].value);
-      setFieldSetof(
-        resetDialog.inputField[0],
-        valid,
-        resetDialog.inputError[0],
-        "Invalid email address"
-      );
-      visibilityOf(resetDialog.getDialogButton(0), valid);
-      resetDialog.getInput(0).oninput = () => {
-        setFieldSetof(
-          resetDialog.inputField[0],
-          isEmailValid(resetDialog.input[0].value),
-          resetDialog.inputError[0],
-          "Invalid email address"
-        );
-        visibilityOf(
-          resetDialog.getDialogButton(0),
-          isEmailValid(resetDialog.input[0].value)
-        );
-      };
-      return isEmailValid(resetDialog.getInputValue(0));
+      validateTextField(resetDialog.inputField[0],inputType.email,
+        _=>{visibilityOf(resetDialog.getDialogButton(0))});
     };
     resetDialog.onButtonClick(0, () => {
-      if (verificationValid()) {
-        sendPassResetLink();
+      if (isEmailValid(resetDialog.getInputValue(0))) {
+        sendPassResetLink();//todo
         snackBar(
           "You'll receive a link if your email address was correct. Reset your password from there.",
           "Got it"
         );
         resetDialog.existence(false);
+      }else{
+        validateTextField(resetDialog.inputField[0],inputType.email,
+          _=>{visibilityOf(resetDialog.getDialogButton(0))});
       }
     });
     resetDialog.onButtonClick(1, () => {
       resetDialog.existence(false);
     });
   }
-
   resetDialog.existence(isShowing);
 };
 
 let changeEmailBox = (isShowing = true) => {
-  var mailChange = new Dialog(3);
+  var mailChange = new Dialog();
   mailChange.setDisplay(
     "Change Email Address",
     "You need to verify yourself, and then provide your new email address. You'll be logged out after successful change.",
@@ -642,92 +640,33 @@ let changeEmailBox = (isShowing = true) => {
     Array(actionType.negative, actionType.positive)
   );
 
-  mailChange.getInput(0).oninput = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      runEmptyCheck(
-        mailChange.getInput(0),
-        mailChange.inputField[0],
-        mailChange.inputError[0]
-      )
-    );
-  };
   mailChange.getInput(0).onchange = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      runEmptyCheck(
-        mailChange.getInput(0),
-        mailChange.inputField[0],
-        mailChange.inputError[0]
-      )
-    );
+    validateTextField(mailChange.inputField[0],inputType.nonempty,_=>{mailChange.getInput(1).focus()});
   };
-  mailChange.getInput(1).oninput = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      isEmailValid(mailChange.getInput(1))
-    );
-  };
+  
   mailChange.getInput(1).onchange = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      runEmailCheck(
-        mailChange.getInput(1),
-        mailChange.inputField[1],
-        mailChange.inputError[1]
-      )
-    );
+    validateTextField(mailChange.inputField[1],inputType.email,_=>{mailChange.getInput(2).focus()});
   };
-  mailChange.getInput(2).oninput = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      isEmailValid(mailChange.getInput(1))
-    );
-  };
+  
   mailChange.getInput(2).onchange = () => {
-    visibilityOf(
-      mailChange.getDialogButton(0),
-      runEmailCheck(
-        mailChange.getInput(2),
-        mailChange.inputField[1],
-        mailChange.inputError[1]
-      )
-    );
+    validateTextField(mailChange.inputField[2],inputType.email,_=>{visibilityOf(mailChange.getDialogButton(0))});
   };
   mailChange.onButtonClick(0, () => {
-    if (
-      runEmptyCheck(
-        mailChange.getInput(0),
-        mailChange.inputField[0],
-        mailChange.inputError[0]
-      )
-    ) {
-      if (
-        runEmailCheck(
-          mailChange.getInput(1),
-          mailChange.inputField[1],
-          mailChange.inputError[1]
-        )
-      ) {
-        if (
-          runEmailCheck(
-            mailChange.getInput(2),
-            mailChange.inputField[2],
-            mailChange.inputError[2]
-          )
-        ) {
-          snackBar(
-            "Your email id has been changed to " + mailChange.getInputValue(2),
-            "okay",
-            () => {
-              snackBar("You need to login again");
-              logoutUser(false);
-            }
-          );
-          mailChange.existence(false);
-          firebase.auth().signOut();
+    if(!(isNonEmpty(mailChange.getInputValue(0))&&isEmailValid(mailChange.getInputValue(1))&&isEmailValid(mailChange.getInputValue(2)))){
+      validateTextField(mailChange.inputField[0],inputType.nonempty,_=>{mailChange.getInput(1).focus()});
+      validateTextField(mailChange.inputField[1],inputType.email,_=>{mailChange.getInput(2).focus()});
+      validateTextField(mailChange.inputField[2],inputType.email,_=>{visibilityOf(mailChange.getDialogButton(0))});
+    }else{
+      //todo: changeadmniemail
+      snackBar(
+        "Your email id has been changed to " + mailChange.getInputValue(2),
+        "okay",
+        () => {
+          snackBar("You need to login again");
+          logoutUser(false);
         }
-      }
+      );
+      mailChange.existence(false);
     }
   });
   mailChange.onButtonClick(1, () => {
@@ -759,7 +698,7 @@ let registrationDialog = (isShowing = true) => {
     });
     confirmLogout.existence(true);
   } else {
-    var regDial = new Dialog(2);
+    var regDial = new Dialog();
     regDial.setDisplay(
       "Create Admin Account",
       "Create a new account with a working email address (individual or institution)."
@@ -777,52 +716,27 @@ let registrationDialog = (isShowing = true) => {
     );
     regDial.onButtonClick(1, () => {
       regDial.existence(false);
-      new Snackbar().hide();
     });
     regDial.getInput(0).onchange = () => {
-      if (
-        runEmailCheck(
-          regDial.getInput(0),
-          regDial.inputField[0],
-          regDial.inputError[0]
-        )
-      ) {
-        regDial.getInput(1).focus();
-      }
+      validateTextField(regDial.inputField[0],inputType.email,_=>{regDial.getInput(1).focus()});
     };
     regDial.onButtonClick(0, () => {
-      regDial.loader();
-      new Snackbar().hide();
-      if (isEmailValid(regDial.getInputValue(0))) {
-        if (true) {
-          ///isPasswordValid(regDial.getInput(1).value || true)){
-          createAccount(
-            regDial,
-            regDial.getInputValue(0),
-            regDial.getInput(1).value
-          );
-        } else {
-          runPasswordCheck(
-            regDial.getInput(1),
-            regDial.inputField[1],
-            regDial.inputError[1]
-          );
-          regDial.loader(false);
-        }
-      } else {
-        runEmailCheck(
-          regDial.getInput(0),
-          regDial.inputField[0],
-          regDial.inputError[0]
+      if(!(isEmailValid(regDial.getInputValue(0))&&isNonEmpty(regDial.getInputValue(1)))){
+        validateTextField(regDial.inputField[0],inputType.email,_=>{regDial.getInput(1).focus()});
+        validateTextField(regDial.inputField[1],inputType.nonempty);
+      } else{
+        regDial.loader();
+        createAccount(
+          regDial,
+          regDial.getInputValue(0),
+          regDial.getInputValue(1)
         );
-        regDial.loader(false);
-      }
+      }      
     });
     regDial.existence(isShowing);
   }
 };
 
-//not working todo
 let createAccount = (dialog, email, password) => {
   fetch("/admin/auth/signup", {
     method: "post",
@@ -836,13 +750,11 @@ let createAccount = (dialog, email, password) => {
       clog(res);
       dialog.loader(false);
       dialog.existence(false);
-      alert(res.event);
+      clog(res.event);
       switch (res.event) {
-        case code.auth.ACCOUNT_CREATED:
-          {
-            alert(code.auth.ACCOUNT_CREATED);
-          }
-          break;
+        case code.auth.ACCOUNT_CREATED:{
+            clog(code.auth.ACCOUNT_CREATED);
+        } break;
         default:
           alert(code.auth.ACCOUNT_CREATION_FAILED);
       }
@@ -866,30 +778,11 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     );
     verify.onButtonClick(1, () => {
       verify.loader();
-      user
-        .delete()
-        .then(() => {
-          verify.existence(false);
-          snackBar("Your account was not created.", null, false);
-        })
-        .catch((error) => {
-          verify.loader(false);
-          snackBar(error, "Report", false);
-        });
+      //todo : not verified
     });
     verify.onButtonClick(0, () => {
       verify.loader();
-      clog("cred:" + cred);
-      firebase.auth().signOut();
-      silentLogin(cred[0], cred[1], () => {
-        user = firebase.auth().currentUser;
-        if (user.emailVerified) {
-          relocate(planspage);
-        } else {
-          snackBar("Not yet verified", null, false);
-          verify.loader(false);
-        }
-      });
+      //todo : check verification
     });
   } else {
     verify.setDisplay(
@@ -904,38 +797,18 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     );
     verify.onButtonClick(1, () => {
       verify.loader();
-      user
-        .delete()
-        .then(() => {
-          verify.existence(false);
-          snackBar("Your account was not created.", null, false);
-        })
-        .catch((error) => {
-          verify.loader(false);
-          snackBar(error, "Report", false);
-        });
+      //todo: cancel verification
     });
     verify.onButtonClick(0, () => {
       verify.loader();
-      user
-        .sendEmailVerification()
-        .then(() => {
-          snackBar("Email sent");
-          accountVerificationDialog(true, true);
-          verify.loader(false);
-        })
-        .catch((error) => {
-          snackBar(error, "Report", false);
-          clog(error);
-          verify.loader(false);
-          // An error happened.
-        });
+      //todo: send verification email
     });
   }
   verify.existence(isShowing);
 };
+
 let logoutUser = (sendHome = true) => {
-  firebase.auth().signOut();
+  //todo: logout admin
   if (sendHome) {
     relocate(root);
   } else {
@@ -943,15 +816,7 @@ let logoutUser = (sendHome = true) => {
   }
 };
 let silentLogin = (email, password, action) => {
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(email, password)
-    .then(() => {
-      action();
-    })
-    .catch((error) => {
-      snackBar(error, null, false);
-    });
+  //todo: login without relocation
 };
 let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   var feedback = new Dialog();
@@ -985,67 +850,23 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     feedback.setBackgroundColor(colors.error);
   });
   feedback.getInput(0).onchange = () => {
-    visibilityOf(
-      feedback.getDialogButton(0),
-      runEmailCheck(
-        feedback.getInput(0),
-        feedback.inputField[0],
-        feedback.inputError[0]
-      )
-    );
-    if (isEmailValid(feedback.getInputValue(0))) {
-      feedback.textInput.focus();
-    }
-  };
-  feedback.textInput.value = defaultText;
-  feedback.textInput.oninput = () => {
-    visibilityOf(
-      feedback.getDialogButton(0),
-      runEmptyCheck(
-        feedback.textInput,
-        feedback.textField,
-        feedback.textInputError
-      )
-    );
-  };
-  feedback.textInput.onchange = () => {
-    visibilityOf(
-      feedback.getDialogButton(0),
-      runEmptyCheck(
-        feedback.textInput,
-        feedback.textField,
-        feedback.textInputError
-      )
-    );
+    validateTextField(feedback.inputField[0],inputType.email,_=>{feedback.largeTextField.input.focus()});
   };
 
+  feedback.largeTextField.input.value = defaultText;
+
+  feedback.largeTextField.onTextDefocus(_=>{
+    validateTextField(feedback.largeTextField,inputType.nonempty);
+  })
+
   feedback.onButtonClick(0, () => {
-    if (
-      runEmailCheck(
-        feedback.getInput(0),
-        feedback.inputField[0],
-        feedback.inputError[0]
-      )
-    ) {
-      if (
-        runEmptyCheck(
-          feedback.textInput,
-          feedback.textField,
-          feedback.textInputError
-        )
-      ) {
-        refer(
-          "mailto:schemester@outlook.in?subject=From " +
-            feedback.getInputValue(0) +
-            "&body=" +
-            feedback.textInput.value
-        );
-        snackBar(
-          "Thanks for the interaction. We'll look forward to that.",
-          "Hide"
-        );
-        feedback.existence(false);
-      }
+    if(!(isEmailValid(feedback.getInputValue(0))&&isNonEmpty(feedback.largeTextField.getInput()))){
+      validateTextField(feedback.largeTextField,inputType.nonempty);
+      validateTextField(feedback.inputField[0],inputType.email,_=>{feedback.largeTextField.input.focus()});
+    }else{
+      refer(`mailto:schemester@outlook.in?subject=From ${feedback.getInputValue(0)}&body=${feedback.largeTextField.getInput()}`);
+      snackBar("Thanks for the interaction. We'll look forward to that.","Hide");
+      feedback.existence(false);
     }
   });
   feedback.onButtonClick(1, () => {
@@ -1054,7 +875,18 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   feedback.existence(isShowing);
 };
 
+let loadingBox = (show = true,message = "Please wait")=>{
+  let load = new Dialog();
+  load.inputFields.innerHTML = `
+    <div class="fmt-center fmt-display-center">
+      <img class="fmt-spin-fast" src="/graphic/blueLoader.svg"/>
+    <div>`;
+  visibilityOf(load.inputFields);
+  load.setDisplay(message);
+  load.setBackgroundColor("#00000056");
+  load.existence(show);
 
+}
 let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,afterValidAction=_=>{clog(nothing)})=>{
   var error;
     switch(type){
@@ -1239,7 +1071,7 @@ let opacityOf = (element, value) => {
   element.style.opacity = String(value);
 };
 
-let visibilityOf = (element, visible = Boolean()) => {
+let visibilityOf = (element, visible = true) => {
   if (visible) {
     element.style.display = show;
   } else {
@@ -1247,11 +1079,6 @@ let visibilityOf = (element, visible = Boolean()) => {
   }
 };
 
-let isNotEmpty = (text) => {
-  return (
-    text != null && text != nothing && text.length > 0 && text.trim() != null
-  );
-};
 
 let isEmailValid = (emailValue) => {
   const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -1261,6 +1088,7 @@ let isPasswordValid = (passValue) => {
   const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
   return passRegex.test(String(passValue));
 };
+let isNonEmpty = (value)=> value!=null&&value!=nothing;
 let getDayName = (dIndex) => {
   switch (dIndex) {
     case 0:
@@ -1414,6 +1242,9 @@ class Codes {
         this.ACCOUNT_CREATED = "auth/account-created";
         this.ACCOUNT_CREATION_FAILED = "auth/account-not-created";
         this.AUTH_SUCCESS = "auth/sign-in-success";
+        this.ACCOUNT_RESTRICTED = "auth/account-disabled";
+        this.AUTH_REQ_FAILED = "auth/request-failed";
+        this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
       }
     }
 

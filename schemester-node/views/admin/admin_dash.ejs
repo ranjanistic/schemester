@@ -18,21 +18,22 @@
         <script type="text/javascript" src="/script/admin/adb.js"></script>
     </head>
     <body>
-        <div class="fmt-top fmt-shadow" id="topBar">
-            <a href="/"><img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
-            <span id="greeting">Loading...</span>
-            <div class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" width="35" id="menuButton">
-                <div class="fmt-dropdown-content  fmt-shadow" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;">
-                    <button style="font-size: 22px;" class="sub-display-button" id="settingsAdminButton">
-                        <img src="/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Settings
+        <div id="topBar">
+            <img  src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(root)">
+            <span id="greeting">Schemester</span>
+            <span class="fmt-dropdown-hover fmt-right">
+                <img src="/graphic/menudotsvertical.svg" id="menuButton">
+                <div class="fmt-dropdown-content" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background:transparent">
+                    <button class="neutral-button" id="settingsAdminButton">
+                        Settings
                     </button>
-                    <button style="font-size: 22px;" class="sub-display-button" id="logoutAdminButton">
-                        <img src="/graphic/blueLoader.svg" class="fmt-spin" width="25" id="settings">Logout
+                    <button class="neutral-button" id="logoutAdminButton">
+                        Logout
                     </button>
                 </div>
-            </div>
+            </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
 

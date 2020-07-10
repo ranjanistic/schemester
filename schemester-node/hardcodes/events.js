@@ -26,6 +26,9 @@ class Authcodes{
         this.ACCOUNT_CREATED = 'auth/account-created';
         this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
         this.AUTH_SUCCESS = 'auth/sign-in-success';
+        this.ACCOUNT_RESTRICTED = "auth/account-disabled";
+        this.AUTH_REQ_FAILED = "auth/request-failed";
+        this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
     }
 }
 
