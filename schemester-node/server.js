@@ -1,11 +1,20 @@
 const express = require('express'),
-    bodyParser= require('body-parser'),
-    db = require('./workers/dbinst'),
+    bodyParser = require('body-parser'),
+    session = require("express-session"),
+    cookieParser = require('cookie-parser'),
     view = require('./hardcodes/views'),
     code = require('./hardcodes/events'),
     auth = require('./workers/session'),
     admin = require('./routes/admin'),
-    teacher = require('./routes/teacher')
+    teacher = require('./routes/teacher');
+const database = require("./config/db");
+
+// Initiate Mongo Server
+ database.getAdmin().then((dbi)=>{
+    console.log(dbi.connection.name);
+    //dbi.connection.collection("adminemailcollection")
+ });
+
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -13,11 +22,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'));
 app.use('/admin', admin);
 app.use('/teacher',teacher);
-
-//'mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/Schools?retryWrites=true&w=majority'
-const mainurl = 'mongodb+srv://tempdbuser:sz58UgReMdMoDdBd@cluster0.zspfk.mongodb.net/institutions?retryWrites=true&w=majority';
-//const localurl = 'mongodb://localhost:27017/institutions';
-//mongoose.connect(localurl, { useNewUrlParser: true , useUnifiedTopology: false });
 
 app.get('/',(req,res)=>{
     view.render(res,view.loader);
@@ -37,19 +41,6 @@ app.post('/sampledata',(req,res)=>{
         okay:'olaidfj'
     });
 })
-
-db.once('open', _ => {
-  onDatabaseConnected();
-});
-
-db.on('error', err => {
-  console.error('db connection error:', err);
-});
-
-var onDatabaseConnected = _=>{
-    console.log('Database connected');    
-}
-
 
 app.get('/404', (req, res, next)=>{
     next();

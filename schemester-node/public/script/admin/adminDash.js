@@ -74,6 +74,19 @@ let loadLocalContent=_=>{
     var date = getDayName(today.getDay())+','+space+getMonthName(today.getMonth()) + space + today.getDate() +','+space + today.getFullYear()+","+space+ today.getHours()+':'+today.getMinutes();
     dateTime.textContent = date;
     dayInput.placeholder = getDayName(today.getDay());
+    var today = new Date();
+    var greeting = getElement('homeGreeting');
+    if(today.getHours()<4){
+        greeting.textContent = "Good night!"
+    } else if(today.getHours()<11){
+        greeting.textContent = "Good morning!"
+    } else if(today.getHours()<15){
+        greeting.textContent = "Good afternoon"
+    } else if(today.getHours()<20){
+        greeting.textContent = "Good evening"
+    }else {
+        greeting.textContent = "Schemester"
+    }
 }
 
 let loadRemoteContent=(user)=>{

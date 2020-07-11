@@ -45,9 +45,11 @@ class Colors{
 var colors = new Colors();
 class InputType{
   constructor(){
+    this.name = 'name';
     this.email = 'email';
     this.password = 'password';
     this.nonempty = 'nonempty';
+    this.match = 'matching';
   }
 }
 let inputType = new InputType();
@@ -70,6 +72,9 @@ class TextInput {
   }
   setFieldCaption(caption) {
     this.caption.textContent = caption;
+  }
+  inputFocus(){
+    this.input.focus();
   }
   onTextInput(action=_=>{}) {
     this.input.oninput = () => {
@@ -708,28 +713,30 @@ let registrationDialog = (isShowing = true) => {
       Array(actionType.positive, actionType.negative)
     );
     regDial.createInputs(
-      Array("Email Address", "New Password"),
-      Array("youremail@example.domain", "Strong password"),
-      Array("email", "password"),
+      Array("Your name","Email Address", "New Password"),
+      Array("Shravan Kumar, or something?","youremail@example.domain", "Strong password"),
+      Array("text","email", "password"),
       null,
-      Array("email", "current-password")
+      Array("name","email", "new-password")
     );
     regDial.onButtonClick(1, () => {
       regDial.existence(false);
     });
-    regDial.getInput(0).onchange = () => {
-      validateTextField(regDial.inputField[0],inputType.email,_=>{regDial.getInput(1).focus()});
+    regDial.getInput(1).onchange = () => {
+      validateTextField(regDial.inputField[1],inputType.email,_=>{regDial.getInput(2).focus()});
     };
     regDial.onButtonClick(0, () => {
-      if(!(isEmailValid(regDial.getInputValue(0))&&isNonEmpty(regDial.getInputValue(1)))){
-        validateTextField(regDial.inputField[0],inputType.email,_=>{regDial.getInput(1).focus()});
-        validateTextField(regDial.inputField[1],inputType.nonempty);
+      if(!(isNonEmpty(regDial.getInputValue(2))&&isEmailValid(regDial.getInputValue(1))&&isNonEmpty(regDial.getInputValue(2)))){
+        validateTextField(regDial.inputField[0],inputType.name,_=>{regDial.getInput(1).focus()});
+        validateTextField(regDial.inputField[1],inputType.email,_=>{regDial.getInput(2).focus()});
+        validateTextField(regDial.inputField[2],inputType.nonempty);//todo: type is password
       } else{
         regDial.loader();
         createAccount(
           regDial,
           regDial.getInputValue(0),
-          regDial.getInputValue(1)
+          regDial.getInputValue(1),
+          regDial.getInputValue(2)
         );
       }      
     });
@@ -737,29 +744,34 @@ let registrationDialog = (isShowing = true) => {
   }
 };
 
-let createAccount = (dialog, email, password) => {
+let createAccount = (dialog,adminname, email, password) => {
   fetch("/admin/auth/signup", {
     method: "post",
     headers: {
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     },
-    body: `email=${email}&password=${password}`,
+    body: `username=${adminname}&email=${email}&password=${password}`,
   })
     .then((res) => res.json())
     .then((res) => {
-      clog(res);
+      let result = res.result;
       dialog.loader(false);
-      dialog.existence(false);
-      clog(res.event);
-      switch (res.event) {
+      switch (result.event){
         case code.auth.ACCOUNT_CREATED:{
             clog(code.auth.ACCOUNT_CREATED);
         } break;
-        default:
+        case code.auth.USER_EXIST:{
+          dialog.inputField[1].showError("Account already exists.");
+          
+        }break;
+        default:{
+          dialog.existence(false);
           alert(code.auth.ACCOUNT_CREATION_FAILED);
+        }
       }
     })
     .catch((error) => clog(error));
+
 };
 
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
@@ -887,11 +899,17 @@ let loadingBox = (show = true,message = "Please wait")=>{
   load.existence(show);
 
 }
-let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,afterValidAction=_=>{clog(nothing)})=>{
+let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,afterValidAction=_=>{clog(nothing)},ifmatchField = null)=>{
   var error;
     switch(type){
+      case inputType.name:{
+        error = "There has to be a name.";
+      }break;
       case inputType.email:{
         error = "Invalid email address.";
+      }break;
+      case inputType.match:{
+        error =  "This one is different.";
       }break;
       default:{
         error = "This can't be empty";
@@ -902,8 +920,10 @@ let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,a
     switch(type){
       case inputType.email:
         return isEmailValid(textfield.getInput());
+      case inputType.match:
+        return textfield.getInput() == ifmatchField.getInput();
       default:
-        return textfield.getInput()!=null&&textfield.getInput()!="";
+        return textfield.getInput()!=null&&textfield.getInput()!=nothing;
     }
   }
 

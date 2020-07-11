@@ -30,7 +30,7 @@ class AdminLogin{
     visibilityOf(this.logInButton, !show);
   }
 
-  logInAdministrator=_=>{
+  logInAdministrator= async ()=>{
     if(!isEmailValid(this.emailField.getInput())||this.passField.getInput()==nothing||this.uiidField.getInput()==nothing){
       validateTextField(this.uiidField,inputType.nonempty);
       validateTextField(this.passField,inputType.nonempty);
@@ -41,7 +41,7 @@ class AdminLogin{
     this.emailField.normalize();
     this.passField.normalize();
     this.uiidField.normalize();
-    fetch('/admin/auth/login',{
+    await fetch('/admin/auth/login',{
       method: "post",
       headers: {
         "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"

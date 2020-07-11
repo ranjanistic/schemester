@@ -1,12 +1,3 @@
-class Invitation{
-    constructor(data){
-        this.parent = getElement('invitebodyparent');
-        this.active = new Active(this.parent,data);
-        this.expired = new Expired(this.parent,data);
-    }
-    setView = (isActive = false)=>this.parent.innerHTML = (isActive == true)?this.active.viewcontent:this.expired.viewcontent;
-}
-
 class Active{
     constructor(parent,data){
         this.viewcontent = `
@@ -44,33 +35,39 @@ class Active{
         this.emailField = new TextInput('usermailfield','usermail','usermailerror');
         this.passField = new TextInput('userpassfield','userpass','userpasserror');
         this.passConfirmField = new TextInput('userpassconffield','userconfpass','userconfpasserror');
+
         this.acceptinvite = getElement('acceptInvitation');
         this.rejectinvite = getElement('rejectInvitation');
         this.loader = getElement('inviteloader');
+
+        this.acceptinvite.addEventListener(click,_=>{this.invitationAction(true)});
+        this.rejectinvite.addEventListener(click,_=>{this.invitationAction(false)});
+
+        this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.inputFocus()})});
+        this.passField.onTextDefocus(_=>{validateTextField(this.passField,inputType.password,_=>{this.passConfirmField.inputFocus()})});
+        this.passConfirmField.onTextDefocus(_=>{validateTextField(this.passConfirmField,inputType.match,null,this.passField)});
+        this.formvalid = isEmailValid(this.emailField.getInput())&&isNonEmpty(this.passField)&&this.passConfirmField.getInput()==this.passField.getInput
     }            
     invitationAction(accept){
+        if(!this.formvalid){
+            validateTextField(this.emailField,inputType.email,_=>{this.passField.inputFocus()})
+            validateTextField(this.passField,inputType.password,_=>{this.passConfirmField.inputFocus()})
+            validateTextField(this.passConfirmField,inputType.match,null,this.passField)
+            return;
+        }
         visibilityOf(this.loader);
         let usermail = this.emailField.getInput();
         let userpass = this.passField.getInput();
-        let conf = this.passConfirmField.getInput();
-        if(conf!==userpass){
-            this.passConfirmField.showError('This one is different');
-            visibilityOf(this.loader,false);
-            return;
-        }
-        if(!isEmailValid(usermail)){
-            this.emailField.showError('Invalid email address');
-            visibilityOf(this.loader,false);
-            return;
-        }
+        let confpass = this.passConfirmField.getInput();
         if(accept){
             fetch(`/admin/external/?type=action`,{
                 method: 'post',
                 headers: {
                 "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
                 },
-                body: `usermail=${usermail}&userpass=${userpass}accepted=${action}`,
+                body: `usermail=${usermail}&userpass=${userpass}&confpass=${confpass}&accepted=${action}`,
             })
+            .then((res)=>res.json())
             .then((res)=>{
                 clog(res);
                 visibilityOf(this.loader,false);
@@ -108,12 +105,20 @@ class Expired{
         this.useremailfield = new TextInput('requsermailfield','requsermail','requsermailerror');
         this.usermessage = getElement('usermessage');
         this.request = getElement('requestInvitation');
-        this.request.addEventListener(click,_=>{this.requestInviteAction});
+        this.request.addEventListener(click,this.requestInviteAction);
         this.loader = getElement('inviteloader');
     }
     requestInviteAction(){
-        let useremail = this.useremailfield.getInput();
-        alert('bruh');
+        //let useremail = this.useremailfield.getInput();
+
+        window.alert('bruh');
+    }
+}
+
+class Invitation{
+    constructor(active,data){
+        this.parent = getElement('invitebodyparent');
+        this.parent.innerHTML = active == true?new Active(this.parent,data).viewcontent:new Expired(this.parent,data).viewcontent;
     }
 }
 
@@ -128,7 +133,7 @@ window.onload =_=>{
         target:getElement('target').innerHTML,
         exp:getProperDate(getElement('expirydate').innerHTML)
     }
-    window.app = new Invitation(invitedata).setView(active);
+    window.app = new Invitation(active,invitedata);
 }
 
 

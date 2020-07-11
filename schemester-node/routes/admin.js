@@ -3,10 +3,12 @@ const express = require("express"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
   auth = require("../workers/session"),
-  adb = require("../workers/dbadmin"),
-  db = require("../workers/dbinst"),
-  session = require("../workers/session");
+  session = require("../workers/session"),
+  { check, validationResult} = require("express-validator"),
+  bcrypt = require("bcryptjs"),
+  jwt = require("jsonwebtoken");
 
+const Admin = require("../modelschema/Admins");
 router.get("/", function (req, res) {
   res.redirect("/admin/dash");
 });
@@ -15,11 +17,10 @@ router.get("/register", (_request, res) => {
   view.render(res, view.adminsetup);
 });
 
-router.get("/auth/login", (_request, res) => {
+router.get("/auth/login", (req, res) => {
   view.render(res, view.adminlogin);
 });
 router.get("/dash", (_request, res) => {
-  //if logged in
   view.render(res, view.admindash);
 });
 
@@ -27,21 +28,132 @@ router.get("/manage", (_request, res) => {
   view.render(res, view.adminsettings);
 });
 
-router.post("/auth/signup", async (req, res) => {
-  const { email, password } = req.body;
-  console.log(req.body);
+router.post("/auth/signup",
+[   
+  check("username","Your name is required").not().isEmpty(),
+  check("email", code.auth.EMAIL_INVALID).isEmail(),
+  check("password", code.auth.PASSWORD_INVALID).isLength({min: 6})
+],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(req.body);
+    console.log("oof")
+    console.log(errors);
+    return res.status(400).json({
+      errors: errors.array()
+    });
+  }
+  const {username, email, password } = req.body;
+  console.log(email);
+  try {
+    let user = await Admin.findOne({email});
+    console.log(user);
+    if (user) {
+      let result = {
+        event:code.auth.USER_EXIST
+      }
+      res.json({result});
+      return;
+    }
+    user = new Admin({
+      username,
+      email,
+      password
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    console.log("salt"+salt);
+    user.password = await bcrypt.hash(password, salt);
+
+    await user.save();
+
+    const payload = {
+      user: {
+        id: user.id
+      }
+    };
+    console.log("payl"+payload);
+
+    jwt.sign(
+      payload,
+      "schemesterAdminSecret2001",
+      {
+        expiresIn: 10000
+      },
+      (err, token) => {
+        if (err){
+          console.log(err.message);
+          throw err;
+        }
+        console.log("tok:"+token);
+        res.status(200).json({
+          token
+        });
+      }
+    );
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({event:[code.auth.ACCOUNT_CREATION_FAILED]});
+  }
 });
 
-router.post("/auth/login", (req, res) => {
-  const { email, password, uiid } = req.body;
-  let result;
-  console.log(req.ip);
-  if(!isValidEmail(email)){
-    //result = session.getResult(code.auth.EMAIL_INVALID);
-  }else{
-    result = session.login(email, password, uiid, req.ip);
+
+router.post("/auth/login", 
+[
+  check("email", code.auth.EMAIL_INVALID).isEmail(),
+  check("password",code.auth.PASSWORD_INVALID).not().isEmpty()
+],
+async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      errors: errors.array()
+    });
   }
-  res.json({result});
+
+  const { email, password } = req.body;
+  try {
+    let user = await Admin.findOne({
+      email
+    });
+    if (!user)
+      return res.status(400).json({
+        event: [code.auth.USER_NOT_EXIST]
+      });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({
+        event: [code.auth.WRONG_PASSWORD]
+      });
+
+    const payload = {
+      user: {
+        id: user.id
+      }
+    };
+
+    jwt.sign(
+      payload,
+      "schemesterAdminSecret2001",
+      {
+        expiresIn: 3600
+      },
+      (err, token) => {
+        if (err) throw err;
+        res.status(200).json({
+          token
+        });
+      }
+    );
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      event: [code.auth.AUTH_REQ_FAILED]
+    });
+  }
+
 });
 
 router.post("/createInstitution", (req, res) => {
@@ -203,7 +315,7 @@ var isInvalidQuery = (query) =>
   query.id == "" ||
   query.dom == "" ||
   query.exp == "" ||
-  query.uiid == "";
+  query.uiid == ""|| String(parseInt(query.exp)).length<getTheMoment(true).length;
 
 let isValidEmail = (emailValue) => {
   const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

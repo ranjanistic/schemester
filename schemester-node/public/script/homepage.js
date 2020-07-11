@@ -9,23 +9,8 @@ class Homepage{
         this.plans.addEventListener(click,_=>refer(planspage));
         this.getstarted.addEventListener(click,_=>refer(registrationPage));
         this.adminLogin.addEventListener(click,_=>refer(adminLoginPage));
-        this.showGreeting();
     }
-    showGreeting(){
-        var today = new Date();
-        var greeting = getElement('homeGreeting');
-        if(today.getHours()<4){
-            greeting.textContent = "Good night!"
-        } else if(today.getHours()<11){
-            greeting.textContent = "Good morning!"
-        } else if(today.getHours()<15){
-            greeting.textContent = "Good afternoon"
-        } else if(today.getHours()<20){
-            greeting.textContent = "Good evening"
-        }else {
-            greeting.textContent = "Schemester"
-        }
-    }
+    
 }
 
 if ('serviceWorker' in navigator) {

@@ -3,20 +3,18 @@ const Schema = mongoose.Schema
 class Admins{
     constructor(){
         this.adminschema = new Schema({
-            name:String,
-            email:{type:String,unique: true},
-            password:String,
-            verified:Boolean,
-            active:Boolean,
-            ip:String
+            username:String,
+            email:{type:String,unique: true,required:true},
+            password:{type:String,required:true},
+            createdAt:{type:Date,default:Date.now()}
         });
     }
     getSchema(){
         return this.adminschema;
     }
-    getModelOf(adminemailCollection,create = false){
-        return mongoose.model(adminemailCollection,this.adminschema,adminemailCollection,!create);
+    getModelOf(adminemailCollection){
+        return mongoose.model("adminemailCollection",this.getSchema());
     }
 }
 
-module.exports = new Admins();
+module.exports = new Admins().getModelOf('a');

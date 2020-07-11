@@ -22,6 +22,7 @@ class Authcodes{
         this.USER_EXIST = 'auth/user-found';
         this.AUTH_FAILED = 'auth/authentication-failed';
         this.EMAIL_INVALID = 'auth/invalid-email';
+        this.PASSWORD_INVALID = 'auth/invalid-password';
         this.LOGGED_OUT = 'auth/logged-out';
         this.ACCOUNT_CREATED = 'auth/account-created';
         this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';

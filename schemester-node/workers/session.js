@@ -1,10 +1,6 @@
-const adb = require('./dbadmin');
+const adb = require('../config/dbadmin');
 const admins = require('../modelschema/Admins.js');
 const code = require('../hardcodes/events.js');
-
-console.log(dboperate(_=>{
-    console.log('ADB opened success');
-}))
 
 module.exports.loginAdmin =(email,password,uiid)=>{
     
@@ -77,16 +73,6 @@ class Session{
     });
 }
 
-//adb.once('open',_=>{
+
 var session = new Session();
 module.exports = session;//try superclass for local session
-
-
-function dboperate(action){
-    adb.once('open',_=>{
-        action();
-    })
-    adb.on('error', err => {
-        return code.server.DATABASE_ERROR + err;
-    });
-}
