@@ -1,20 +1,21 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-class Admins{
+class Administrator{
     constructor(){
-        this.adminschema = new Schema({
-            username:String,
-            email:{type:String,unique: true,required:true},
-            password:{type:String,required:true},
-            createdAt:{type:Date,default:Date.now()}
+        this.adminSchema = new Schema({
+            username:{type:String, required:true},
+            email:{type:String,unique: true, required:true},
+            password:{type:String, required:true},
+            uiid:{type:String, unique: true, required:true},
+            createdAt:{type:Date, default:Date.now()}
         });
     }
     getSchema(){
-        return this.adminschema;
+        return this.adminSchema;
     }
-    getModelOf(adminemailCollection){
-        return mongoose.model("adminemailCollection",this.getSchema());
+    getModel(){
+        return mongoose.model("0administrators",this.getSchema());
     }
 }
 
-module.exports = new Admins().getModelOf('a');
+module.exports = new Administrator().getModel();

@@ -7,13 +7,13 @@ const appName = "Schemester",
   tab = "   ",
   hide = "none",
   show = "block",
-  adminLoginPage = "/admin/auth/login",
-  adminDashPage = "/admin/dash",
-  homepage = "/home",
+  adminLoginPage = "/admin/auth/login/",
+  adminDashPage = "/admin/dash/",
+  homepage = "/home/",
   root = "/",
-  registrationPage = "/admin/register",
-  planspage = "/plans",
-  adminSettings = "/admin/manage",
+  registrationPage = "/admin/register/",
+  planspage = "/plans/",
+  adminSettings = "/admin/manage/",
   localDB = appName;
 
 var cred = Array(2);
@@ -26,7 +26,7 @@ class Colors{
     this.active = "green";
     this.white = "#ffffff";
     this.black = "#000000";
-    this.transparent = "transparent";
+    this.transparent = "#000000056";
   }
   getColorByType(type){
     switch(type){
@@ -38,7 +38,15 @@ class Colors{
         return this.white;
       case actionType.active:
         return this.active;
-      default:return this.base;
+      case actionType.nothing:{
+        return this.transparent;
+      }
+      default:{
+        if(type == false)
+          this.getColorByType(actionType.negative);
+        else
+          this.getColorByType(actionType.positive);
+      }
     }
   }
 }
@@ -50,6 +58,7 @@ class InputType{
     this.password = 'password';
     this.nonempty = 'nonempty';
     this.match = 'matching';
+    this.username = 'username';
   }
 }
 let inputType = new InputType();
@@ -116,8 +125,13 @@ class Snackbar {
   constructor() {
     this.bar = getElement(this.id);
     this.text = getElement(this.textId);
-    this.button = getElement(this.buttonId);
+    this.button = getElement(this.buttonId)    
+    this.button.innerHTML = null;
+    visibilityOf(this.button,false);
+    this.text.innerHTML = null;
+    visibilityOf(this.bar,false);
   }
+
   createSnack(text,type){
     this.text.innerHTML = text;
     setDefaultBackground(this.bar,type);
@@ -146,6 +160,7 @@ class Snackbar {
         this.hide();
       }
     }
+    visibilityOf(this.button,true);
   }
   existence(exist = true){
     elementRiseVisibility(this.bar, exist);
@@ -185,13 +200,21 @@ var snackBar = (
     snack.text.textContent = text;
     if (actionText != null && actionText != nothing) {
       snack.createButton(actionText,_=>{
+        if(actionText == "Report"){
+          feedBackBox(true,text,true);
+        }else{
+          action();
+        }
         new Snackbar().hide();
-        action();
-      })
+      });
+      setTimeout(_=>{
+        new Snackbar().hide();
+      }, ((text.length)*3*1000));   //lengthwise timer.
+
     }else{
       setTimeout(_=>{
         new Snackbar().hide();
-      }, (7000));
+      }, (((text.length)*(3/2))*1000));   //lengthwise timer for non action snackbar.
     }
     snack.displayType(isNormal);
   }
@@ -244,6 +267,7 @@ class ViewType {
     this.negative = "negative";
     this.warning = "warning";
     this.active = "active";
+    this.nothing = "nothing";
   }
   getButtonStyle(type) {
     switch (type) {
@@ -317,7 +341,7 @@ class Dialog extends DialogID {
     this.textField = getElement(this.textFieldId);
     visibilityOf(this.textField,false);
   }
-  createInputs(captions, hints, types, contents = null, autocompletes) {
+  createInputs(captions, hints, types, contents = null, autocompletes = null,spellChecks = null) {
     let total = captions.length;
     let fieldSet = String();
     for (var i = 0; i < total; i++) {
@@ -338,8 +362,7 @@ class Dialog extends DialogID {
         this.dialogFieldCaption(k)
       );
     }
-    //this.ip = new TextInput();
-    //this.ip.setInputAttrs()
+
     for (var k = 0; k < total; k++) {
       this.inputField[k].caption.textContent = captions[k];
       this.inputField[k].setInputAttrs(hints[k],types[k])      
@@ -350,6 +373,9 @@ class Dialog extends DialogID {
       }
       if (autocompletes != null) {
         this.inputField[k].input.autocomplete = autocompletes[k];
+      }
+      if(spellChecks!=null){
+        this.inputField[k].input.spellcheck = spellChecks[k];
       }
     }
   }
@@ -424,6 +450,8 @@ class Dialog extends DialogID {
     );
   }
 
+  
+
   loader(show = true) {
     visibilityOf(this.loading, show);
     for (var k = 0; k < this.dialogButtons.length; k++) {
@@ -466,10 +494,8 @@ class Dialog extends DialogID {
       action();
     };
   }
-  setBackgroundColor(color = colors.base) {
-    elementFadeVisibility(this.view, false);
-    this.view.style.backgroundColor = color;
-    elementFadeVisibility(this.view, true);
+  setBackgroundColor(type = bodyType.positive) {
+    this.view.style.backgroundColor = colors.getColorByType(type);
   }
   existence(show = true) {
     backbluecovered = show;
@@ -598,7 +624,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
       Array(actionType.neutral, actionType.positive)
     );
     if(sensitive){
-      loginDialog.setBackgroundColor(colors.error);
+      loginDialog.setBackgroundColor(bodyType.negative);
     }
     loginDialog.getInput(0).onchange = _=>{
       validateTextField(loginDialog.inputField[0],inputType.email,_=>{loginDialog.inputField[1].input.focus()});
@@ -711,7 +737,6 @@ let changeEmailBox = (isShowing = true) => {
         "okay",
         () => {
           snackBar("You need to login again");
-          logoutUser(false);
         }
       );
       mailChange.existence(false);
@@ -742,7 +767,6 @@ let registrationDialog = (isShowing = true) => {
     });
     confirmLogout.onButtonClick(1, () => {
       confirmLogout.loader();
-      logoutUser();
     });
     confirmLogout.existence(true);
   } else {
@@ -756,30 +780,46 @@ let registrationDialog = (isShowing = true) => {
       Array(actionType.positive, actionType.negative)
     );
     regDial.createInputs(
-      Array("Your name","Email Address", "New Password"),
-      Array("Shravan Kumar, or something?","youremail@example.domain", "Strong password"),
-      Array("text","email", "password"),
+      Array("Your name","Email Address", "New Password","Unique Institution ID - UIID"),
+      Array("Shravan Kumar, or something?","youremail@example.domain", "Strong password","A unique ID for your institution"),
+      Array("text","email", "password","text"),
       null,
-      Array("name","email", "new-password")
+      Array("name","email", "new-password","username"),
+      Array("true","false","false","false")
     );
     regDial.onButtonClick(1, () => {
       regDial.existence(false);
     });
+    regDial.getInput(0).onchange = () => {
+      validateTextField(regDial.inputField[0],inputType.name,_=>{regDial.getInput(1).focus()});
+    };
     regDial.getInput(1).onchange = () => {
       validateTextField(regDial.inputField[1],inputType.email,_=>{regDial.getInput(2).focus()});
     };
+    regDial.getInput(2).onchange = () => {
+      //todo: type is password
+      validateTextField(regDial.inputField[2],inputType.nonempty,_=>{regDial.getInput(3).focus()});
+    };
+    regDial.getInput(3).onchange = () => {
+      //todo: username validation
+      validateTextField(regDial.inputField[3],inputType.username);
+    };
     regDial.onButtonClick(0, () => {
-      if(!(isNonEmpty(regDial.getInputValue(2))&&isEmailValid(regDial.getInputValue(1))&&isNonEmpty(regDial.getInputValue(2)))){
+      if(!(isNonEmpty(regDial.getInputValue(0))&&isEmailValid(regDial.getInputValue(1))&&isNonEmpty(regDial.getInputValue(2))&&isNonEmpty(regDial.getInputValue(3)))){
         validateTextField(regDial.inputField[0],inputType.name,_=>{regDial.getInput(1).focus()});
         validateTextField(regDial.inputField[1],inputType.email,_=>{regDial.getInput(2).focus()});
-        validateTextField(regDial.inputField[2],inputType.nonempty);//todo: type is password
+        //todo: type is password
+        validateTextField(regDial.inputField[2],inputType.nonempty,_=>{regDial.getInput(3).focus()});
+        //todo: username validation
+        validateTextField(regDial.inputField[3],inputType.username);
       } else{
         regDial.loader();
         createAccount(
           regDial,
-          regDial.getInputValue(0),
-          regDial.getInputValue(1),
-          regDial.getInputValue(2)
+          String(regDial.getInputValue(0)).trim(),
+          String(regDial.getInputValue(1)).trim(),
+          regDial.getInputValue(2),
+          String(regDial.getInputValue(3)).trim()
         );
       }      
     });
@@ -787,13 +827,13 @@ let registrationDialog = (isShowing = true) => {
   }
 };
 
-let createAccount = (dialog,adminname, email, password) => {
+let createAccount = (dialog,adminname, email, password,uiid) => {
   fetch("/admin/auth/signup", {
     method: "post",
     headers: {
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
     },
-    body: `username=${adminname}&email=${email}&password=${password}`,
+    body: `username=${adminname}&email=${email}&password=${password}&uiid=${uiid}`,
   })
     .then((res) => res.json())
     .then((res) => {
@@ -801,30 +841,36 @@ let createAccount = (dialog,adminname, email, password) => {
       dialog.loader(false);
       switch (result.event){
         case code.auth.ACCOUNT_CREATED:{
-            clog(code.auth.ACCOUNT_CREATED);
+          clog(code.auth.ACCOUNT_CREATED);
+          accountVerificationDialog();
         } break;
         case code.auth.USER_EXIST:{
           dialog.inputField[1].showError("Account already exists.");
-          snackBar("Try signing in?","Login",true,_=>{refer(adminLoginPage);
-          });
+          snackBar("Try signing in?","Login",true,_=>{refer(adminLoginPage,{email:email,uiid:uiid})});
+        }break;
+        case code.server.UIID_TAKEN:{
+          dialog.inputField[3].showError("This UIID is not available. Try something different.");
         }break;
         case code.auth.EMAIL_INVALID:{
           dialog.inputField[1].showError("Invalid email address.");
         }break;
         case code.auth.PASSWORD_INVALID:{
           //todo: check invalidity and show suggesstions
-          dialog.inputField[2].showError("Invalid password, try something else.");
+          dialog.inputField[2].showError("Invalid password, try something better.");
         }break;
         case code.auth.NAME_INVALID:{
           dialog.inputField[0].showError("This doesn't seem like a name.");
         }break;
         default:{
           dialog.existence(false);
-          alert(code.auth.ACCOUNT_CREATION_FAILED);
+          snackBar(`${result.event}:${result.msg}`,"Report",false);
         }
       }
     })
-    .catch((error) => clog(error));
+    .catch((error) => {
+      clog(error)
+      snackBar(error,"Report",false);
+    });
 
 };
 
@@ -844,7 +890,7 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     );
     verify.onButtonClick(1, () => {
       verify.loader();
-      //todo : not verified
+      //todo : not verified, delete account
     });
     verify.onButtonClick(0, () => {
       verify.loader();
@@ -873,14 +919,7 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
   verify.existence(isShowing);
 };
 
-let logoutUser = (sendHome = true) => {
-  //todo: logout admin
-  if (sendHome) {
-    relocate(root);
-  } else {
-    relocate(adminLoginPage);
-  }
-};
+
 let silentLogin = (email, password, action) => {
   //todo: login without relocation
 };
@@ -905,6 +944,9 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     Array("Feedback", "Error"),
     error ? "Error" : "Feedback"
   );
+
+  feedback.setBackgroundColor(!error);
+
   feedback.createActions(
     Array("Submit", "Abort"),
     Array(actionType.positive, actionType.negative)
@@ -913,7 +955,7 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     feedback.setBackgroundColor();
   });
   feedback.onChipClick(1, (_) => {
-    feedback.setBackgroundColor(colors.error);
+    feedback.setBackgroundColor(bodyType.negative);
   });
   feedback.getInput(0).onchange = () => {
     validateTextField(feedback.inputField[0],inputType.email,_=>{feedback.largeTextField.input.focus()});
@@ -949,7 +991,7 @@ let loadingBox = (show = true,message = "Please wait")=>{
     <div>`;
   visibilityOf(load.inputFields);
   load.setDisplay(message);
-  load.setBackgroundColor("#00000056");
+  load.setBackgroundColor(bodyType.nothing);
   load.existence(show);
 
 }
@@ -1239,7 +1281,15 @@ let getElement = (id) => {
 let relocate = (path) => {
   window.location.replace(path);
 };
-let refer = (href) => {
+let refer = (href, data) => {
+  let i = 0
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      href = i>0?`${href}&${key}=${data[key]}`:`${href}?${key}=${data[key]}`;
+      i++;
+    }
+  }
+  clog(href);
   window.location.href = href;
 };
 
@@ -1310,8 +1360,8 @@ class Codes {
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";
-        this.INSTITUTION_EXISTS = "server/institution-collection-exists";
-        this.INSTITUTION_CREATED = "server/institution-collection-created";
+        this.INSTITUTION_EXISTS = "server/institution-exists";
+        this.INSTITUTION_CREATED = "server/institution-created";
         this.UIID_TAKEN = "server/uiid-already-taken";
         this.UIID_AVAILABLE = "server/uiid-available";
       }
@@ -1340,6 +1390,8 @@ class Codes {
         this.ACCOUNT_RESTRICTED = "auth/account-disabled";
         this.AUTH_REQ_FAILED = "auth/request-failed";
         this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
+        this.UIID_INVALID = "auth/invalid-uiid";
+        this.WRONG_UIID = "auth/wrong-uiid";
       }
     }
 

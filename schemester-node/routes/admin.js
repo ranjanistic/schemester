@@ -4,31 +4,37 @@ const express = require("express"),
   view = require("../hardcodes/views"),
   auth = require("../workers/session"),
   session = require("../workers/session"),
-  { check, validationResult} = require("express-validator"),
+  {check, validationResult} = require("express-validator"),
   bcrypt = require("bcryptjs"),
   jwt = require("jsonwebtoken");
 
 const Admin = require("../modelschema/Admins");
+
 const { admindash } = require("../hardcodes/views");
+
 router.get("/", function (req, res) {
   res.redirect("/admin/dash");
 });
 
-router.get("/register", (_request, res) => {
+router.get("/register/*", (_request, res) => {
   view.render(res, view.adminsetup);
 });
 
-router.get("/auth/login", (req, res) => {
-  view.render(res, view.adminlogin);
+router.get("/auth/login/*", (req, res) => {
+  const autofill = req.query;
+  console.log(autofill);
+  res.render(view.adminlogin,{autofill})
 });
-router.get("/dash", (_request, res) => {
+
+router.get("/dash/*", (_request, res) => {
   view.render(res, view.admindash);
 });
 
-router.get("/manage", (_request, res) => {
+router.get("/manage/*", (_request, res) => {
   view.render(res, view.adminsettings);
 });
 
+//for account settings
 router.post("/account/action/*",(req,res)=>{
   switch(req.body.type){
 
@@ -39,7 +45,8 @@ router.post("/auth/signup",
 [   
   check("username",code.auth.NAME_INVALID).not().isEmpty(),
   check("email", code.auth.EMAIL_INVALID).isEmail(),
-  check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6})
+  check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6}),
+  check("uiid",code.auth.UIID_INVALID).not().isEmpty()
 ],
 async (req, res) => {
   const errors = validationResult(req);
@@ -49,29 +56,47 @@ async (req, res) => {
     res.json({result});
     return;
   }
-  const {username, email, password } = req.body;
+  const {username, email, password, uiid} = req.body;
   try {
     let user = await Admin.findOne({email});
     console.log(user);
     if (user) {
-      result = {
-        event:code.auth.USER_EXIST
-      }
+      result = {event:code.auth.USER_EXIST}
       res.json({result});
       return;
+    } else{
+      let inst = await Admin.findOne({uiid});
+      if (inst) {
+        result = {event:code.server.UIID_TAKEN}
+        res.json({result});
+        return;
+      }
     }
     user = new Admin({
       username,
       email,
-      password
+      password,
+      uiid
     });
 
     const salt = await bcrypt.genSalt(10);
-    console.log("salt"+salt);
     user.password = await bcrypt.hash(password, salt);
+    await user.save();//account created
 
-    await user.save();
-
+    const Institution = require("../modelschema/Institutions");
+    let InstModel = Institution.getModel(uiid);
+    let Instnew = new InstModel({
+      defaults:{
+        administrator:{
+          username:username,
+          email:email,
+        },
+        insititute:{
+          uiid:uiid
+        }
+      }
+    })
+    Instnew.save();//institution created
     const payload = {
       user: {
         id: user.id
@@ -86,19 +111,17 @@ async (req, res) => {
         expiresIn: 10000
       },
       (err, token) => {
-        if (err){
-          console.log(err.message);
-          throw err;
-        }
-        console.log("tok:"+token);
-        res.status(200).json({
-          token
-        });
+        if (err) throw err;
+
+        result = {event:code.auth.ACCOUNT_CREATED, bailment:token}  //bailment ~ amaanat
+        console.log("tok:"+result);
+        res.status(200).json({result});
       }
     );
   } catch (err) {
     console.log(err.message);
-    res.status(500).json({event:[code.auth.ACCOUNT_CREATION_FAILED]});
+    res.status(500).json({event:code.auth.ACCOUNT_CREATION_FAILED, msg:err.message});
+    return;
   }
 });
 
@@ -147,7 +170,7 @@ async (req, res) => {
       payload,
       "schemesterAdminSecret2001",
       {
-        expiresIn: 33600
+        expiresIn: 3000
       },
       (err, token) => {
         if (err){
@@ -155,7 +178,8 @@ async (req, res) => {
           throw err;
         }
         console.log("tok:"+token);
-        res.render(admindash,{event:token})
+        result = {event:token}
+        res.render(admindash,{result})
       }
     );
   } catch (e) {

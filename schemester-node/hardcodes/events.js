@@ -31,6 +31,8 @@ class Authcodes{
         this.ACCOUNT_RESTRICTED = "auth/account-disabled";
         this.AUTH_REQ_FAILED = "auth/request-failed";
         this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
+        this.UIID_INVALID = "auth/invalid-uiid";
+        this.WRONG_UIID = "auth/wrong-uiid";
     }
 }
 

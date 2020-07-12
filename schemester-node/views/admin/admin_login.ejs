@@ -28,7 +28,7 @@
                 
                 <fieldset class="text-field" id="email_fieldset">
                     <legend class="field-caption" >Email Address</legend>
-                    <input class="text-input" required placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
+                    <input class="text-input" required placeholder="youremail@example.domain" type="email" id="adminemail" name="email" value="<%= autofill.email %>">
                     <span class="fmt-right error-caption" id="emailError"></span>
                 </fieldset>
                 
@@ -41,7 +41,7 @@
                 
                 <fieldset class="text-field" id="uiid_fieldset">
                     <legend class="field-caption">UIID</legend>
-                    <input class="text-input" spellcheck="false" placeholder="Your institution's identifier." type="text" id="uiid" name="uiid">
+                    <input class="text-input" spellcheck="false" placeholder="Your institution's identifier." type="text" id="uiid" name="uiid" value="<%= autofill.uiid %>">
                     <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
                 
