@@ -25,6 +25,7 @@ class Authcodes{
         this.PASSWORD_INVALID = 'auth/invalid-password';
         this.LOGGED_OUT = 'auth/logged-out';
         this.ACCOUNT_CREATED = 'auth/account-created';
+        this.NAME_INVALID = 'auth/invalid-name';
         this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
         this.AUTH_SUCCESS = 'auth/sign-in-success';
         this.ACCOUNT_RESTRICTED = "auth/account-disabled";

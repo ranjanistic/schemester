@@ -70,7 +70,7 @@ class AdminLogin{
         this.logInButton.innerHTML = "Retry";
       }break;
       case code.auth.REQ_LIMIT_EXCEEDED:{
-        snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",false);
+        snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
         this.logInButton.textContent = "Disabled";
       }break;
       case code.auth.USER_NOT_EXIST:{

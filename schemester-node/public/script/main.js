@@ -91,6 +91,7 @@ class TextInput {
     if(inputfocus){
       this.input.focus();
     }
+    this.onTextInput(_=>{this.normalize()});
   }
   setInputAttrs(hint = null, type = null, defaultValue = null) {
     if(hint!=null){
@@ -121,6 +122,19 @@ class Snackbar {
     this.text.innerHTML = text;
     setDefaultBackground(this.bar,type);
   }
+  displayType(type){
+    if(!backbluecovered){
+      setClassName(this.bar,bodyType.getSnackStyle(bodyType.positive),bodyType.getSnackStyle(bodyType.negative),
+      type,bodyType.getSnackStyle(bodyType.warning),bodyType.getSnackStyle(bodyType.active));
+      setClassName(this.button,actionType.getButtonStyle(actionType.neutral),actionType.getButtonStyle(actionType.neutral),
+      type,actionType.getButtonStyle(actionType.neutral),actionType.getButtonStyle(actionType.neutral));
+    }else{
+      setClassName(this.bar,bodyType.getSnackStyle(bodyType.neutral),bodyType.getSnackStyle(bodyType.negative),
+      type,bodyType.getSnackStyle(bodyType.warning),bodyType.getSnackStyle(bodyType.active));
+      setClassName(this.button,actionType.getButtonStyle(actionType.positive),actionType.getButtonStyle(actionType.neutral),
+      type,actionType.getButtonStyle(actionType.neutral),actionType.getButtonStyle(actionType.neutral));
+    }
+  }
   createButton(buttontext,action = null){
     this.button.innerHTML = buttontext;
     if(action!=null){
@@ -133,7 +147,9 @@ class Snackbar {
       }
     }
   }
-
+  existence(exist = true){
+    elementRiseVisibility(this.bar, exist);
+  }
   show() {
     replaceClass(
       this.bar,
@@ -154,10 +170,11 @@ class Snackbar {
   }
 }
 
+var backbluecovered = false;
 var snackBar = (
   text = String(),
   actionText = String(),
-  isNormal = true,
+  isNormal = actionType.positive,
   action = () => {
     new Snackbar().hide();
   }
@@ -167,26 +184,18 @@ var snackBar = (
   if (text != nothing) {
     snack.text.textContent = text;
     if (actionText != null && actionText != nothing) {
-      snack.button.textContent = actionText;
-      snack.button.onclick = () => {
+      snack.createButton(actionText,_=>{
         new Snackbar().hide();
         action();
-      };
+      })
     }else{
       setTimeout(_=>{
         new Snackbar().hide();
       }, (7000));
     }
-    setDefaultBackground(snack.bar, isNormal);
-    visibilityOf(snack.button, actionText != null && actionText != nothing);
+    snack.displayType(isNormal);
   }
-  replaceClass(
-    snack.bar,
-    "fmt-animate-bottom-off",
-    "fmt-animate-bottom",
-    text != nothing
-  );  
-  visibilityOf(snack.bar, text != nothing&&text!=null);
+  snack.existence(text != nothing&&text!=null);
 };
 
 class DialogID {
@@ -228,7 +237,7 @@ class DialogID {
   }
 }
 
-class ActionType {
+class ViewType {
   constructor() {
     this.neutral = "neutral";
     this.positive = "positive";
@@ -236,7 +245,7 @@ class ActionType {
     this.warning = "warning";
     this.active = "active";
   }
-  getStyleClass(type) {
+  getButtonStyle(type) {
     switch (type) {
       case this.neutral:
         return "neutral-button";
@@ -252,8 +261,41 @@ class ActionType {
         return "positive-button";
     }
   }
+  getFieldStyle(type){
+    switch (type) {
+      case this.neutral:
+        return "text-field";
+      case this.positive:
+        return "text-field";
+      case this.negative:
+        return "text-field-error";
+      case this.warning:
+        return "text-field-warn";
+      case this.active:
+        return "text-field-active";
+      default:
+        return "text-field";
+    }
+  }
+  getSnackStyle(type){
+    switch(type){
+      case this.neutral:
+        return "snack-neutral";
+      case this.positive:
+        return "snack-positive";
+      case this.negative:
+        return "snack-negative";
+      case this.warning:
+        return "snack-warn";
+      case this.active:
+        return "snack-active";
+      default:
+        return "snack-positive";
+    }
+  }
 }
-var actionType = new ActionType();
+const actionType = new ViewType();
+const bodyType = new ViewType();
 
 class Dialog extends DialogID {
   constructor() {
@@ -344,7 +386,7 @@ class Dialog extends DialogID {
       actionSet =
         actionSet +
         '<button class="' +
-        actionType.getStyleClass(types[i]) +
+        actionType.getButtonStyle(types[i]) +
         ' fmt-right" id="' +
         this.dialogButton(i) +
         '">' +
@@ -430,6 +472,7 @@ class Dialog extends DialogID {
     elementFadeVisibility(this.view, true);
   }
   existence(show = true) {
+    backbluecovered = show;
     elementFadeVisibility(this.view, show);
   }
 }
@@ -762,7 +805,18 @@ let createAccount = (dialog,adminname, email, password) => {
         } break;
         case code.auth.USER_EXIST:{
           dialog.inputField[1].showError("Account already exists.");
-          
+          snackBar("Try signing in?","Login",true,_=>{refer(adminLoginPage);
+          });
+        }break;
+        case code.auth.EMAIL_INVALID:{
+          dialog.inputField[1].showError("Invalid email address.");
+        }break;
+        case code.auth.PASSWORD_INVALID:{
+          //todo: check invalidity and show suggesstions
+          dialog.inputField[2].showError("Invalid password, try something else.");
+        }break;
+        case code.auth.NAME_INVALID:{
+          dialog.inputField[0].showError("This doesn't seem like a name.");
         }break;
         default:{
           dialog.existence(false);
@@ -974,18 +1028,30 @@ let setFieldSetof = (
   if (isNormal && errorField != null) {
     errorField.innerHTML = nothing;
   }
-  setClassName(fieldset, "text-field", "text-field-error", isNormal);
+  setClassName(fieldset, bodyType.getFieldStyle(bodyType.positive), bodyType.getFieldStyle(bodyType.negative), isNormal);
 };
 
-let setClassName = (element, normalClass, eventClass, condition) => {
-  if (condition != null) {
-    if (condition) {
+let setClassName = (element, normalClass, errorClass, condition = actionType.positive, warnClass, activeClass) => {
+  switch(condition){
+    case actionType.positive:{
       element.className = normalClass;
-    } else {
-      element.className = eventClass;
+    }break;
+    case actionType.negative:{
+      element.className = errorClass;
+    }break;
+    case actionType.warning:{
+      element.className = warnClass;
+    }break;
+    case actionType.active:{
+      element.className = activeClass;
+    }break;
+    default:{
+      if (condition == true) {
+        element.className = normalClass;
+      } else if(condition == false) {
+        element.className = errorClass;
+      }
     }
-  } else {
-    element.className = normalClass;
   }
 };
 
@@ -1056,12 +1122,6 @@ let showElement = (elements, index) => {
   }
 };
 
-let replaceClass = (element, class1, class2, replaceC1 = true) => {
-  replaceC1
-    ? element.classList.replace(class1, class2)
-    : element.classList.replace(class2, class1);
-};
-
 let elementFadeVisibility = (element, isVisible) => {
   replaceClass(
     element,
@@ -1070,6 +1130,19 @@ let elementFadeVisibility = (element, isVisible) => {
     isVisible
   );
   visibilityOf(element, isVisible);
+};
+let elementRiseVisibility = (element,isVisible)=>{
+  replaceClass(
+    element,
+    "fmt-animate-bottom-off",
+    "fmt-animate-bottom",
+    isVisible
+  );
+  visibilityOf(element, isVisible);
+}
+
+let replaceClass = (element, class1, class2, replaceC1 = true) => {
+  replaceC1? element.classList.replace(class1, class2): element.classList.replace(class2, class1);
 };
 
 let setDefaultBackground = (element,type = actionType.positive) => {
@@ -1175,8 +1248,8 @@ let idbSupported = () => {
     clog("IDB:0");
     snackBar(
       "This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.",
-      nothing,
-      false
+      null,
+      actionType.negative
     );
   }
   return window.indexedDB;
@@ -1252,16 +1325,18 @@ class Codes {
 
     class Authcodes {
       constructor() {
-        this.WRONG_PASSWORD = "auth/wrong-password";
-        this.WEAK_PASSWORD = "auth/weak-password";
-        this.USER_NOT_EXIST = "auth/no-user-found";
-        this.USER_EXIST = "auth/user-found";
-        this.AUTH_FAILED = "auth/authentication-failed";
-        this.EMAIL_INVALID = "auth/invalid-email";
-        this.LOGGED_OUT = "auth/logged-out";
-        this.ACCOUNT_CREATED = "auth/account-created";
-        this.ACCOUNT_CREATION_FAILED = "auth/account-not-created";
-        this.AUTH_SUCCESS = "auth/sign-in-success";
+        this.WRONG_PASSWORD = 'auth/wrong-password';
+        this.WEAK_PASSWORD = 'auth/weak-password';
+        this.USER_NOT_EXIST = 'auth/no-user-found';
+        this.USER_EXIST = 'auth/user-found';
+        this.AUTH_FAILED = 'auth/authentication-failed';
+        this.EMAIL_INVALID = 'auth/invalid-email';
+        this.PASSWORD_INVALID = 'auth/invalid-password';
+        this.LOGGED_OUT = 'auth/logged-out';
+        this.ACCOUNT_CREATED = 'auth/account-created';
+        this.NAME_INVALID = 'auth/invalid-name';
+        this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
+        this.AUTH_SUCCESS = 'auth/sign-in-success';
         this.ACCOUNT_RESTRICTED = "auth/account-disabled";
         this.AUTH_REQ_FAILED = "auth/request-failed";
         this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";

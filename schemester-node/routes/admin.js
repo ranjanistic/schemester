@@ -9,6 +9,7 @@ const express = require("express"),
   jwt = require("jsonwebtoken");
 
 const Admin = require("../modelschema/Admins");
+const { admindash } = require("../hardcodes/views");
 router.get("/", function (req, res) {
   res.redirect("/admin/dash");
 });
@@ -28,29 +29,32 @@ router.get("/manage", (_request, res) => {
   view.render(res, view.adminsettings);
 });
 
+router.post("/account/action/*",(req,res)=>{
+  switch(req.body.type){
+
+  }
+})
+
 router.post("/auth/signup",
 [   
-  check("username","Your name is required").not().isEmpty(),
+  check("username",code.auth.NAME_INVALID).not().isEmpty(),
   check("email", code.auth.EMAIL_INVALID).isEmail(),
-  check("password", code.auth.PASSWORD_INVALID).isLength({min: 6})
+  check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6})
 ],
 async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    console.log(req.body);
-    console.log("oof")
-    console.log(errors);
-    return res.status(400).json({
-      errors: errors.array()
-    });
+  let result;
+  if (!errors.isEmpty()) {    
+    result = {event: errors.array()[0].msg}
+    res.json({result});
+    return;
   }
   const {username, email, password } = req.body;
-  console.log(email);
   try {
     let user = await Admin.findOne({email});
     console.log(user);
     if (user) {
-      let result = {
+      result = {
         event:code.auth.USER_EXIST
       }
       res.json({result});
@@ -106,28 +110,33 @@ router.post("/auth/login",
 ],
 async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      errors: errors.array()
-    });
+  let result;
+  if (!errors.isEmpty()) {    
+    result = {event: errors.array()[0].msg}
+    res.json({result});
+    return;
   }
 
-  const { email, password } = req.body;
+  const { email, password, uiid } = req.body;
   try {
-    let user = await Admin.findOne({
-      email
-    });
-    if (!user)
-      return res.status(400).json({
-        event: [code.auth.USER_NOT_EXIST]
-      });
-
+    let user = await Admin.findOne({email});
+    if (!user) {
+      result = {event:code.auth.USER_NOT_EXIST}
+      res.json({result});
+      return;
+    }
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({
-        event: [code.auth.WRONG_PASSWORD]
-      });
-
+    if (!isMatch){
+      result = {event:code.auth.WRONG_PASSWORD}
+      return res.json({result});
+    } else {
+      let inst = Admin.findOne({uiid})
+      if(!inst){
+        result = {event:"auth/wrong-uiid"}
+        res.json({result});
+        return;
+      }
+    }
     const payload = {
       user: {
         id: user.id
@@ -138,19 +147,21 @@ async (req, res) => {
       payload,
       "schemesterAdminSecret2001",
       {
-        expiresIn: 3600
+        expiresIn: 33600
       },
       (err, token) => {
-        if (err) throw err;
-        res.status(200).json({
-          token
-        });
+        if (err){
+          console.log(err.message);
+          throw err;
+        }
+        console.log("tok:"+token);
+        res.render(admindash,{event:token})
       }
     );
   } catch (e) {
     console.error(e);
     res.status(500).json({
-      event: [code.auth.AUTH_REQ_FAILED]
+      event: code.auth.AUTH_REQ_FAILED
     });
   }
 

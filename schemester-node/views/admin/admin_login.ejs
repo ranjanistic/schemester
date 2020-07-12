@@ -31,20 +31,20 @@
                     <input class="text-input" required placeholder="youremail@example.domain" type="email" id="adminemail" name="email">
                     <span class="fmt-right error-caption" id="emailError"></span>
                 </fieldset>
-                <br/>
+                
                 <fieldset class="text-field" id="password_fieldset">
                     <legend class="field-caption">Password</legend>
                     <input class="text-input" required="true" placeholder="Your account password." type="password" id="adminpassword" name="password">
                     <span class="fmt-right error-caption" id="passError"></span>
                     <button class="active-button fmt-right" id="forgotpasswordButton">Forgot?</button>
                 </fieldset>
-                <br/>
+                
                 <fieldset class="text-field" id="uiid_fieldset">
                     <legend class="field-caption">UIID</legend>
                     <input class="text-input" spellcheck="false" placeholder="Your institution's identifier." type="text" id="uiid" name="uiid">
                     <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
-                <br/>
+                
                 <div class="fmt-row">
                 <button class="positive-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
                 <img class="fmt-spin-fast fmt-right" style="display:none" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
@@ -73,8 +73,8 @@
             </div>
         </div>
         
-        <div id="snackBar" class="snackbar fmt-animate-bottom">
-            <span class="snack-text fmt-left" id="snackText"></span>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>

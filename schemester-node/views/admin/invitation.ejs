@@ -19,7 +19,7 @@
             <a href="/"><img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
             <span>Schemester · Invite</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-          </div>
+        </div>
         
         <div class="fmt-padding" style="margin-top: 72px;" id="invitebodyparent">
         </div>
@@ -32,6 +32,10 @@
         <span id="target"><%= invite.target %></span>
         <span id="expirydate"><%= invite.exp %></span>
         </span>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
     </body>
 </html>
         
