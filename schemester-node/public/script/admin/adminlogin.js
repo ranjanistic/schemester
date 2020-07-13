@@ -4,69 +4,69 @@ class AdminLogin{
     this.emailField = new TextInput("email_fieldset","adminemail","emailError");
     this.passField = new TextInput("password_fieldset","adminpassword","passError");
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError");
-
-    this.forgotPassword = getElement("forgotpasswordButton");
-    visibilityOf(this.forgotPassword,false);
-
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
     this.back = getElement("backFromLogin");
 
-    this.back.addEventListener(click,_=> {showLoader();relocate(root)});
+    this.forgotPassword = getElement("forgotpasswordButton");
+
+    this.back.addEventListener(click,_=> {showLoader();relocate(locate.root)});
 
     this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.input.focus()})});
     this.passField.onTextDefocus(_=>{validateTextField(this.passField,inputType.nonempty,_=>{this.uiidField.input.focus()})});
-    this.uiidField.onTextDefocus(_=>{validateTextField(this.uiidField,inputType.nonempty,_=>{this.logInAdministrator()})});
+    this.uiidField.onTextDefocus(_=>{validateTextField(this.uiidField,inputType.nonempty)});
 
     this.passField.onTextInput(_=>{
       this.passField.normalize();
-      visibilityOf(this.forgotPassword, false);
+      hide(this.forgotPassword);
     });
-    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog();}, false);
-    this.logInButton.addEventListener(click, this.logInAdministrator, false);
+    
+    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.emailField.getInput());}, false);
+    this.logInButton.addEventListener(click,_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())},false);
+    hide(this.forgotPassword);
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.logInButton, !show);
   }
-
-  logInAdministrator= async ()=>{
-    if(!isEmailValid(this.emailField.getInput())||this.passField.getInput()==nothing||this.uiidField.getInput()==nothing){
-      validateTextField(this.uiidField,inputType.nonempty);
-      validateTextField(this.passField,inputType.nonempty);
+  loginAdmin =(email,password, uiid)=>{
+    if(!(stringIsValid(email,inputType.email)&&stringIsValid(password)&&stringIsValid(uiid))){
+      validateTextField(this.uiidField);
+      validateTextField(this.passField);
       validateTextField(this.emailField,inputType.email);
-      return;
+    } else{
+      this.loader();
+      hide(this.forgotPassword);
+      this.emailField.normalize();
+      this.passField.normalize();
+      this.uiidField.normalize();
+      this.loader();
+      fetch('/admin/auth/login',{
+        method: constant.post,
+        headers: {"Content-type": constant.fetchContentType},
+        body: `email=${String(this.emailField.getInput()).trim()}&password=${this.passField.getInput()}&uiid=${String(this.uiidField.getInput()).trim()}`
+      })
+      .then((res) => res.json())
+      .then((res) => {
+        clog("oof");
+        this.handleAuthResult(res.result);
+      }).catch((error)=>{
+        this.handleAuthResult(error.result);
+      });
     }
-    this.loader();
-    this.emailField.normalize();
-    this.passField.normalize();
-    this.uiidField.normalize();
-    await fetch('/admin/auth/login',{
-      method: "post",
-      headers: {
-        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-      },
-      body: `email=${String(this.emailField.getInput()).trim()}&password=${this.passField.getInput()}&uiid=${String(this.uiidField.getInput()).trim()}`
-    })
-    .then((res) =>res.json())
-    .then((res)=>{ 
-      this.loader(false);
-      this.handleAuthResult(JSON.parse(res.result))
-    }).catch((error)=>{
-      this.loader(false);
-      this.handleAuthResult({event:[error]});
-    });
-  };
+  }
+  
 
   handleAuthResult=(result)=>{
-    switch (String(result.event)) {
+    switch (result.event) {
       case code.auth.AUTH_SUCCESS:{
-        clog('here');
-        relocate(root);
+        clog(result.bailment);
+        snackBar("Success");
+        //relocate(root);
       }break;
       case code.auth.WRONG_PASSWORD:{
-        this.passField.showError();
-        visibilityOf(this.forgotPassword, true);
+        this.passField.normalize(false);
+        show(this.forgotPassword);
         this.logInButton.innerHTML = "Retry";
       }break;
       case code.auth.REQ_LIMIT_EXCEEDED:{
@@ -76,6 +76,7 @@ class AdminLogin{
       case code.auth.USER_NOT_EXIST:{
         this.emailField.showError("Account not found.");
         this.logInButton.textContent = "Retry";
+        snackBar("Try registering a new account?","Create Account",true,_=>{registrationDialog(true,this.emailField.getInput(),this.uiidField.getInput())})
       }break;
       case code.auth.EMAIL_INVALID:{
         validateTextField(this.emailField,inputType.email);
@@ -85,15 +86,16 @@ class AdminLogin{
         snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox()});
       }break;
       case code.auth.AUTH_REQ_FAILED:{
-          this.logInButton.textContent = "Retry";
-          snackBar("No internet connection", null, false);
+        this.logInButton.textContent = "Retry";
+        snackBar("No internet connection", null, false);
       }break;
       default: {
         this.logInButton.textContent = "Retry";
-        visibilityOf(this.forgotPassword, true);
-        snackBar(result.event, "Help", false, _=> {feedBackBox()});
+        show(this.forgotPassword);
+        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
       }
     }
+    this.loader(false);
   }
 }
 
@@ -142,83 +144,6 @@ class AdminLogin{
 //     }
 //   });
 // };
-function clientAuth(){
-  firebase
-    .auth()
-    .signInWithEmailAndPassword(emailInput.value, passField.getInput())
-    .catch((error) => {
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      clog(errorCode);
-      switch (errorCode) {
-        case "auth/wrong-password":
-          {
-            setFieldSetof(this.passField.fieldset, false);
-            visibilityOf(forgotPassword, true);
-            logInButton.textContent = "Retry";
-          }
-          break;
-        case "auth/too-many-requests":
-          {
-            snackBar(
-              "Too many unsuccessfull attempts, try again after a while.",
-              null,
-              false
-            );
-            logInButton.textContent = "Disabled";
-          }
-          break;
-        case "auth/user-not-found":
-          {
-            setFieldSetof(
-              emailFieldSet,
-              false,
-              emailError,
-              "Account not found."
-            );
-            logInLoader.style.display = hide;
-            emailInput.focus();
-            logInButton.textContent = "Retry";
-          }
-          break;
-        case "auth/invalid-email":
-          {
-            //validateTextField(emailInput, emailFieldSet, emailError);
-          }
-          break;
-        case "auth/user-disabled":
-          {
-            logInButton.textContent = "Retry";
-            snackBar(
-              "This account has been disabled. You might want to contact us directly.",
-              "Help",
-              false,
-              () => {
-                feedBackBox();
-                new Snackbar().hide();
-              }
-            );
-          }
-          break;
-        case "auth/network-request-failed":
-          {
-            logInButton.textContent = "Retry";
-            snackBar("No internet connection", null, false);
-          }
-          break;
-        default: {
-          logInButton.textContent = "Retry";
-          visibilityOf(forgotPassword, true);
-          snackBar(errorCode + ":" + errorMessage, "Help", false, () => {
-            feedBackBox();
-            new Snackbar().hide();
-          });
-        }
-      }
-      visibilityOf(logInLoader, false);
-      visibilityOf(logInButton, true);
-    });
-}
 
 window.onload = function () {
   window.app = new AdminLogin();

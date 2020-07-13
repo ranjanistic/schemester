@@ -6,9 +6,9 @@ class Homepage{
         this.getstarted = getElement('getStarted');
 
         this.adminSignup.addEventListener(click,_=>registrationDialog());
-        this.plans.addEventListener(click,_=>refer(planspage));
-        this.getstarted.addEventListener(click,_=>refer(registrationPage));
-        this.adminLogin.addEventListener(click,_=>refer(adminLoginPage));
+        this.plans.addEventListener(click,_=>refer(locate.planspage));
+        this.getstarted.addEventListener(click,_=>refer(locate.registrationPage));
+        this.adminLogin.addEventListener(click,_=>refer(locate.adminLoginPage));
     }
     
 }
@@ -25,4 +25,5 @@ if ('serviceWorker' in navigator) {
 }
 window.onload = _=> {
     window.app = new Homepage();
+    idbSupported();
 };

@@ -83,27 +83,10 @@ async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
     await user.save();//account created
 
-    const Institution = require("../modelschema/Institutions");
-    let InstModel = Institution.getModel(uiid);
-    let Instnew = new InstModel({
-      defaults:{
-        administrator:{
-          username:username,
-          email:email,
-        },
-        insititute:{
-          uiid:uiid
-        }
-      }
-    })
-    Instnew.save();//institution created
     const payload = {
-      user: {
-        id: user.id
-      }
+      user: {id: user.id}
     };
-    console.log("payl"+payload);
-
+    console.log("payl"+payload.user);
     jwt.sign(
       payload,
       "schemesterAdminSecret2001",
@@ -119,8 +102,10 @@ async (req, res) => {
       }
     );
   } catch (err) {
-    console.log(err.message);
-    res.status(500).json({event:code.auth.ACCOUNT_CREATION_FAILED, msg:err.message});
+
+    result = {event:code.auth.ACCOUNT_CREATION_FAILED, msg:err.message}
+    console.log(result);
+    res.status(500).json({result});
     return;
   }
 });
@@ -129,9 +114,9 @@ async (req, res) => {
 router.post("/auth/login", 
 [
   check("email", code.auth.EMAIL_INVALID).isEmail(),
-  check("password",code.auth.PASSWORD_INVALID).not().isEmpty()
-],
-async (req, res) => {
+  check("password",code.auth.PASSWORD_INVALID).not().isEmpty(),
+  check("uiid",code.auth.UIID_INVALID).not().isEmpty()
+], async (req, res) => {
   const errors = validationResult(req);
   let result;
   if (!errors.isEmpty()) {    
@@ -139,26 +124,30 @@ async (req, res) => {
     res.json({result});
     return;
   }
-
+  console.log('errorfree');
   const { email, password, uiid } = req.body;
   try {
     let user = await Admin.findOne({email});
     if (!user) {
+      console.log(`no ${email}`);
       result = {event:code.auth.USER_NOT_EXIST}
-      res.json({result});
-      return;
+      return res.json({result});
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch){
+      console.log(`no match ${password}`);
       result = {event:code.auth.WRONG_PASSWORD}
-      return res.json({result});
+      res.json({result});
+      return;
     } else {
-      let inst = Admin.findOne({uiid})
-      if(!inst){
-        result = {event:"auth/wrong-uiid"}
-        res.json({result});
-        return;
-      }
+      console.log(`match ${password}`);
+      // let inst = Admin.findOne({uiid}).where('email').equals(email);
+      // console.log(inst);
+      // if(!inst){
+      //   result = {event:"auth/wrong-uiid"}
+      //   res.json({result});
+      //   return;
+      // }
     }
     const payload = {
       user: {
@@ -173,20 +162,16 @@ async (req, res) => {
         expiresIn: 3000
       },
       (err, token) => {
-        if (err){
-          console.log(err.message);
-          throw err;
-        }
-        console.log("tok:"+token);
-        result = {event:token}
-        res.render(admindash,{result})
+        if (err) throw err;
+        result = {event:code.auth.AUTH_SUCCESS,bailment:token}
+        console.log(result);
+        res.json({result});
       }
     );
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({
-      event: code.auth.AUTH_REQ_FAILED
-    });
+  } catch (err) {
+    result = {event:code.auth.AUTH_REQ_FAILED, msg:err.message};
+    console.log("error:"+result);
+    res.status(500).json({result});
   }
 
 });

@@ -1,22 +1,97 @@
-const appName = "Schemester",
-  click = "click",
-  input = "input",
-  change = "change",
-  nothing = "",
-  space = " ",
-  tab = "   ",
-  hide = "none",
-  show = "block",
-  adminLoginPage = "/admin/auth/login/",
-  adminDashPage = "/admin/dash/",
-  homepage = "/home/",
-  root = "/",
-  registrationPage = "/admin/register/",
-  planspage = "/plans/",
-  adminSettings = "/admin/manage/",
-  localDB = appName;
+const click = "click",input = "input",nothing = "";
+class Codes {
+  constructor() {
+    class Servercodes {
+      constructor() {
+        this.DATABASE_ERROR = "server/database-error:";
+        this.INSTITUTION_EXISTS = "server/institution-exists";
+        this.INSTITUTION_CREATED = "server/institution-created";
+        this.UIID_TAKEN = "server/uiid-already-taken";
+        this.UIID_AVAILABLE = "server/uiid-available";
+      }
+    }
+    class Clientcodes {
+      constructor() {
+        this.NETWORK_FAILURE = "client/network-error";
+        this.NOT_SIGNED_IN = "client/not-signed-in";
+      }
+    }
 
-var cred = Array(2);
+    class Authcodes {
+      constructor() {
+        this.WRONG_PASSWORD = 'auth/wrong-password';
+        this.WEAK_PASSWORD = 'auth/weak-password';
+        this.USER_NOT_EXIST = 'auth/no-user-found';
+        this.USER_EXIST = 'auth/user-found';
+        this.AUTH_FAILED = 'auth/authentication-failed';
+        this.EMAIL_INVALID = 'auth/invalid-email';
+        this.PASSWORD_INVALID = 'auth/invalid-password';
+        this.LOGGED_OUT = 'auth/logged-out';
+        this.ACCOUNT_CREATED = 'auth/account-created';
+        this.NAME_INVALID = 'auth/invalid-name';
+        this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
+        this.AUTH_SUCCESS = 'auth/sign-in-success';
+        this.ACCOUNT_RESTRICTED = "auth/account-disabled";
+        this.AUTH_REQ_FAILED = "auth/request-failed";
+        this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
+        this.UIID_INVALID = "auth/invalid-uiid";
+        this.WRONG_UIID = "auth/wrong-uiid";
+      }
+    }
+
+    class Mailcodes {
+      constructor() {
+        this.ACCOUNT_VERIFICATION = "mail/account-verification";
+        this.RESET_PASSWORD = "mail/reset-password";
+        this.PASSWORD_CHANGED = "mail/password-changed";
+        this.EMAIL_CHANGED = "mail/email-address-changed";
+        this.ACCOUNT_DELETED = "mail/account-deleted";
+        this.INSTITUTION_INVITATION = "mail/invite-to-institution";
+        this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
+      }
+    }
+    this.auth = new Authcodes();
+    this.client = new Clientcodes();
+    this.server = new Servercodes();
+    this.mail = new Mailcodes();
+  }
+}
+const code = new Codes();
+
+class Constant{
+  constructor(){
+    this.appName = "Schemester";
+    this.hide = "none";
+    this.show = "block";
+    this.nothing = "";
+    this.space = " ";
+    this.tab = "  ";
+    this.post = "post";
+    this.get = "get";
+    this.backbluecovered = false;
+    this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
+    this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
+    this.weekdays = Array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+    this.months = Array("January","February","March","April","May","June","July","August","September","October","November","December");
+  }
+}
+const value = new Constant();
+const constant = new Constant();
+class Locations{
+  constructor(){
+    this.adminLoginPage = "/admin/auth/login/";
+    this.adminDashPage = "/admin/dash/";
+    this.homepage = "/home/";
+    this.root = "/";
+    this.registrationPage = "/admin/register/";
+    this.planspage = "/plans/";
+    this.adminSettings = "/admin/manage/";
+    this.adminLoginPage = "/admin/auth/login/";
+    this.registrationPage = "/admin/register/";
+  }
+}
+const locate = new Locations();
 
 class Colors{
   constructor(){
@@ -42,15 +117,13 @@ class Colors{
         return this.transparent;
       }
       default:{
-        if(type == false)
-          this.getColorByType(actionType.negative);
-        else
-          this.getColorByType(actionType.positive);
+        return type == false?this.getColorByType(actionType.negative):this.getColorByType(actionType.positive);
       }
     }
   }
 }
 var colors = new Colors();
+
 class InputType{
   constructor(){
     this.name = 'name';
@@ -127,9 +200,9 @@ class Snackbar {
     this.text = getElement(this.textId);
     this.button = getElement(this.buttonId)    
     this.button.innerHTML = null;
-    visibilityOf(this.button,false);
+    hide(this.button);
     this.text.innerHTML = null;
-    visibilityOf(this.bar,false);
+    hide(this.bar);
   }
 
   createSnack(text,type){
@@ -137,7 +210,7 @@ class Snackbar {
     setDefaultBackground(this.bar,type);
   }
   displayType(type){
-    if(!backbluecovered){
+    if(!value.backbluecovered){
       setClassName(this.bar,bodyType.getSnackStyle(bodyType.positive),bodyType.getSnackStyle(bodyType.negative),
       type,bodyType.getSnackStyle(bodyType.warning),bodyType.getSnackStyle(bodyType.active));
       setClassName(this.button,actionType.getButtonStyle(actionType.neutral),actionType.getButtonStyle(actionType.neutral),
@@ -160,7 +233,7 @@ class Snackbar {
         this.hide();
       }
     }
-    visibilityOf(this.button,true);
+    show(this.button);
   }
   existence(exist = true){
     elementRiseVisibility(this.bar, exist);
@@ -181,11 +254,10 @@ class Snackbar {
       "fmt-animate-bottom",
       false
     );
-    visibilityOf(this.bar, false);
+    hide(this.bar);
   }
 }
 
-var backbluecovered = false;
 var snackBar = (
   text = String(),
   actionText = String(),
@@ -229,16 +301,16 @@ class DialogID {
   headingId = "dialogHeading";
   subHeadId = "dialogSubHeading";
   inputs = "inputFields";
-  dialogInputField(index) {
+  dialogInputFieldID(index) {
     return "dialogInputField" + index;
   }
-  dialogFieldCaption(index) {
+  dialogFieldCaptionID(index) {
     return "dialogFieldCaption" + index;
   }
-  dialogInput(index) {
+  dialogInputID(index) {
     return "dialogInput" + index;
   }
-  dialogInputError(index) {
+  dialogInputErrorID(index) {
     return "dialogInputError" + index;
   }
   textFieldId = "dialogInputAreaField";
@@ -257,6 +329,30 @@ class DialogID {
   actionLoader = "dialogLoader";
   dialogButton(index) {
     return "dialogButton" + index;
+  }
+  basicDialogContent = `<img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
+    <div class="fmt-col fmt-threequarter" id="dialogContent">
+      <div class="fmt-row" id="dialogHeading"></div>
+      <div class="fmt-row" id="dialogSubHeading"></div>
+      <div id="inputFields"></div>
+      <fieldset class="fmt-row text-field" id="dialogInputAreaField">
+        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
+        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
+        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
+      </fieldset>
+      <div class="fmt-row" id="dialogActions">
+        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
+        <span id="dialogButtons" class="fmt-half fmt-right"></span>
+      </div>
+    </div>`;
+  getloaderContent(heading = "Please wait",subheading){
+    return `<div class="fmt-col" id="dialogContent">
+    <div class="fmt-row" id="dialogHeading">${heading}</div>
+    <div class="fmt-row fmt-center" id="dialogSubHeading">${subheading}</div>
+    <br/>
+    <div class="fmt-center fmt-display-center">
+    <img class="fmt-spin-fast" src="/graphic/blueLoader.svg"/>
+    </div><br/></div>`;
   }
 }
 
@@ -328,6 +424,7 @@ class Dialog extends DialogID {
     setDefaultBackground(this.view);
     this.box = getElement(this.boxId);
     opacityOf(this.box, 1);
+    this.setBoxHTML(this.basicDialogContent); //sets default dialog html (left image, right heading, subheading, inputs, actions)
     this.image = getElement(this.imageId);
     this.content = getElement(this.contentId);
 
@@ -335,48 +432,40 @@ class Dialog extends DialogID {
     this.subHeading = getElement(this.subHeadId);
     this.inputFields = getElement(this.inputs);
 
-    visibilityOf(this.inputFields,false);
+    hide(this.inputFields);
     this.options = getElement(this.optionsId);
-    visibilityOf(this.options, false);
+    hide(this.options);
     this.textField = getElement(this.textFieldId);
-    visibilityOf(this.textField,false);
+    hide(this.textField);
   }
-  createInputs(captions, hints, types, contents = null, autocompletes = null,spellChecks = null) {
+  setBoxHTML(htmlcontent){
+    this.box.innerHTML = htmlcontent;
+  }
+  createInputs(captions, hints, types, contents = null, autocompletes = null,spellChecks = null,autocaps = null) {
     let total = captions.length;
     let fieldSet = String();
     for (var i = 0; i < total; i++) {
-      fieldSet =`${fieldSet}
-        <fieldset class="fmt-row text-field" id="${this.dialogInputField(i)}"> 
-        <legend class="field-caption" id="${this.dialogFieldCaption(i)}"></legend> 
-        <input class="text-input" id="${this.dialogInput(i)}">
-        <span class="fmt-right error-caption" id="${this.dialogInputError(i)}"></span></fieldset>`;
+      fieldSet += getInputField(this.dialogInputFieldID(i),this.dialogFieldCaptionID(i),this.dialogInputID(i),this.dialogInputErrorID(i));
     }
     this.inputFields.innerHTML = fieldSet;
     visibilityOf(this.inputFields, total > 0);
     this.inputField = Array(total);
     for (var k = 0; k < total; k++) {
       this.inputField[k] = new TextInput(
-        this.dialogInputField(k),
-        this.dialogInput(k),
-        this.dialogInputError(k),
-        this.dialogFieldCaption(k)
+        this.dialogInputFieldID(k),
+        this.dialogInputID(k),
+        this.dialogInputErrorID(k),
+        this.dialogFieldCaptionID(k)
       );
     }
 
     for (var k = 0; k < total; k++) {
       this.inputField[k].caption.textContent = captions[k];
       this.inputField[k].setInputAttrs(hints[k],types[k])      
-      if (contents != null) {
-        if(contents[k]!=null&&contents[k]!=nothing){
-          this.inputField[k].input.value = contents[k];
-        }
-      }
-      if (autocompletes != null) {
-        this.inputField[k].input.autocomplete = autocompletes[k];
-      }
-      if(spellChecks!=null){
-        this.inputField[k].input.spellcheck = spellChecks[k];
-      }
+      this.inputField[k].input.value = (contents != null&&contents[k]!=null&&contents[k]!=nothing)?contents[k]:value.nothing;
+      this.inputField[k].input.autocomplete = autocompletes != null?autocompletes[k]:value.nothing;
+      this.inputField[k].input.spellcheck = spellChecks!=null?spellChecks[k]:true;
+      this.inputField[k].input.autocapitalize = autocaps!=null?autocaps[k]:'none';
     }
   }
   createRadios(labels, clicked) {
@@ -384,15 +473,7 @@ class Dialog extends DialogID {
     visibilityOf(this.options, this.radioVisible);
     let radioSet = String();
     for (var i = 0; i < total; i++) {
-      radioSet =
-        radioSet +
-        '<label class="radio-container" id="' +
-        this.dialogChipLabel(i) +
-        '">' +
-        labels[i] +
-        '<input type="radio" name="dialogChip" id="' +
-        this.dialogChip(i) +
-        '"><span class="checkmark"></span></label>';
+      radioSet += getRadioChip(this.dialogChipLabel(i),labels[i],this.dialogChip(i));
     }
     this.options.innerHTML = radioSet;
     visibilityOf(this.options, total > 0);
@@ -404,25 +485,16 @@ class Dialog extends DialogID {
     }
     this.optionsRadioLabel[labels.indexOf(clicked)].click();
   }
+
   createActions(labels, types) {
     let total = labels.length;
     this.actions = getElement(this.actionsId);
     let actionSet = String();
     for (var i = total - 1; i >= 0; i--) {
-      actionSet =
-        actionSet +
-        '<button class="' +
-        actionType.getButtonStyle(types[i]) +
-        ' fmt-right" id="' +
-        this.dialogButton(i) +
-        '">' +
-        labels[i] +
-        "</button>";
+      actionSet += getDialogButton(actionType.getButtonStyle(types[i]),this.dialogButton(i),labels[i]);
     }
-    actionSet +=
-      '<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="' +
-      this.actionLoader +
-      '"/>';
+    actionSet += getDialogLoaderSmall(this.actionLoader);
+
     this.actions.innerHTML = actionSet;
     this.dialogButtons = Array(total);
     for (var k = total - 1; k >= 0; k--) {
@@ -469,7 +541,7 @@ class Dialog extends DialogID {
     this.largeTextField.normalize();
     this.largeTextField.setInputAttrs(hint);
     this.largeTextField.caption.textContent = caption;
-    visibilityOf(this.largeTextField.fieldset,true);
+    show(this.largeTextField.fieldset);
   }
 
   getInput(index) {
@@ -494,11 +566,16 @@ class Dialog extends DialogID {
       action();
     };
   }
+  normalize(){
+    this.inputField.forEach((field)=>{
+      field.normalize();
+    })
+  }
   setBackgroundColor(type = bodyType.positive) {
     this.view.style.backgroundColor = colors.getColorByType(type);
   }
   existence(show = true) {
-    backbluecovered = show;
+    value.backbluecovered = show;
     elementFadeVisibility(this.view, show);
   }
 }
@@ -508,7 +585,6 @@ let clog = (msg) => {
 };
 
 //idb classes
-const dbName = appName;
 let idb, lidb;
 let transaction, localTransaction;
 let dbVer = 1;
@@ -630,11 +706,11 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
       validateTextField(loginDialog.inputField[0],inputType.email,_=>{loginDialog.inputField[1].input.focus()});
     }
     loginDialog.getInput(1).onchange = _=>{
-      validateTextField(loginDialog.inputField[1],inputType.nonempty);
+      validateTextField(loginDialog.inputField[1],inputType.password);
     }
     loginDialog.onButtonClick(0, (_) => {
-      if(!(isEmailValid(loginDialog.getInputValue(0))&&isNonEmpty(loginDialog.getInputValue(1)))){
-        validateTextField(loginDialog.inputField[1],inputType.nonempty,_=>{loginDialog.inputField[0].input.focus()});
+      if(!(stringIsValid(loginDialog.getInputValue(0),inputType.email)&&stringIsValid(loginDialog.getInputValue(1)))){
+        validateTextField(loginDialog.inputField[1],inputType.password,_=>{loginDialog.inputField[0].input.focus()});
         validateTextField(loginDialog.inputField[0],inputType.email,_=>{loginDialog.inputField[1].input.focus()});
       } else {
         snackBar("TBD");
@@ -648,7 +724,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
   loginDialog.existence(isShowing);
 };
 
-let resetPasswordDialog = (isShowing = true) => {
+let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   var resetDialog = new Dialog();
   if (isShowing) {
     resetDialog.setDisplay(
@@ -659,28 +735,27 @@ let resetPasswordDialog = (isShowing = true) => {
     resetDialog.createInputs(
       Array("Your email address"),
       Array("you@example.domain"),
-      Array("email")
+      Array("email"),
+      Array(inputvalue)
     );
     resetDialog.createActions(
       Array("Send Link", "Cancel"),
       Array(actionType.positive, actionType.negative)
     );
     resetDialog.getInput(0).onchange = () => {
-      validateTextField(resetDialog.inputField[0],inputType.email,
-        _=>{visibilityOf(resetDialog.getDialogButton(0))});
+      validateTextField(resetDialog.inputField[0],inputType.email);
     };
     resetDialog.onButtonClick(0, () => {
-      if (isEmailValid(resetDialog.getInputValue(0))) {
-        sendPassResetLink();//todo
-        snackBar(
-          "You'll receive a link if your email address was correct. Reset your password from there.",
-          "Got it"
-        );
-        resetDialog.existence(false);
-      }else{
-        validateTextField(resetDialog.inputField[0],inputType.email,
-          _=>{visibilityOf(resetDialog.getDialogButton(0))});
+      if(!stringIsValid(resetDialog.getInputValue(0),inputType.email)){
+        validateTextField(resetDialog.inputField[0],inputType.email);
+        return;
       }
+      sendPassResetLink();//todo
+      resetDialog.existence(false);
+      snackBar(
+        "You'll receive a link if your email address was correct. Reset your password from there.",
+        "Got it"
+      );
     });
     resetDialog.onButtonClick(1, () => {
       resetDialog.existence(false);
@@ -723,24 +798,24 @@ let changeEmailBox = (isShowing = true) => {
   };
   
   mailChange.getInput(2).onchange = () => {
-    validateTextField(mailChange.inputField[2],inputType.email,_=>{visibilityOf(mailChange.getDialogButton(0))});
+    validateTextField(mailChange.inputField[2],inputType.email);
   };
   mailChange.onButtonClick(0, () => {
-    if(!(isNonEmpty(mailChange.getInputValue(0))&&isEmailValid(mailChange.getInputValue(1))&&isEmailValid(mailChange.getInputValue(2)))){
+    if(!(stringIsValid(mailChange.getInputValue(0))&&stringIsValid(mailChange.getInputValue(1),inputType.email)&&stringIsValid(mailChange.getInputValue(2),inputType.email))){
       validateTextField(mailChange.inputField[0],inputType.nonempty,_=>{mailChange.getInput(1).focus()});
       validateTextField(mailChange.inputField[1],inputType.email,_=>{mailChange.getInput(2).focus()});
-      validateTextField(mailChange.inputField[2],inputType.email,_=>{visibilityOf(mailChange.getDialogButton(0))});
-    }else{
+      validateTextField(mailChange.inputField[2],inputType.email);
+      return;
+    }
       //todo: changeadmniemail
+      mailChange.existence(false);
       snackBar(
         "Your email id has been changed to " + mailChange.getInputValue(2),
-        "okay",
+        "Okay",
         () => {
           snackBar("You need to login again");
         }
       );
-      mailChange.existence(false);
-    }
   });
   mailChange.onButtonClick(1, () => {
     mailChange.existence(false);
@@ -748,7 +823,7 @@ let changeEmailBox = (isShowing = true) => {
   mailChange.existence(isShowing);
 };
 
-let registrationDialog = (isShowing = true) => {
+let registrationDialog = (isShowing = true, email = null, uiid = null) => {
   if (false) {
     //if already logged in
     var confirmLogout = new Dialog();
@@ -783,9 +858,10 @@ let registrationDialog = (isShowing = true) => {
       Array("Your name","Email Address", "New Password","Unique Institution ID - UIID"),
       Array("Shravan Kumar, or something?","youremail@example.domain", "Strong password","A unique ID for your institution"),
       Array("text","email", "password","text"),
-      null,
+      Array(null,email,null,uiid),
       Array("name","email", "new-password","username"),
-      Array("true","false","false","false")
+      Array(true,false,false,false),
+      Array("words","off","off","off")
     );
     regDial.onButtonClick(1, () => {
       regDial.existence(false);
@@ -798,21 +874,22 @@ let registrationDialog = (isShowing = true) => {
     };
     regDial.getInput(2).onchange = () => {
       //todo: type is password
-      validateTextField(regDial.inputField[2],inputType.nonempty,_=>{regDial.getInput(3).focus()});
+      validateTextField(regDial.inputField[2],inputType.password,_=>{regDial.getInput(3).focus()});
     };
     regDial.getInput(3).onchange = () => {
       //todo: username validation
       validateTextField(regDial.inputField[3],inputType.username);
     };
     regDial.onButtonClick(0, () => {
-      if(!(isNonEmpty(regDial.getInputValue(0))&&isEmailValid(regDial.getInputValue(1))&&isNonEmpty(regDial.getInputValue(2))&&isNonEmpty(regDial.getInputValue(3)))){
+      if(!(stringIsValid(regDial.getInputValue(0),inputType.name)&&stringIsValid(regDial.getInputValue(1),inputType.email)&&stringIsValid(regDial.getInputValue(2),inputType.password)&&stringIsValid(regDial.getInputValue(3),inputType.username))){
         validateTextField(regDial.inputField[0],inputType.name,_=>{regDial.getInput(1).focus()});
         validateTextField(regDial.inputField[1],inputType.email,_=>{regDial.getInput(2).focus()});
         //todo: type is password
-        validateTextField(regDial.inputField[2],inputType.nonempty,_=>{regDial.getInput(3).focus()});
+        validateTextField(regDial.inputField[2],inputType.password,_=>{regDial.getInput(3).focus()});
         //todo: username validation
         validateTextField(regDial.inputField[3],inputType.username);
       } else{
+        regDial.normalize()
         regDial.loader();
         createAccount(
           regDial,
@@ -841,12 +918,12 @@ let createAccount = (dialog,adminname, email, password,uiid) => {
       dialog.loader(false);
       switch (result.event){
         case code.auth.ACCOUNT_CREATED:{
-          clog(code.auth.ACCOUNT_CREATED);
-          accountVerificationDialog();
+          clog(result);
+          loadingBox();
         } break;
         case code.auth.USER_EXIST:{
           dialog.inputField[1].showError("Account already exists.");
-          snackBar("Try signing in?","Login",true,_=>{refer(adminLoginPage,{email:email,uiid:uiid})});
+          snackBar("Try signing in?","Login",true,_=>{refer(locate.adminLoginPage,{email:email,uiid:uiid})});
         }break;
         case code.server.UIID_TAKEN:{
           dialog.inputField[3].showError("This UIID is not available. Try something different.");
@@ -876,13 +953,11 @@ let createAccount = (dialog,adminname, email, password,uiid) => {
 
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
   var verify = new Dialog();
-  var user = firebase.auth().currentUser;
   if (emailSent) {
     verify.setDisplay(
       "Waiting for verification",
-      "A link has been sent. Check your email box at <b>" +
-        user.email +
-        "</b>, verify your account there, and then click continue here."
+      `A link has been sent. Check your email box at 
+      <b>{user.email}</b>, verify your account there, and then click continue here.`
     );
     verify.createActions(
       Array("Verify & Continue", "Abort"),
@@ -899,9 +974,9 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
   } else {
     verify.setDisplay(
       "Verification Required",
-      "We need to verify you. A link will be sent at <b>" +
-        user.email +
-        "</b>, you need to verify your account there. Confirm to send link?"
+      `We need to verify you. A link will be sent at <b>
+        {user.email}
+      </b>, you need to verify your account there. Confirm to send link?`
     );
     verify.createActions(
       Array("Send link", "Cancel"),
@@ -913,6 +988,7 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     });
     verify.onButtonClick(0, () => {
       verify.loader();
+
       //todo: send verification email
     });
   }
@@ -968,13 +1044,16 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   })
 
   feedback.onButtonClick(0, () => {
-    if(!(isEmailValid(feedback.getInputValue(0))&&isNonEmpty(feedback.largeTextField.getInput()))){
+    if(!(stringIsValid(feedback.getInputValue(0),inputType.email)&&stringIsValid(feedback.largeTextField.getInput()))){
       validateTextField(feedback.largeTextField,inputType.nonempty);
       validateTextField(feedback.inputField[0],inputType.email,_=>{feedback.largeTextField.input.focus()});
     }else{
-      refer(`mailto:schemester@outlook.in?subject=From ${feedback.getInputValue(0)}&body=${feedback.largeTextField.getInput()}`);
-      snackBar("Thanks for the interaction. We'll look forward to that.","Hide");
+      refer(mailTo('schemester@outlook.in'),{
+        subject:`From ${feedback.getInputValue(0)}`,
+        body: feedback.largeTextField.getInput()
+      });
       feedback.existence(false);
+      snackBar("Thanks for the interaction. We'll look forward to that.","Hide");
     }
   });
   feedback.onButtonClick(1, () => {
@@ -983,20 +1062,14 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   feedback.existence(isShowing);
 };
 
-let loadingBox = (show = true,message = "Please wait")=>{
+let loadingBox = (visible = true,title = "Please wait",subtitle = constant.nothing)=>{
   let load = new Dialog();
-  load.inputFields.innerHTML = `
-    <div class="fmt-center fmt-display-center">
-      <img class="fmt-spin-fast" src="/graphic/blueLoader.svg"/>
-    <div>`;
-  visibilityOf(load.inputFields);
-  load.setDisplay(message);
+  load.setBoxHTML(load.getloaderContent(title,subtitle));
   load.setBackgroundColor(bodyType.nothing);
-  load.existence(show);
-
+  load.existence(visible);
 }
 let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,afterValidAction=_=>{clog(nothing)},ifmatchField = null)=>{
-  var error;
+  var error,matcher = constant.nothing;
     switch(type){
       case inputType.name:{
         error = "There has to be a name.";
@@ -1006,36 +1079,26 @@ let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,a
       }break;
       case inputType.match:{
         error =  "This one is different.";
+        matcher = ifmatchField.getInput();
       }break;
       default:{
         error = "This can't be empty";
       }
     }
   
-  let getChecker=_=>{
-    switch(type){
-      case inputType.email:
-        return isEmailValid(textfield.getInput());
-      case inputType.match:
-        return textfield.getInput() == ifmatchField.getInput();
-      default:
-        return textfield.getInput()!=null&&textfield.getInput()!=nothing;
-    }
-  }
-
   textfield.showError(error);
-  if (!getChecker()) {
-    textfield.input.focus();
+  if (!stringIsValid(textfield.getInput(),type,matcher)) {
+    textfield.inputFocus();
     textfield.onTextInput(_=>{
-      textfield.showError(null);
+      textfield.normalize();
       if(textfield.getInput()!=nothing){
         validateTextField(textfield,type,_=>{afterValidAction()});
       } else {
         textfield.onTextInput(_=>{
-          textfield.showError(null);
+          textfield.normalize();
         }); 
         textfield.onTextDefocus(_=>{
-          if (getChecker()) {
+          if (stringIsValid(textfield.getInput(),type, matcher)) {
             afterValidAction();
           }else {
             textfield.showError(error);
@@ -1045,9 +1108,9 @@ let validateTextField = (textfield = new TextInput(),type = inputType.nonempty,a
       }
     });
   } else {
-    textfield.showError(null);
+    textfield.normalize();
     textfield.onTextDefocus(_=>{
-      if (getChecker()) {
+      if (stringIsValid(textfield.getInput(),type,matcher)) {
         afterValidAction();
       }else {
         textfield.showError(error);
@@ -1088,74 +1151,13 @@ let setClassName = (element, normalClass, errorClass, condition = actionType.pos
       element.className = activeClass;
     }break;
     default:{
-      if (condition == true) {
-        element.className = normalClass;
-      } else if(condition == false) {
+      if(condition == false) {
         element.className = errorClass;
+      } else {
+        element.className = normalClass;
       }
     }
   }
-};
-
-let runEmailCheck = (input, fieldset, error) => {
-  setFieldSetof(
-    fieldset,
-    isEmailValid(input.value),
-    error,
-    "Invalid email address"
-  );
-  input.oninput = () => {
-    setFieldSetof(
-      fieldset,
-      isEmailValid(input.value),
-      error,
-      "Invalid email address"
-    );
-  };
-  return isEmailValid(input.value);
-};
-
-let runPasswordCheck = (input, fieldset, error) => {
-  setFieldSetof(
-    fieldset,
-    isPasswordValid(input.value),
-    error,
-    "Password should atleast contain:\n" +
-      "· Uppercase and lowercase letters\n· Numbers\n· Special charecters"
-  );
-  input.oninput = () => {
-    setFieldSetof(
-      fieldset,
-      input.value.length >= 8,
-      error,
-      "Password should be atleast 8 charecters long"
-    );
-    setFieldSetof(
-      fieldset,
-      isPasswordValid(input.value),
-      error,
-      "Password should atleast contain:\n" +
-        "· Uppercase and lowercase letters\n· Numbers\n· Special charecters"
-    );
-  };
-};
-
-let runEmptyCheck = (input, fieldset, error) => {
-  setFieldSetof(
-    fieldset,
-    isNotEmpty(input.value),
-    error,
-    "This can't be empty"
-  );
-  input.oninput = () => {
-    setFieldSetof(
-      fieldset,
-      isNotEmpty(input.value),
-      error,
-      "This can't be empty"
-    );
-  };
-  return isNotEmpty(input.value);
 };
 
 let showElement = (elements, index) => {
@@ -1173,6 +1175,7 @@ let elementFadeVisibility = (element, isVisible) => {
   );
   visibilityOf(element, isVisible);
 };
+
 let elementRiseVisibility = (element,isVisible)=>{
   replaceClass(
     element,
@@ -1183,9 +1186,6 @@ let elementRiseVisibility = (element,isVisible)=>{
   visibilityOf(element, isVisible);
 }
 
-let replaceClass = (element, class1, class2, replaceC1 = true) => {
-  replaceC1? element.classList.replace(class1, class2): element.classList.replace(class2, class1);
-};
 
 let setDefaultBackground = (element,type = actionType.positive) => {
   element.style.backgroundColor = colors.getColorByType(type);
@@ -1195,115 +1195,72 @@ let setDefaultBackground = (element,type = actionType.positive) => {
   }
 };
 
-let showLoader = () => {
-  visibilityOf(getElement("navLoader"), true);
-};
-let hideLoader = () => {
-  visibilityOf(getElement("navLoader"), false);
-};
+let replaceClass = (element, class1, class2, replaceC1 = true) => replaceC1? element.classList.replace(class1, class2): element.classList.replace(class2, class1);
 
-let opacityOf = (element, value) => {
-  element.style.opacity = String(value);
-};
+let showLoader =_=>show(getElement("navLoader"));
+let hideLoader =_=> hide(getElement("navLoader"));
+let opacityOf = (element, value = 1) => element.style.opacity = String(value);
+let visibilityOf = (element, visible = true) => element.style.display = visible?constant.show:constant.hide;
+let hide = (element = new HTMLElement())=> visibilityOf(element,false);
+let show = (element = new HTMLElement())=> visibilityOf(element,true);
 
-let visibilityOf = (element, visible = true) => {
-  if (visible) {
-    element.style.display = show;
-  } else {
-    element.style.display = hide;
+let stringIsValid = (value = String, type = inputType.nonempty, ifMatchValue = String)=>{
+  switch(type){
+    case inputType.name: return stringIsValid(String(value).trim());
+    case inputType.email: return constant.emailRegex.test(String(value).toLowerCase());
+  //todo: case inputType.password: return constant.passRegex.test(String(passValue));
+    case inputType.match: return value == ifMatchValue
+    default:return value!=null&&value!=constant.nothing;
   }
-};
+}
 
+let getDayName = (dIndex = Number) => dIndex<constant.weekdays.length?constant.weekdays[dIndex]:null;
+let getMonthName = (mIndex = Number) => mIndex<constant.months.length?constant.months[mIndex]:null;
+let getElement = (id) => document.getElementById(id);
 
-let isEmailValid = (emailValue) => {
-  const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return emailRegex.test(String(emailValue).toLowerCase());
-};
-let isPasswordValid = (passValue) => {
-  const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
-  return passRegex.test(String(passValue));
-};
-let isNonEmpty = (value)=> value!=null&&value!=nothing;
-let getDayName = (dIndex) => {
-  switch (dIndex) {
-    case 0:
-      return "Sunday";
-    case 1:
-      return "Monday";
-    case 2:
-      return "Tuesday";
-    case 3:
-      return "Wednesday";
-    case 4:
-      return "Thursday";
-    case 5:
-      return "Friday";
-    case 6:
-      return "Saturday";
-    default:
-      return "Error";
-  }
-};
-let getMonthName = (mIndex) => {
-  switch (mIndex) {
-    case 0:
-      return "January";
-    case 1:
-      return "February";
-    case 2:
-      return "March";
-    case 3:
-      return "April";
-    case 4:
-      return "May";
-    case 5:
-      return "June";
-    case 6:
-      return "July";
-    case 7:
-      return "August";
-    case 8:
-      return "September";
-    case 9:
-      return "October";
-    case 10:
-      return "November";
-    case 11:
-      return "December";
-    default:
-      return "Error";
-  }
-};
-
-let getElement = (id) => {
-  return document.getElementById(id);
-};
-let relocate = (path) => {
-  window.location.replace(path);
-};
-let refer = (href, data) => {
-  let i = 0
-  for (var key in data) {
-    if (data.hasOwnProperty(key)) {
-      href = i>0?`${href}&${key}=${data[key]}`:`${href}?${key}=${data[key]}`;
-      i++;
+let relocate = (path, data = null) => {
+  if(data!=null){
+    let i = 0
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        path = i>0?`${path}&${key}=${data[key]}`:`${path}?${key}=${data[key]}`;
+        i++;
+      }
     }
   }
-  clog(href);
+  window.location.replace(path);
+};
+let refer = (href, data = null) => {
+  if(data!=null){
+    let i = 0
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        href = i>0?`${href}&${key}=${data[key]}`:`${href}?${key}=${data[key]}`;
+        i++;
+      }
+    }
+  }
   window.location.href = href;
 };
+let mailTo = (to = String)=> `mailto:${to}`;
 
 let idbSupported = () => {
   if (!window.indexedDB) {
     clog("IDB:0");
     snackBar(
       "This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.",
-      null,
-      actionType.negative
+      "Learn more",
+      actionType.negative,
+      _=>{
+        refer("https://google.com/search",{
+          q:"modern+browsers"
+        });
+      }
     );
   }
   return window.indexedDB;
 };
+
 let addNumberSuffixHTML = (number) => {
   var str = String(number);
   switch (number) {
@@ -1335,13 +1292,6 @@ let addNumberSuffixHTML = (number) => {
     }
   }
 };
-let checkmark = (text) => {
-  return `<label class=\"check-container\">${text}<input type=\"checkbox\"><span class=\"tickmark\"></span></label>`;
-};
-
-let radiobox = (content) => {
-  return `<label class=\"radio-box-container\"><input type=\"radio\" checked=\"checked\" name=\"radio\"><div class=\"radio-box-mark\">${content}</div></label>`;
-};
 
 let getProperDate =(dateTillMillis = String())=>{
   let year =  dateTillMillis.substring(0,4);
@@ -1355,62 +1305,11 @@ let getProperDate =(dateTillMillis = String())=>{
   return `${getMonthName(month-1)} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
 }
 
-class Codes {
-  constructor() {
-    class Servercodes {
-      constructor() {
-        this.DATABASE_ERROR = "server/database-error:";
-        this.INSTITUTION_EXISTS = "server/institution-exists";
-        this.INSTITUTION_CREATED = "server/institution-created";
-        this.UIID_TAKEN = "server/uiid-already-taken";
-        this.UIID_AVAILABLE = "server/uiid-available";
-      }
-    }
-    class Clientcodes {
-      constructor() {
-        this.NETWORK_FAILURE = "client/network-error";
-        this.NOT_SIGNED_IN = "client/not-signed-in";
-      }
-    }
-
-    class Authcodes {
-      constructor() {
-        this.WRONG_PASSWORD = 'auth/wrong-password';
-        this.WEAK_PASSWORD = 'auth/weak-password';
-        this.USER_NOT_EXIST = 'auth/no-user-found';
-        this.USER_EXIST = 'auth/user-found';
-        this.AUTH_FAILED = 'auth/authentication-failed';
-        this.EMAIL_INVALID = 'auth/invalid-email';
-        this.PASSWORD_INVALID = 'auth/invalid-password';
-        this.LOGGED_OUT = 'auth/logged-out';
-        this.ACCOUNT_CREATED = 'auth/account-created';
-        this.NAME_INVALID = 'auth/invalid-name';
-        this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
-        this.AUTH_SUCCESS = 'auth/sign-in-success';
-        this.ACCOUNT_RESTRICTED = "auth/account-disabled";
-        this.AUTH_REQ_FAILED = "auth/request-failed";
-        this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
-        this.UIID_INVALID = "auth/invalid-uiid";
-        this.WRONG_UIID = "auth/wrong-uiid";
-      }
-    }
-
-    class Mailcodes {
-      constructor() {
-        this.ACCOUNT_VERIFICATION = "mail/account-verification";
-        this.RESET_PASSWORD = "mail/reset-password";
-        this.PASSWORD_CHANGED = "mail/password-changed";
-        this.EMAIL_CHANGED = "mail/email-address-changed";
-        this.ACCOUNT_DELETED = "mail/account-deleted";
-        this.INSTITUTION_INVITATION = "mail/invite-to-institution";
-        this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
-      }
-    }
-    this.auth = new Authcodes();
-    this.client = new Clientcodes();
-    this.server = new Servercodes();
-    this.mail = new Mailcodes();
-  }
-}
-
-const code = new Codes();
+let getRadioChip = (labelID, label, radioID)=>`<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
+let getInputField = (fieldID,captionID,inputID,errorID)=>
+  `<fieldset class="fmt-row text-field" id="${fieldID}"> 
+  <legend class="field-caption" id="${captionID}"></legend> 
+  <input class="text-input" id="${inputID}">
+  <span class="fmt-right error-caption" id="${errorID}"></span></fieldset>`;
+let getDialogButton = (buttonClass,buttonID,label)=> `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
+let getDialogLoaderSmall = (loaderID) => `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
