@@ -9,20 +9,21 @@
   "author": "Priyanshu Ranjan",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "connect-mongodb-session": "^2.3.3",
     "cookie-parser": "^1.4.5",
     "ejs": "^3.1.3",
     "express": "^4.17.1",
-    "express-session": "^1.17.1",
+    "express-jwt": "^6.0.0",
     "express-validator": "^6.6.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.21",
+    "node-fetch": "^2.6.0",
     "nodejs-nodemailer-outlook": "^1.2.3",
     "nodemailer": "^6.4.10",
-    "rate-limiter-flexible": "^2.1.7",
-    "serve-favicon": "^2.5.0"
+    "rate-limiter-flexible": "^2.1.7"
   },
   "devDependencies": {
     "es6-promisify": "^6.1.1",

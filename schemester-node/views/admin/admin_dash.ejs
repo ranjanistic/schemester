@@ -20,7 +20,7 @@
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(root)">
-            <span id="navtext">Schemester</span>
+            <span id="greeting">Schemester</span>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background:transparent">
@@ -166,30 +166,21 @@
             id="todayDateTime" style="width:fit-content;right:0;">
         </span>
         
-        <!--Dialog box-->
         <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
-                <img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
-                <div class="fmt-col fmt-threequarter" id="dialogContent">
-                    <div class="fmt-row" id="dialogHeading"></div>
-                    <div class="fmt-row" id="dialogSubHeading"></div>
-                    <div id="inputFields"></div>
-                    <fieldset class="fmt-row text-field" id="dialogInputAreaField">
-                        <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
-                        <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
-                        <span class="fmt-right error-caption" id="dialogInputAreaError"></span>
-                    </fieldset>
-                    <div class="fmt-row" id="dialogActions">
-                        <span id="dialogOpts" class="fmt-padding fmt-left fmt-twothird"></span>
-                        <span id="dialogButtons" class="fmt-half fmt-right"></span>
-                    </div>
-                </div>
             </div>
         </div>
-
         <div id="snackBar" class="snack-positive fmt-animate-bottom">
             <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>
+    <noscript id="noscript" class="dialog fmt-red" style="display:block">
+        <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+            <div class="heading">Javascript required</div><br/>
+            <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+                <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+            </div>
+        </div>
+    </noscript>
 </html>

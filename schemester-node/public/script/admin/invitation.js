@@ -32,6 +32,7 @@ class Active{
             <img class="fmt-spin-fast fmt-right" width="50" style="display:none" src="/graphic/blueLoader.svg" id="inviteloader"/>
         </div></div>`;
         parent.innerHTML = this.viewcontent;    //for element getters.
+
         this.emailField = new TextInput('usermailfield','usermail','usermailerror');
         this.passField = new TextInput('userpassfield','userpass','userpasserror');
         this.passConfirmField = new TextInput('userpassconffield','userconfpass','userconfpasserror');
@@ -46,7 +47,8 @@ class Active{
         this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.inputFocus()})});
         this.passField.onTextDefocus(_=>{validateTextField(this.passField,inputType.password,_=>{this.passConfirmField.inputFocus()})});
         this.passConfirmField.onTextDefocus(_=>{validateTextField(this.passConfirmField,inputType.match,null,this.passField)});
-        this.formvalid = isEmailValid(this.emailField.getInput())&&isNonEmpty(this.passField)&&this.passConfirmField.getInput()==this.passField.getInput
+        
+        this.formvalid = stringIsValid(this.emailField.getInput(),inputType.email)&&stringIsValid(this.passField.getInput(),inputType.password)&&stringIsValid(this.passConfirmField.getInput(),inputType.match,this.passField.getInput());
     }            
     invitationAction(accept){
         if(!this.formvalid){
@@ -136,17 +138,3 @@ window.onload =_=>{
     window.app = new Invitation(active,invitedata);
 }
 
-
-//fetch works!!
-let fetcher =_=>{
-    let email = 'admin@testing.com',pass="123132!@##";
-        fetch('/sampledata',{
-            method: 'post',
-            headers: {
-              "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-            },
-            body: `email=${email}&password=${pass}`
-        })
-        .then((res)=>res.json())
-        .then((res)=>clog(res));
-}

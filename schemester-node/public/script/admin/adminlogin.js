@@ -40,15 +40,12 @@ class AdminLogin{
       this.emailField.normalize();
       this.passField.normalize();
       this.uiidField.normalize();
-      this.loader();
-      fetch('/admin/auth/login',{
-        method: constant.post,
-        headers: {"Content-type": constant.fetchContentType},
-        body: `email=${String(this.emailField.getInput()).trim()}&password=${this.passField.getInput()}&uiid=${String(this.uiidField.getInput()).trim()}`
+      postData(post.authlogin,{
+        email:String(this.emailField.getInput()).trim(),
+        password:this.passField.getInput(),
+        uiid:String(this.uiidField.getInput()).trim()
       })
-      .then((res) => res.json())
       .then((res) => {
-        clog("oof");
         this.handleAuthResult(res.result);
       }).catch((error)=>{
         this.handleAuthResult(error.result);
@@ -60,14 +57,29 @@ class AdminLogin{
   handleAuthResult=(result)=>{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{
-        clog(result.bailment);
         snackBar("Success");
-        //relocate(root);
+        window.localStorage.setItem(constant.sessionKey,result.bailment)
+        postData(post.sessionValidate,{
+          [constant.sessionKey]:window.localStorage.getItem(constant.sessionKey),
+          destination:locate.adminDashPage
+        }).then((res)=>{
+          clog(res.result);
+          if(res.result.event == code.auth.SESSION_VALID){
+            relocate(res.result.destination);
+          } else{
+            snackBar("Login again.");
+          }
+        }).catch((error)=>{
+          snackBar(error.msg);
+        })
       }break;
       case code.auth.WRONG_PASSWORD:{
         this.passField.normalize(false);
         show(this.forgotPassword);
         this.logInButton.innerHTML = "Retry";
+      }break;
+      case code.auth.WRONG_UIID:{
+        this.uiidField.showError("Incorrect UIID.");
       }break;
       case code.auth.REQ_LIMIT_EXCEEDED:{
         snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
@@ -145,6 +157,16 @@ class AdminLogin{
 //   });
 // };
 
-window.onload = function () {
-  window.app = new AdminLogin();
-};
+window.onload =_=>{
+  postData(post.sessionValidate, {
+    [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
+    destination: locate.adminDashPage,
+  }).then((res) => {
+    if (res.result.event == code.auth.SESSION_VALID) {
+      relocate(locate.adminDashPage)
+    } else {
+      window.app = new AdminLogin();
+    }
+  });
+}
+

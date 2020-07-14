@@ -1,6 +1,5 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
-    session = require("express-session"),
     cookieParser = require('cookie-parser'),
     view = require('./hardcodes/views'),
     code = require('./hardcodes/events'),

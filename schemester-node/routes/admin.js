@@ -1,53 +1,67 @@
 const express = require("express"),
   router = express.Router(),
+  fetch = require("node-fetch"),
+//  expressJwt = require("express-jwt"),
+  bcrypt = require("bcryptjs"),
+  jwt = require("jsonwebtoken"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
-  auth = require("../workers/session"),
-  session = require("../workers/session"),
-  {check, validationResult} = require("express-validator"),
-  bcrypt = require("bcryptjs"),
-  jwt = require("jsonwebtoken");
+  {check, validationResult} = require("express-validator");
 
+var sessionTok = null;
+const sessionsecret = "schemesterSecret2001";
 const Admin = require("../modelschema/Admins");
 
-const { admindash } = require("../hardcodes/views");
+// router.use('/account',expressJwt({secret:sessionsecret}));
+// router.use('/auth',expressJwt({secret: sessionsecret}));
+// router.use('/session',expressJwt({secret: sessionsecret}));
 
 router.get("/", function (req, res) {
-  res.redirect("/admin/dash");
+  res.redirect("/admin/auth/login");
 });
 
-router.get("/register/*", (_request, res) => {
+router.get("/session/register*", (_request, res) => {
   view.render(res, view.adminsetup);
 });
 
-router.get("/auth/login/*", (req, res) => {
-  const autofill = req.query;
-  console.log(autofill);
+router.get("/auth/login*", (req, res) => {
+  let autofill = req.query;
   res.render(view.adminlogin,{autofill})
 });
 
-router.get("/dash/*", (_request, res) => {
-  view.render(res, view.admindash);
+router.get("/session/dash*", (req, res) => {
+  res.render(view.admindash);
 });
 
-router.get("/manage/*", (_request, res) => {
+router.get("/session/manage*", (_request, res) => {
   view.render(res, view.adminsettings);
 });
 
 //for account settings
-router.post("/account/action/*",(req,res)=>{
+router.post("/account/action*",(req,res)=>{
   switch(req.body.type){
-
+    case code.action.CHANGE_PASSWORD:{}break;
   }
 })
 
+router.post('/session/validate',(req,res)=>{
+  let result;
+  const bailment = req.body.bailment;
+  jwt.verify(bailment,sessionsecret,(err,decoded)=>{
+    console.log(err);
+    result = err?{event:code.auth.SESSION_INVALID,destination:'/admin/auth/login/'}:{event:code.auth.SESSION_VALID,destination:req.body.destination};
+    console.log(decoded);
+  })
+  return res.json({result});
+})
+
 router.post("/auth/signup",
-[   
-  check("username",code.auth.NAME_INVALID).not().isEmpty(),
-  check("email", code.auth.EMAIL_INVALID).isEmail(),
-  check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6}),
-  check("uiid",code.auth.UIID_INVALID).not().isEmpty()
-],
+ [   
+   check("username",code.auth.NAME_INVALID).not().isEmpty(),
+   check("email", code.auth.EMAIL_INVALID).isEmail(),
+   check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6}),
+   check("uiid",code.auth.UIID_INVALID).not().isEmpty()
+ ],
 async (req, res) => {
   const errors = validationResult(req);
   let result;
@@ -59,7 +73,6 @@ async (req, res) => {
   const {username, email, password, uiid} = req.body;
   try {
     let user = await Admin.findOne({email});
-    console.log(user);
     if (user) {
       result = {event:code.auth.USER_EXIST}
       res.json({result});
@@ -72,12 +85,8 @@ async (req, res) => {
         return;
       }
     }
-    user = new Admin({
-      username,
-      email,
-      password,
-      uiid
-    });
+
+    user = new Admin({username,email,password,uiid});
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
@@ -86,23 +95,19 @@ async (req, res) => {
     const payload = {
       user: {id: user.id}
     };
-    console.log("payl"+payload.user);
     jwt.sign(
       payload,
-      "schemesterAdminSecret2001",
+      sessionsecret,
       {
-        expiresIn: 10000
+        expiresIn: 2*1440 //min
       },
       (err, token) => {
         if (err) throw err;
-
         result = {event:code.auth.ACCOUNT_CREATED, bailment:token}  //bailment ~ amaanat
-        console.log("tok:"+result);
         res.status(200).json({result});
       }
     );
   } catch (err) {
-
     result = {event:code.auth.ACCOUNT_CREATION_FAILED, msg:err.message}
     console.log(result);
     res.status(500).json({result});
@@ -124,47 +129,37 @@ router.post("/auth/login",
     res.json({result});
     return;
   }
-  console.log('errorfree');
   const { email, password, uiid } = req.body;
   try {
     let user = await Admin.findOne({email});
     if (!user) {
-      console.log(`no ${email}`);
       result = {event:code.auth.USER_NOT_EXIST}
       return res.json({result});
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch){
-      console.log(`no match ${password}`);
       result = {event:code.auth.WRONG_PASSWORD}
-      res.json({result});
-      return;
+      return res.json({result});
     } else {
-      console.log(`match ${password}`);
-      // let inst = Admin.findOne({uiid}).where('email').equals(email);
-      // console.log(inst);
-      // if(!inst){
-      //   result = {event:"auth/wrong-uiid"}
-      //   res.json({result});
-      //   return;
-      // }
+      if(uiid!=user.uiid){
+        result = {event:code.auth.WRONG_UIID}
+        res.json({result});
+        return;
+      }
     }
     const payload = {
-      user: {
-        id: user.id
-      }
+      user: {id: user.id}
     };
 
     jwt.sign(
       payload,
-      "schemesterAdminSecret2001",
+      sessionsecret,
       {
-        expiresIn: 3000
+        expiresIn: 28*1440  //min
       },
       (err, token) => {
         if (err) throw err;
         result = {event:code.auth.AUTH_SUCCESS,bailment:token}
-        console.log(result);
         res.json({result});
       }
     );

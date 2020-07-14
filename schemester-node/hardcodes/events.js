@@ -21,6 +21,8 @@ class Authcodes{
         this.USER_NOT_EXIST = 'auth/no-user-found';
         this.USER_EXIST = 'auth/user-found';
         this.AUTH_FAILED = 'auth/authentication-failed';
+        this.SESSION_VALID = 'auth/user-logged-in';
+        this.SESSION_INVALID = 'auth/user-not-logged-in';
         this.EMAIL_INVALID = 'auth/invalid-email';
         this.PASSWORD_INVALID = 'auth/invalid-password';
         this.LOGGED_OUT = 'auth/logged-out';
@@ -33,6 +35,16 @@ class Authcodes{
         this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
         this.UIID_INVALID = "auth/invalid-uiid";
         this.WRONG_UIID = "auth/wrong-uiid";
+    }
+}
+
+class ActionCodes{
+    constructor(){
+        this.ACCOUNT_DELETE = 'action/delete-account';
+        this.CHANGE_PASSWORD = 'action/change-password';
+        this.CHANGE_UID = 'action/change-uid-email';
+        this.SEND_INVITE = 'action/send-invitation';
+        this.ACCOUNT_VERIFY = 'action/verify-account';
     }
 }
 
@@ -54,6 +66,7 @@ class Codes{
         this.client = new Clientcodes();
         this.server = new Servercodes();
         this.mail = new Mailcodes();
+        this.action  = new ActionCodes();
     }
 }
 
