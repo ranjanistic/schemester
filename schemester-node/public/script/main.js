@@ -83,11 +83,14 @@ class Constant {
     this.tab = "  ";
     this.post = "post";
     this.get = "get";
+    this.put = "put";
     this.backbluecovered = false;
     this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
     this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
-    this.sessionKey = "bailment";
+    this.sessionKey = "bailment";//bailment ~ amaanat
+    this.sessionID = "id";
+    this.sessionUID = "uid";
     this.weekdays = Array(
       "Sunday",
       "Monday",
@@ -115,16 +118,16 @@ class Constant {
 }
 const value = new Constant();
 const constant = new Constant();
+
 class Locations {
   constructor() {
     this.adminLoginPage = "/admin/auth/login";
-    this.adminDashPage = "/admin/session/dash";
+    this.adminDashPage = "/admin/session";
     this.homepage = "/home";
     this.root = "/";
-    this.registrationPage = "/admin/register";
+    this.registrationPage = "/admin/session";
     this.planspage = "/plans";
-    this.adminSettings = "/admin/session/manage";
-    this.registrationPage = "/admin/session/register";
+    this.adminSettings = "/admin/session";
   }
 }
 const locate = new Locations();
@@ -132,7 +135,8 @@ const locate = new Locations();
 class Posts{
   constructor(){
     this.sessionValidate = '/admin/session/validate';
-    this.authlogin = '/admin/auth/login'
+    this.authlogin = '/admin/auth/login';
+    this.authlogout = '/admin/auth/logout';
   }
 }
 const post = new Posts();
@@ -213,6 +217,9 @@ class TextInput {
     this.input.onchange = () => {
       action();
     };
+  }
+  showValid(){
+    setClassName(this.fieldset,actionType.getFieldStyle(bodyType.active));
   }
   showError(errorMsg = null, inputfocus = true) {
     setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
@@ -1505,7 +1512,6 @@ let relocate = (path, data = null) => {
 };
 
 let postData = async (url = String, data = {}) => {
-  clog(data);
   const response = await fetch(url, {
     method: constant.post,
     mode: "same-origin",
@@ -1515,8 +1521,18 @@ let postData = async (url = String, data = {}) => {
   return response.json();
 };
 
+let putData = async (url = String, data = {}) => {
+  await fetch(url, {
+    method: constant.put,
+    mode: "same-origin",
+    headers: { "Content-type": constant.fetchContentType },
+    body: getRequestBody(data, true),
+  });
+};
+
 let refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
+  clog(String(href).indexOf('?'));
   window.location.href = href;
 };
 

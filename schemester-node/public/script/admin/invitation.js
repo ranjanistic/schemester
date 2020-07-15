@@ -111,16 +111,17 @@ class Expired{
         this.loader = getElement('inviteloader');
     }
     requestInviteAction(){
-        //let useremail = this.useremailfield.getInput();
-
-        window.alert('bruh');
+        if(stringIsValid(this.useremailfield.getInput(),inputType.email)){
+            let useremail = this.useremailfield.getInput();
+            
+        }
     }
 }
 
 class Invitation{
     constructor(active,data){
         this.parent = getElement('invitebodyparent');
-        this.parent.innerHTML = active == true?new Active(this.parent,data).viewcontent:new Expired(this.parent,data).viewcontent;
+        window.fragment = (active == true)?new Active(this.parent,data):new Expired(this.parent,data);
     }
 }
 

@@ -1,15 +1,22 @@
 //The admin login page script
 class AdminLogin{
   constructor(){
+
+    localStorage.removeItem(constant.sessionID);
+    localStorage.removeItem(constant.sessionUID);
+
     this.emailField = new TextInput("email_fieldset","adminemail","emailError");
     this.passField = new TextInput("password_fieldset","adminpassword","passError");
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError");
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
     this.back = getElement("backFromLogin");
-
     this.forgotPassword = getElement("forgotpasswordButton");
-
+    this.target = String(getElement('target').innerHTML);
+    if(!stringIsValid(this.target,inputType.nonempty)){
+      this.target = 'dashboard';
+    }
+    clog(this.target);
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.root)});
 
     this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.input.focus()})});
@@ -43,7 +50,8 @@ class AdminLogin{
       postData(post.authlogin,{
         email:String(this.emailField.getInput()).trim(),
         password:this.passField.getInput(),
-        uiid:String(this.uiidField.getInput()).trim()
+        uiid:String(this.uiidField.getInput()).trim(),
+        target:this.target
       })
       .then((res) => {
         this.handleAuthResult(res.result);
@@ -57,21 +65,16 @@ class AdminLogin{
   handleAuthResult=(result)=>{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{
-        snackBar("Success");
-        window.localStorage.setItem(constant.sessionKey,result.bailment)
-        postData(post.sessionValidate,{
-          [constant.sessionKey]:window.localStorage.getItem(constant.sessionKey),
-          destination:locate.adminDashPage
-        }).then((res)=>{
-          clog(res.result);
-          if(res.result.event == code.auth.SESSION_VALID){
-            relocate(res.result.destination);
-          } else{
-            snackBar("Login again.");
-          }
-        }).catch((error)=>{
-          snackBar(error.msg);
-        })
+        this.emailField.showValid();
+        this.passField.showValid();
+        this.uiidField.showValid();
+        localStorage.setItem(constant.sessionUID,result.uid);
+        localStorage.setItem(constant.sessionID,result.id);
+        clog(result.target);
+        relocate(locate.adminDashPage,{
+          u:result.uid,
+          target:result.target
+        });
       }break;
       case code.auth.WRONG_PASSWORD:{
         this.passField.normalize(false);
@@ -158,15 +161,16 @@ class AdminLogin{
 // };
 
 window.onload =_=>{
-  postData(post.sessionValidate, {
-    [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
-    destination: locate.adminDashPage,
-  }).then((res) => {
-    if (res.result.event == code.auth.SESSION_VALID) {
-      relocate(locate.adminDashPage)
-    } else {
-      window.app = new AdminLogin();
-    }
-  });
+  // postData(post.sessionValidate, {
+  //   [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
+  //   destination: locate.adminDashPage,
+  // }).then((res) => {
+  //   if (res.result.event == code.auth.SESSION_VALID) {
+  //     relocate(locate.adminDashPage)
+  //   } else {
+  //     window.app = new AdminLogin();
+  //   }
+  // });
+  window.app = new AdminLogin();
 }
 

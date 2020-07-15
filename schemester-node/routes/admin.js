@@ -1,23 +1,30 @@
 const express = require("express"),
   router = express.Router(),
   fetch = require("node-fetch"),
-//  expressJwt = require("express-jwt"),
+  cookieParser = require('cookie-parser'),
   bcrypt = require("bcryptjs"),
   jwt = require("jsonwebtoken"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
   {check, validationResult} = require("express-validator");
 
-var sessionTok = null;
 const sessionsecret = "schemesterSecret2001";
+const sessionKey = 'bailment';  //bailment ~ amaanat
+const sessionID = "id";
+const sessionUID = "uid";
 const Admin = require("../modelschema/Admins");
-
-// router.use('/account',expressJwt({secret:sessionsecret}));
-// router.use('/auth',expressJwt({secret: sessionsecret}));
-// router.use('/session',expressJwt({secret: sessionsecret}));
+router.use(cookieParser(sessionsecret));
 
 router.get("/", function (req, res) {
-  res.redirect("/admin/auth/login");
+  let token = req.signedCookies(sessionKey);
+  jwt.verify(token,sessionsecret,(err,decode)=>{
+    if(err){
+      res.redirect("/admin/auth/login?target=dashboard");
+    } else{
+      res.redirect(`/admin/session?u=${decode.user.id}&target=dashboard`);
+    }
+  })
+
 });
 
 router.get("/session/register*", (_request, res) => {
@@ -25,16 +32,56 @@ router.get("/session/register*", (_request, res) => {
 });
 
 router.get("/auth/login*", (req, res) => {
-  let autofill = req.query;
-  res.render(view.adminlogin,{autofill})
+  let token = req.signedCookies[sessionKey];
+  jwt.verify(token,sessionsecret,(err,decode)=>{
+    if(err){
+      let autofill = req.query;
+      res.render(view.adminlogin,{autofill});
+    } else{
+      let link = req.query.target!=null?`/admin/session?u=${decode.user.id}&target=${req.query.target}`:`/admin/session?u=${decode.user.id}&target=dashboard`;
+      res.redirect(link);
+    }
+  })
 });
 
-router.get("/session/dash*", (req, res) => {
-  res.render(view.admindash);
-});
-
-router.get("/session/manage*", (_request, res) => {
-  view.render(res, view.adminsettings);
+router.get("/session*", (req, res) => {
+  let token = req.signedCookies[sessionKey];
+  let target = req.query.target!=null?req.query.target:`dashboard`;
+  jwt.verify(token,sessionsecret,(err,decode)=>{
+    if(err){
+      res.redirect(`/admin/auth/login?target=${target}`);
+    } else{
+      if(req.query.u==decode.user.id){
+        try{
+          let _id = req.query.u;
+          let user = Admin.findOne({_id});
+          if(user){
+            console.log("dash:"+user.email);
+            switch(target){
+              case 'manage':{
+                res.render(view.adminsettings);
+              }break;
+              case 'dashboard':{
+                res.render(view.admindash);   
+              }break;
+              default:{
+                target = 'dashboard';
+                res.redirect(`/admin/auth/login?target=${target}`);
+              }
+            }
+          }else{
+            throw Error(code.auth.USER_NOT_EXIST);
+          }
+        }catch(e){
+          console.log(e);
+          res.clearCookie(sessionKey);
+          res.redirect(`/admin/auth/login?target=${target}`);
+        }
+      }else{
+        res.render(view.notfound);
+      }
+    }
+  })
 });
 
 //for account settings
@@ -46,10 +93,10 @@ router.post("/account/action*",(req,res)=>{
 
 router.post('/session/validate',(req,res)=>{
   let result;
-  const bailment = req.body.bailment;
-  jwt.verify(bailment,sessionsecret,(err,decoded)=>{
+  let token = req.signedCookies[sessionKey];
+  jwt.verify(token,sessionsecret,(err,decoded)=>{
     console.log(err);
-    result = err?{event:code.auth.SESSION_INVALID,destination:'/admin/auth/login/'}:{event:code.auth.SESSION_VALID,destination:req.body.destination};
+    result = err?{event:code.auth.SESSION_INVALID,destination:'/admin/auth/login'}:{event:code.auth.SESSION_VALID,destination:req.body.destination};
     console.log(decoded);
   })
   return res.json({result});
@@ -103,8 +150,10 @@ async (req, res) => {
       },
       (err, token) => {
         if (err) throw err;
-        result = {event:code.auth.ACCOUNT_CREATED, bailment:token}  //bailment ~ amaanat
-        res.status(200).json({result});
+        res.cookie(sessionKey,token,{signed:true})
+        result = {event:code.auth.AUTH_SUCCESS,[sessionUID]:user.id,[sessionID]:email}
+        console.log(result);
+        res.json({result});
       }
     );
   } catch (err) {
@@ -115,7 +164,14 @@ async (req, res) => {
   }
 });
 
+router.post('/auth/logout',(req,res)=>{
+  res.clearCookie(sessionKey);
+  let result = {event:code.auth.LOGGED_OUT};
+  res.json({result});
+})
 
+let lastMail = null;
+let loginFailCount = 0;
 router.post("/auth/login", 
 [
   check("email", code.auth.EMAIL_INVALID).isEmail(),
@@ -129,19 +185,32 @@ router.post("/auth/login",
     res.json({result});
     return;
   }
-  const { email, password, uiid } = req.body;
+  const { email, password, uiid , target} = req.body;
   try {
     let user = await Admin.findOne({email});
     if (!user) {
       result = {event:code.auth.USER_NOT_EXIST}
       return res.json({result});
     }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch){
+      if(lastMail == email){
+        loginFailCount++;
+      }else{
+        lastMail = email;
+        loginFailCount = 0;
+      }
       result = {event:code.auth.WRONG_PASSWORD}
       return res.json({result});
     } else {
       if(uiid!=user.uiid){
+        if(lastMail == email){
+          loginFailCount++;
+        }else{
+          lastMail = email;
+          loginFailCount = 0;
+        }
         result = {event:code.auth.WRONG_UIID}
         res.json({result});
         return;
@@ -159,7 +228,9 @@ router.post("/auth/login",
       },
       (err, token) => {
         if (err) throw err;
-        result = {event:code.auth.AUTH_SUCCESS,bailment:token}
+        res.cookie(sessionKey,token,{signed:true})
+        result = {event:code.auth.AUTH_SUCCESS,[sessionUID]:user.id,[sessionID]:email,target:target}
+        console.log(result);
         res.json({result});
       }
     );

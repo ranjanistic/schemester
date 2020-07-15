@@ -1,21 +1,4 @@
 //the admin dashboard script
-
-var logOut,
-  settings,
-  dateTime,
-  greeting,
-  teacherChipToday,
-  classChipToday,
-  workboxtoday,
-  teacherBoxToday,
-  classBoxToday,
-  teacherSearchInput,
-  teacherDropdown,
-  classSearchInput,
-  classDropdown,
-  dayInput,
-  dayDropdown;
-
 class Dashboard {
   constructor() {
     this.greeting = getElement("greeting");
@@ -60,13 +43,24 @@ class Dashboard {
     });
     this.logOut.addEventListener(click,(_) => {
         showLoader();
-        finishSession(_=>{relocate(locate.adminLoginPage)});
+        postData(post.authlogout)
+        .then((res)=>{
+          if(res.result.event == code.auth.LOGGED_OUT){
+            relocate(locate.adminLoginPage,{
+              email:localStorage.getItem(constant.sessionID)
+            })
+
+          }
+        });
     },false);
     this.settings.addEventListener(
       click,
       (_) => {
         showLoader();
-        refer(locate.adminSettings);
+        refer(locate.adminSettings,{
+          u:localStorage.getItem(constant.sessionUID),
+          target:'manage'
+        });
       },
       false
     );
@@ -109,5 +103,6 @@ class Dashboard {
 let loadRemoteContent = () => {};
 
 window.onload = (_) => {
-    checkSessionVaildation(_=>{window.app = new Dashboard()})
+    //checkSessionVaildation(_=>{window.app = new Dashboard()})
+    window.app = new Dashboard()
 };

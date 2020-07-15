@@ -81,7 +81,10 @@ class Management {
   };
    undoAndReturn = _=> {
     showLoader();
-    relocate(adminDashPage);
+    relocate(locate.adminDashPage,{
+      u:localStorage.getItem(constant.sessionUID),
+      target:'dashboard'
+    });
   }
 }
 
@@ -258,5 +261,6 @@ class Users {
 }
 
 window.onload = _=> {
-  checkSessionVaildation(_=>{window.app = new Management()},null,locate.adminSettings);
+  //checkSessionVaildation(_=>{window.app = new Management()},null,locate.adminSettings);
+  window.app = new Management();
 };

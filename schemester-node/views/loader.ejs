@@ -41,9 +41,6 @@
     <meta name="apple-mobile-web-app-title" content="Schemester">
     <meta name="msapplication-TileColor" content="#216bf3">
     <meta name="msapplication-TileImage" content="/graphic/schemester.png">
-    <script type="text/javascript">
-      window.onload = _=>checkSessionVaildation(_=>{relocate(locate.adminDashPage)},_=>{relocate(locate.homepage)});
-    </script>
     <style>
       body{
         overflow: hidden;
@@ -65,6 +62,9 @@
         <button class="fmt-right neutral-button" id="snackButton"></button>
       </div>
   </body>
+  <script type="text/javascript">
+      window.onload = _=>relocate(locate.homepage);
+    </script>
   <noscript id="noscript" class="dialog fmt-red" style="display:block">
     <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
         <div class="heading">Javascript required</div><br/>
