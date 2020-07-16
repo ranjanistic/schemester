@@ -20,10 +20,6 @@ router.get("/", function (req, res) {
   res.redirect("/admin/auth/login?target=dashboard");
 });
 
-router.get("/session/register*", (_request, res) => {
-  view.render(res, view.adminsetup);
-});
-
 router.get("/auth/login*", (req, res) => {
   let token = req.signedCookies[sessionKey];
   jwt.verify(token,sessionsecret,(err,decode)=>{
@@ -54,7 +50,9 @@ router.get("/session*", (req, res) => {
             let adata = getAdminShareData(user);
             let uiid = adata.uiid;
             let inst = await Institute.findOne({uiid});
-            if(!inst) data.target = 'registration';
+            if(data.target!= 'manage'){
+              if(!inst) data.target = 'registration';
+            }
             switch(data.target){
               case 'manage':{
                 res.render(view.adminsettings, {adata});
@@ -98,9 +96,7 @@ router.post('/session/validate',(req,res)=>{
   let result;
   let token = req.signedCookies[sessionKey];
   jwt.verify(token,sessionsecret,(err,_)=>{
-    //console.log(err);
     result = err?{event:code.auth.SESSION_INVALID}:{event:code.auth.SESSION_VALID};
-    //console.log(decoded);
   })
   return res.json({result});
 })

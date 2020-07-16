@@ -76,6 +76,7 @@ img{vertical-align:middle}
     font-size: 16px;
     font-weight: 500;
     color: #c40c0c;
+    font-family: 'Questrial', sans-serif
 }
 .editable{
     color:#00559b;
@@ -200,18 +201,18 @@ img{vertical-align:middle}
     border-radius: 18px;
     color:#216bf3;
     cursor: pointer;
+    transition:0.2s ease;
 }
-.leftTabButton:focus{
-    background-color: #216bf39d;
-    box-shadow: 0 #00000000;
-}
+
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
     border-width: 0;
     border-radius: 18px 0px 0px 18px;
     padding:4px 12px 4px 12px;
     background-color: #216bf3;
-    color:white
+    color:white;
+    box-shadow: 0px 6px 15px #00000022;
+    transition:0.2s ease;
 }
 .tabContainerRight{
     color: white;
@@ -220,6 +221,8 @@ img{vertical-align:middle}
     font-size:22px;
     padding:4px;
     transition: 0.3s ease;
+    box-shadow: 0px 6px 15px #00000033;
+    transition:0.3s ease;
 }
 
 .text-field{

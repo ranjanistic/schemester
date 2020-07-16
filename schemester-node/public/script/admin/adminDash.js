@@ -43,14 +43,13 @@ class Dashboard {
     });
     this.logOut.addEventListener(click,(_) => {
         showLoader();
-        postData(post.authlogout)
-        .then((result)=>{
-          if(result.event == code.auth.LOGGED_OUT){
-            relocate(locate.adminLoginPage,{
-              email:localStorage.getItem(constant.sessionID)
-            })
-          }
-        });
+        let email = localStorage.getItem(constant.sessionID);
+        let uiid = localStorage.getItem('uiid');
+        finishSession(_=>{ relocate(locate.adminLoginPage,{
+            email:email,
+            uiid:uiid
+          })
+        })
     },false);
     this.settings.addEventListener(
       click,

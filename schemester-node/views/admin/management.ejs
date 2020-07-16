@@ -89,13 +89,13 @@
                             <button class="fmt-right positive-button" id="editAdminSection">Edit</button>
                             <div>
                                 <span class="caption">Admin name</span><br/>
-                                <span class="editable" id="adminName">...</span><br/>
+                                <span class="editable" id="adminName"><%= adata.username %></span><br/>
                                 <span class="caption">Email address</span><br/>
-                                <span class="editable" id="adminEmailAddress">...</span><br/>
+                                <span class="editable" id="adminEmailAddress"><%= adata.id %></span><br/>
                                 <span class="caption">Contact Number</span><br/>
                                 <span class="editable" id="adminPhoneNumber">...</span><br/>
                                 <span class="caption">Account created at</span><br/>
-                                <span id="adminCreationTime">...</span><br/>
+                                <span id="adminCreationTime"><%= adata.createdAt %></span><br/>
                             </div>
                         </div>
                         <!--institution settings box-->
@@ -106,7 +106,7 @@
                                 <span class="caption">Display name</span><br/>
                                 <span class="editable" id="instituteName">...</span><br/>
                                 <span class="caption">UIID</span><br/>
-                                <span class="editable" id="uiid">...</span><br/>
+                                <span class="editable" id="uiid"><%= adata.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
                                 <span  id="subscriptionTill">...</span ><br/>
                             </div>

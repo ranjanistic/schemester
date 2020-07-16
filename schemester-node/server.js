@@ -7,51 +7,31 @@ const express = require('express'),
     jwt = require("jsonwebtoken"),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
-    database = require("./config/db");
+    database = require("./config/db"),
+    app = express();
 
 // Initiate Mongo Server
-database.getServer().then((db)=>{
-    console.log(`Connected: ${db.connection.name}`);
-});
+database.getServer()
+    .then(db=>console.log(`Connected: ${db.connection.name}`))
+    .catch(error=>console.log(error));
 
-const app = express();
-const sessionsecret = "schemesterSecret2001";
-const sessionKey = 'bailment';  //bailment ~ amaanat
-app.use(cookieParser(sessionsecret));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'));
-app.use('/admin/', admin);
+app.use('/admin', admin);
 app.use('/teacher',teacher);
 
 app.get('/', (req,res)=>{
     res.render(view.loader);
 });
 app.get('/home', (req,res)=>{
-    let tok = req.signedCookies[sessionKey];
-    console.log(tok);
     view.render(res,view.homepage);
-    jwt.verify(tok,sessionSecret,(err,decode)=>{
-        if(err){
-            view.render(res,view.homepage);
-        }else{
-            res.redirect(`/admin/session?target=dash?u=${decode.user.id}`);
-        }
-    })
-
 });
 
 app.get('/plans/',(_request,res)=>{
     view.render(res,view.plans);
 });
 
-app.post('/sampledata',(req,res)=>{
-    console.log(req.body);
-    res.json({
-        hello:'naiakgj',
-        okay:'olaidfj'
-    });
-})
 
 app.get('/404', (req, res, next)=>{
     next();
@@ -65,7 +45,6 @@ app.get('/500', (req, res, next)=>{
     next(new Error('keyboard cat!'));
 });
 
-// Error handlers
 app.use((req, res, next)=>{
     res.status(404);
     res.format({

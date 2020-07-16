@@ -66,27 +66,13 @@ class Institution {
           ]
         })  //each day
       ],
-      
-    });
-
-    var schedule = new Schema({
-      day: ({ type: Array } = [
-        {
-          class: ({ type: Map } = {
-            section: ({ type: Map } = {
-              teacher: { type: String },
-              subject: { type: String },
-            }),
-          }),
-        },
-      ]),
     });
   }
   getSchema() {
-    return this.instituteSchema;
+    return this.instSchema;
   }
   getModel() {
-    return mongoose.model(this.institutions, this.instituteSchema);
+    return mongoose.model(this.institutions, this.getSchema());
   }
 }
 module.exports = new Institution().getModel();

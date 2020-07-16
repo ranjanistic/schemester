@@ -88,7 +88,6 @@ class Constant {
     this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
     this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
-    this.sessionKey = "bailment";//bailment ~ amaanat
     this.sessionID = "id";
     this.sessionUID = "uid";
     this.weekdays = Array(
@@ -963,9 +962,10 @@ let changeEmailBox = (isShowing = true) => {
 let registrationDialog = (isShowing = true, email = null, uiid = null) => {
   checkSessionVaildation(_=>{
     var confirmLogout = new Dialog();
+    const data = getUserLocally();
     confirmLogout.setDisplay(
       "Already Logged In.",
-      `You are currently logged in as <b>{user.email}</b>.
+      `You are currently logged in as <b>${data.id}</b>.
        You need to log out before creating a new account. Confirm log out?`
     );
     confirmLogout.createActions(
@@ -1174,6 +1174,8 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     });
     verify.onButtonClick(0, () => {
       verify.loader();
+      verify.existence(false);
+      loadingBox(true,'Checking','This may take a few seconds');
       setTimeout(() => {
         localStorage.setItem('verified',true);
         relocate(locate.registrationPage,{
@@ -1299,23 +1301,12 @@ let loadingBox = (
   load.existence(visible);
 };
 
-let checkSessionVaildation=(validAction = null, invalidAction = null,destination = locate.adminDashPage)=>{
-  postData(post.sessionValidate, {
-    [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
-    destination: destination,
-  }).then((result) => {
+let checkSessionVaildation=(validAction =_=>{relocate(locate.root)}, invalidAction =_=>relocate(locate.adminLoginPage,))=>{
+  postData(post.sessionValidate).then((result) => {
     if (result.event == code.auth.SESSION_INVALID) {
-      if(invalidAction == null){
-        relocate(res.result.destination);
-      } else{
-        invalidAction();
-      }
-    } else {
-      if(validAction == null){
-        relocate(res.result.destination);
-      }else{
-        validAction()
-      }
+      invalidAction();
+    } else if(result.event == code.auth.SESSION_VALID) {
+      validAction()
     }
   });
 }
@@ -1393,8 +1384,14 @@ let validateTextField = (
 };
 
 let finishSession =(afterfinish = ()=>{relocate(locate.root)})=>{
-  window.localStorage.setItem(constant.sessionKey, null);
-  afterfinish();
+  postData(post.authlogout).then(res=>{
+    if(res.event == code.auth.LOGGED_OUT){
+      localStorage.clear();
+      afterfinish();
+    } else{
+      snackBar('Failed to logout','Try again',false,_=>{finishSession()});
+    }
+  })
 }
 
 let setFieldSetof = (

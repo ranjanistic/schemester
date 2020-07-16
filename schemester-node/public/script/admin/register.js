@@ -227,6 +227,18 @@ class TeacherData {
 //TODO: pass functions as params
 //TODO: dymanicize dialog creation, snackbar creation.
 window.onload = _=> {
+  getElement('saveandexit').onclick = ()=>{
+    //savedetails
+    relocate(locate.homepage);
+  };
+  getElement('logoutAdminButton').onclick = ()=>{
+    finishSession();
+  };
+  getElement('settingsButton').onclick = ()=>{
+    refer(locate.adminSettings,{
+      target:'manage'
+    })
+  }
   var register = new Register();
   var stage1 = new Stage1();
   var stage2 = new Stage2();

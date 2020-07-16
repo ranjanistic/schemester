@@ -63,14 +63,9 @@
       </div>
   </body>
   <script type="text/javascript">
-    postData(post.sessionValidate).then((res)=>{
-      if(res.result.event == code.auth.SESSION_VALID){
-        relocate(locate.adminDashPage)
-      } else{
-        relocate(locate.homepage)
-      }
-    })
-    window.onload = _=>relocate(locate.homepage);
+    window.onload = _=>{
+      checkSessionVaildation(_=>{relocate(locate.adminDashPage)},_=>{relocate(locate.homepage)});
+    }
   </script>
   <noscript id="noscript" class="dialog fmt-red" style="display:block">
     <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
