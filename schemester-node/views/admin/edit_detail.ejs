@@ -34,13 +34,14 @@
                 <div class="group-heading" id="adminHead"></div>
                 <fieldset class="text-field" id="adminNameField">
                     <legend class="field-error-caption">Name Visible to people of your institution</legend>
-                    <input class="text-input" required autocomplete="name" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
+                    <span style="font-size: 24px;" id="adminName"><%= adata.username %> </span>
+                    <!-- <input class="text-input" required autocomplete="name" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails"> -->
                     <span class="fmt-right error-caption"  id="adminNameError"></span>
                 </fieldset>
                 <div class="fmt-half">
                     <fieldset class="fmt-col text-field" id="emailField">
                         <legend class="field-error-caption">Email Address</legend>
-                        <span style="font-size: 24px;" id="adminEmail">---</span>
+                        <span style="font-size: 24px;" id="adminEmail"><%= adata.id %> </span>
                         <button class="positive-button fmt-right" style="margin:0 4px" id="verifiedEmail">C</button>
                         <button class="warning-button fmt-right" style="margin:0 4px" id="changeEmail">V</button>
                     </fieldset>
@@ -69,7 +70,7 @@
                     </fieldset>
                     <fieldset class="text-field" id="uiidField">
                         <legend class="field-error-caption">UIID Permanent</legend>
-                        <span style="font-size: 24px;" id="instuiid">---</span>
+                        <span style="font-size: 24px;" id="instuiid"><%= adata.uiid %> </span>
                         <span class="fmt-right error-caption"  id="uiidError"></span>
                     </fieldset>
                 </div>

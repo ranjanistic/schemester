@@ -13,18 +13,11 @@ const sessionKey = 'bailment';  //bailment ~ amaanat
 const sessionID = "id";
 const sessionUID = "uid";
 const Admin = require("../modelschema/Admins");
+const Institute = require("../modelschema/Institutions");
+
 router.use(cookieParser(sessionsecret));
-
 router.get("/", function (req, res) {
-  let token = req.signedCookies(sessionKey);
-  jwt.verify(token,sessionsecret,(err,decode)=>{
-    if(err){
-      res.redirect("/admin/auth/login?target=dashboard");
-    } else{
-      res.redirect(`/admin/session?u=${decode.user.id}&target=dashboard`);
-    }
-  })
-
+  res.redirect("/admin/auth/login?target=dashboard");
 });
 
 router.get("/session/register*", (_request, res) => {
@@ -46,39 +39,49 @@ router.get("/auth/login*", (req, res) => {
 
 router.get("/session*", (req, res) => {
   let token = req.signedCookies[sessionKey];
-  let target = req.query.target!=null?req.query.target:`dashboard`;
-  jwt.verify(token,sessionsecret,(err,decode)=>{
+  let data = req.query;
+  data.target = (data.target!=null&&data.target!='')?data.target:`dashboard`;
+  jwt.verify(token,sessionsecret,async (err,decode)=>{
     if(err){
-      res.redirect(`/admin/auth/login?target=${target}`);
+      console.log(err.message);
+      res.redirect(`/admin/auth/login?target=${data.target}`);
     } else{
-      if(req.query.u==decode.user.id){
+      if(data.u===decode.user.id){
         try{
-          let _id = req.query.u;
-          let user = Admin.findOne({_id});
+          const _id = data.u;
+          let user = await Admin.findOne({_id});
           if(user){
-            console.log("dash:"+user.email);
-            switch(target){
+            let adata = getAdminShareData(user);
+            let uiid = adata.uiid;
+            let inst = await Institute.findOne({uiid});
+            if(!inst) data.target = 'registration';
+            switch(data.target){
               case 'manage':{
-                res.render(view.adminsettings);
+                res.render(view.adminsettings, {adata});
               }break;
               case 'dashboard':{
-                res.render(view.admindash);   
+                res.render(view.admindash, {adata});
               }break;
+              case 'registration':{
+                res.render(view.adminsetup, {adata});
+              }
               default:{
-                target = 'dashboard';
-                res.redirect(`/admin/auth/login?target=${target}`);
+                data.target = 'dashboard';
+                res.redirect(`/admin/auth/login?target=${data.target}`);
               }
             }
           }else{
-            throw Error(code.auth.USER_NOT_EXIST);
+            console.log("no user")
+            res.clearCookie(sessionKey);
+            res.redirect(`/admin/auth/login?target=${data.target}`);
           }
         }catch(e){
           console.log(e);
           res.clearCookie(sessionKey);
-          res.redirect(`/admin/auth/login?target=${target}`);
+          res.redirect(`/admin/auth/login?target=${data.target}`);
         }
       }else{
-        res.render(view.notfound);
+        res.redirect(`/admin/auth/login?target=${data.target}`);
       }
     }
   })
@@ -94,10 +97,10 @@ router.post("/account/action*",(req,res)=>{
 router.post('/session/validate',(req,res)=>{
   let result;
   let token = req.signedCookies[sessionKey];
-  jwt.verify(token,sessionsecret,(err,decoded)=>{
-    console.log(err);
-    result = err?{event:code.auth.SESSION_INVALID,destination:'/admin/auth/login'}:{event:code.auth.SESSION_VALID,destination:req.body.destination};
-    console.log(decoded);
+  jwt.verify(token,sessionsecret,(err,_)=>{
+    //console.log(err);
+    result = err?{event:code.auth.SESSION_INVALID}:{event:code.auth.SESSION_VALID};
+    //console.log(decoded);
   })
   return res.json({result});
 })
@@ -150,9 +153,8 @@ async (req, res) => {
       },
       (err, token) => {
         if (err) throw err;
-        res.cookie(sessionKey,token,{signed:true})
-        result = {event:code.auth.AUTH_SUCCESS,[sessionUID]:user.id,[sessionID]:email}
-        console.log(result);
+        res.cookie(sessionKey,token,{signed:true});
+        result = {event:code.auth.ACCOUNT_CREATED,user:getAdminShareData(user)}
         res.json({result});
       }
     );
@@ -164,14 +166,12 @@ async (req, res) => {
   }
 });
 
-router.post('/auth/logout',(req,res)=>{
+router.post('/auth/logout', (req,res)=>{
   res.clearCookie(sessionKey);
   let result = {event:code.auth.LOGGED_OUT};
   res.json({result});
-})
+});
 
-let lastMail = null;
-let loginFailCount = 0;
 router.post("/auth/login", 
 [
   check("email", code.auth.EMAIL_INVALID).isEmail(),
@@ -195,22 +195,10 @@ router.post("/auth/login",
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch){
-      if(lastMail == email){
-        loginFailCount++;
-      }else{
-        lastMail = email;
-        loginFailCount = 0;
-      }
       result = {event:code.auth.WRONG_PASSWORD}
       return res.json({result});
     } else {
       if(uiid!=user.uiid){
-        if(lastMail == email){
-          loginFailCount++;
-        }else{
-          lastMail = email;
-          loginFailCount = 0;
-        }
         result = {event:code.auth.WRONG_UIID}
         res.json({result});
         return;
@@ -220,7 +208,7 @@ router.post("/auth/login",
       user: {id: user.id}
     };
 
-    jwt.sign(
+     jwt.sign(
       payload,
       sessionsecret,
       {
@@ -228,9 +216,8 @@ router.post("/auth/login",
       },
       (err, token) => {
         if (err) throw err;
-        res.cookie(sessionKey,token,{signed:true})
-        result = {event:code.auth.AUTH_SUCCESS,[sessionUID]:user.id,[sessionID]:email,target:target}
-        console.log(result);
+        res.cookie(sessionKey,token,{signed:true});
+        result = {event:code.auth.AUTH_SUCCESS,user:getAdminShareData(user),target:target};
         res.json({result});
       }
     );
@@ -326,6 +313,7 @@ var createInviteLink = (email, uiid, target) => {
     time: [exp],
   });
 };
+
 var getInviteLinkData = (query) => {
   let email = `${query.id}@${query.dom}`;
   console.log(getTheMoment(false) + "<" + parseInt(query.exp));
@@ -392,7 +380,8 @@ var getTheMoment = (stringForm = true, dayincrement = 0) => {
   }
 };
 
-var daysInMonth = (month, year) => new Date(year, month, 0).getDate();
+let daysInMonth = (month, year) => new Date(year, month, 0).getDate();
+
 var isInvalidQuery = (query) =>
   query.id == null ||
   query.dom == null ||
@@ -403,9 +392,15 @@ var isInvalidQuery = (query) =>
   query.exp == "" ||
   query.uiid == ""|| String(parseInt(query.exp)).length<getTheMoment(true).length;
 
-let isValidEmail = (emailValue) => {
-  const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return emailRegex.test(String(emailValue).toLowerCase());
-};
+let getAdminShareData = (data = {})=>{
+  return {
+    [sessionUID]:data.id,
+    username:data.username,
+    [sessionID]:data.email,
+    uiid:data.uiid,
+    createdAt:data.createdAt,
+    verified:data.verified
+  };
+}
 
 module.exports = router;

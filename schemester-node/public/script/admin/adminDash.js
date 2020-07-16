@@ -44,12 +44,11 @@ class Dashboard {
     this.logOut.addEventListener(click,(_) => {
         showLoader();
         postData(post.authlogout)
-        .then((res)=>{
-          if(res.result.event == code.auth.LOGGED_OUT){
+        .then((result)=>{
+          if(result.event == code.auth.LOGGED_OUT){
             relocate(locate.adminLoginPage,{
               email:localStorage.getItem(constant.sessionID)
             })
-
           }
         });
     },false);

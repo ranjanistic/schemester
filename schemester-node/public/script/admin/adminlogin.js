@@ -1,10 +1,7 @@
 //The admin login page script
 class AdminLogin{
   constructor(){
-
-    localStorage.removeItem(constant.sessionID);
-    localStorage.removeItem(constant.sessionUID);
-
+    localStorage.clear();
     this.emailField = new TextInput("email_fieldset","adminemail","emailError");
     this.passField = new TextInput("password_fieldset","adminpassword","passError");
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError");
@@ -53,10 +50,11 @@ class AdminLogin{
         uiid:String(this.uiidField.getInput()).trim(),
         target:this.target
       })
-      .then((res) => {
-        this.handleAuthResult(res.result);
+      .then((result) => {
+        this.handleAuthResult(result);
       }).catch((error)=>{
-        this.handleAuthResult(error.result);
+        snackBar(error,'Report',false);
+        //this.handleAuthResult(error);
       });
     }
   }
@@ -68,16 +66,14 @@ class AdminLogin{
         this.emailField.showValid();
         this.passField.showValid();
         this.uiidField.showValid();
-        localStorage.setItem(constant.sessionUID,result.uid);
-        localStorage.setItem(constant.sessionID,result.id);
-        clog(result.target);
+        saveUserLocally(result.user);
         relocate(locate.adminDashPage,{
           u:result.uid,
           target:result.target
         });
       }break;
       case code.auth.WRONG_PASSWORD:{
-        this.passField.normalize(false);
+        this.passField.showError(constant.nothing);
         show(this.forgotPassword);
         this.logInButton.innerHTML = "Retry";
       }break;
@@ -98,11 +94,11 @@ class AdminLogin{
       }break;
       case code.auth.ACCOUNT_RESTRICTED:{
         this.logInButton.textContent = "Retry";
-        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox()});
+        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)});
       }break;
       case code.auth.AUTH_REQ_FAILED:{
         this.logInButton.textContent = "Retry";
-        snackBar("No internet connection", null, false);
+        snackBar("Request failed.", null, false);
       }break;
       default: {
         this.logInButton.textContent = "Retry";

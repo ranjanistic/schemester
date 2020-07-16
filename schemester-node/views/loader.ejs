@@ -63,8 +63,15 @@
       </div>
   </body>
   <script type="text/javascript">
-      window.onload = _=>relocate(locate.homepage);
-    </script>
+    postData(post.sessionValidate).then((res)=>{
+      if(res.result.event == code.auth.SESSION_VALID){
+        relocate(locate.adminDashPage)
+      } else{
+        relocate(locate.homepage)
+      }
+    })
+    window.onload = _=>relocate(locate.homepage);
+  </script>
   <noscript id="noscript" class="dialog fmt-red" style="display:block">
     <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
         <div class="heading">Javascript required</div><br/>

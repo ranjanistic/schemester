@@ -137,6 +137,7 @@ class Posts{
     this.sessionValidate = '/admin/session/validate';
     this.authlogin = '/admin/auth/login';
     this.authlogout = '/admin/auth/logout';
+    this.authsignup = '/admin/auth/signup';
   }
 }
 const post = new Posts();
@@ -1068,24 +1069,46 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
   })
 };
 
+let saveUserLocally = (data = {})=>{
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      clog(key + ":" + data[key]);
+      localStorage.setItem(key,data[key]);
+    }
+  }
+}
+
+let getUserLocally = ()=>{
+  return {
+    [constant.sessionID]:localStorage.getItem(constant.sessionID),
+    [constant.sessionUID]:localStorage.getItem(constant.sessionUID),
+    username:localStorage.getItem('username'),
+    uiid:localStorage.getItem('uiid'),
+    verified:localStorage.getItem('verified'),
+    createdAt:localStorage.getItem('createdAt'),
+  };
+}
+
 let createAccount = (dialog, adminname, email, password, uiid) => {
-  postData("/admin/auth/signup", {
+  postData(post.authsignup, {
     username: adminname,
     email: email,
     password: password,
     uiid: uiid,
   })
-    .then((res) => {
-      let result = res.result;
+    .then((result) => {
+      //let result = res.result;
       dialog.loader(false);
       clog(result.event);
       switch (result.event) {
-        case code.auth.ACCOUNT_CREATED:
-          {
-            clog(result);
-            loadingBox();
+        case code.auth.ACCOUNT_CREATED:{
+          //loadingBox();
+          clog(result.user);
+          saveUserLocally(result.user);
+          if(!result.user.verified){
+            accountVerificationDialog(true);
           }
-          break;
+        }break;
         case code.auth.USER_EXIST:
           {
             dialog.inputField[1].showError("Account already exists.");
@@ -1133,30 +1156,36 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
 
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
   var verify = new Dialog();
+  const data = getUserLocally();
   if (emailSent) {
     verify.setDisplay(
       "Waiting for verification",
       `A link has been sent. Check your email box at 
-      <b>{user.email}</b>, verify your account there, and then click continue here.`
+      <b>${data.id}</b>, verify your account there, and then click continue here.`
     );
     verify.createActions(
-      Array("Verify & Continue", "Abort"),
+      Array("Verified, now continue", "Abort"),
       Array(actionType.positive, actionType.negative)
     );
     verify.onButtonClick(1, () => {
       verify.loader();
-      //todo : not verified, delete account
+      localStorage.clear();
+      verify.existence(false);
     });
     verify.onButtonClick(0, () => {
       verify.loader();
-      //todo : check verification
+      setTimeout(() => {
+        localStorage.setItem('verified',true);
+        relocate(locate.registrationPage,{
+          u:data.uid,
+          target:'registration',
+        })
+      }, 4*1000);
     });
   } else {
     verify.setDisplay(
       "Verification Required",
-      `We need to verify you. A link will be sent at <b>
-        {user.email}
-      </b>, you need to verify your account there. Confirm to send link?`
+      `We need to verify you. A link will be sent at <b>${data.id}</b>, you need to verify your account there. Confirm to send link?`
     );
     verify.createActions(
       Array("Send link", "Cancel"),
@@ -1164,12 +1193,16 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
     );
     verify.onButtonClick(1, () => {
       verify.loader();
-      //todo: cancel verification
+      localStorage.clear();
+      verify.existence(false);
     });
     verify.onButtonClick(0, () => {
       verify.loader();
-
-      //todo: send verification email
+      loadingBox(true,'Sending',`A link is being prepared for ${data.id}.`);
+      //replace with email sender
+      setTimeout(() => {
+        accountVerificationDialog(true,true);
+      }, 3*1000);
     });
   }
   verify.existence(isShowing);
@@ -1270,8 +1303,8 @@ let checkSessionVaildation=(validAction = null, invalidAction = null,destination
   postData(post.sessionValidate, {
     [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
     destination: destination,
-  }).then((res) => {
-    if (res.result.event == code.auth.SESSION_INVALID) {
+  }).then((result) => {
+    if (result.event == code.auth.SESSION_INVALID) {
       if(invalidAction == null){
         relocate(res.result.destination);
       } else{
@@ -1518,16 +1551,9 @@ let postData = async (url = String, data = {}) => {
     headers: { "Content-type": constant.fetchContentType },
     body: getRequestBody(data, true),
   });
-  return response.json();
-};
-
-let putData = async (url = String, data = {}) => {
-  await fetch(url, {
-    method: constant.put,
-    mode: "same-origin",
-    headers: { "Content-type": constant.fetchContentType },
-    body: getRequestBody(data, true),
-  });
+  let res = await response.json();
+  clog(res);
+  return await res.result;
 };
 
 let refer = (href, data = null) => {
@@ -1635,6 +1661,8 @@ let getProperDate = (dateTillMillis = String()) => {
     month - 1
   )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
 };
+
+let getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
 let getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
