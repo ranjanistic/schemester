@@ -959,10 +959,14 @@ let changeEmailBox = (isShowing = true) => {
   mailChange.existence(isShowing);
 };
 
+
+
 let registrationDialog = (isShowing = true, email = null, uiid = null) => {
+  loadingBox();
   checkSessionVaildation(_=>{
     var confirmLogout = new Dialog();
     const data = getUserLocally();
+    clog(data);
     confirmLogout.setDisplay(
       "Already Logged In.",
       `You are currently logged in as <b>${data.id}</b>.
@@ -1072,14 +1076,30 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
 let saveUserLocally = (data = {})=>{
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
-      clog(key + ":" + data[key]);
       localStorage.setItem(key,data[key]);
     }
   }
 }
 
+let hasAnyKeyNull = (data={})=>{
+  if(data == null){
+    return true;
+  }
+  if(data == {}){
+    return true;
+  }
+  for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      if(data[key]==null||data[key]==constant.nothing){
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 let getUserLocally = ()=>{
-  return {
+  let data =  {
     [constant.sessionID]:localStorage.getItem(constant.sessionID),
     [constant.sessionUID]:localStorage.getItem(constant.sessionUID),
     username:localStorage.getItem('username'),
@@ -1087,6 +1107,23 @@ let getUserLocally = ()=>{
     verified:localStorage.getItem('verified'),
     createdAt:localStorage.getItem('createdAt'),
   };
+  if(!hasAnyKeyNull(data)){
+    clog("here");
+    return data;
+  }else{
+    clog("locally esle post");
+    postData(post.sessionValidate,{
+      getuser:true
+    }).then((response)=>{
+      if(response.event == code.auth.SESSION_INVALID){
+        finishSession(_=>{relocate(locate.root)});
+        return null;
+      } else {
+        data = response;
+        return data;
+      }
+    })
+  }
 }
 
 let createAccount = (dialog, adminname, email, password, uiid) => {
@@ -1302,11 +1339,45 @@ let loadingBox = (
 };
 
 let checkSessionVaildation=(validAction =_=>{relocate(locate.root)}, invalidAction =_=>relocate(locate.adminLoginPage,))=>{
-  postData(post.sessionValidate).then((result) => {
+
+  postData(post.sessionValidate,{
+    getuser:true
+  }).then((result) => {
+    console.log(result);
     if (result.event == code.auth.SESSION_INVALID) {
       invalidAction();
-    } else if(result.event == code.auth.SESSION_VALID) {
-      validAction()
+    } else {
+      if(result == getUserLocally()){
+        clog("match")
+      }else{
+        saveUserLocally(result);
+      }
+      validAction();
+    }
+  }).catch(error=>{
+    clog('in catch sessionvalidation:'+error);
+    clog(navigator.onLine);
+    if(navigator.onLine){
+      postData(post.sessionValidate).then((response)=>{
+        if(response.event == code.auth.SESSION_INVALID){
+          invalidAction();
+        } else {
+          validAction();
+        }
+      })
+    }else{
+      let data = getUserLocally();
+      if(hasAnyKeyNull(data)){
+        clog("haskeynull");
+        new Dialog().existence(false);
+        snackBar('Couldn\'t connect to the network','Try again',false,_=>{
+          registrationDialog(true);
+        })
+      } else {
+        clog("haskeynullnot");
+        validAction();
+      }
+      clog("locally:"+JSON.stringify(data));
     }
   });
 }
@@ -1549,7 +1620,6 @@ let postData = async (url = String, data = {}) => {
     body: getRequestBody(data, true),
   });
   let res = await response.json();
-  clog(res);
   return await res.result;
 };
 

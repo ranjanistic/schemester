@@ -1,229 +1,220 @@
 const express = require("express"),
   router = express.Router(),
-  fetch = require("node-fetch"),
-  cookieParser = require('cookie-parser'),
-  bcrypt = require("bcryptjs"),
-  jwt = require("jsonwebtoken"),
+  cookieParser = require("cookie-parser"),
+  { check, validationResult } = require("express-validator"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
-  {check, validationResult} = require("express-validator");
+  session = require("../workers/session"),
+  Admin = require("../modelschema/Admins"),
+  Institute = require("../modelschema/Institutions");
 
 const sessionsecret = "schemesterSecret2001";
-const sessionKey = 'bailment';  //bailment ~ amaanat
+const sessionKey = "bailment"; //bailment ~ amaanat
 const sessionID = "id";
 const sessionUID = "uid";
-const Admin = require("../modelschema/Admins");
-const Institute = require("../modelschema/Institutions");
 
 router.use(cookieParser(sessionsecret));
+
 router.get("/", function (req, res) {
   res.redirect("/admin/auth/login?target=dashboard");
 });
 
 router.get("/auth/login*", (req, res) => {
-  let token = req.signedCookies[sessionKey];
-  jwt.verify(token,sessionsecret,(err,decode)=>{
-    if(err){
+  session.verify(req, res).then((response) => {
+    clog("login:" + JSON.stringify(response));
+    if (response.event === code.auth.SESSION_INVALID) {
       let autofill = req.query;
-      res.render(view.adminlogin,{autofill});
-    } else{
-      let link = req.query.target!=null?`/admin/session?u=${decode.user.id}&target=${req.query.target}`:`/admin/session?u=${decode.user.id}&target=dashboard`;
+      res.render(view.adminlogin, { autofill });
+    } else {
+      let link =
+        req.query.target != null
+          ? `/admin/session?u=${response.user.id}&target=${req.query.target}`
+          : `/admin/session?u=${response.user.id}&target=registration`;
       res.redirect(link);
     }
-  })
+  });
 });
 
 router.get("/session*", (req, res) => {
-  let token = req.signedCookies[sessionKey];
   let data = req.query;
-  data.target = (data.target!=null&&data.target!='')?data.target:`dashboard`;
-  jwt.verify(token,sessionsecret,async (err,decode)=>{
-    if(err){
-      console.log(err.message);
+  data.target =
+    data.target != null && data.target != "" ? data.target : `dashboard`;
+  clog("response");
+  session.verify(req, res).then(async (response) => {
+    clog("verify" + JSON.stringify(response));
+    if (response.event === code.auth.SESSION_INVALID) {
       res.redirect(`/admin/auth/login?target=${data.target}`);
-    } else{
-      if(data.u===decode.user.id){
-        try{
-          const _id = data.u;
-          let user = await Admin.findOne({_id});
-          if(user){
+    } else {
+      try {
+        if (data.u === response.user.id) {
+          const _id = response.user.id;
+          let user = await Admin.findOne({ _id });
+          if (user) {
             let adata = getAdminShareData(user);
+            clog(adata);
             let uiid = adata.uiid;
-            let inst = await Institute.findOne({uiid});
-            if(data.target!= 'manage'){
-              if(!inst) data.target = 'registration';
-            }
-            switch(data.target){
-              case 'manage':{
-                res.render(view.adminsettings, {adata});
-              }break;
-              case 'dashboard':{
-                res.render(view.admindash, {adata});
-              }break;
-              case 'registration':{
-                res.render(view.adminsetup, {adata});
+            let inst = await Institute.findOne({ uiid });
+            if (data.target != "manage") {
+              if (!inst) {
+                data.target = "registration";
               }
-              default:{
-                data.target = 'dashboard';
+            }
+            switch (data.target) {
+              case "manage":{
+                  res.render(view.adminsettings, { adata });
+                }
+                break;
+              case "dashboard":{
+                  res.render(view.admindash, { adata });
+                }
+                break;
+              case "registration":{
+                  res.render(view.adminsetup, { adata });
+                }
+                break;
+              default: {
                 res.redirect(`/admin/auth/login?target=${data.target}`);
               }
             }
-          }else{
-            console.log("no user")
-            res.clearCookie(sessionKey);
-            res.redirect(`/admin/auth/login?target=${data.target}`);
+          } else {
+            session.finish(res).then(response=>{
+              if(response) res.redirect(`/admin/auth/login?target=${data.target}`);
+            });
           }
-        }catch(e){
-          console.log(e);
-          res.clearCookie(sessionKey);
+        } else {
           res.redirect(`/admin/auth/login?target=${data.target}`);
         }
-      }else{
+      } catch (e) {
+        clog(e);
         res.redirect(`/admin/auth/login?target=${data.target}`);
       }
     }
-  })
+  });
 });
+
 
 //for account settings
-router.post("/account/action*",(req,res)=>{
-  switch(req.body.type){
-    case code.action.CHANGE_PASSWORD:{}break;
-  }
-})
+router.post("/account/action", (req, res) => {
+  session.verify(req,res).then(response=>{
+    if(response.event == code.auth.SESSION_INVALID){
+      res.redirect(`/admin/auth/login?target=manage`);
+    }else{
+      switch (req.body.action) {
+        case code.action.CHANGE_PASSWORD:{
 
-router.post('/session/validate',(req,res)=>{
-  let result;
-  let token = req.signedCookies[sessionKey];
-  jwt.verify(token,sessionsecret,(err,_)=>{
-    result = err?{event:code.auth.SESSION_INVALID}:{event:code.auth.SESSION_VALID};
+        }break;
+        case code.action.CHANGE_ID:{
+
+        }break;
+        case code.action.ACCOUNT_DELETE:{
+
+        }break;
+        default:res.redirect(`/admin/auth/login?target=manage`);
+      }
+    }
   })
-  return res.json({result});
-})
+});
 
-router.post("/auth/signup",
- [   
-   check("username",code.auth.NAME_INVALID).not().isEmpty(),
-   check("email", code.auth.EMAIL_INVALID).isEmail(),
-   check("password", code.auth.PASSWORD_INVALID).isAlphanumeric().isLength({min:6}),
-   check("uiid",code.auth.UIID_INVALID).not().isEmpty()
- ],
-async (req, res) => {
-  const errors = validationResult(req);
+router.post("/session/validate", async (req, res) => {
   let result;
-  if (!errors.isEmpty()) {    
-    result = {event: errors.array()[0].msg}
-    res.json({result});
-    return;
+  const { getuser } = req.body;
+  clog(getuser);
+  if (getuser) {
+    clog("getuser");
+    session
+      .userdata(req, Admin)
+      .then((response) => {
+        result = response;
+        clog("postttt");
+        clog(result);
+        res.json({ result });
+      })
+      .catch((error) => {
+        clog("errr");
+        throw error;
+      });
+  } else {
+    clog("just verify");
+    await session
+      .verify(req, res)
+      .then((response) => {
+        result = response;
+        clog("post validate");
+        clog(result);
+        return res.json({ result });
+      })
+      .catch((error) => {
+        return res.json({ event: code.auth.AUTH_REQ_FAILED, msg: error });
+      });
   }
-  const {username, email, password, uiid} = req.body;
-  try {
-    let user = await Admin.findOne({email});
-    if (user) {
-      result = {event:code.auth.USER_EXIST}
-      res.json({result});
+});
+
+router.post(
+  "/auth/signup",
+  [
+    check("username", code.auth.NAME_INVALID).not().isEmpty(),
+    check("email", code.auth.EMAIL_INVALID).isEmail(),
+    check("password", code.auth.PASSWORD_INVALID)
+      .isAlphanumeric()
+      .isLength({ min: 6 }),
+    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      result = { event: errors.array()[0].msg };
+      res.json({ result });
       return;
-    } else{
-      let inst = await Admin.findOne({uiid});
-      if (inst) {
-        result = {event:code.server.UIID_TAKEN}
-        res.json({result});
-        return;
-      }
     }
-
-    user = new Admin({username,email,password,uiid});
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
-    await user.save();//account created
-
-    const payload = {
-      user: {id: user.id}
-    };
-    jwt.sign(
-      payload,
-      sessionsecret,
-      {
-        expiresIn: 2*1440 //min
-      },
-      (err, token) => {
-        if (err) throw err;
-        res.cookie(sessionKey,token,{signed:true});
-        result = {event:code.auth.ACCOUNT_CREATED,user:getAdminShareData(user)}
-        res.json({result});
-      }
-    );
-  } catch (err) {
-    result = {event:code.auth.ACCOUNT_CREATION_FAILED, msg:err.message}
-    console.log(result);
-    res.status(500).json({result});
-    return;
+    let result;
+    session
+      .signup(req, res, Admin)
+      .then((response) => {
+        result = response;
+        return res.json({ result });
+      })
+      .catch((error) => {
+        result = { event: code.auth.ACCOUNT_CREATION_FAILED, msg: error };
+        return res.status(500).json({ result });
+      });
   }
+);
+
+router.post("/auth/logout", (_, res) => {
+  session.finish(res).then((response) => {
+    let result = response;
+    return res.json({ result });
+  });
 });
 
-router.post('/auth/logout', (req,res)=>{
-  res.clearCookie(sessionKey);
-  let result = {event:code.auth.LOGGED_OUT};
-  res.json({result});
-});
-
-router.post("/auth/login", 
-[
-  check("email", code.auth.EMAIL_INVALID).isEmail(),
-  check("password",code.auth.PASSWORD_INVALID).not().isEmpty(),
-  check("uiid",code.auth.UIID_INVALID).not().isEmpty()
-], async (req, res) => {
-  const errors = validationResult(req);
-  let result;
-  if (!errors.isEmpty()) {    
-    result = {event: errors.array()[0].msg}
-    res.json({result});
-    return;
-  }
-  const { email, password, uiid , target} = req.body;
-  try {
-    let user = await Admin.findOne({email});
-    if (!user) {
-      result = {event:code.auth.USER_NOT_EXIST}
-      return res.json({result});
+router.post(
+  "/auth/login",
+  [
+    check("email", code.auth.EMAIL_INVALID).isEmail(),
+    check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
+    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      result = { event: errors.array()[0].msg };
+      return res.json({ result });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch){
-      result = {event:code.auth.WRONG_PASSWORD}
-      return res.json({result});
-    } else {
-      if(uiid!=user.uiid){
-        result = {event:code.auth.WRONG_UIID}
-        res.json({result});
-        return;
-      }
-    }
-    const payload = {
-      user: {id: user.id}
-    };
-
-     jwt.sign(
-      payload,
-      sessionsecret,
-      {
-        expiresIn: 28*1440  //min
-      },
-      (err, token) => {
-        if (err) throw err;
-        res.cookie(sessionKey,token,{signed:true});
-        result = {event:code.auth.AUTH_SUCCESS,user:getAdminShareData(user),target:target};
-        res.json({result});
-      }
-    );
-  } catch (err) {
-    result = {event:code.auth.AUTH_REQ_FAILED, msg:err.message};
-    console.log("error:"+result);
-    res.status(500).json({result});
+    let result = { event: code.auth.AUTH_REQ_FAILED };
+    await session
+      .login(req, res, Admin)
+      .then((response) => {
+        clog("post login:" + JSON.stringify(response));
+        result = response;
+        return res.json({ result });
+      })
+      .catch((error) => {
+        result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
+        clog("post login:" + JSON.stringify(result));
+        return res.json({ result });
+      });
   }
-
-});
+);
 
 router.post("/createInstitution", (req, res) => {
   const register = require("../workers/registration.js");
@@ -238,20 +229,21 @@ router.post("/external/*", (req, response) => {
         //also check if user has disabled previous link, in {req.query.revoked}, then create and send new link as follows.
         //var prevlinkData = getPreviousInviteLink();
         //prevlinkData.time;
-        if(req.query.target == "teacher"){
-            var linkdata = createInviteLink(
+        if (req.query.target == "teacher") {
+          var linkdata = createInviteLink(
             "priyanshuranjan88@gmail.com", //use session id
             "mvmnoidab64b", //use session uiid
             "teacher"
-            );
-            console.log("new link:" + linkdata);
-            response.json({ linkdata });
-        }else {
-            response.render(view.notfound);      
+          );
+          clog("new link:" + linkdata);
+          response.json({ linkdata });
+        } else {
+          response.render(view.notfound);
         }
       }
       break;
-    case "action":{
+    case "action":
+      {
         if (req.body.accepted) {
           res.render(view.adminsettings);
         } else {
@@ -265,18 +257,19 @@ router.post("/external/*", (req, response) => {
 });
 
 router.get("/external/*", (req, response) => {
-  console.log(req.query);
+  clog(req.query);
   switch (req.query.type) {
-    case "invitation":{
-        if(req.query.target == "teacher"){
-            var invite = getInviteLinkData(req.query);
-            if (invite == null) {
-                response.render(view.notfound);
-            } else {
-                response.render(view.userinvitaion, { invite });
-            }
-        }else{
+    case "invitation":
+      {
+        if (req.query.target == "teacher") {
+          var invite = getInviteLinkData(req.query);
+          if (invite == null) {
             response.render(view.notfound);
+          } else {
+            response.render(view.userinvitaion, { invite });
+          }
+        } else {
+          response.render(view.notfound);
         }
       }
       break;
@@ -312,7 +305,7 @@ var createInviteLink = (email, uiid, target) => {
 
 var getInviteLinkData = (query) => {
   let email = `${query.id}@${query.dom}`;
-  console.log(getTheMoment(false) + "<" + parseInt(query.exp));
+  clog(getTheMoment(false) + "<" + parseInt(query.exp));
   let valid = getTheMoment(false) < parseInt(query.exp);
   if (isInvalidQuery(query)) {
     return null;
@@ -325,7 +318,7 @@ var getInviteLinkData = (query) => {
     active: [valid],
     uiid: [query.uiid], //for creation of user email object in users document of institution, for teacher schedule.
     instituteName: "Institution of Example",
-    target:[query.target],
+    target: [query.target],
     exp: [query.exp],
   };
 };
@@ -386,17 +379,20 @@ var isInvalidQuery = (query) =>
   query.id == "" ||
   query.dom == "" ||
   query.exp == "" ||
-  query.uiid == ""|| String(parseInt(query.exp)).length<getTheMoment(true).length;
+  query.uiid == "" ||
+  String(parseInt(query.exp)).length < getTheMoment(true).length;
 
-let getAdminShareData = (data = {})=>{
+let getAdminShareData = (data = {}) => {
   return {
-    [sessionUID]:data.id,
-    username:data.username,
-    [sessionID]:data.email,
-    uiid:data.uiid,
-    createdAt:data.createdAt,
-    verified:data.verified
+    [sessionUID]: data.id,
+    username: data.username,
+    [sessionID]: data.email,
+    uiid: data.uiid,
+    createdAt: data.createdAt,
+    verified: data.verified,
   };
-}
+};
+
+let clog = (msg) => console.log(msg);
 
 module.exports = router;

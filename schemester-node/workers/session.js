@@ -1,78 +1,128 @@
-//const adb = require('../config/dbadmin');
-const admins = require('../modelschema/Admins.js');
-const code = require('../hardcodes/events.js');
+const code = require("../hardcodes/events.js"),
+  jwt = require("jsonwebtoken"),
+  bcrypt = require("bcryptjs");
+const sessionsecret = "schemesterSecret2001";
+const sessionKey = "bailment"; //bailment ~ amaanat
+const sessionID = "id";
+const sessionUID = "uid";
 
-module.exports.loginAdmin =(email,password,uiid)=>{
-    
+class Session {
+  constructor() {}
 
-        //check and return
-         code.auth.EMAIL_INVALID
-        //if doesn't exist, return with particular code.
-         code.auth.USER_NOT_EXIST;
-        //check and return
-         code.auth.WRONG_PASSWORD
-         //else
-        //set active:true in this admin collection, return with institution uiid, and set active in localDB {indexedDB} too,
-            //if uiid !exist, show registration page,
-            //else show dashboard.
-        //if set active failed return 
-            code.auth.AUTH_FAILED
-}
-
-module.exports.logoutAdmin = (email)=>{
-    dboperate(_ => {
-        //set active:false in this admin collection, and return 
-        code.auth.LOGGED_OUT;
-    });
-}
-
-module.exports.createAdmin = (email,password)=>{
-    dboperate(_=>{
-        //if email invalid
-        //code.auth.EMAIL_INVALID;
-        //if collection exists, return 
-        //code.auth.USER_EXIST;
-        //if password weak
-        //code.auth.WEAK_PASSWORD;
-        //else create collection, set active:true, store ip address in server.js, return
-        return code.auth.ACCOUNT_CREATED;
-        //and proceed to payment or registration
-    });
-}
-
-module.exports.isLoggedIn = (email)=>{
-    dboperate(()=>{
-        //check in email collection, return active;
-    })
-}
-
-class Session{
-    constructor(){
-        this.uid = null;
-        this.password = null;
-        this.name = null;
-        this.uiid = null;
-        this.ipaddress = null;
-        this.event = code.auth.LOGGED_OUT;
+  verify = async (request, response) => {
+    let token = request.signedCookies[sessionKey];
+    console.log("token:" + token);
+    if (token == null) {
+      console.log("nul token");
+      return { event: code.auth.SESSION_INVALID };
     }
-    login = (email,pass,uiid,ip)=>{
-        //login from admins schema
-        this.event = code.auth.AUTH_SUCCESS;
-        this.uid = email;
-        this.password = pass;
-        this.uiid = uiid;
-        this.ipaddress = ip;
-        return this.getResult(this.event,this.uid,this.name,this.uiid);
+    let result = { event: code.auth.SESSION_INVALID };
+    try {
+      result = jwt.verify(token, sessionsecret);
+    } catch (e) {
+      result = false;
+    }
+    console.log("result:" + result);
+    if (result == false) {
+      response.clearCookie(sessionKey);
+      return { event: code.auth.SESSION_INVALID };
+    } else {
+      return result;
+    }
+  };
 
+  finish = async (response) => {
+    await response.clearCookie(sessionKey);
+    return { event: code.auth.LOGGED_OUT };
+  };
+
+  login = async (request, response, model) => {
+    const { email, password, uiid, target } = request.body;
+    let user = await model.findOne({ email });
+    if (!user) return { event: code.auth.USER_NOT_EXIST };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return { event: code.auth.WRONG_PASSWORD };
+    if (uiid != user.uiid) return { event: code.auth.WRONG_UIID };
+
+    const payload = {
+      user: { id: user.id },
     };
-    getResult=(event=null,uid=null,name=null,uiid=null)=> JSON.stringify({
-        event:[event],
-        email:[uid],
-        name:[name],
-        uiid:[uiid]
+
+    let token = await jwt.sign(payload, sessionsecret, {
+      expiresIn: 28 * 1440,
     });
+    response.cookie(sessionKey, token, { signed: true });
+    return {
+      event: code.auth.AUTH_SUCCESS,
+      user: getAdminShareData(user),
+      target: target,
+    };
+  };
+
+  signup = async (request, response, model) => {
+    const { username, email, password, uiid } = request.body;
+
+    let user = await model.findOne({ email });
+    if (user) return code.auth.USER_EXIST;
+    let inst = await Admin.findOne({ uiid });
+    if (inst) return code.server.UIID_TAKEN;
+
+    user = new model({ username, email, password, uiid });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    await user.save(); //account created
+
+    const payload = {
+      user: { id: user.id },
+    };
+
+    let token = await jwt.sign(payload, sessionsecret, { expiresIn: 2 * 1440 });
+    response.cookie(sessionKey, token, { signed: true });
+    return {
+      event: code.auth.ACCOUNT_CREATED,
+      user: getAdminShareData(user),
+    };
+  };
+  userdata = async (request, model) => {
+    let token = request.signedCookies[sessionKey];
+    if (token == null) {
+      console.log("tokennull");
+      return { event: code.auth.SESSION_INVALID };
+    } else {
+      let decode = { event: code.auth.SESSION_INVALID };
+      try {
+        decode = jwt.verify(token, sessionsecret);
+      } catch (e) {
+        decode = false;
+      }
+      if (decode == false) {
+        console.log("decodefalse");
+        return { event: code.auth.SESSION_INVALID };
+      } else {
+        let _id = decode.user.id;
+        let user = await model.findOne({ _id });
+        if(user){
+            console.log("session_Id");
+            console.log(_id);
+            return getAdminShareData(user);
+        } else {
+            return { event: code.auth.SESSION_INVALID };
+        }
+      }
+    }
+  };
 }
 
+module.exports = new Session();
 
-var session = new Session();
-module.exports = session;//try superclass for local session
+let getAdminShareData = (data = {}) => {
+  return {
+    [sessionUID]: data.id,
+    username: data.username,
+    [sessionID]: data.email,
+    uiid: data.uiid,
+    createdAt: data.createdAt,
+    verified: data.verified,
+  };
+};

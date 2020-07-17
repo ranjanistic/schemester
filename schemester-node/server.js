@@ -8,6 +8,7 @@ const express = require('express'),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
     database = require("./config/db"),
+    session = require("./workers/session"),
     app = express();
 
 // Initiate Mongo Server

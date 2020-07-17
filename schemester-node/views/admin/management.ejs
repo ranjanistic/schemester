@@ -17,11 +17,17 @@
         <script src="/script/admin/adb.js"></script>
     </head>
     <body>
-        <div class="fmt-top fmt-shadow" id="topBar">
+        <div id="topBar">
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromSettings">
             <span>Settings</span>
+            <span class="fmt-dropdown-hover fmt-right">
+                <img src="/graphic/menudotsvertical.svg" id="menuButton">
+                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+                    <div class="fmt-padding" id="settingsButton">Upgrade</div>
+                    <div class="fmt-padding" id="logoutAdmin">Logout</div>
+                </div>
+            </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <button class="neutral-button fmt-right" id="logoutAdmin">Log out</button>
             <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">

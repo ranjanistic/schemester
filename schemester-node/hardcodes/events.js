@@ -42,7 +42,7 @@ class ActionCodes{
     constructor(){
         this.ACCOUNT_DELETE = 'action/delete-account';
         this.CHANGE_PASSWORD = 'action/change-password';
-        this.CHANGE_UID = 'action/change-uid-email';
+        this.CHANGE_ID = 'action/change-id-email';
         this.SEND_INVITE = 'action/send-invitation';
         this.ACCOUNT_VERIFY = 'action/verify-account';
     }

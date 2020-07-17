@@ -54,7 +54,6 @@ class AdminLogin{
         this.handleAuthResult(result);
       }).catch((error)=>{
         snackBar(error,'Report',false);
-        //this.handleAuthResult(error);
       });
     }
   }
@@ -67,6 +66,7 @@ class AdminLogin{
         this.passField.showValid();
         this.uiidField.showValid();
         saveUserLocally(result.user);
+        clog("target"+result.target);
         relocate(locate.adminDashPage,{
           u:result.uid,
           target:result.target
