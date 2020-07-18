@@ -63,22 +63,24 @@ class Session {
     const { username, email, password, uiid } = request.body;
 
     let user = await model.findOne({ email });
-    if (user) return code.auth.USER_EXIST;
-    let inst = await Admin.findOne({ uiid });
-    if (inst) return code.server.UIID_TAKEN;
-
+    if (user) return {event:code.auth.USER_EXIST};
+    let inst = await model.findOne({ uiid });
+    if (inst) return {event:code.server.UIID_TAKEN};
+    clog("checks cleared")
     user = new model({ username, email, password, uiid });
-
+    clog("got new user model");
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
     await user.save(); //account created
-
+    clog("account created");
     const payload = {
       user: { id: user.id },
     };
 
-    let token = await jwt.sign(payload, sessionsecret, { expiresIn: 2 * 1440 });
+    let token = jwt.sign(payload, sessionsecret, { expiresIn: 2 * 1440 });
+    clog("token:"+token);
     response.cookie(sessionKey, token, { signed: true });
+    clog("cookie created");
     return {
       event: code.auth.ACCOUNT_CREATED,
       user: getAdminShareData(user),
@@ -123,6 +125,7 @@ let getAdminShareData = (data = {}) => {
     [sessionID]: data.email,
     uiid: data.uiid,
     createdAt: data.createdAt,
-    verified: data.verified,
   };
 };
+
+let clog = (msg)=> console.log(msg);

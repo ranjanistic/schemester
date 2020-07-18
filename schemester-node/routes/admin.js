@@ -21,7 +21,7 @@ router.get("/", function (req, res) {
 
 router.get("/auth/login*", (req, res) => {
   session.verify(req, res).then((response) => {
-    clog("login:" + JSON.stringify(response));
+    clog("login:" + jstr(response));
     if (response.event === code.auth.SESSION_INVALID) {
       let autofill = req.query;
       res.render(view.adminlogin, { autofill });
@@ -37,26 +37,29 @@ router.get("/auth/login*", (req, res) => {
 
 router.get("/session*", (req, res) => {
   let data = req.query;
-  data.target =
-    data.target != null && data.target != "" ? data.target : `dashboard`;
   clog("response");
   session.verify(req, res).then(async (response) => {
-    clog("verify" + JSON.stringify(response));
+    clog("verify" + jstr(response));
     if (response.event === code.auth.SESSION_INVALID) {
+      clog("invalid session");
       res.redirect(`/admin/auth/login?target=${data.target}`);
     } else {
       try {
-        if (data.u === response.user.id) {
+        clog("verify" + jstr(response.user));
+        if (data.u == response.user.id) {
+          clog("u = user.id");
           const _id = response.user.id;
           let user = await Admin.findOne({ _id });
           if (user) {
             let adata = getAdminShareData(user);
-            clog(adata);
             let uiid = adata.uiid;
             let inst = await Institute.findOne({ uiid });
             if (data.target != "manage") {
               if (!inst) {
+                clog("no inst registered");
                 data.target = "registration";
+              } else {
+                data.target = "dashboard";
               }
             }
             switch (data.target) {
@@ -85,6 +88,7 @@ router.get("/session*", (req, res) => {
           res.redirect(`/admin/auth/login?target=${data.target}`);
         }
       } catch (e) {
+        clog("session catch");
         clog(e);
         res.redirect(`/admin/auth/login?target=${data.target}`);
       }
@@ -161,19 +165,22 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
+    let result;
     if (!errors.isEmpty()) {
       result = { event: errors.array()[0].msg };
       res.json({ result });
       return;
     }
-    let result;
-    session
-      .signup(req, res, Admin)
+    session.signup(req, res, Admin)
       .then((response) => {
+        clog("Response");
+        clog(response);
         result = response;
         return res.json({ result });
       })
       .catch((error) => {
+        clog('error');
+        clog(error);
         result = { event: code.auth.ACCOUNT_CREATION_FAILED, msg: error };
         return res.status(500).json({ result });
       });
@@ -204,13 +211,13 @@ router.post(
     await session
       .login(req, res, Admin)
       .then((response) => {
-        clog("post login:" + JSON.stringify(response));
+        clog("post login:" + jstr(response));
         result = response;
         return res.json({ result });
       })
       .catch((error) => {
         result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
-        clog("post login:" + JSON.stringify(result));
+        clog("post login:" + jstr(result));
         return res.json({ result });
       });
   }
@@ -297,7 +304,7 @@ var createInviteLink = (email, uiid, target) => {
   let id = String(email).split("@", 1);
   let dom = String(email).split("@")[1];
   let exp = getTheMoment(true, 7); // set exp time one week later
-  return JSON.stringify({
+  return jstr({
     link: `http://localhost:3000/admin/external/?type=invitation&target=${target}&id=${id}&dom=${dom}&uiid=${uiid}&exp=${exp}`,
     time: [exp],
   });
@@ -394,5 +401,7 @@ let getAdminShareData = (data = {}) => {
 };
 
 let clog = (msg) => console.log(msg);
+
+let jstr = (obj)=> JSON.stringify(obj);
 
 module.exports = router;

@@ -1104,7 +1104,6 @@ let getUserLocally = ()=>{
     [constant.sessionUID]:localStorage.getItem(constant.sessionUID),
     username:localStorage.getItem('username'),
     uiid:localStorage.getItem('uiid'),
-    verified:localStorage.getItem('verified'),
     createdAt:localStorage.getItem('createdAt'),
   };
   if(!hasAnyKeyNull(data)){
@@ -1180,6 +1179,7 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
           }
           break;
         default: {
+          clog("in default");
           dialog.existence(false);
           snackBar(`${result.event}:${result.msg}`, "Report", false);
         }

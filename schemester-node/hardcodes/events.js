@@ -19,6 +19,8 @@ class Authcodes{
         this.WRONG_PASSWORD = 'auth/wrong-password';
         this.WEAK_PASSWORD = 'auth/weak-password';
         this.USER_NOT_EXIST = 'auth/no-user-found';
+        this.USER_NOT_VERIFIED = 'auth/user-not-verified';
+        this.USER_VERIFIED = 'auth/user-is-verified';
         this.USER_EXIST = 'auth/user-found';
         this.AUTH_FAILED = 'auth/authentication-failed';
         this.SESSION_VALID = 'auth/user-logged-in';
