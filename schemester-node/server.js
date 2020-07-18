@@ -26,11 +26,11 @@ app.get('/', (req,res)=>{
     res.render(view.loader);
 });
 app.get('/home', (req,res)=>{
-    view.render(res,view.homepage);
+    res.render(view.homepage);
 });
 
 app.get('/plans/',(_request,res)=>{
-    view.render(res,view.plans);
+    res.render(view.plans);
 });
 
 

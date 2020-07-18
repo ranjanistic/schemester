@@ -14,7 +14,6 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script async type="text/javascript" src="/script/main.js"></script>
         <script async type="text/javascript" src="/script/admin/register.js"></script>
-        <script async type="text/javascript" src="/script/rdb.js"></script>
     </head>
     <body>
         <div id="topBar">
@@ -31,13 +30,13 @@
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <input type="text" class="searcher fmt-right" name="search">
         </div>
-        <div class="fmt-padding-small" style="margin-top: 66px;">
+        <div class="fmt-padding-small" style="margin: 66px 0 44px 0;">
             <div class="container fmt-row " id="stage1">
-                <span class="heading" id="s1head"></span>
+                <span class="heading" id="s1head">Basic</span>
                 <br/>
                 <!--Admin details-->
                 <div class="fmt-row">
-                <div class="group-heading" id="adminHead"></div>
+                <div class="group-heading" id="adminHead">Administrator</div>
                 <div class="fmt-col">
                     <div class="fmt-row">
                         <fieldset class="text-field" id="adminNameField">
@@ -70,7 +69,7 @@
                 <br/>
                 <!--institution-->
                 <div class="fmt-row">
-                    <div class="group-heading" id="instHead"></div>
+                    <div class="group-heading" id="instHead">Institution</div>
                     <div class="fmt-col fmt-half">
                         <div class="fmt-row">
                             <fieldset class="text-field" id="instNameField">
@@ -89,17 +88,10 @@
                     </div>
                     <div class="fmt-col fmt-half">
                         <div class="fmt-row">
-                            <fieldset class="text-field fmt-right" id="instNameField">
+                            <fieldset class="text-field fmt-right" id="instPhoneField">
                                 <legend class="field-caption">Telephone Number</legend>
                                 <span style="font-size:24px;">0120-</span><input class="text-input" style="width:fit-content" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails">
-                                <span class="fmt-right error-caption"  id="instNameError"></span>
-                            </fieldset>
-                        </div>
-                        <div class="fmt-row fmt-twothird fmt-right">
-                            <fieldset class="text-field" id="instClassField">
-                                <legend class="field-caption">Total classes in institution</legend>
-                                <input class="text-input" required placeholder="Count without sections" type="number" min="1" max="50" id="instClassCount" name="instDetails">
-                                <span class="fmt-right error-caption"  id="instClassError"></span>
+                                <span class="fmt-right error-caption"  id="instPhoneError"></span>
                             </fieldset>
                         </div>
                     </div>
@@ -115,16 +107,16 @@
                 <span class="heading" id="s2head"></span>
                 <br/>
                 <div class="fmt-row fmt-padding">
-                    <div class="group-heading" id="timeHead"></div>
+                    <div class="group-heading" id="timeHead">Timings</div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
                             <legend class="field-caption">Schedule starts at</legend>
                             <input class="text-input" required type="time" id="startTime" name="timeDetail">
                             <span class="fmt-right error-caption"  id="startTimeError"></span>
                         </fieldset>
-                        <fieldset class="text-field" id="nameField">
+                        <fieldset class="text-field" id="breakStartField">
                             <legend class="field-caption">Break starts at</legend>
-                            <input class="text-input" required type="time" id="breakStartTime" name="timeDetail">
+                            <input class="text-input" required type="time" id="breakStart" name="timeDetail">
                             <span class="fmt-right error-caption"  id="breakStartError"></span>
                         </fieldset>
                     </div>
@@ -134,7 +126,7 @@
                             <input class="text-input" required placeholder="XXX-XXX-XXXX" type="time" id="endTime" name="timeDetail">
                             <span class="fmt-right error-caption"  id="endTimeError"></span>
                         </fieldset>
-                        <fieldset class="text-field" id="phoneField">
+                        <fieldset class="text-field" id="firstDayField">
                             <legend class="field-caption">First Day of week</legend>
                             <input class="text-input" autocomplete="bday-day" required placeholder="Monday" type="text" id="firstDay" name="timeDetail">
                             <span class="fmt-right error-caption"  id="firstDayError"></span>
@@ -142,7 +134,7 @@
                     </div>
                 </div>
                 <div class="fmt-row fmt-padding" >
-                    <div class="group-heading" id="durationHead"></div>
+                    <div class="group-heading" id="durationHead">Durations</div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
                             <legend class="field-caption">Duration of each period</legend>
@@ -172,45 +164,6 @@
                 <div class="fmt-row fmt-center">
                     <img class="fmt-spin-fast" style="display:none" width="50" src="/graphic/blueLoader.svg" id="stage2load"/>
                     <button class="positive-button" id="saveStage2">Create schedule</button>
-                </div>
-            </div>
-            
-            <div class="container" id="stage3">
-                <div class="fmt-row">
-                    <div class="fmt-col fmt-half">
-                        <fieldset class="text-field" id="eachDurationField">
-                            <legend class="field-caption">Email address of teacher</legend>
-                            <input class="text-input" required placeholder="someone@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
-                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
-                        </fieldset>
-                    </div>
-                    <div class="fmt-col fmt-half">
-                    <div class="fmt-right" style="padding:12px">
-                        <button class="positive-button" id="nextButton">Next</button>
-                    </div>
-                    <div class="fmt-half fmt-right">
-                        <fieldset class="text-field" id="teacherDayField">
-                            <legend class="field-caption">Week Day</legend>
-                            <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail">
-                            <span class="fmt-right error-caption"  id="teacherDayError"></span>
-                        </fieldset>
-                    </div>
-                    </div>
-                </div>
-                <br/>
-                <div class="fmt-row group-heading" style="color:#216bf3;">
-                    <div class="fmt-col" style="width: 20%;">
-                        Period
-                    </div>
-                    <div class="fmt-col n" style="width: 30%;">
-                        Class
-                    </div>
-                    <div class="fmt-col -blue" style="width: 50%;">
-                        Subject
-                    </div>
-                </div>
-
-                <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
                 </div>
             </div>
         </div>

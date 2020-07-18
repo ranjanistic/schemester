@@ -7,7 +7,7 @@ class Homepage{
         
         this.adminSignup.addEventListener(click,_=>registrationDialog());
         this.plans.addEventListener(click,_=>refer(locate.planspage));
-        this.getstarted.addEventListener(click,_=>refer(locate.registrationPage));
+        this.getstarted.addEventListener(click,_=>registrationDialog());
         this.adminLogin.addEventListener(click,_=>refer(locate.adminLoginPage));
     }    
 }

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <title>Teacher Filler · Schemester</title>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1" id="viewportTag">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel="stylesheet" href="/css/fmt.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script async type="text/javascript" src="/script/main.js"></script>
+        <script async type="text/javascript" src="/script/admin/teacherfiller.js"></script>
+    </head>
+    <body>
+        <div id="topBar">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
+            <span id="greeting"><button class="neutral-button">Previous</button></span>
+            <span class="fmt-dropdown-hover fmt-right">
+                <img src="/graphic/menudotsvertical.svg" id="menuButton">
+                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+                    <div class="fmt-padding" id="saveandexit">Save & Exit</div>
+                    <div class="fmt-padding" id="settingsButton">Settings</div>
+                    <div class="fmt-padding" id="logoutAdminButton">Logout</div>
+                </div>
+            </span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <input type="text" class="searcher fmt-right" name="search">
+        </div>
+        <div class="fmt-padding-small" style="margin-top: 66px;">
+            <div class="container" id="stage3">
+                <div class="fmt-row">
+                    <div class="fmt-col fmt-half">
+                        <fieldset class="text-field" id="eachDurationField">
+                            <legend class="field-caption">Email address of teacher</legend>
+                            <input class="text-input" required placeholder="someone@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
+                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
+                        </fieldset>
+                    </div>
+                    <div class="fmt-col fmt-half">
+                    <div class="fmt-right" style="padding:12px">
+                        <button class="positive-button" id="nextButton">Next</button>
+                    </div>
+                    <div class="fmt-half fmt-right">
+                        <fieldset class="text-field" id="teacherDayField">
+                            <legend class="field-caption">Week Day</legend>
+                            <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail">
+                            <span class="fmt-right error-caption"  id="teacherDayError"></span>
+                        </fieldset>
+                    </div>
+                    </div>
+                </div>
+                <br/>
+                <div class="fmt-row group-heading" style="color:#216bf3;">
+                    <div class="fmt-col" style="width: 20%;">
+                        Period
+                    </div>
+                    <div class="fmt-col n" style="width: 30%;">
+                        Class
+                    </div>
+                    <div class="fmt-col -blue" style="width: 50%;">
+                        Subject
+                    </div>
+                </div>
+
+                <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

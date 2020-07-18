@@ -1,24 +1,27 @@
-//The admin login page script
+
 class AdminLogin{
   constructor(){
     localStorage.clear();
-    this.emailField = new TextInput("email_fieldset","adminemail","emailError");
-    this.passField = new TextInput("password_fieldset","adminpassword","passError");
-    this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError");
+    this.emailField = new TextInput("email_fieldset","adminemail","emailError",null,validType.email);
+    this.passField = new TextInput("password_fieldset","adminpassword","passError",null,validType.nonempty);
+    this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",null,validType.nonempty);
+
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
     this.back = getElement("backFromLogin");
     this.forgotPassword = getElement("forgotpasswordButton");
+    hide(this.forgotPassword);
+
     this.target = String(getElement('target').innerHTML);
-    if(!stringIsValid(this.target,inputType.nonempty)){
+    if(!stringIsValid(this.target,validType.nonempty)){
       this.target = 'dashboard';
     }
-    clog(this.target);
+    
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.root)});
 
-    this.emailField.onTextDefocus(_=>{validateTextField(this.emailField,inputType.email,_=>{this.passField.input.focus()})});
-    this.passField.onTextDefocus(_=>{validateTextField(this.passField,inputType.nonempty,_=>{this.uiidField.input.focus()})});
-    this.uiidField.onTextDefocus(_=>{validateTextField(this.uiidField,inputType.nonempty)});
+    this.emailField.validate(_=>{this.passField.inputFocus()});
+    this.passField.validate(_=>{this.uiidField.inputFocus()});
+    this.uiidField.validate();
 
     this.passField.onTextInput(_=>{
       this.passField.normalize();
@@ -27,17 +30,16 @@ class AdminLogin{
     
     this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.emailField.getInput());}, false);
     this.logInButton.addEventListener(click,_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())},false);
-    hide(this.forgotPassword);
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.logInButton, !show);
   }
   loginAdmin =(email,password, uiid)=>{
-    if(!(stringIsValid(email,inputType.email)&&stringIsValid(password)&&stringIsValid(uiid))){
-      validateTextField(this.uiidField);
-      validateTextField(this.passField);
-      validateTextField(this.emailField,inputType.email);
+    if(!(stringIsValid(email,validType.email)&&stringIsValid(password)&&stringIsValid(uiid))){
+      this.emailField.validateNow(_=>{this.passField.inputFocus()});
+      this.passField.validateNow(_=>{this.uiidField.inputFocus()});
+      this.uiidField.validateNow();
     } else{
       this.loader();
       hide(this.forgotPassword);
@@ -66,7 +68,7 @@ class AdminLogin{
         this.passField.showValid();
         this.uiidField.showValid();
         saveUserLocally(result.user);
-        clog("target"+result.target);
+
         relocate(locate.adminDashPage,{
           u:result.uid,
           target:result.target
@@ -90,7 +92,7 @@ class AdminLogin{
         snackBar("Try registering a new account?","Create Account",true,_=>{registrationDialog(true,this.emailField.getInput(),this.uiidField.getInput())})
       }break;
       case code.auth.EMAIL_INVALID:{
-        validateTextField(this.emailField,inputType.email);
+        validateTextField(this.emailField,validType.email);
       }break;
       case code.auth.ACCOUNT_RESTRICTED:{
         this.logInButton.textContent = "Retry";
@@ -110,63 +112,6 @@ class AdminLogin{
   }
 }
 
-// let loginAuthStateListener = () => {
-//   firebase.auth().onAuthStateChanged((user) => {
-//     if (user) {
-//       let lrequest = window.indexedDB.open(localDB, 1);
-//       lrequest.onerror = () => {
-//         clog("L Database failed to open on login");
-//         relocate(planspage);
-//       };
-//       lrequest.onupgradeneeded = (e) => {
-//         clog("L Database upgrade on login");
-//         lidb = e.target.result;
-//         lidb.createObjectStore(objStore.localDataName, {
-//             keyPath: objStore.localDBKey,
-//         });
-//         localTransaction = new Transactions(lidb);
-//         relocate(planspage);
-//       };
-//       lrequest.onsuccess = () => {
-//         lidb = lrequest.result;
-//         localTransaction = new Transactions(lidb);
-//         let lobject = localTransaction.getLocalTx().objectStore(objStore.localDataName);
-//         lobject.openCursor().onsuccess = (e) => {
-//           let lcursor = e.target.result;
-//           if (lcursor) {
-//             switch (lcursor.value.type) {
-//               case kpath.localUIID:{
-//                   if(uiidField.input == lcursor.value.uiid){
-//                       relocate(adminDashPage);
-//                   } else {
-//                       clog('uiidField.input didn\'t match');
-//                   }
-//                 //openAdminDatabase(lcursor.value.uiid);  //open database of given stored institituion uiid name.
-//               }break;
-//               default: {
-//                 clog("L no local uiid path switch on login");
-//                 relocate(registrationPage);
-//               }
-//             }
-//             lcursor.continue();
-//           }
-//         };
-//       };
-//     }
-//   });
-// };
 
-window.onload =_=>{
-  // postData(post.sessionValidate, {
-  //   [constant.sessionKey]: window.localStorage.getItem(constant.sessionKey),
-  //   destination: locate.adminDashPage,
-  // }).then((res) => {
-  //   if (res.result.event == code.auth.SESSION_VALID) {
-  //     relocate(locate.adminDashPage)
-  //   } else {
-  //     window.app = new AdminLogin();
-  //   }
-  // });
-  window.app = new AdminLogin();
-}
+window.onload =_=> window.app = new AdminLogin();
 

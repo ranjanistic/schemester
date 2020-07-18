@@ -73,8 +73,10 @@ router.get("/session*", (req, res) => {
                 break;
               case "registration":{
                   res.render(view.adminsetup, { adata });
-                }
-                break;
+              }break;
+              case "addteacher":{
+                res.render(view.adminAddTeacher,{adata})
+              }break;
               default: {
                 res.redirect(`/admin/auth/login?target=${data.target}`);
               }
