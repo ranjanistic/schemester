@@ -18,7 +18,7 @@
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
-            <span id="greeting"><button class="neutral-button">Previous</button></span>
+            <span id="greeting"></span>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
@@ -41,8 +41,8 @@
                     <div class="fmt-row">
                         <fieldset class="text-field" id="adminNameField">
                             <legend class="field-caption">Name Visible to people of your institution</legend>
-                            <span style="font-size: 24px;" id="adminName"><%= adata.username %> </span>
-                            <!-- <input class="text-input" required autocomplete="name" placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails"> -->
+                            <span style="font-size: 24px;" id="adminNameView"><%= adata.username %> </span>
+                            <input class="text-input" required autocomplete="name"  placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
                             <span class="fmt-right error-caption"  id="adminNameError"></span>
                         </fieldset>
                     </div>
@@ -50,7 +50,7 @@
                 <div class="fmt-half">
                     <fieldset class="fmt-col text-field" id="emailField">
                         <legend class="field-caption">Email Address</legend>
-                        <span style="font-size: 24px;" id="adminEmail"><%= adata.id %> </span>
+                        <span style="font-size: 24px;" id="adminEmailView"><%= adata.id %></span>
                         <button class="positive-button fmt-right" style="margin:0 4px" id="verifiedEmail">C</button>
                         <button class="warning-button fmt-right" style="margin:0 4px" id="changeEmail">V</button>
                     </fieldset>
@@ -74,19 +74,27 @@
                         <div class="fmt-row">
                             <fieldset class="text-field" id="instNameField">
                                 <legend class="field-caption">Proper name of Institution</legend>
-                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails">
+                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails" >
                                 <span class="fmt-right error-caption"  id="instNameError"></span>
                             </fieldset>
                         </div>
                         <div class="fmt-row">
                             <fieldset class="text-field" id="uiidField">
                                 <legend class="field-caption">UIID Permanent</legend>
-                                <span style="font-size: 24px;" id="instuiid"><%= adata.uiid %> </span>
+                                <span style="font-size: 24px;" id="uiidView"><%= adata.uiid %></span>
+                                <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" >
                                 <span class="fmt-right error-caption"  id="uiidError"></span>
                             </fieldset>
                         </div>
                     </div>
                     <div class="fmt-col fmt-half">
+                        <div class="fmt-row">
+                            <fieldset class="text-field" id="instEmailField">
+                                <legend class="field-caption">Institution Email address</legend>
+                                <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails">
+                                <span class="fmt-right error-caption"  id="instEmailError"></span>
+                            </fieldset>
+                        </div>
                         <div class="fmt-row">
                             <fieldset class="text-field fmt-right" id="instPhoneField">
                                 <legend class="field-caption">Telephone Number</legend>
@@ -98,7 +106,7 @@
                 </div>
                 <br/>
                 <div class="fmt-row fmt-center">
-                    <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="stage1load"/>
+                    <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="stage1loader"/>
                     <button class="positive-button fmt-center" id="saveStage1">Save &amp; Continue</button>
                 </div>
             </div>
@@ -111,7 +119,7 @@
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
                             <legend class="field-caption">Schedule starts at</legend>
-                            <input class="text-input" required type="time" id="startTime" name="timeDetail">
+                            <input class="text-input" required type="time" id="startTime" name="timeDetail" >
                             <span class="fmt-right error-caption"  id="startTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakStartField">
@@ -155,7 +163,7 @@
                         </fieldset>
                         <fieldset class="text-field" id="totalPeriodsField">
                             <legend class="field-caption">Total Periods in a day</legend>
-                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail">
+                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail" >
                             <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
                         </fieldset>
                     </div>

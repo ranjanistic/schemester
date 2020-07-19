@@ -2,6 +2,7 @@
 class Register {
   constructor() {
     this.greeting = getElement("greeting");
+    this.greeting.innerHTML = "Registration";
     this.search =  getElement("search");
     this.saveExit = getElement("saveandexit");
     this.settings = getElement('settingsButton');
@@ -30,26 +31,63 @@ class Register {
 class Stage1 {
   constructor() {
     this.view = getElement("stage1");
-
-    this.nameField = new TextInput("adminNameField","adminName","adminNameError",null,validType.name); 
+    this.nameField = new TextInput("adminNameField","adminName","adminNameError",null,validType.name);
+    this.namedisplay = getElement("adminNameView");
+    this.emaildisplay = getElement("adminEmailView");
     this.phoneField = new TextInput("adminPhoneField","adminPhone","adminPhoneError",null,validType.phone)
     this.instNameField = new TextInput("instNameField","instName","instNameError",null,validType.name);
     this.instIdField = new TextInput("uiidField","uiid","uiidError",null,validType.username);
+    this.uiidVIew = getElement("uiidView");
+    this.instEmailField = new TextInput("instEmailField","instEmail","instEmailError",null,validType.email);
     this.instPhoneField = new TextInput("instPhoneField","instPhone","instPhoneError",null,validType.phone);
-
+    
     this.save = getElement("saveStage1");
+    this.phoneField.validate(_=>{this.instNameField.inputFocus()});
+    this.instNameField.validate(_=>{this.instEmailField.inputFocus()});
+    this.instEmailField.validate(_=>{this.instPhoneField.inputFocus()});
+    this.instPhoneField.validate();
+    this.loader = getElement("stage1loader");
+    hide(this.loader);
   }
-  
-  exist(show = true) {
-    if(show){
-      
-    }
+  movetostage2 = (app,s2)=>{
+    this.load();
+    clog("moving");
+   if(!(stringIsValid(this.phoneField.getInput(),this.phoneField.type)&&
+      stringIsValid(this.instNameField.getInput(),this.instNameField.type)&&
+      stringIsValid(this.instEmailField.getInput(),this.instEmailField.type)&&
+      stringIsValid(this.instPhoneField.getInput(),this.instPhoneField.type))
+   ) {
+    this.phoneField.validateNow(_=>{this.instNameField.inputFocus()});
+    this.instNameField.validateNow(_=>{this.instEmailField.inputFocus()});
+    this.instEmailField.validateNow(_=>{this.instPhoneField.inputFocus()});
+    this.instPhoneField.validateNow();
+    clog("invalidmove");
+    this.load(false);
+   }else{
+     hide(this.view);
+     clog("moved");
+     show(s2.view);
+     app.greeting.innerHTML = `<button class="neutral-button" id="previousButton">Previous</button>`;
+     getElement("previousButton").onclick = ()=>{
+       this.backToStage1(app,s2);
+     }
+   }
+  }
+  backToStage1(app,s2){
+    hide(s2.view);
+    show(this.view);
+    app.greeting.innerHTML = 'Registration';
+    this.load(false);
+  }
+  load(show = true){
+    visibilityOf(this.save,!show);
+    visibilityOf(this.loader,show);
   }
 }
 class Stage2 {
   constructor() {
+
     this.view = getElement("stage2");
-    
     this.startTimeField = new TextInput("startTimeField","startTime","startTimeError");
     this.endTimeField = new TextInput("endTimeField","endTime","endTimeError");
     this.breakStartField = new TextInput("breakStartField","breakStart","breakStartError")
@@ -61,34 +99,53 @@ class Stage2 {
     this.breakDurationField = new TextInput("breakDurationField","breakDuration","breakDurationError");
     
     this.save = getElement("saveStage2");
-    hide(this.view);
+      
   }
   
-  exist(show = true) {
-    elementFadeVisibility(this.view, show);
-    if(show){
-      new Register().setStageView('Step Two');
-      visibilityOf(new Register().stage2Loader,false);
-      visibilityOf(this.save,true);
-      new Register().backStage.onclick = _=>{
-        new Stage2().exist(false);
-        new Stage1().exist(true);
-      }
-    }
-  }
 }
 
 
 window.onload = _=> {
-  let register = new Register();
-  let stage1 = new Stage1();
-  let stage2 = new Stage2();
-  
+  let app = new Register();
+  let s1 = new Stage1();
+  let s2 = new Stage2();
+  show(s1.view);
+  hide(s2.view);
 
-    getUserLocally().then(data=>{
-
+  s1.save.onclick =()=>{s1.movetostage2(app,s2)}
+  getUserLocally().then(data=>{
+    postData('/admin/session/receiveinstitution',{
+      uiid:data.uiid,
+      doc:'default'
+    }).then(response=>{
+      clog("receiver respnose inst");
+      clog(data.uiid);
+      if(response.event == code.inst.INSTITUTION_NOT_EXISTS){
+        postData('/admin/session/createinstitution',{
+          uiid:data.uiid
+        }).then(resp=>{
+          clog("resp")
+          if(resp.event == code.inst.INSTITUTION_CREATION_FAILED){
+            clog("creationfauled");
+            finishSession();
+          } else {
+            clog("doc default response");
+            clog(jstr(response));
+          }
+        }).catch(error=>{
+          clog("creation errror");
+          snackBar(error,'Report');
+        });
+      } else {  
+        clog("doc default response");
+        clog(jstr(response));
+      }
+    }).catch(error=>{
+      clog("recevie inst errorrr");
+      snackBar(error,"Report");
     });
-  
+  });
+
   // register.saveExit.onclick = _=>{
 
   //   showLoader();

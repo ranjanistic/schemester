@@ -1,8 +1,6 @@
 class Servercodes{
     constructor(){
-        this.DATABASE_ERROR = 'server/database-error:';
-        this.INSTITUTION_EXISTS = 'server/institution-collection-exists';
-        this.INSTITUTION_CREATED = 'server/institution-collection-created';
+        this.DATABASE_ERROR = 'server/database-error:';        
         this.UIID_TAKEN = 'server/uiid-already-taken';
         this.UIID_AVAILABLE = 'server/uiid-available';
     }
@@ -40,6 +38,40 @@ class Authcodes{
     }
 }
 
+class InstitutionCodes{
+    constructor(){
+        this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
+        this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
+        this.INVALID_ADMIN_NAME = "inst/invalid-name";
+
+        this.INVALID_INST_NAME = "inst/invalid-institution-name";
+        this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
+        this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
+
+        this.INVALID_TIME = "inst/invalid-time-value";
+        this.INVALID_TIME_START = "inst/invalid-start-time";
+        this.INVALID_TIME_END = "inst/invalid-end-time";
+        this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
+
+        this.INVALID_DURATION = "inst/invalid-duration";
+        this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
+        this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
+        this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
+        this.INVALID_PERIODS = "inst/invalid-periods-a-day";
+
+        this.INVALID_DATE = "inst/invalid-date-value";
+        this.INVALID_DAY = "inst/invalid-day-name";
+        this.INVALID_PERIOD = "inst/invalid-period";
+        this.INVALID_CLASS = "inst/invalid-class-name";
+        this.INVALID_SECTION = "inst/invalid-section-name";
+        
+        this.INSTITUTION_NOT_EXISTS = 'inst/institution-not-exists';
+        this.INSTITUTION_EXISTS = 'inst/institution-exists';
+        this.INSTITUTION_CREATED = 'inst/institution-created';
+        this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
+    }
+}
+
 class ActionCodes{
     constructor(){
         this.ACCOUNT_DELETE = 'action/delete-account';
@@ -69,6 +101,7 @@ class Codes{
         this.server = new Servercodes();
         this.mail = new Mailcodes();
         this.action  = new ActionCodes();
+        this.inst = new InstitutionCodes();
     }
 }
 

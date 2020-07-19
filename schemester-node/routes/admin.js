@@ -9,7 +9,6 @@ const express = require("express"),
   Institute = require("../modelschema/Institutions");
 
 const sessionsecret = "schemesterSecret2001";
-const sessionKey = "bailment"; //bailment ~ amaanat
 const sessionID = "id";
 const sessionUID = "uid";
 
@@ -37,6 +36,7 @@ router.get("/auth/login*", (req, res) => {
 
 router.get("/session*", (req, res) => {
   let data = req.query;
+  
   clog("response");
   session.verify(req, res).then(async (response) => {
     clog("verify" + jstr(response));
@@ -51,28 +51,29 @@ router.get("/session*", (req, res) => {
           const _id = response.user.id;
           let user = await Admin.findOne({ _id });
           if (user) {
-            let adata = getAdminShareData(user);
+            let adata = getAdminShareDataV(user);
             let uiid = adata.uiid;
             let inst = await Institute.findOne({ uiid });
             if (data.target != "manage") {
               if (!inst) {
                 clog("no inst registered");
+
                 data.target = "registration";
               } else {
-                data.target = "dashboard";
+                clog("inst hai");
+                data.target = "registration";
               }
-            }
+            }            
             switch (data.target) {
               case "manage":{
                   res.render(view.adminsettings, { adata });
-                }
-                break;
+              }break;
               case "dashboard":{
                   res.render(view.admindash, { adata });
-                }
-                break;
+              }break;
               case "registration":{
-                  res.render(view.adminsetup, { adata });
+                clog("inregistration");
+                res.render(view.adminsetup, { adata });
               }break;
               case "addteacher":{
                 res.render(view.adminAddTeacher,{adata})
@@ -225,10 +226,109 @@ router.post(
   }
 );
 
-router.post("/createInstitution", (req, res) => {
-  const register = require("../workers/registration.js");
-  res.send(register.createInstitutionDefaults(req.body));
+
+router.post("/session/registration",
+[
+  check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
+  check("adminPhone",code.inst.INVALID_ADMIN_PHONE).isNumeric(),
+  check("adminEmail",code.inst.INVALID_ADMIN_EMAIL).isEmail(),
+  check("instName",code.inst.INVALID_INST_NAME).notEmpty(),
+  check("instPhone",code.inst.INVALID_INST_PHONE).isNumeric(),
+  check("instUIID",code.inst.INVALID_INST_UIID).notEmpty(),
+  check("startTime",code.inst.INVALID_TIME_START).notEmpty(),
+  check("endTime",code.inst.INVALID_TIME_END).notEmpty(),
+  check("breakStartTime",code.inst.INVALID_TIME_BREAKSTART).notEmpty(),
+  check("weekStartDay",code.inst.INVALID_DAY).notEmpty(),
+  check("periodDuration",code.inst.INVALID_DURATION_PERIOD).isNumeric(),
+  check("breakDuration",code.inst.INVALID_DURATION_BREAK).isNumeric(),
+  check("workingDays",code.inst.INVALID_WORKING_DAYS).isLength({min:1,max:7}),
+  check("periodsInDay",code.inst.INVALID_PERIODS).isLength({min:1,max:1440})
+]
+,
+async (req,res)=>{
+  let result;
+  
+  session.verify(req,res).then((response)=>{
+    if(response.event == code.auth.SESSION_INVALID){
+      return res.redirect('/admin/auth/login?target=registration');
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      result = { event: errors.array()[0].msg };
+      return res.json({ result });
+    }
+    let uiid = req.body.uiid;
+    let inst = Institute.findOne({uiid});
+    if(inst){
+      clog(inst.lean());
+      result = {event:code.inst.INSTITUTION_EXISTS};
+      return res.json({result});
+    } else {
+
+    }
+  }).catch((error)=>{
+    result = {event:code.inst.INSTITUTION_CREATION_FAILED,msg:error};
+    return res.json({result});
+  })
+})
+
+router.post("/session/createinstitution",async (req,res)=>{
+  session.verify(req,res).then(async (response)=>{
+    const {uiid} = req.body;
+    if(sessionValid(response)){
+      let inst = await Institute.findOne({uiid});
+      if(inst){
+        result = {event:code.inst.INSTITUTION_EXISTS};
+        return res.json({result});
+      }
+      inst  = new Institute({
+        uiid:uiid
+      });
+      await inst.save().then(onfulfilled=>{
+        result = {event:code.inst.INSTITUTION_CREATED};
+        return res.json({result});
+      }).catch(onrejected=>{
+        result = {event:code.inst.INSTITUTION_CREATION_FAILED};
+        return res.json({result});
+      });
+
+    } else {
+      res.redirect(`/admin/auth/login?uiid=${uiid}`);
+    }
+  }).catch(error=>{
+    result = {event:code.server.DATABASE_ERROR,msg:error};
+    res.json({result});
+  })
 });
+
+let sessionValid = (response) =>{
+  return response.event != code.auth.SESSION_INVALID
+}
+
+router.post('/session/receiveinstitution',async (req,res)=>{
+  session.verify(req,res).then(async response=>{
+    const {uiid, doc} = req.body;
+    if(!sessionValid(response)){
+      return res.redirect(`/admin/auth/login?uiid=${uiid}`);
+    }
+    let inst = await Institute.findOne({uiid:uiid},);
+    if(!inst){
+      result = {event:code.inst.INSTITUTION_NOT_EXISTS};
+      return res.json({result});
+    } else {
+      clog(doc);
+      let a = 'uiid';
+      if(inst[doc]){
+        clog(true);
+      }else clog(false);
+      result = inst;
+      res.json({result})
+    }
+  }).catch(error=>{
+    result = {event:code.server.DATABASE_ERROR,msg:error};
+    res.json({result});
+  });
+})
 
 router.post("/external/*", (req, response) => {
   switch (req.query.type) {
@@ -391,7 +491,7 @@ var isInvalidQuery = (query) =>
   query.uiid == "" ||
   String(parseInt(query.exp)).length < getTheMoment(true).length;
 
-let getAdminShareData = (data = {}) => {
+let getAdminShareDataV = (data = {}) => {
   return {
     [sessionUID]: data.id,
     username: data.username,
@@ -405,5 +505,8 @@ let getAdminShareData = (data = {}) => {
 let clog = (msg) => console.log(msg);
 
 let jstr = (obj)=> JSON.stringify(obj);
+let i = Institute();
+
+
 
 module.exports = router;

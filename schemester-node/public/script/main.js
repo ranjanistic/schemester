@@ -43,6 +43,40 @@ class Codes {
       }
     }
 
+    class InstitutionCodes{
+      constructor(){
+          this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
+          this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
+          this.INVALID_ADMIN_NAME = "inst/invalid-name";
+  
+          this.INVALID_INST_NAME = "inst/invalid-institution-name";
+          this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
+          this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
+  
+          this.INVALID_TIME = "inst/invalid-time-value";
+          this.INVALID_TIME_START = "inst/invalid-start-time";
+          this.INVALID_TIME_END = "inst/invalid-end-time";
+          this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
+  
+          this.INVALID_DURATION = "inst/invalid-duration";
+          this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
+          this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
+          this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
+          this.INVALID_PERIODS = "inst/invalid-periods-a-day";
+  
+          this.INVALID_DATE = "inst/invalid-date-value";
+          this.INVALID_DAY = "inst/invalid-day-name";
+          this.INVALID_PERIOD = "inst/invalid-period";
+          this.INVALID_CLASS = "inst/invalid-class-name";
+          this.INVALID_SECTION = "inst/invalid-section-name";
+          
+          this.INSTITUTION_NOT_EXISTS = 'inst/institution-not-exists';
+          this.INSTITUTION_EXISTS = 'inst/institution-exists';
+          this.INSTITUTION_CREATED = 'inst/institution-created';
+          this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
+      }
+  }
+
     class ActionCodes {
       constructor() {
         this.ACCOUNT_DELETE = "action/delete-account";
@@ -69,6 +103,7 @@ class Codes {
     this.server = new Servercodes();
     this.mail = new Mailcodes();
     this.action = new ActionCodes();
+    this.inst = new InstitutionCodes();
   }
 }
 const code = new Codes();
@@ -218,6 +253,9 @@ class TextInput {
       validateTextField(this,this.type,validAction,ifmatchfield);
     });
   }
+  isValid(matchfieldvalue = null){
+    return stringIsValid(this.getInput(),this.type,matchfieldvalue);
+  }
   strictValidate(validAction = _=>{},ifmatchfield = null){
     this.onTextInput(_=>{
       validateTextField(this,this.type,validAction,ifmatchfield);
@@ -364,6 +402,9 @@ var snackBar = (
   if (text != nothing) {
     snack.text.textContent = text;
     if (actionText != null && actionText != nothing) {
+      if(actionText == "Report"){
+        isNormal = actionType.negative;
+      };
       snack.createButton(actionText, (_) => {
         if (actionText == "Report") {
           feedBackBox(true, text, true);
@@ -1195,59 +1236,61 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
 };
 
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
+  loadingBox();
   var verify = new Dialog();
-  const data = getUserLocally();
-  if (emailSent) {
-    verify.setDisplay(
-      "Waiting for verification",
-      `A link has been sent. Check your email box at 
-      <b>${data.id}</b>, verify your account there, and then click continue here.`
-    );
-    verify.createActions(
-      Array("Verified, now continue", "Abort"),
-      Array(actionType.positive, actionType.negative)
-    );
-    verify.onButtonClick(1, () => {
-      verify.loader();
-      localStorage.clear();
-      verify.existence(false);
-    });
-    verify.onButtonClick(0, () => {
-      verify.loader();
-      verify.existence(false);
-      loadingBox(true,'Checking','This may take a few seconds');
-      setTimeout(() => {
-        localStorage.setItem('verified',true);
-        relocate(locate.registrationPage,{
-          u:data.uid,
-          target:'registration',
-        })
-      }, 4*1000);
-    });
-  } else {
-    verify.setDisplay(
-      "Verification Required",
-      `We need to verify you. A link will be sent at <b>${data.id}</b>, you need to verify your account there. Confirm to send link?`
-    );
-    verify.createActions(
-      Array("Send link", "Cancel"),
-      Array(actionType.positive, actionType.negative)
-    );
-    verify.onButtonClick(1, () => {
-      verify.loader();
-      localStorage.clear();
-      verify.existence(false);
-    });
-    verify.onButtonClick(0, () => {
-      verify.loader();
-      loadingBox(true,'Sending',`A link is being prepared for ${data.id}.`);
-      //replace with email sender
-      setTimeout(() => {
-        accountVerificationDialog(true,true);
-      }, 3*1000);
-    });
-  }
-  verify.existence(isShowing);
+  getUserLocally().then((data)=>{
+    if (emailSent) {
+      verify.setDisplay(
+        "Waiting for verification",
+        `A link has been sent. Check your email box at 
+        <b>${data.id}</b>, verify your account there, and then click continue here.`
+      );
+      verify.createActions(
+        Array("Verified, now continue", "Abort"),
+        Array(actionType.positive, actionType.negative)
+      );
+      verify.onButtonClick(1, () => {
+        verify.loader();
+        localStorage.clear();
+        verify.existence(false);
+      });
+      verify.onButtonClick(0, () => {
+        verify.loader();
+        verify.existence(false);
+        loadingBox(true,'Checking','This may take a few seconds');
+        setTimeout(() => {
+          localStorage.setItem('verified',true);
+          relocate(locate.registrationPage,{
+            u:data.uid,
+            target:'registration',
+          })
+        }, 4*1000);
+      });
+    } else {
+      verify.setDisplay(
+        "Verification Required",
+        `We need to verify you. A link will be sent at <b>${data.id}</b>, you need to verify your account there. Confirm to send link?`
+      );
+      verify.createActions(
+        Array("Send link", "Cancel"),
+        Array(actionType.positive, actionType.negative)
+      );
+      verify.onButtonClick(1, () => {
+        verify.loader();
+        localStorage.clear();
+        verify.existence(false);
+      });
+      verify.onButtonClick(0, () => {
+        verify.loader();
+        loadingBox(true,'Sending',`A link is being prepared for ${data.id}.`);
+        //replace with email sender
+        setTimeout(() => {
+          accountVerificationDialog(true,true);
+        }, 3*1000);
+      });
+    }
+    verify.existence(isShowing);
+  });
 };
 
 let silentLogin = (email, password, action) => {
@@ -1528,6 +1571,8 @@ let setClassName = (
     }
   }
 };
+
+
 
 let showElement = (elements, index) => {
   for (var k = 0, j = 0; k < elements.length; k++, j++) {

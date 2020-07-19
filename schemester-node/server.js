@@ -1,20 +1,18 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
-    cookieParser = require('cookie-parser'),
     view = require('./hardcodes/views'),
     code = require('./hardcodes/events'),
-    auth = require('./workers/session'),
-    jwt = require("jsonwebtoken"),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
     database = require("./config/db"),
-    session = require("./workers/session"),
     app = express();
 
 // Initiate Mongo Server
 database.getServer()
-    .then(db=>console.log(`Connected: ${db.connection.name}`))
-    .catch(error=>console.log(error));
+.then(db=>{
+    console.log(`Connected: ${db.connection.name}`);  
+})
+.catch(error=>console.log(error));
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }))
