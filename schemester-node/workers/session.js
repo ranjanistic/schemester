@@ -45,10 +45,13 @@ class Session {
     if (uiid != user.uiid) return { event: code.auth.WRONG_UIID };
 
     const payload = {
-      user: { id: user.id },
+      user: {
+        id: user.id,
+        uiid:user.uiid
+      },
     };
 
-    let token = await jwt.sign(payload, sessionsecret, {
+    let token = jwt.sign(payload, sessionsecret, {
       expiresIn: 28 * 1440,
     });
     response.cookie(sessionKey, token, { signed: true });
@@ -74,7 +77,10 @@ class Session {
     await user.save(); //account created
     clog("account created");
     const payload = {
-      user: { id: user.id },
+      user: { 
+        id: user.id,
+        uiid:user.uiid
+      },
     };
 
     let token = jwt.sign(payload, sessionsecret, { expiresIn: 2 * 1440 });

@@ -29,14 +29,14 @@ class Defaults {
       email: { type: String },
       username: { type: String },
       phone: { type: String },
-    });
+    },{_id:false});
 
     var instituteschema = new Schema({
       instituteName: { type: String,  },
       phone: { type: String },
       email:{type:String},
       subscriptionTill: { type: Date },
-    });
+    },{_id:false});
 
     var timingschema = new Schema({
       startTime: { type: String,  },
@@ -46,14 +46,14 @@ class Defaults {
       periodMinutes: { type: Number,  min: 1, max: 1440 }, //1440 mins = 24 hours (max 1440 minute each period limit, thus 1 minute min period limit/day)
       breakMinutes: { type: Number,  min: 1 },
       periodsInDay: { type: Number,  min: 1, max: 1440 }, //1440 mins = 24 hours (min 1 period each day, thus 1440 max periods limit/day)
-      daysInWeek: { type: Number,  min: 1, max: 7 },
-    });
+      daysInWeek: { type: Number,  min: 1, max: 7 },  
+    },{_id:false},);
 
     this.defaultSchema = new Schema({
       admin: adminschema,
       institute: instituteschema,
       timings: timingschema,
-    });
+    },{_id:false});
   }
 }
 
@@ -66,7 +66,7 @@ class Users {
         password: { type: String},
         createdAt: { type: Date, default: Date.now() },
       }),
-    });
+    },{_id:false});
     var studentschema = new Schema({
       student: new Schema({
         studentID: { type: String, unique: true },
@@ -74,19 +74,19 @@ class Users {
         password: { type: String },
         createdAt: { type: Date, default: Date.now() },
       }),
-    });
+    },{_id:false});
 
     this.userschema = new Schema({
       teachers: teacherschema,
       students: studentschema,
-    });
+    },{_id:false});
   }
 }
 
 class Schedule {
   constructor() {
     var sectionschema = new Schema({
-      sectionname: { type: String, unique: true },
+      sectionname: { type: String, unique: true, default:''},
       teacherID: { type: String },
       hold: { type: Boolean, default: true },
       subject: { type: String },
@@ -100,16 +100,16 @@ class Schedule {
     var periodschema = new Schema({
       number: { type: Number, unique: true },
       class: classschema,
-    }); //each period
+    },{_id:false}); //each period
 
     var dayschema = new Schema({
       dayname: { type: String, unique: true },
       period: periodschema,
-    }); //each day
+    },{_id:false}); //each day
 
     this.scheduleschema = new Schema({
       day: dayschema,
-    });
+    },{_id:false});
   }
 }
 

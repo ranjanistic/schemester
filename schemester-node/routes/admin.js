@@ -21,14 +21,14 @@ router.get("/", function (req, res) {
 router.get("/auth/login*", (req, res) => {
   session.verify(req, res).then((response) => {
     clog("login:" + jstr(response));
-    if (response.event === code.auth.SESSION_INVALID) {
+    if (!sessionValid(response)) {
       let autofill = req.query;
       res.render(view.adminlogin, { autofill });
     } else {
       let link =
         req.query.target != null
           ? `/admin/session?u=${response.user.id}&target=${req.query.target}`
-          : `/admin/session?u=${response.user.id}&target=registration`;
+          : `/admin/session?u=${response.user.id}&target=dashboard`;
       res.redirect(link);
     }
   });
@@ -40,7 +40,7 @@ router.get("/session*", (req, res) => {
   clog("response");
   session.verify(req, res).then(async (response) => {
     clog("verify" + jstr(response));
-    if (response.event === code.auth.SESSION_INVALID) {
+    if (!sessionValid(response)) {
       clog("invalid session");
       res.redirect(`/admin/auth/login?target=${data.target}`);
     } else {
@@ -57,16 +57,19 @@ router.get("/session*", (req, res) => {
             if (data.target != "manage") {
               if (!inst) {
                 clog("no inst registered");
-
                 data.target = "registration";
               } else {
                 clog("inst hai");
-                data.target = "registration";
+                if(inst.default!=null){
+                  data.target = "dashboard";
+                }else{
+                  data.target = "registration";
+                }
               }
             }            
             switch (data.target) {
               case "manage":{
-                  res.render(view.adminsettings, { adata });
+                  res.render(view.adminsettings, { adata,inst });
               }break;
               case "dashboard":{
                   res.render(view.admindash, { adata });
@@ -103,7 +106,7 @@ router.get("/session*", (req, res) => {
 //for account settings
 router.post("/account/action", (req, res) => {
   session.verify(req,res).then(response=>{
-    if(response.event == code.auth.SESSION_INVALID){
+    if(!sessionValid(response)){
       res.redirect(`/admin/auth/login?target=manage`);
     }else{
       switch (req.body.action) {
@@ -227,47 +230,78 @@ router.post(
 );
 
 
-router.post("/session/registration",
-[
-  check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
-  check("adminPhone",code.inst.INVALID_ADMIN_PHONE).isNumeric(),
-  check("adminEmail",code.inst.INVALID_ADMIN_EMAIL).isEmail(),
-  check("instName",code.inst.INVALID_INST_NAME).notEmpty(),
-  check("instPhone",code.inst.INVALID_INST_PHONE).isNumeric(),
-  check("instUIID",code.inst.INVALID_INST_UIID).notEmpty(),
-  check("startTime",code.inst.INVALID_TIME_START).notEmpty(),
-  check("endTime",code.inst.INVALID_TIME_END).notEmpty(),
-  check("breakStartTime",code.inst.INVALID_TIME_BREAKSTART).notEmpty(),
-  check("weekStartDay",code.inst.INVALID_DAY).notEmpty(),
-  check("periodDuration",code.inst.INVALID_DURATION_PERIOD).isNumeric(),
-  check("breakDuration",code.inst.INVALID_DURATION_BREAK).isNumeric(),
-  check("workingDays",code.inst.INVALID_WORKING_DAYS).isLength({min:1,max:7}),
-  check("periodsInDay",code.inst.INVALID_PERIODS).isLength({min:1,max:1440})
-]
-,
+router.post("/session/registerinstitution",
+// [
+//   check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
+//   check("adminPhone",code.inst.INVALID_ADMIN_PHONE).isNumeric(),
+//   check("adminEmail",code.inst.INVALID_ADMIN_EMAIL).isEmail(),
+//   check("instName",code.inst.INVALID_INST_NAME).notEmpty(),
+//   check("instPhone",code.inst.INVALID_INST_PHONE).isNumeric(),
+//   check("instUIID",code.inst.INVALID_INST_UIID).notEmpty(),
+//   check("startTime",code.inst.INVALID_TIME_START).notEmpty(),
+//   check("endTime",code.inst.INVALID_TIME_END).notEmpty(),
+//   check("breakStartTime",code.inst.INVALID_TIME_BREAKSTART).notEmpty(),
+//   check("weekStartDay",code.inst.INVALID_DAY).notEmpty(),
+//   check("periodDuration",code.inst.INVALID_DURATION_PERIOD).isNumeric(),
+//   check("breakDuration",code.inst.INVALID_DURATION_BREAK).isNumeric(),
+//   check("workingDays",code.inst.INVALID_WORKING_DAYS).isLength({min:1,max:7}),
+//   check("periodsInDay",code.inst.INVALID_PERIODS).isLength({min:1,max:1440})
+// ]
+// ,
 async (req,res)=>{
   let result;
-  
-  session.verify(req,res).then((response)=>{
-    if(response.event == code.auth.SESSION_INVALID){
-      return res.redirect('/admin/auth/login?target=registration');
-    }
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      result = { event: errors.array()[0].msg };
-      return res.json({ result });
-    }
-    let uiid = req.body.uiid;
-    let inst = Institute.findOne({uiid});
-    if(inst){
-      clog(inst.lean());
-      result = {event:code.inst.INSTITUTION_EXISTS};
+  clog("in registration final");
+  session.verify(req,res).then(async (response)=>{
+    if(!sessionValid(response)){
+      clog("invalid session");
+      await session.finish(res);
+      result = {event:code.auth.SESSION_INVALID};
       return res.json({result});
-    } else {
-
     }
+    clog(response);
+    await Institute.findOneAndUpdate(
+      {uiid:response.user.uiid},
+      {
+        default:{
+          admin:{
+            email:req.body.adminemail,
+            username:req.body.adminname,
+            phone:req.body.adminphone
+          },
+          institute:{
+            instituteName:req.body.instname,
+            email:req.body.instemail,
+            phone:req.body.instphone
+          },
+          timings:{
+            startTime:req.body.starttime,
+            endTime:req.body.endtime,
+            breakStartTime:req.body.breakstarttime,
+            startDay:req.body.firstday,
+            periodMinutes:req.body.periodduration,
+            breakMinutes:req.body.breakduration,
+            periodsInDay:req.body.totalperiods,
+            daysInWeek:req.body.workingdays,
+          }
+        }
+      },
+      {useFindAndModify:false},
+      async (error,document)=>{
+        if(error){
+          clog("erro");
+          clog(error);
+          result = {event:code.inst.INSTITUTION_DEFAULTS_UNSET}
+        }else{
+          clog("doc");
+          if(document){
+            result = {event:code.inst.INSTITUTION_DEFAULTS_SET}
+          }
+        }
+      }
+    );
+    return res.json({result});
   }).catch((error)=>{
-    result = {event:code.inst.INSTITUTION_CREATION_FAILED,msg:error};
+    result = {event:code.server.DATABASE_ERROR,msg:error};
     return res.json({result});
   })
 })

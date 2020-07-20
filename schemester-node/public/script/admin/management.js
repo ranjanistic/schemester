@@ -65,7 +65,7 @@ class Management {
     this.back.addEventListener(click, this.undoAndReturn, false);
     this.logout.addEventListener(click,_=> {
         showLoader();
-        finishSession(_=>{relocate(locate.adminLoginPage)});
+        finishSession(_=>{relocate(locate.adminLoginPage,{target:'manage'})});
     },false);
     
   }
@@ -260,7 +260,5 @@ class Users {
  
 }
 
-window.onload = _=> {
-  //checkSessionVaildation(_=>{window.app = new Management()},null,locate.adminSettings);
-  window.app = new Management();
-};
+window.onload = _=> window.app = new Management();
+

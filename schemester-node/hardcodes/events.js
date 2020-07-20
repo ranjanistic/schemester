@@ -69,6 +69,9 @@ class InstitutionCodes{
         this.INSTITUTION_EXISTS = 'inst/institution-exists';
         this.INSTITUTION_CREATED = 'inst/institution-created';
         this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
+
+        this.INSTITUTION_DEFAULTS_SET = 'inst/institution-defaults-saved';
+        this.INSTITUTION_DEFAULTS_UNSET = 'inst/institution-defaults-not-saved';
     }
 }
 

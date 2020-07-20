@@ -98,7 +98,7 @@
                                 <span class="caption">Email address</span><br/>
                                 <span class="editable" id="adminEmailAddress"><%= adata.id %></span><br/>
                                 <span class="caption">Contact Number</span><br/>
-                                <span class="editable" id="adminPhoneNumber">...</span><br/>
+                                <span class="editable" id="adminPhoneNumber"><%= inst.default.admin.phone %></span><br/>
                                 <span class="caption">Account created at</span><br/>
                                 <span id="adminCreationTime"><%= adata.createdAt %></span><br/>
                             </div>
@@ -109,7 +109,7 @@
                             <button class="fmt-right positive-button" id="editInstSection">Edit</button>
                             <div>
                                 <span class="caption">Display name</span><br/>
-                                <span class="editable" id="instituteName">...</span><br/>
+                                <span class="editable" id="instituteName"><%= inst.default.institute.instituteName %></span><br/>
                                 <span class="caption">UIID</span><br/>
                                 <span class="editable" id="uiid"><%= adata.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
@@ -121,22 +121,22 @@
                             <span class="sub-heading">Timings</span>
                             <button class="fmt-right negative-button" id="reschedule">Re-schedule</button>
                             <div>
-                                <span class="caption">Each period duration</span><br/>
-                                <span class="editable" id="periodDuration"></span><br/>
-                                <span class="caption">Week starts on</span><br/>
-                                <span class="editable" id="weekStartDay"></span><br/>
                                 <span class="caption">Schedule starts at</span><br/>
-                                <span class="editable" id="scheduleStartTime"></span><br/>
+                                <span class="editable" id="scheduleStartTime"><%= inst.default.timings.startTime %></span><br/>
                                 <span class="caption">Schedule ends at</span><br/>
-                                <span class="editable" id="scheduleEndTime"></span><br/>
+                                <span class="editable" id="scheduleEndTime"><%= inst.default.timings.endTime %></span><br/>
                                 <span class="caption">Break starts at</span><br/>
-                                <span class="editable" id="breakStartTime"></span><br/>
+                                <span class="editable" id="breakStartTime"><%= inst.default.timings.breakStartTime %></span><br/>
+                                <span class="caption">Each period duration</span><br/>
+                                <span class="editable" id="periodDuration"><%= inst.default.timings.periodMinutes %></span><br/>
                                 <span class="caption">Break duration</span><br/>
-                                <span class="editable" id="breakDuration"></span><br/>
+                                <span class="editable" id="breakDuration"><%= inst.default.timings.breakMinutes %></span><br/>
+                                <span class="caption">Week starts on</span><br/>
+                                <span class="editable" id="weekStartDay"><%= inst.default.timings.startDay %></span><br/>
                                 <span class="caption">Working days in a week</span><br/>
-                                <span class="editable" id="workdays"></span><br/>
+                                <span class="editable" id="workdays"><%= inst.default.timings.daysInWeek %></span><br/>
                                 <span class="caption">Periods in a day</span><br/>
-                                <span class="editable" id="totalPeriods"></span><br/>
+                                <span class="editable" id="totalPeriods"><%= inst.default.timings.periodsInDay %></span><br/>
                             </div>
                         </div>
                         <!--security settings-->

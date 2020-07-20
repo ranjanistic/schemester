@@ -74,6 +74,9 @@ class Codes {
           this.INSTITUTION_EXISTS = 'inst/institution-exists';
           this.INSTITUTION_CREATED = 'inst/institution-created';
           this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
+
+          this.INSTITUTION_DEFAULTS_SET = 'inst/institution-defaults-saved';
+        this.INSTITUTION_DEFAULTS_UNSET = 'inst/institution-defaults-not-saved';
       }
   }
 
@@ -183,7 +186,7 @@ class Colors {
     this.active = "green";
     this.white = "#ffffff";
     this.black = "#000000";
-    this.transparent = "#000000056";
+    this.transparent = "#00000056";
   }
   getColorByType(type) {
     switch (type) {
@@ -403,7 +406,7 @@ var snackBar = (
   var snack = new Snackbar();
   snack.hide();
   if (text != nothing) {
-    snack.text.textContent = text;
+    snack.text.innerHTML = text;
     if (actionText != null && actionText != nothing) {
       if(actionText == "Report"){
         isNormal = actionType.negative;
@@ -747,8 +750,31 @@ class Dialog extends DialogID {
       field.normalize();
     });
   }
-  setBackgroundColor(type = bodyType.positive) {
-    this.view.style.backgroundColor = colors.getColorByType(type);
+  setBackgroundColorType(type = bodyType.positive) {
+    setDefaultBackground(this.view,type);
+  }
+  setBackgroundColor(color = colors.base){
+    this.view.style.backgroundColor = color;
+  }
+  setDialogColorType(type = bodyType.neutral){
+    setDefaultBackground(this.box,type);
+  }
+  setDialogColor(color = colors.white){
+    this.box.style.backgroundColor = color;
+  }
+  setHeadingColor(color = colors.base){
+    this.heading.style.color = color;
+  }
+  setSubheadingColor(color = colors.black){
+    this.subHeading.style.color = color;
+  }
+  show(){
+    value.backbluecovered = true;
+    elementFadeVisibility(this.view, true);
+  }
+  hide(){
+    value.backbluecovered = false;
+    elementFadeVisibility(this.view, false);
   }
   existence(show = true) {
     value.backbluecovered = show;
@@ -877,7 +903,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
       Array(actionType.neutral, actionType.positive)
     );
     if (sensitive) {
-      loginDialog.setBackgroundColor(bodyType.negative);
+      loginDialog.setBackgroundColorType(bodyType.negative);
     }
     loginDialog.input
     loginDialog.getInput(0).onchange = (_) => {
@@ -1324,17 +1350,17 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     error ? "Error" : "Feedback"
   );
 
-  feedback.setBackgroundColor(!error);
+  feedback.setBackgroundColorType(!error);
 
   feedback.createActions(
     Array("Submit", "Abort"),
     Array(actionType.positive, actionType.negative)
   );
   feedback.onChipClick(0, (_) => {
-    feedback.setBackgroundColor();
+    feedback.setBackgroundColorType();
   });
   feedback.onChipClick(1, (_) => {
-    feedback.setBackgroundColor(bodyType.negative);
+    feedback.setBackgroundColorType(bodyType.negative);
   });
 
   feedback.largeTextField.input.value = defaultText;
@@ -1373,11 +1399,12 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
 let loadingBox = (
   visible = true,
   title = "Please wait",
-  subtitle = constant.nothing
+  subtitle = constant.nothing,
+  bodytype = bodyType.positive
 ) => {
   let load = new Dialog();
   load.setBoxHTML(load.getloaderContent(title, subtitle));
-  load.setBackgroundColor(bodyType.nothing);
+  load.setBackgroundColorType(bodytype);
   load.existence(visible);
 };
 
