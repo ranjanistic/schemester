@@ -226,8 +226,8 @@ class TextInput {
     fieldId = String(),
     inputId = String(),
     errorId = String(),
-    captionId = null,
-    type = null
+    type = null,
+    captionId = null
   ) {
     this.fieldset = getElement(fieldId);
     this.caption = captionId ? getElement(captionId) : null;
@@ -296,6 +296,9 @@ class TextInput {
   }
   getInput() {
     return this.input.value;
+  }
+  setInput(value){
+    this.input.value = value;
   }
 }
 
@@ -603,8 +606,8 @@ class Dialog extends DialogID {
         this.dialogInputFieldID(k),
         this.dialogInputID(k),
         this.dialogInputErrorID(k),
-        this.dialogFieldCaptionID(k),
-        validateTypes?validateTypes[k]:null
+        validateTypes?validateTypes[k]:null,
+        this.dialogFieldCaptionID(k)
       );
     }
 
@@ -708,8 +711,8 @@ class Dialog extends DialogID {
       this.textFieldId,
       this.textInputAreaId,
       this.textInputErrorId,
-      this.textFieldCaptionId,
-      validType.nonempty
+      validType.nonempty,
+      this.textFieldCaptionId
     );
     this.largeTextField.normalize();
     this.largeTextField.setInputAttrs(hint);
@@ -1571,7 +1574,6 @@ let setClassName = (
     }
   }
 };
-
 
 
 let showElement = (elements, index) => {

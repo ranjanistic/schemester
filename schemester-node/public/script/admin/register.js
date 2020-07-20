@@ -31,24 +31,30 @@ class Register {
 class Stage1 {
   constructor() {
     this.view = getElement("stage1");
-    this.nameField = new TextInput("adminNameField","adminName","adminNameError",null,validType.name);
+    //this.nameField = new TextInput("adminNameField","adminName","adminNameError",null,validType.name);
     this.namedisplay = getElement("adminNameView");
     this.emaildisplay = getElement("adminEmailView");
-    this.phoneField = new TextInput("adminPhoneField","adminPhone","adminPhoneError",null,validType.phone)
-    this.instNameField = new TextInput("instNameField","instName","instNameError",null,validType.name);
-    this.instIdField = new TextInput("uiidField","uiid","uiidError",null,validType.username);
+    this.phoneField = new TextInput("adminPhoneField","adminPhone","adminPhoneError",validType.phone)
+    this.instNameField = new TextInput("instNameField","instName","instNameError",validType.name);
+    //this.instIdField = new TextInput("uiidField","uiid","uiidError",null,validType.username);
     this.uiidVIew = getElement("uiidView");
-    this.instEmailField = new TextInput("instEmailField","instEmail","instEmailError",null,validType.email);
-    this.instPhoneField = new TextInput("instPhoneField","instPhone","instPhoneError",null,validType.phone);
+    this.instEmailField = new TextInput("instEmailField","instEmail","instEmailError",validType.email);
+    this.instPhoneField = new TextInput("instPhoneField","instPhone","instPhoneError",validType.phone);
     
+    this.phoneField.setInput(sessionStorage.getItem('adphone'));
+    this.instNameField.setInput(sessionStorage.getItem('instname'));
+    this.instEmailField.setInput(sessionStorage.getItem('instemail'));
+    this.instPhoneField.setInput(sessionStorage.getItem('instphone'));
+
     this.save = getElement("saveStage1");
-    this.phoneField.validate(_=>{this.instNameField.inputFocus()});
-    this.instNameField.validate(_=>{this.instEmailField.inputFocus()});
-    this.instEmailField.validate(_=>{this.instPhoneField.inputFocus()});
-    this.instPhoneField.validate();
+    this.phoneField.validate(_=>{this.instNameField.inputFocus(); sessionStorage.setItem('adphone',this.phoneField.getInput());});
+    this.instNameField.validate(_=>{this.instEmailField.inputFocus();sessionStorage.setItem('instname',this.instNameField.getInput());});
+    this.instEmailField.validate(_=>{this.instPhoneField.inputFocus();sessionStorage.setItem('instemail',this.instEmailField.getInput())});
+    this.instPhoneField.validate(_=>{sessionStorage.setItem('instphone',this.instPhoneField.getInput());});
     this.loader = getElement("stage1loader");
     hide(this.loader);
   }
+
   movetostage2 = (app,s2)=>{
     this.load();
     clog("moving");
@@ -57,13 +63,14 @@ class Stage1 {
       stringIsValid(this.instEmailField.getInput(),this.instEmailField.type)&&
       stringIsValid(this.instPhoneField.getInput(),this.instPhoneField.type))
    ) {
-    this.phoneField.validateNow(_=>{this.instNameField.inputFocus()});
-    this.instNameField.validateNow(_=>{this.instEmailField.inputFocus()});
-    this.instEmailField.validateNow(_=>{this.instPhoneField.inputFocus()});
-    this.instPhoneField.validateNow();
+    this.phoneField.validateNow(_=>{this.instNameField.inputFocus(); sessionStorage.setItem('adphone',this.phoneField.getInput());});
+    this.instNameField.validateNow(_=>{this.instEmailField.inputFocus();sessionStorage.setItem('instname',this.instNameField.getInput());});
+    this.instEmailField.validateNow(_=>{this.instPhoneField.inputFocus();sessionStorage.setItem('instemail',this.instEmailField.getInput())});
+    this.instPhoneField.validateNow(_=>{sessionStorage.setItem('instphone',this.instPhoneField.getInput())});
     clog("invalidmove");
     this.load(false);
    }else{
+      this.saveLocally();
      hide(this.view);
      clog("moved");
      show(s2.view);
@@ -72,6 +79,15 @@ class Stage1 {
        this.backToStage1(app,s2);
      }
    }
+  };
+  saveLocally(){
+    sessionStorage.setItem('adname',this.namedisplay.innerHTML);
+    sessionStorage.setItem('ademail',this.emaildisplay.innerHTML);
+    sessionStorage.setItem('adphone',this.phoneField.getInput());
+    sessionStorage.setItem('instname',this.instNameField.getInput());
+    sessionStorage.setItem('uiid',this.uiidVIew.innerHTML);
+    sessionStorage.setItem('instemail',this.instEmailField.getInput());
+    sessionStorage.setItem('instphone',this.instPhoneField.getInput());
   }
   backToStage1(app,s2){
     hide(s2.view);
@@ -88,18 +104,73 @@ class Stage2 {
   constructor() {
 
     this.view = getElement("stage2");
-    this.startTimeField = new TextInput("startTimeField","startTime","startTimeError");
-    this.endTimeField = new TextInput("endTimeField","endTime","endTimeError");
-    this.breakStartField = new TextInput("breakStartField","breakStart","breakStartError")
-    this.day1Field = new TextInput("firstDayField","firstDay","firstDayError");
-    
-    this.eachDurationField = new TextInput("eachDurationField","eachDuration","eachDurationError");
-    this.totalDaysField = new TextInput("totalDaysField","totalDays","totalDaysError");
-    this.totalPeriodsField = new TextInput("totalPeriodsField","totalPeriods","totalPeriodsError");
-    this.breakDurationField = new TextInput("breakDurationField","breakDuration","breakDurationError");
-    
+
+    this.startTimeField = new TextInput("startTimeField","startTime","startTimeError",validType.nonempty);
+    this.endTimeField = new TextInput("endTimeField","endTime","endTimeError",validType.nonempty);
+    this.breakStartField = new TextInput("breakStartField","breakStart","breakStartError",validType.nonempty)
+    this.day1Field = new TextInput("firstDayField","firstDay","firstDayError",validType.nonempty);
+    this.eachDurationField = new TextInput("eachDurationField","eachDuration","eachDurationError",validType.nonempty);
+    this.totalDaysField = new TextInput("totalDaysField","totalDays","totalDaysError",validType.nonempty);
+    this.totalPeriodsField = new TextInput("totalPeriodsField","totalPeriods","totalPeriodsError",validType.nonempty);
+    this.breakDurationField = new TextInput("breakDurationField","breakDuration","breakDurationError",validType.nonempty);
+
+    this.startTimeField.setInput(sessionStorage.getItem("startTimeField"));
+    this.endTimeField.setInput(sessionStorage.getItem("endTimeField"));
+    this.breakStartField.setInput(sessionStorage.getItem("breakStartField"));
+    this.day1Field.setInput(sessionStorage.getItem("day1Field"));
+    this.eachDurationField.setInput(sessionStorage.getItem("eachDurationField"));
+    this.totalDaysField.setInput(sessionStorage.getItem("totalDaysField"));
+    this.totalPeriodsField.setInput(sessionStorage.getItem("totalPeriodsField"));
+    this.breakDurationField.setInput(sessionStorage.getItem("breakDurationField"));
+
+    this.startTimeField.validate(_=>{this.endTimeField.inputFocus(),sessionStorage.setItem("startTimeField",this.startTimeField.getInput())})
+    this.endTimeField.validate(_=>{this.breakStartField.inputFocus(),sessionStorage.setItem("endTimeField",this.endTimeField.getInput())})
+    this.breakStartField.validate(_=>{this.day1Field.inputFocus(),sessionStorage.setItem("breakStartField",this.breakStartField.getInput())})
+    this.day1Field.validate(_=>{this.eachDurationField.inputFocus(),sessionStorage.setItem("day1Field",this.day1Field.getInput())})
+    this.eachDurationField.validate(_=>{this.totalDaysField.inputFocus(),sessionStorage.setItem("eachDurationField",this.eachDurationField.getInput())})
+    this.totalDaysField.validate(_=>{this.totalPeriodsField.inputFocus(),sessionStorage.setItem("totalDaysField",this.totalDaysField.getInput())})
+    this.totalPeriodsField.validate(_=>{this.breakDurationField.inputFocus(),sessionStorage.setItem("totalPeriodsField",this.totalPeriodsField.getInput())})
+    this.breakDurationField.validate(_=>{sessionStorage.setItem("breakDurationField",this.breakDurationField.getInput())})
+
     this.save = getElement("saveStage2");
-      
+
+  }
+
+  saveInstitution(){
+
+    if(!(
+      stringIsValid(this.startTimeField.getInput(),this.startTimeField.type)&&
+      stringIsValid(this.endTimeField.getInput(),this.endTimeField.type)&&
+      stringIsValid(this.breakStartField.getInput(),this.breakStartField.type)&&
+      stringIsValid(this.day1Field.getInput(),this.day1Field.type)&&
+      stringIsValid(this.eachDurationField.getInput(),this.eachDurationField.type)&&
+      stringIsValid(this.totalDaysField.getInput(),this.totalDaysField.type)&&
+      stringIsValid(this.totalPeriodsField.getInput(),this.totalPeriodsField.type)&&
+      stringIsValid(this.breakDurationField.getInput(),this.breakDurationField.type)
+    )){
+        this.startTimeField.validateNow(_=>{this.endTimeField.inputFocus(),sessionStorage.setItem("startTimeField",this.startTimeField.getInput())})
+        this.endTimeField.validateNow(_=>{this.breakStartField.inputFocus(),sessionStorage.setItem("endTimeField",this.endTimeField.getInput())})
+        this.breakStartField.validateNow(_=>{this.day1Field.inputFocus(),sessionStorage.setItem("breakStartField",this.breakStartField.getInput())})
+        this.day1Field.validateNow(_=>{this.eachDurationField.inputFocus(),sessionStorage.setItem("day1Field",this.day1Field.getInput())})
+        this.eachDurationField.validateNow(_=>{this.totalDaysField.inputFocus(),sessionStorage.setItem("eachDurationField",this.eachDurationField.getInput())})
+        this.totalDaysField.validateNow(_=>{this.totalPeriodsField.inputFocus(),sessionStorage.setItem("totalDaysField",this.totalDaysField.getInput())})
+        this.totalPeriodsField.validateNow(_=>{this.breakDurationField.inputFocus(),sessionStorage.setItem("totalPeriodsField",this.totalPeriodsField.getInput())})
+        this.breakDurationField.validateNow(_=>{sessionStorage.setItem("breakDurationField",this.breakDurationField.getInput())})
+    }else{
+    
+      sessionStorage.setItem("startTimeField",this.startTimeField.getInput());
+      sessionStorage.setItem("endTimeField",this.endTimeField.getInput());
+      sessionStorage.setItem("breakStartField",this.breakStartField.getInput());
+      sessionStorage.setItem("day1Field",this.day1Field.getInput());
+      sessionStorage.setItem("eachDurationField",this.eachDurationField.getInput());
+      sessionStorage.setItem("totalDaysField",this.totalDaysField.getInput());
+      sessionStorage.setItem("totalPeriodsField",this.totalPeriodsField.getInput());
+      sessionStorage.setItem("breakDurationField",this.breakDurationField.getInput());
+
+    }
+  }
+  saveLocally(){
+
   }
   
 }
@@ -113,6 +184,8 @@ window.onload = _=> {
   hide(s2.view);
 
   s1.save.onclick =()=>{s1.movetostage2(app,s2)}
+  s2.save.onclick = ()=>{s1.saveLocally();s2.saveInstitution()}
+  
   getUserLocally().then(data=>{
     postData('/admin/session/receiveinstitution',{
       uiid:data.uiid,

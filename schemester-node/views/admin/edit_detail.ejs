@@ -42,7 +42,7 @@
                         <fieldset class="text-field" id="adminNameField">
                             <legend class="field-caption">Name Visible to people of your institution</legend>
                             <span style="font-size: 24px;" id="adminNameView"><%= adata.username %> </span>
-                            <input class="text-input" required autocomplete="name"  placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails">
+                            <!-- <input class="text-input" required autocomplete="name"  placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails"> -->
                             <span class="fmt-right error-caption"  id="adminNameError"></span>
                         </fieldset>
                     </div>
@@ -82,7 +82,7 @@
                             <fieldset class="text-field" id="uiidField">
                                 <legend class="field-caption">UIID Permanent</legend>
                                 <span style="font-size: 24px;" id="uiidView"><%= adata.uiid %></span>
-                                <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" >
+                                <!-- <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" > -->
                                 <span class="fmt-right error-caption"  id="uiidError"></span>
                             </fieldset>
                         </div>
@@ -112,7 +112,7 @@
             </div>
 
             <div class="container" id="stage2">
-                <span class="heading" id="s2head"></span>
+                <span class="heading" id="s2head">Schedule</span>
                 <br/>
                 <div class="fmt-row fmt-padding">
                     <div class="group-heading" id="timeHead">Timings</div>
@@ -175,9 +175,8 @@
                 </div>
             </div>
         </div>
-        <div id="snackBar" class="snackbar fmt-animate-bottom">
-            <span class="snack-text fmt-left" id="snackText">
-            </span>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>
