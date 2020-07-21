@@ -786,96 +786,6 @@ let clog = (msg) => {
   console.log(msg);
 };
 
-//idb classes
-let idb, lidb;
-let transaction, localTransaction;
-let dbVer = 1;
-class KeyPath {
-  constructor() {
-    this.admin = "admin";
-    this.institution = "institution";
-    this.timings = "timings";
-    this.localUIID = "localuiid";
-  }
-}
-let kpath = new KeyPath();
-class Modes {
-  edit = "readwrite";
-  view = "readonly";
-}
-const mode = new Modes();
-
-class ObjectStores {
-  default;
-  teachers;
-  batches;
-  today;
-  constructor() {
-    this.localDataName = "localDB";
-    this.localDBKey = "localuiid";
-    this.defaultDataName = "defaults";
-    this.defaultKey = "type";
-    this.teacherScheduleName = "teachers";
-    this.teachersKey = "day";
-    this.batchesScheduleName = "batches";
-    this.batchesKey = "day";
-    this.todayScheduleName = "today";
-    this.todayKey = "period";
-  }
-}
-let objStore = new ObjectStores();
-class Transactions {
-  constructor(database) {
-    this.local;
-    this.default;
-    this.teachers;
-    this.batches;
-    this.today;
-    this.db = database;
-  }
-  getLocalTx(mode = null) {
-    if (mode != null) {
-      return (this.local = this.db.transaction(objStore.localDataName, mode));
-    }
-    return (this.local = this.db.transaction(objStore.localDataName));
-  }
-  getDefaultTx(mode = null) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.defaultDataName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.defaultDataName));
-  }
-  getTeachersTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.teacherScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.teacherScheduleName));
-  }
-  getBatchesTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.batchesScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.batchesScheduleName));
-  }
-  getTodayTx(mode) {
-    if (mode != null) {
-      return (this.default = this.db.transaction(
-        objStore.todayScheduleName,
-        mode
-      ));
-    }
-    return (this.default = this.db.transaction(objStore.todayScheduleName));
-  }
-}
 
 let sendPassResetLink = () => {
   snackBar(
@@ -1536,6 +1446,7 @@ let finishSession =(afterfinish = ()=>{relocate(locate.root)})=>{
   postData(post.authlogout).then(res=>{
     if(res.event == code.auth.LOGGED_OUT){
       localStorage.clear();
+      sessionStorage.clear();
       afterfinish();
     } else{
       snackBar('Failed to logout','Try again',false,_=>{finishSession()});

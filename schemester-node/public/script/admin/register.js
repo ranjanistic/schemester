@@ -10,16 +10,6 @@ class Register {
     this.finalize = getElement("registrationComplete");
     this.stage1Loader = getElement("stage1load");
     this.stage2Loader = getElement("stage2load");
-
-    this.saveExit.onclick = () => {
-      relocate(locate.homepage);
-    };
-
-    this.settings.onclick = () => {
-      refer(locate.adminSettings, {
-        target: "manage",
-      });
-    };
     this.logout.onclick = () => {
       finishSession();
     };
@@ -59,10 +49,12 @@ class Stage1 {
       validType.phone
     );
 
-    this.phoneField.setInput(sessionStorage.getItem("adphone"));
-    this.instNameField.setInput(sessionStorage.getItem("instname"));
-    this.instEmailField.setInput(sessionStorage.getItem("instemail"));
-    this.instPhoneField.setInput(sessionStorage.getItem("instphone"));
+    if(sessionStorage.getItem("uiid") == localStorage.getItem("uiid")){
+      this.phoneField.setInput(sessionStorage.getItem("adphone"));
+      this.instNameField.setInput(sessionStorage.getItem("instname"));
+      this.instEmailField.setInput(sessionStorage.getItem("instemail"));
+      this.instPhoneField.setInput(sessionStorage.getItem("instphone"));
+    }
 
     this.save = getElement("saveStage1");
     this.phoneField.validate((_) => {
@@ -395,6 +387,7 @@ class Stage2 {
           if(response.event == code.inst.INSTITUTION_DEFAULTS_SET){
             //todo: here, save defaults in index db, then hide loading box, and show the finish dialog.
             //then clear the session database.
+
             loadingBox(false);
             let finish = new Dialog();
             finish.setDisplay('Insitution Saved','The details have been saved successfully.');
@@ -455,43 +448,55 @@ window.onload = (_) => {
     s2.saveInstitution();
   };
 
-  getUserLocally().then((data) => {
-    postData("/admin/session/receiveinstitution", {
-      uiid: data.uiid,
-      doc: "default",
-    })
-      .then((response) => {
-        clog("receiver respnose inst");
-        clog(data.uiid);
-        if (response.event == code.inst.INSTITUTION_NOT_EXISTS) {
-          postData("/admin/session/createinstitution", {
-            uiid: data.uiid,
-          })
-            .then((resp) => {
-              clog("resp");
-              if (resp.event == code.inst.INSTITUTION_CREATION_FAILED) {
-                clog("creationfauled");
-                finishSession();
-              } else {
-                clog("doc default response");
-                clog(jstr(response));
-              }
-            })
-            .catch((error) => {
-              clog("creation errror");
-              snackBar(error, "Report");
-            });
-        } else {
-          clog("doc default response");
-          clog(jstr(response));
-        }
-      })
-      .catch((error) => {
-        clog("recevie inst errorrr");
-        snackBar(error, "Report");
-      });
-  });
+  app.saveExit.onclick = () => {
+    sessionStorage.setItem("adname", s1.namedisplay.innerHTML);
+    sessionStorage.setItem("ademail", s1.emaildisplay.innerHTML);
+    sessionStorage.setItem("adphone", s1.phoneField.getInput());
+    sessionStorage.setItem("instname", s1.instNameField.getInput());
+    sessionStorage.setItem("uiid", s1.uiidVIew.innerHTML);
+    sessionStorage.setItem("instemail", s1.instEmailField.getInput());
+    sessionStorage.setItem("instphone", s1.instPhoneField.getInput());
+    sessionStorage.setItem("startTimeField", s2.startTimeField.getInput());
+    sessionStorage.setItem("endTimeField", s2.endTimeField.getInput());
+    sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
+    sessionStorage.setItem("day1Field", s2.day1Field.getInput());
+    sessionStorage.setItem(
+      "eachDurationField",
+      s2.eachDurationField.getInput()
+    );
+    sessionStorage.setItem("totalDaysField", s2.totalDaysField.getInput());
+    sessionStorage.setItem(
+      "totalPeriodsField",
+      s2.totalPeriodsField.getInput()
+    );
+    sessionStorage.setItem(
+      "breakDurationField",
+      s2.breakDurationField.getInput()
+    );
+    relocate(locate.homepage);
+  };
 
+//
+  //getUserLocally().then((data) => {
+  //  
+  //  postData("/admin/session/receiveinstitution", {
+  //    uiid: data.uiid,
+  //    doc: "default",
+  //  }).then((response) => {
+  //      clog("receiver respnose inst");
+  //      clog(data.uiid);
+  //      if(response.event != code.inst.INSTITUTION_DEFAULTS_SET || response.event != code.inst.INSTITUTION_CREATED 
+  //        || response.event != code.inst.INSTITUTION_EXISTS){
+  //        clog("creationfauled:"+response.event);
+  //        finishSession();
+  //      }
+  //    })
+  //    .catch((error) => {
+  //      clog("recevie inst errorrr");
+  //      snackBar(error, "Report");
+  //    });
+  //});
+//
   // register.saveExit.onclick = _=>{
 
   //   showLoader();

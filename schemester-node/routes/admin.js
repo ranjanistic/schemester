@@ -51,12 +51,17 @@ router.get("/session*", (req, res) => {
           const _id = response.user.id;
           let user = await Admin.findOne({ _id });
           if (user) {
+            clog(user);
             let adata = getAdminShareDataV(user);
             let uiid = adata.uiid;
             let inst = await Institute.findOne({ uiid });
             if (data.target != "manage") {
               if (!inst) {
                 clog("no inst registered");
+                inst = new Institute({
+                  uiid:uiid
+                });
+                await inst.save();
                 data.target = "registration";
               } else {
                 clog("inst hai");
@@ -306,61 +311,44 @@ async (req,res)=>{
   })
 })
 
-router.post("/session/createinstitution",async (req,res)=>{
-  session.verify(req,res).then(async (response)=>{
-    const {uiid} = req.body;
-    if(sessionValid(response)){
-      let inst = await Institute.findOne({uiid});
-      if(inst){
-        result = {event:code.inst.INSTITUTION_EXISTS};
-        return res.json({result});
-      }
-      inst  = new Institute({
-        uiid:uiid
-      });
-      await inst.save().then(onfulfilled=>{
-        result = {event:code.inst.INSTITUTION_CREATED};
-        return res.json({result});
-      }).catch(onrejected=>{
-        result = {event:code.inst.INSTITUTION_CREATION_FAILED};
-        return res.json({result});
-      });
-
-    } else {
-      res.redirect(`/admin/auth/login?uiid=${uiid}`);
-    }
-  }).catch(error=>{
-    result = {event:code.server.DATABASE_ERROR,msg:error};
-    res.json({result});
-  })
-});
-
 let sessionValid = (response) =>{
   return response.event != code.auth.SESSION_INVALID
 }
 
 router.post('/session/receiveinstitution',async (req,res)=>{
   session.verify(req,res).then(async response=>{
+    let result;
     const {uiid, doc} = req.body;
     if(!sessionValid(response)){
-      return res.redirect(`/admin/auth/login?uiid=${uiid}`);
-    }
-    let inst = await Institute.findOne({uiid:uiid},);
-    if(!inst){
-      result = {event:code.inst.INSTITUTION_NOT_EXISTS};
+      result = {event:code.auth.SESSION_INVALID}
       return res.json({result});
-    } else {
-      clog(doc);
-      let a = 'uiid';
-      if(inst[doc]){
-        clog(true);
-      }else clog(false);
-      result = inst;
-      res.json({result})
     }
+    let inst = await Institute.findOne({uiid});
+    if(!inst){
+      clog(uiid);
+      inst = new Institute({
+        uiid:uiid
+      });
+      clog("vallll");
+      val = await inst.save();
+      clog("val:"+val);
+      if (val){
+
+        result = {event:code.inst.INSTITUTION_CREATED};
+      }else{
+        result = {event:code.inst.INSTITUTION_CREATION_FAILED};
+      }
+    } else {
+      if(inst[doc]){
+        result = {event:code.inst.INSTITUTION_DEFAULTS_SET};
+      } else{
+        result = {event:code.inst.INSTITUTION_EXISTS};
+      }
+    }
+    return res.json({result})
   }).catch(error=>{
     result = {event:code.server.DATABASE_ERROR,msg:error};
-    res.json({result});
+    return res.json({result});
   });
 })
 

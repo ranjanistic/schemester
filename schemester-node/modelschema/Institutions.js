@@ -11,7 +11,7 @@ class Institution {
     var teachers = new Teachers();
 
     this.instSchema = new Schema({
-      uiid: { type: String, unique: true },
+      uiid: { type: String, unique : true },
       default: defaults.defaultSchema,
       users: users.userschema,
       schedule: schedule.scheduleschema,
@@ -61,7 +61,7 @@ class Users {
   constructor() {
     var teacherschema = new Schema({
       teacher: new Schema({
-        teacherID: { type: String, unique: true },
+        teacherID: { type: String },
         username: String,
         password: { type: String},
         createdAt: { type: Date, default: Date.now() },
@@ -69,7 +69,7 @@ class Users {
     },{_id:false});
     var studentschema = new Schema({
       student: new Schema({
-        studentID: { type: String, unique: true },
+        studentID: { type: String },
         username: String,
         password: { type: String },
         createdAt: { type: Date, default: Date.now() },
@@ -86,24 +86,24 @@ class Users {
 class Schedule {
   constructor() {
     var sectionschema = new Schema({
-      sectionname: { type: String, unique: true, default:''},
+      sectionname: { type: String, unique: false, default:''},
       teacherID: { type: String },
       hold: { type: Boolean, default: true },
       subject: { type: String },
     }); //each section
 
     var classschema = new Schema({
-      classname: { type: String, unique: true },
+      classname: { type: String, unique: false },
       section: sectionschema,
     }); //each class
 
     var periodschema = new Schema({
-      number: { type: Number, unique: true },
+      number: { type: Number, unique: false },
       class: classschema,
     },{_id:false}); //each period
 
     var dayschema = new Schema({
-      dayname: { type: String, unique: true },
+      dayname: { type: String, unique: false },
       period: periodschema,
     },{_id:false}); //each day
 
@@ -116,19 +116,19 @@ class Schedule {
 class Teachers {
   constructor() {
     var teacherperiodschema = new Schema({
-      number: { type: Number, unique: true },
+      number: { type: Number, unique: false },
       classname: { type: String },
       hold: { type: Boolean, default: true },
       subject: { type: String },
     }); //each period
 
     var teacherdayschema = new Schema({
-      dayname: { type: String, unique: true },
+      dayname: { type: String, unique: false },
       period: teacherperiodschema,
     }); //each day
 
     var scheduleteacherschema = new Schema({
-      teacherID: { type: String,  unique: true },
+      teacherID: { type: String,  unique: false },
       day: teacherdayschema,
     }); //each teacher
 

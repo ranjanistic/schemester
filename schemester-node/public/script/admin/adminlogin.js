@@ -1,7 +1,6 @@
 
 class AdminLogin{
   constructor(){
-    localStorage.clear();
     this.emailField = new TextInput("email_fieldset","adminemail","emailError",null,validType.email);
     this.passField = new TextInput("password_fieldset","adminpassword","passError",null,validType.nonempty);
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",null,validType.nonempty);
