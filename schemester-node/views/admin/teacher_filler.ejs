@@ -17,8 +17,13 @@
     </head>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
-            <span id="greeting"><button class="neutral-button">Previous</button></span>
+            <% if (adata) { %>
+                <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromTeacherFiller" onclick="refer(locate.adminDashPage)">
+                <span id="greeting">Add Teacher</span>
+            <% } else { %>
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
+                <span id="greeting">Add your schedule</span>
+            <% } %>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
@@ -54,6 +59,7 @@
                     </div>
                 </div>
                 <br/>
+
                 <div class="fmt-row group-heading" style="color:#216bf3;">
                     <div class="fmt-col" style="width: 20%;">
                         Period
@@ -67,6 +73,17 @@
                 </div>
 
                 <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
+                    <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
+                        <div class="fmt-row" style="margin-bottom:4px"><div class="fmt-col fmt-center" style="width:20%;padding:18px;color:#216bf3">
+                            <%= index+1 %>
+                            </div><div class="fmt-col fm-purple" style="width:30%"><fieldset class="text-field" id="teacherClassField<%= index %>"><legend class="field-caption">Class assigned</legend>
+                            <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail"></fieldset></div>
+                            <div class="fmt-col" style="width:50%"><fieldset class="text-field" id="teacherSubjectField<%= index %>">
+                            <legend class="field-caption">Subject to be taken</legend>
+                            <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail"></fieldset>
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
             </div>
         </div>

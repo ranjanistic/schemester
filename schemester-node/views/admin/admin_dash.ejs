@@ -15,7 +15,6 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script type="text/javascript" src="/script/main.js"></script>
         <script type="text/javascript" src="/script/admin/adminDash.js"></script>
-        <script type="text/javascript" src="/script/admin/adb.js"></script>
     </head>
     <body>
         <div id="topBar">
@@ -23,11 +22,16 @@
             <span id="greeting">Schemester</span>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background:transparent">
+                <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;border:4px solid #216bf3">
+                    <div class="fmt-center">
+                        Logged in as<br/>
+                        <%= adata.id %>
+                    </div>
                     <button class="neutral-button" id="settingsAdminButton">
                         Settings
                     </button>
-                    <button class="neutral-button" id="logoutAdminButton">
+                    
+                    <button class="negative-button" id="logoutAdminButton">
                         Logout
                     </button>
                 </div>
@@ -36,7 +40,8 @@
             <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-
+            <% if (inst.default.users) { %>
+            
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
                     <div class="fmt-row">
@@ -160,6 +165,24 @@
                     </fieldset>
                 </div>
             </div>
+            <% } else { %>
+
+                <div class="fmt-center fmt-padding" >
+                    <div class="heading">Waiting for data</div>
+                    <br/>
+                    <div class="group-heading">Add a teacher of <%= inst.default.institute.instituteName %>, by filling their schedule by yourself.</div>
+                    <br/>
+                    <button class="display-button" id="addteacher">Add a Teacher</button>
+                    <br/><br/>
+                    <div class="heading">Or</div>
+                    <br/>
+                    <div class="group-heading">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and wait for them 
+                    to add their own schedule.</div>
+                    <br/>
+                    <button class="display-button" id="inviteteacher">Invite a Teacher</button>
+                </div>
+
+            <% } %> 
         </div>
 
         <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"

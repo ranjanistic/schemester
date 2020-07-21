@@ -1,16 +1,19 @@
 const code = require("../hardcodes/events.js"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs");
-const sessionsecret = "schemesterSecret2001";
-const sessionKey = "bailment"; //bailment ~ amaanat
+
 const sessionID = "id";
 const sessionUID = "uid";
 
 class Session {
-  constructor() {}
+  constructor() {
+    this.adminsessionsecret = "adminschemesterSecret2001";
+    this.teachersessionsecret = "teacherschemesterSecret2001";
+    this.sessionKey = "bailment"; //bailment ~ amaanat
+  }
 
-  verify = async (request, response) => {
-    let token = request.signedCookies[sessionKey];
+  verify = async (request, response, secret) => {
+    let token = request.signedCookies[this.sessionKey];
     console.log("token:" + token);
     if (token == null) {
       console.log("nul token");
@@ -18,13 +21,13 @@ class Session {
     }
     let result = { event: code.auth.SESSION_INVALID };
     try {
-      result = jwt.verify(token, sessionsecret);
+      result = jwt.verify(token, secret);
     } catch (e) {
       result = false;
     }
     console.log("result:" + result);
     if (result == false) {
-      response.clearCookie(sessionKey);
+      response.clearCookie(this.sessionKey);
       return { event: code.auth.SESSION_INVALID };
     } else {
       return result;
@@ -32,11 +35,11 @@ class Session {
   };
 
   finish = async (response) => {
-    await response.clearCookie(sessionKey);
+    await response.clearCookie(this.sessionKey);
     return { event: code.auth.LOGGED_OUT };
   };
 
-  login = async (request, response, model) => {
+  login = async (request, response,secret,model) => {
     const { email, password, uiid, target } = request.body;
     let user = await model.findOne({ email });
     if (!user) return { event: code.auth.USER_NOT_EXIST };
@@ -51,10 +54,10 @@ class Session {
       },
     };
 
-    let token = jwt.sign(payload, sessionsecret, {
-      expiresIn: 28 * 1440,
+    let token = jwt.sign(payload, secret, {
+      expiresIn:7*86400 //days*seconds/day
     });
-    response.cookie(sessionKey, token, { signed: true });
+    response.cookie(this.sessionKey, token, { signed: true });
     return {
       event: code.auth.AUTH_SUCCESS,
       user: getAdminShareData(user),
@@ -62,9 +65,8 @@ class Session {
     };
   };
 
-  signup = async (request, response, model) => {
+  signup = async (request, response, secret,model) => {
     const { username, email, password, uiid } = request.body;
-
     let user = await model.findOne({ email });
     if (user) return {event:code.auth.USER_EXIST};
     let inst = await model.findOne({ uiid });
@@ -83,9 +85,9 @@ class Session {
       },
     };
 
-    let token = jwt.sign(payload, sessionsecret, { expiresIn: 2 * 1440 });
+    let token = jwt.sign(payload, secret, { expiresIn: 7*86400 });//days*sec/day
     clog("token:"+token);
-    response.cookie(sessionKey, token, { signed: true });
+    response.cookie(this.sessionKey, token, { signed: true });
     clog("cookie created");
     return {
       event: code.auth.ACCOUNT_CREATED,
@@ -93,14 +95,14 @@ class Session {
     };
   };
   userdata = async (request, model) => {
-    let token = request.signedCookies[sessionKey];
+    let token = request.signedCookies[this.sessionKey];
     if (token == null) {
       console.log("tokennull");
       return { event: code.auth.SESSION_INVALID };
     } else {
       let decode = { event: code.auth.SESSION_INVALID };
       try {
-        decode = jwt.verify(token, sessionsecret);
+        decode = jwt.verify(token, secret);
       } catch (e) {
         decode = false;
       }
@@ -120,6 +122,10 @@ class Session {
       }
     }
   };
+
+  valid = (response) =>{
+    return response.event != code.auth.SESSION_INVALID
+  }
 }
 
 module.exports = new Session();

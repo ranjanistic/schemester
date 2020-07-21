@@ -1,11 +1,7 @@
 //the admin dashboard script
 class Dashboard {
   constructor() {
-    this.greeting = getElement("greeting");
-    this.logOut = getElement("logoutAdminButton");
-    this.dateTime = getElement("todayDateTime");
-    this.greeting = getElement("greeting");
-    this.settings = getElement("settingsAdminButton");
+    
     this.dayInput = getElement("dayinput");
     this.dayDropdown = getElement("daydropdown");
     this.teacherChipToday = getElement("teacherRadioToday");
@@ -15,18 +11,8 @@ class Dashboard {
     this.classBoxToday = getElement("classSectionToday");
     this.teacherSearchInput = getElement("teachersearchinput");
     this.teacherDropdown = getElement("teacherDropdown");
-    var prevScrollpos = window.pageYOffset;
-
-    window.onscroll = (_) => {
-        var currentScrollPos = window.pageYOffset;
-        replaceClass(
-            this.dateTime,
-            "fmt-animate-opacity-off",
-            "fmt-animate-opacity",
-            prevScrollpos > currentScrollPos
-        );
-        prevScrollpos = currentScrollPos;
-    };
+    this.dayInput.placeholder = getDayName(today.getDay());    
+    
     //classSearchInput = getElement('classsearchinput');
     //classDropdown = getElement('classDropdown');
     visibilityOf(this.workboxtoday, false);
@@ -41,27 +27,6 @@ class Dashboard {
       visibilityOf(this.classBoxToday, false);
       visibilityOf(this.teacherBoxToday, true);
     });
-    this.logOut.addEventListener(click,(_) => {
-        showLoader();
-        let email = localStorage.getItem(constant.sessionID);
-        let uiid = localStorage.getItem('uiid');
-        finishSession(_=>{ relocate(locate.adminLoginPage,{
-            email:email,
-            uiid:uiid
-          })
-        })
-    },false);
-    this.settings.addEventListener(
-      click,
-      (_) => {
-        showLoader();
-        refer(locate.adminSettings,{
-          u:localStorage.getItem(constant.sessionUID),
-          target:'manage'
-        });
-      },
-      false
-    );
 
     this.dayInput.addEventListener(click, (_) => {
       visibilityOf(this.dayDropdown, false);
@@ -71,10 +36,6 @@ class Dashboard {
       visibilityOf(this.dayDropdown, true);
       this.filterFunction(this.dayInput, this.dayDropdown);
     };
-    setTimeGreeting(this.greeting);
-    var today = new Date();
-    this.dayInput.placeholder = getDayName(today.getDay());
-    this.dateTime.textContent = `${getDayName(today.getDay())}, ${getMonthName(today.getMonth())} ${today.getDate()}, ${today.getFullYear()}, ${today.getHours()}:${today.getMinutes()}`;;
   }
   
   
@@ -95,12 +56,106 @@ class Dashboard {
       }
     }
   };
-
 }
 
-let loadRemoteContent = () => {};
+class NoDataView{
+  constructor(){
+    this.addTeacher = getElement("addteacher");
+    this.inviteTeacher = getElement("inviteteacher");
+
+    this.addTeacher.addEventListener(click,_=>{
+      relocate(locate.adminDashPage,{target:'addteacher'});
+    });
+    this.inviteTeacher.addEventListener(click,_=>{
+        postData(`/admin/external/`,{
+          type:'invitation',
+          target:'teacher'
+        }).then(res=>{
+          let dialog = new Dialog();
+            let result = JSON.parse(res.linkdata);
+            dialog.setDisplay(
+              "Invitation link",
+              `<center><a href="${result.link}">${
+                result.link
+              }</a><br/>This Link will automatically expire on <b>${getProperDate(
+                String(result.time)
+              )}</b>.</center>`
+            );
+            dialog.createActions(
+              Array("Disable Link", "Copy", "Done"),
+              Array(actionType.negative, actionType.positive, actionType.neutral)
+            );
+            dialog.onButtonClick(0, _=> {
+              dialog.setDisplay(
+                "Generate link",
+                `<center>Create a link and share that with ${target} of your institution.</center>`
+              );
+              dialog.createActions(
+                Array("Create Link", "Cancel"),
+                Array(actionType.active, actionType.negative)
+              );
+              dialog.onButtonClick(0, _=> {
+                this.linkGenerator(target);
+              });
+              dialog.onButtonClick(1, _=> {
+                dialog.existence(false);  
+              });
+            });
+            dialog.onButtonClick(1, _=> {
+              navigator.clipboard.writeText(result.link).
+              then(_=>{snackBar("Link Copied to clipboard.");dialog.existence(false);})
+              .catch((err)=>{
+                snackBar("Failed to copy, please do it manually.","Report",false,_=>{feedBackBox(true,err+":Failed to copy, please do it manually.")})
+              });
+            });
+            dialog.onButtonClick(2, _=> {
+              dialog.existence(false);
+            });
+            dialog.existence(true);
+        }).catch((error) => {
+          snackBar("Failed to generate invite link", "Report")
+        });
+    });
+  }
+}
+
+class BaseView{
+  constructor(){
+    this.greeting = getElement("greeting");
+    this.logOut = getElement("logoutAdminButton");
+    this.dateTime = getElement("todayDateTime");
+    this.greeting = getElement("greeting");
+    this.settings = getElement("settingsAdminButton");
+    this.logOut.addEventListener(click,(_) => {showLoader();
+      let email = localStorage.getItem(constant.sessionID);
+      let uiid = localStorage.getItem('uiid');
+      finishSession(_=>{ relocate(locate.adminLoginPage,{email:email,uiid:uiid})})
+    });
+    this.settings.addEventListener(click,(_) => { showLoader();
+      refer(locate.adminSettings,{u:localStorage.getItem(constant.sessionUID),target:'manage'});
+    });
+    var prevScrollpos = window.pageYOffset;
+    window.onscroll = (_) => {
+        var currentScrollPos = window.pageYOffset;
+        replaceClass(
+            this.dateTime,
+            "fmt-animate-opacity-off",
+            "fmt-animate-opacity",
+            prevScrollpos > currentScrollPos
+        );
+        prevScrollpos = currentScrollPos;
+    };
+    setTimeGreeting(this.greeting);
+    var today = new Date();
+    this.dateTime.textContent = `${getDayName(today.getDay())}, ${getMonthName(today.getMonth())} ${today.getDate()}, ${today.getFullYear()}, ${today.getHours()}:${today.getMinutes()}`;;
+  }
+}
 
 window.onload = (_) => {
-    //checkSessionVaildation(_=>{window.app = new Dashboard()})
-    window.app = new Dashboard()
+  window.fragment = new BaseView();
+    try{
+      window.app = new Dashboard();
+    }catch{
+      window.app =new NoDataView();
+    }
 };

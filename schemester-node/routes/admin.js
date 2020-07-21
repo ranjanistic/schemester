@@ -8,7 +8,7 @@ const express = require("express"),
   Admin = require("../modelschema/Admins"),
   Institute = require("../modelschema/Institutions");
 
-const sessionsecret = "schemesterSecret2001";
+const sessionsecret = session.adminsessionsecret;
 const sessionID = "id";
 const sessionUID = "uid";
 
@@ -19,11 +19,12 @@ router.get("/", function (req, res) {
 });
 
 router.get("/auth/login*", (req, res) => {
-  session.verify(req, res).then((response) => {
+  let result;
+  session.verify(req, res,sessionsecret).then((response) => {
     clog("login:" + jstr(response));
-    if (!sessionValid(response)) {
+    if (!session.valid(response)) {
       let autofill = req.query;
-      res.render(view.adminlogin, { autofill });
+      res.render(view.admin.login, { autofill });
     } else {
       let link =
         req.query.target != null
@@ -31,16 +32,18 @@ router.get("/auth/login*", (req, res) => {
           : `/admin/session?u=${response.user.id}&target=dashboard`;
       res.redirect(link);
     }
+  }).catch(error=>{
+    clog(error);
+    res.send(500).render(view.servererror);
   });
 });
 
 router.get("/session*", (req, res) => {
   let data = req.query;
-  
   clog("response");
-  session.verify(req, res).then(async (response) => {
+  session.verify(req, res,sessionsecret).then(async (response) => {
     clog("verify" + jstr(response));
-    if (!sessionValid(response)) {
+    if (!session.valid(response)) {
       clog("invalid session");
       res.redirect(`/admin/auth/login?target=${data.target}`);
     } else {
@@ -66,7 +69,9 @@ router.get("/session*", (req, res) => {
               } else {
                 clog("inst hai");
                 if(inst.default!=null){
-                  data.target = "dashboard";
+                  if(data.target!='addteacher'){
+                    data.target = "dashboard";
+                  }
                 }else{
                   data.target = "registration";
                 }
@@ -74,17 +79,17 @@ router.get("/session*", (req, res) => {
             }            
             switch (data.target) {
               case "manage":{
-                  res.render(view.adminsettings, { adata,inst });
+                  res.render(view.admin.settings, { adata,inst });
               }break;
               case "dashboard":{
-                  res.render(view.admindash, { adata });
+                  res.render(view.admin.dash, { adata, inst });
               }break;
               case "registration":{
                 clog("inregistration");
-                res.render(view.adminsetup, { adata });
+                res.render(view.admin.setup, { adata });
               }break;
               case "addteacher":{
-                res.render(view.adminAddTeacher,{adata})
+                res.render(view.admin.addTeacher,{adata,inst})
               }break;
               default: {
                 res.redirect(`/admin/auth/login?target=${data.target}`);
@@ -110,8 +115,8 @@ router.get("/session*", (req, res) => {
 
 //for account settings
 router.post("/account/action", (req, res) => {
-  session.verify(req,res).then(response=>{
-    if(!sessionValid(response)){
+  session.verify(req,res,sessionsecret).then(response=>{
+    if(!session.valid(response)){
       res.redirect(`/admin/auth/login?target=manage`);
     }else{
       switch (req.body.action) {
@@ -151,7 +156,7 @@ router.post("/session/validate", async (req, res) => {
   } else {
     clog("just verify");
     await session
-      .verify(req, res)
+      .verify(req, res,sessionsecret)
       .then((response) => {
         result = response;
         clog("post validate");
@@ -182,7 +187,7 @@ router.post(
       res.json({ result });
       return;
     }
-    session.signup(req, res, Admin)
+    session.signup(req, res,sessionsecret, Admin)
       .then((response) => {
         clog("Response");
         clog(response);
@@ -220,7 +225,7 @@ router.post(
     }
     let result = { event: code.auth.AUTH_REQ_FAILED };
     await session
-      .login(req, res, Admin)
+      .login(req, res, sessionsecret,Admin)
       .then((response) => {
         clog("post login:" + jstr(response));
         result = response;
@@ -256,8 +261,8 @@ router.post("/session/registerinstitution",
 async (req,res)=>{
   let result;
   clog("in registration final");
-  session.verify(req,res).then(async (response)=>{
-    if(!sessionValid(response)){
+  session.verify(req,res,sessionsecret).then(async (response)=>{
+    if(!session.valid(response)){
       clog("invalid session");
       await session.finish(res);
       result = {event:code.auth.SESSION_INVALID};
@@ -311,15 +316,11 @@ async (req,res)=>{
   })
 })
 
-let sessionValid = (response) =>{
-  return response.event != code.auth.SESSION_INVALID
-}
-
 router.post('/session/receiveinstitution',async (req,res)=>{
-  session.verify(req,res).then(async response=>{
+  session.verify(req,res,sessionsecret).then(async response=>{
     let result;
     const {uiid, doc} = req.body;
-    if(!sessionValid(response)){
+    if(!session.valid(response)){
       result = {event:code.auth.SESSION_INVALID}
       return res.json({result});
     }
@@ -376,7 +377,7 @@ router.post("/external/*", (req, response) => {
     case "action":
       {
         if (req.body.accepted) {
-          res.render(view.adminsettings);
+          res.render(view.admin.settings);
         } else {
           res.render(view.loader);
         }

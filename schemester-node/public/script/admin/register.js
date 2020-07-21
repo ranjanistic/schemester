@@ -387,7 +387,6 @@ class Stage2 {
           if(response.event == code.inst.INSTITUTION_DEFAULTS_SET){
             //todo: here, save defaults in index db, then hide loading box, and show the finish dialog.
             //then clear the session database.
-
             loadingBox(false);
             let finish = new Dialog();
             finish.setDisplay('Insitution Saved','The details have been saved successfully.');
@@ -417,19 +416,10 @@ class Stage2 {
     sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", this.breakStartField.getInput());
     sessionStorage.setItem("day1Field", this.day1Field.getInput());
-    sessionStorage.setItem(
-      "eachDurationField",
-      this.eachDurationField.getInput()
-    );
+    sessionStorage.setItem("eachDurationField",this.eachDurationField.getInput());
     sessionStorage.setItem("totalDaysField", this.totalDaysField.getInput());
-    sessionStorage.setItem(
-      "totalPeriodsField",
-      this.totalPeriodsField.getInput()
-    );
-    sessionStorage.setItem(
-      "breakDurationField",
-      this.breakDurationField.getInput()
-    );
+    sessionStorage.setItem("totalPeriodsField",this.totalPeriodsField.getInput());
+    sessionStorage.setItem("breakDurationField",this.breakDurationField.getInput());
   }
 }
 
@@ -460,19 +450,10 @@ window.onload = (_) => {
     sessionStorage.setItem("endTimeField", s2.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
     sessionStorage.setItem("day1Field", s2.day1Field.getInput());
-    sessionStorage.setItem(
-      "eachDurationField",
-      s2.eachDurationField.getInput()
-    );
+    sessionStorage.setItem("eachDurationField",s2.eachDurationField.getInput());
     sessionStorage.setItem("totalDaysField", s2.totalDaysField.getInput());
-    sessionStorage.setItem(
-      "totalPeriodsField",
-      s2.totalPeriodsField.getInput()
-    );
-    sessionStorage.setItem(
-      "breakDurationField",
-      s2.breakDurationField.getInput()
-    );
+    sessionStorage.setItem("totalPeriodsField",s2.totalPeriodsField.getInput());
+    sessionStorage.setItem("breakDurationField",s2.breakDurationField.getInput());
     relocate(locate.homepage);
   };
 
