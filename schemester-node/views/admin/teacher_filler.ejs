@@ -17,7 +17,7 @@
     </head>
     <body>
         <div id="topBar">
-            <% if (adata) { %>
+            <% if (adata.isAdmin) { %>
                 <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromTeacherFiller" onclick="refer(locate.adminDashPage)">
                 <span id="greeting">Add Teacher</span>
             <% } else { %>
@@ -27,32 +27,38 @@
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
-                    <div class="fmt-padding" id="saveandexit">Save & Exit</div>
                     <div class="fmt-padding" id="settingsButton">Settings</div>
-                    <div class="fmt-padding" id="logoutAdminButton">Logout</div>
+                    <div class="fmt-padding" id="logoutAdminButton" onclick="finishSession()">Logout</div>
                 </div>
             </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-padding-small" style="margin-top: 66px;">
-            <div class="container" id="stage3">
+            <div class="container" id="workbox">
                 <div class="fmt-row">
                     <div class="fmt-col fmt-half">
-                        <fieldset class="text-field" id="eachDurationField">
+                        <fieldset class="text-field-active" id="teacherEmailField">
+                            <% if (adata.isAdmin) { %>
                             <legend class="field-caption">Email address of teacher</legend>
-                            <input class="text-input" required placeholder="someone@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
-                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
+                            <% } else { %>
+                                <legend class="field-caption">Your email address</legend>
+                            <% } %>  
+                            <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
+                            <span id="teacherEmailView" style="font-size:24px"></span>
+                            <span class="fmt-right error-caption"  id="teacherEmailError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-col fmt-half">
                     <div class="fmt-right" style="padding:12px">
-                        <button class="positive-button" id="nextButton">Next</button>
+                        <button class="positive-button" id="nextSchedule">Next</button>
+                        <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
                     </div>
                     <div class="fmt-half fmt-right">
-                        <fieldset class="text-field" id="teacherDayField">
-                            <legend class="field-caption">Week Day</legend>
-                            <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail">
+                        <fieldset class="text-field-active" id="teacherDayField">
+                            <legend class="field-caption">Day</legend>
+                            <!-- <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail"> -->
+                            <span id="teacherDay" style="font-size:24px"><%= inst.default.timings.startDay %> </span>
                             <span class="fmt-right error-caption"  id="teacherDayError"></span>
                         </fieldset>
                     </div>
@@ -73,19 +79,39 @@
                 </div>
 
                 <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
+
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
-                        <div class="fmt-row" style="margin-bottom:4px"><div class="fmt-col fmt-center" style="width:20%;padding:18px;color:#216bf3">
-                            <%= index+1 %>
-                            </div><div class="fmt-col fm-purple" style="width:30%"><fieldset class="text-field" id="teacherClassField<%= index %>"><legend class="field-caption">Class assigned</legend>
-                            <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail"></fieldset></div>
-                            <div class="fmt-col" style="width:50%"><fieldset class="text-field" id="teacherSubjectField<%= index %>">
-                            <legend class="field-caption">Subject to be taken</legend>
-                            <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail"></fieldset>
+                        <div class="fmt-row" style="margin-bottom:4px">
+                            <div class="fmt-col fmt-center" style="width:20%;padding:18px;color:#216bf3">
+                                <%= index+1 %>
+                            </div>
+                            <div class="fmt-col fm-purple" style="width:30%">
+                                <fieldset class="text-field" id="teacherClassField<%= index %>">
+                                    <legend class="field-caption">Class assigned</legend>
+                                    <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
+                                    <span class="fmt-right error-caption"  id="teacherClassError<%= index %>"></span>
+                                </fieldset>
+                            </div>
+                            <div class="fmt-col" style="width:50%">
+                                <fieldset class="text-field" id="teacherSubjectField<%= index %>">
+                                    <legend class="field-caption">Subject to be taken</legend>
+                                    <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
+                                    <span class="fmt-right error-caption"  id="teacherSubjectError<%= index %>"></span>
+                                </fieldset>
                             </div>
                         </div>
                     <% } %>
                 </div>
             </div>
         </div>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+        <span hidden>
+            <span id="periodsInDay"><%= inst.default.timings.periodsInDay %></span>
+            <span id="startDay"><%= inst.default.timings.startDay %></span>
+            <span id="daysInWeek"><%= inst.default.timings.daysInWeek %></span>
+        </span>
     </body>
 </html>

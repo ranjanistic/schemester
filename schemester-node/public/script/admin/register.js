@@ -392,7 +392,8 @@ class Stage2 {
             finish.setDisplay('Insitution Saved','The details have been saved successfully.');
             finish.createActions(Array('Add teachers','Skip'),Array(actionType.positive,actionType.neutral));
             finish.onButtonClick(0,_=>{
-              snackBar("Under construction");
+              finish.loader();
+              relocate(locate.adminDashPage,{target:'addteacher'});
             });
             finish.onButtonClick(1,_=>{
               finish.loader();

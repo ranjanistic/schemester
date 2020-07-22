@@ -203,7 +203,9 @@ img{vertical-align:middle}
     cursor: pointer;
     transition:0.2s ease;
 }
-
+.questrial{
+    font-family:'Questrial',sans-serif;
+}
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
     border-width: 0;

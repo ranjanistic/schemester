@@ -76,7 +76,7 @@ router.get("/session*", (req, res) => {
                   data.target = "registration";
                 }
               }
-            }            
+            }
             switch (data.target) {
               case "manage":{
                   res.render(view.admin.settings, { adata,inst });
@@ -142,7 +142,7 @@ router.post("/session/validate", async (req, res) => {
   if (getuser) {
     clog("getuser");
     session
-      .userdata(req, Admin)
+      .userdata(req, Admin,sessionsecret)
       .then((response) => {
         result = response;
         clog("postttt");
@@ -210,8 +210,7 @@ router.post("/auth/logout", (_, res) => {
   });
 });
 
-router.post(
-  "/auth/login",
+router.post("/auth/login",
   [
     check("email", code.auth.EMAIL_INVALID).isEmail(),
     check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
@@ -269,6 +268,7 @@ async (req,res)=>{
       return res.json({result});
     }
     clog(response);
+    
     await Institute.findOneAndUpdate(
       {uiid:response.user.uiid},
       {
@@ -334,7 +334,6 @@ router.post('/session/receiveinstitution',async (req,res)=>{
       val = await inst.save();
       clog("val:"+val);
       if (val){
-
         result = {event:code.inst.INSTITUTION_CREATED};
       }else{
         result = {event:code.inst.INSTITUTION_CREATION_FAILED};
@@ -351,6 +350,23 @@ router.post('/session/receiveinstitution',async (req,res)=>{
     result = {event:code.server.DATABASE_ERROR,msg:error};
     return res.json({result});
   });
+});
+
+router.post('/upload',(req,res)=>{
+  let result;
+  session.verify(req,res,sessionsecret).then(response=>{
+    if(session.valid(response)){
+      switch(req.body.target){
+        case 'teacherschedule':{
+          //todo: upload incoming schedule
+          result = code.event(code.inst.SCHEDULE_UPLOADED)
+          return res.json({result});
+        }
+      }
+    }
+  }).catch(error=>{
+    return res.json(code.inst.SCHEDULE_UPLOAD_FAILED)
+  })
 })
 
 router.post("/external/*", (req, response) => {
@@ -516,6 +532,7 @@ var isInvalidQuery = (query) =>
 
 let getAdminShareDataV = (data = {}) => {
   return {
+    isAdmin:true,
     [sessionUID]: data.id,
     username: data.username,
     [sessionID]: data.email,

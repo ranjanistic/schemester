@@ -1,13 +1,12 @@
 const click = "click",
   input = "input",
   nothing = "";
+
 class Codes {
   constructor() {
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";
-        this.INSTITUTION_EXISTS = "server/institution-exists";
-        this.INSTITUTION_CREATED = "server/institution-created";
         this.UIID_TAKEN = "server/uiid-already-taken";
         this.UIID_AVAILABLE = "server/uiid-available";
       }
@@ -24,6 +23,8 @@ class Codes {
         this.WRONG_PASSWORD = "auth/wrong-password";
         this.WEAK_PASSWORD = "auth/weak-password";
         this.USER_NOT_EXIST = "auth/no-user-found";
+        this.USER_NOT_VERIFIED = "auth/user-not-verified";
+        this.USER_VERIFIED = "auth/user-is-verified";
         this.USER_EXIST = "auth/user-found";
         this.AUTH_FAILED = "auth/authentication-failed";
         this.SESSION_VALID = "auth/user-logged-in";
@@ -43,50 +44,43 @@ class Codes {
       }
     }
 
-    class InstitutionCodes{
-      constructor(){
-          this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
-          this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
-          this.INVALID_ADMIN_NAME = "inst/invalid-name";
-  
-          this.INVALID_INST_NAME = "inst/invalid-institution-name";
-          this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
-          this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
-  
-          this.INVALID_TIME = "inst/invalid-time-value";
-          this.INVALID_TIME_START = "inst/invalid-start-time";
-          this.INVALID_TIME_END = "inst/invalid-end-time";
-          this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
-  
-          this.INVALID_DURATION = "inst/invalid-duration";
-          this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
-          this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
-          this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
-          this.INVALID_PERIODS = "inst/invalid-periods-a-day";
-  
-          this.INVALID_DATE = "inst/invalid-date-value";
-          this.INVALID_DAY = "inst/invalid-day-name";
-          this.INVALID_PERIOD = "inst/invalid-period";
-          this.INVALID_CLASS = "inst/invalid-class-name";
-          this.INVALID_SECTION = "inst/invalid-section-name";
-          
-          this.INSTITUTION_NOT_EXISTS = 'inst/institution-not-exists';
-          this.INSTITUTION_EXISTS = 'inst/institution-exists';
-          this.INSTITUTION_CREATED = 'inst/institution-created';
-          this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
-
-          this.INSTITUTION_DEFAULTS_SET = 'inst/institution-defaults-saved';
-        this.INSTITUTION_DEFAULTS_UNSET = 'inst/institution-defaults-not-saved';
-      }
-  }
-
-    class ActionCodes {
+    class InstitutionCodes {
       constructor() {
-        this.ACCOUNT_DELETE = "action/delete-account";
-        this.CHANGE_PASSWORD = "action/change-password";
-        this.CHANGE_UID = "action/change-uid-email";
-        this.SEND_INVITE = "action/send-invitation";
-        this.ACCOUNT_VERIFY = "action/verify-account";
+        this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
+        this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
+        this.INVALID_ADMIN_NAME = "inst/invalid-name";
+
+        this.INVALID_INST_NAME = "inst/invalid-institution-name";
+        this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
+        this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
+
+        this.INVALID_TIME = "inst/invalid-time-value";
+        this.INVALID_TIME_START = "inst/invalid-start-time";
+        this.INVALID_TIME_END = "inst/invalid-end-time";
+        this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
+
+        this.INVALID_DURATION = "inst/invalid-duration";
+        this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
+        this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
+        this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
+        this.INVALID_PERIODS = "inst/invalid-periods-a-day";
+
+        this.INVALID_DATE = "inst/invalid-date-value";
+        this.INVALID_DAY = "inst/invalid-day-name";
+        this.INVALID_PERIOD = "inst/invalid-period";
+        this.INVALID_CLASS = "inst/invalid-class-name";
+        this.INVALID_SECTION = "inst/invalid-section-name";
+
+        this.INSTITUTION_NOT_EXISTS = "inst/institution-not-exists";
+        this.INSTITUTION_EXISTS = "inst/institution-exists";
+        this.INSTITUTION_CREATED = "inst/institution-created";
+        this.INSTITUTION_CREATION_FAILED = "inst/institution-not-created";
+
+        this.INSTITUTION_DEFAULTS_SET = "inst/institution-defaults-saved";
+        this.INSTITUTION_DEFAULTS_UNSET = "inst/institution-defaults-not-saved";
+
+        this.SCHEDULE_UPLOADED = "inst/schedule-upload-success";
+        this.SCHEDULE_UPLOAD_FAILED = "inst/schedule-upload-failed";
       }
     }
 
@@ -99,6 +93,15 @@ class Codes {
         this.ACCOUNT_DELETED = "mail/account-deleted";
         this.INSTITUTION_INVITATION = "mail/invite-to-institution";
         this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
+      }
+    }
+    class ActionCodes {
+      constructor() {
+        this.ACCOUNT_DELETE = "action/delete-account";
+        this.CHANGE_PASSWORD = "action/change-password";
+        this.CHANGE_ID = "action/change-id-email";
+        this.SEND_INVITE = "action/send-invitation";
+        this.ACCOUNT_VERIFY = "action/verify-account";
       }
     }
     this.auth = new Authcodes();
@@ -169,12 +172,12 @@ class Locations {
 }
 const locate = new Locations();
 
-class Posts{
-  constructor(){
-    this.sessionValidate = '/admin/session/validate';
-    this.authlogin = '/admin/auth/login';
-    this.authlogout = '/admin/auth/logout';
-    this.authsignup = '/admin/auth/signup';
+class Posts {
+  constructor() {
+    this.sessionValidate = "/admin/session/validate";
+    this.authlogin = "/admin/auth/login";
+    this.authlogout = "/admin/auth/logout";
+    this.authsignup = "/admin/auth/signup";
   }
 }
 const post = new Posts();
@@ -198,7 +201,7 @@ class Colors {
         return this.white;
       case actionType.active:
         return this.active;
-      case actionType.nothing: {
+      case actionType.constant.nothing: {
         return this.transparent;
       }
       default: {
@@ -235,9 +238,13 @@ class TextInput {
     this.fieldset = getElement(fieldId);
     this.caption = captionId ? getElement(captionId) : null;
     this.input = getElement(inputId);
-    this.error = errorId != nothing && errorId != null ? getElement(errorId) : null;
+    this.error =
+      errorId != constant.nothing && errorId != null ? getElement(errorId) : null;
     this.type = type;
     this.normalize();
+  }
+  activate(){
+    setClass(this.fieldset,bodyType.getFieldStyle(bodyType.active));
   }
   normalize(isNormal = true, errormsg = null) {
     setFieldSetof(this.fieldset, isNormal, this.error, errormsg);
@@ -248,20 +255,20 @@ class TextInput {
   inputFocus() {
     this.input.focus();
   }
-  validateNow(validAction = _=>{},ifmatchfield = null){ 
-    validateTextField(this,this.type,validAction,ifmatchfield);
+  validateNow(validAction = (_) => {}, ifmatchfield = null) {
+    validateTextField(this, this.type, validAction, ifmatchfield);
   }
-  validate(validAction = _=>{},ifmatchfield = null){
-    this.onTextDefocus(_=>{
-      validateTextField(this,this.type,validAction,ifmatchfield);
+  validate(validAction = (_) => {}, ifmatchfield = null) {
+    this.onTextDefocus((_) => {
+      validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
-  isValid(matchfieldvalue = null){
-    return stringIsValid(this.getInput(),this.type,matchfieldvalue);
+  isValid(matchfieldvalue = null) {
+    return stringIsValid(this.getInput(), this.type, matchfieldvalue);
   }
-  strictValidate(validAction = _=>{},ifmatchfield = null){
-    this.onTextInput(_=>{
-      validateTextField(this,this.type,validAction,ifmatchfield);
+  strictValidate(validAction = (_) => {}, ifmatchfield = null) {
+    this.onTextInput((_) => {
+      validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
   onTextInput(action = (_) => {}) {
@@ -274,8 +281,8 @@ class TextInput {
       action();
     };
   }
-  showValid(){
-    setClassName(this.fieldset,actionType.getFieldStyle(bodyType.active));
+  showValid() {
+    setClassName(this.fieldset, actionType.getFieldStyle(bodyType.active));
   }
   showError(errorMsg = null, inputfocus = true) {
     setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
@@ -300,7 +307,7 @@ class TextInput {
   getInput() {
     return this.input.value;
   }
-  setInput(value){
+  setInput(value) {
     this.input.value = value;
   }
 }
@@ -405,12 +412,12 @@ var snackBar = (
 ) => {
   var snack = new Snackbar();
   snack.hide();
-  if (text != nothing) {
+  if (text != constant.nothing) {
     snack.text.innerHTML = text;
-    if (actionText != null && actionText != nothing) {
-      if(actionText == "Report"){
+    if (actionText != null && actionText != constant.nothing) {
+      if (actionText == "Report") {
         isNormal = actionType.negative;
-      };
+      }
       snack.createButton(actionText, (_) => {
         if (actionText == "Report") {
           feedBackBox(true, text, true);
@@ -429,7 +436,7 @@ var snackBar = (
     }
     snack.displayType(isNormal);
   }
-  snack.existence(text != nothing && text != null);
+  snack.existence(text != constant.nothing && text != null);
 };
 
 class DialogID {
@@ -604,12 +611,11 @@ class Dialog extends DialogID {
     visibilityOf(this.inputFields, total > 0);
     this.inputField = Array(total);
     for (var k = 0; k < total; k++) {
-
       this.inputField[k] = new TextInput(
         this.dialogInputFieldID(k),
         this.dialogInputID(k),
         this.dialogInputErrorID(k),
-        validateTypes?validateTypes[k]:null,
+        validateTypes ? validateTypes[k] : null,
         this.dialogFieldCaptionID(k)
       );
     }
@@ -618,11 +624,11 @@ class Dialog extends DialogID {
       this.inputField[k].caption.textContent = captions[k];
       this.inputField[k].setInputAttrs(hints[k], types[k]);
       this.inputField[k].input.value =
-        contents != null && contents[k] != null && contents[k] != nothing
+        contents != null && contents[k] != null && contents[k] != constant.nothing
           ? contents[k]
-          : value.nothing;
+          : value.constant.nothing;
       this.inputField[k].input.autocomplete =
-        autocompletes != null ? autocompletes[k] : value.nothing;
+        autocompletes != null ? autocompletes[k] : value.constant.nothing;
       this.inputField[k].input.spellcheck =
         spellChecks != null ? spellChecks[k] : true;
       this.inputField[k].input.autocapitalize =
@@ -673,12 +679,16 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  validate(inputFieldIndex,validateAction =_=>{}){
-      this.inputField[inputFieldIndex].validate(_=>{validateAction()})    
+  validate(inputFieldIndex, validateAction = (_) => {}) {
+    this.inputField[inputFieldIndex].validate((_) => {
+      validateAction();
+    });
   }
-  validateNow(inputFieldIndex,validateAction =_=>{}){
-    this.inputField[inputFieldIndex].validateNow(_=>{validateAction()})    
-}
+  validateNow(inputFieldIndex, validateAction = (_) => {}) {
+    this.inputField[inputFieldIndex].validateNow((_) => {
+      validateAction();
+    });
+  }
   setDisplay(head, body = null, imgsrc = null) {
     this.heading.textContent = head;
     this.subHeading.innerHTML = body;
@@ -751,28 +761,28 @@ class Dialog extends DialogID {
     });
   }
   setBackgroundColorType(type = bodyType.positive) {
-    setDefaultBackground(this.view,type);
+    setDefaultBackground(this.view, type);
   }
-  setBackgroundColor(color = colors.base){
+  setBackgroundColor(color = colors.base) {
     this.view.style.backgroundColor = color;
   }
-  setDialogColorType(type = bodyType.neutral){
-    setDefaultBackground(this.box,type);
+  setDialogColorType(type = bodyType.neutral) {
+    setDefaultBackground(this.box, type);
   }
-  setDialogColor(color = colors.white){
+  setDialogColor(color = colors.white) {
     this.box.style.backgroundColor = color;
   }
-  setHeadingColor(color = colors.base){
+  setHeadingColor(color = colors.base) {
     this.heading.style.color = color;
   }
-  setSubheadingColor(color = colors.black){
+  setSubheadingColor(color = colors.black) {
     this.subHeading.style.color = color;
   }
-  show(){
+  show() {
     value.backbluecovered = true;
     elementFadeVisibility(this.view, true);
   }
-  hide(){
+  hide() {
     value.backbluecovered = false;
     elementFadeVisibility(this.view, false);
   }
@@ -785,7 +795,6 @@ class Dialog extends DialogID {
 let clog = (msg) => {
   console.log(msg);
 };
-
 
 let sendPassResetLink = () => {
   snackBar(
@@ -806,7 +815,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
       Array("Email address", "Password"),
       Array("youremail@example.com", "Your password"),
       Array("email", "password"),
-      Array(validType.email,validType.password)
+      Array(validType.email, validType.password)
     );
     loginDialog.createActions(
       Array("Continue", "Cancel"),
@@ -815,7 +824,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
     if (sensitive) {
       loginDialog.setBackgroundColorType(bodyType.negative);
     }
-    loginDialog.input
+    loginDialog.input;
     loginDialog.getInput(0).onchange = (_) => {
       validateTextField(loginDialog.inputField[0], validType.email, (_) => {
         loginDialog.inputField[1].input.focus();
@@ -914,17 +923,21 @@ let changeEmailBox = (isShowing = true) => {
       "someone@example.com"
     ),
     Array("password", "email", "email"),
-    Array(validType.nonempty,validType.email,validType.email)
+    Array(validType.nonempty, validType.email, validType.email)
   );
   mailChange.createActions(
     Array("Change Email ID", "Abort"),
     Array(actionType.negative, actionType.positive)
   );
 
-  mailChange.validate(0, (_) => {mailChange.getInput(1).focus()});
-  mailChange.validate(1, (_) => {mailChange.getInput(2).focus()});
+  mailChange.validate(0, (_) => {
+    mailChange.getInput(1).focus();
+  });
+  mailChange.validate(1, (_) => {
+    mailChange.getInput(2).focus();
+  });
   mailChange.validate(2);
-  
+
   mailChange.onButtonClick(0, () => {
     if (
       !(
@@ -933,8 +946,12 @@ let changeEmailBox = (isShowing = true) => {
         stringIsValid(mailChange.getInputValue(2), validType.email)
       )
     ) {
-      mailChange.validateNow(0, (_) => {mailChange.getInput(1).focus()});
-      mailChange.validateNow(1, (_) => {mailChange.getInput(2).focus()});
+      mailChange.validateNow(0, (_) => {
+        mailChange.getInput(1).focus();
+      });
+      mailChange.validateNow(1, (_) => {
+        mailChange.getInput(2).focus();
+      });
       mailChange.validateNow(2);
       return;
     }
@@ -954,159 +971,184 @@ let changeEmailBox = (isShowing = true) => {
   mailChange.existence(isShowing);
 };
 
-
-
 let registrationDialog = (isShowing = true, email = null, uiid = null) => {
   loadingBox();
-  receiveSessionData(_=>{
-    var confirmLogout = new Dialog();
-    var data;
-    getUserLocally().then(adata=>{
-      data = adata;
-      confirmLogout.setDisplay(
-        "Already Logged In.",
-        `You are currently logged in as <b>${data.id}</b>.
+  receiveSessionData(
+    (_) => {
+      var confirmLogout = new Dialog();
+      var data;
+      getUserLocally().then((adata) => {
+        data = adata;
+        confirmLogout.setDisplay(
+          "Already Logged In.",
+          `You are currently logged in as <b>${data.id}</b>.
          You need to log out before creating a new account. Confirm log out?`
+        );
+        confirmLogout.createActions(
+          Array("Stay logged in", "Log out"),
+          Array(actionType.positive, actionType.negative)
+        );
+        confirmLogout.onButtonClick(0, () => {
+          confirmLogout.existence(false);
+        });
+        confirmLogout.onButtonClick(1, () => {
+          confirmLogout.loader();
+          finishSession((_) => {
+            registrationDialog(true);
+          });
+        });
+        confirmLogout.existence(true);
+      });
+    },
+    (_) => {
+      var regDial = new Dialog();
+      regDial.setDisplay(
+        "Create Admin Account",
+        "Create a new account with a working email address (individual or institution)."
       );
-      confirmLogout.createActions(
-        Array("Stay logged in", "Log out"),
+      regDial.createActions(
+        Array("Next", "Cancel"),
         Array(actionType.positive, actionType.negative)
       );
-      confirmLogout.onButtonClick(0, () => {
-        confirmLogout.existence(false);
+      regDial.createInputs(
+        Array(
+          "Your name",
+          "Email Address",
+          "New Password",
+          "Unique Institution ID - UIID"
+        ),
+        Array(
+          "Shravan Kumar, or something?",
+          "youremail@example.domain",
+          "Strong password",
+          "A unique ID for your institution"
+        ),
+        Array("text", "email", "password", "text"),
+        Array(
+          validType.name,
+          validType.email,
+          validType.password,
+          validType.username
+        ),
+        Array(null, email, null, uiid),
+        Array("name", "email", "new-password", "username"),
+        Array(true, false, false, false),
+        Array("words", "off", "off", "off")
+      );
+
+      regDial.onButtonClick(1, () => {
+        regDial.existence(false);
       });
-      confirmLogout.onButtonClick(1, () => {
-        confirmLogout.loader();
-        finishSession(_=>{registrationDialog(true)});
+
+      regDial.validate(0, (_) => {
+        regDial.getInput(1).focus();
       });
-      confirmLogout.existence(true);
-    });
-  },_=>{
-    var regDial = new Dialog();
-    regDial.setDisplay(
-      "Create Admin Account",
-      "Create a new account with a working email address (individual or institution)."
-    );
-    regDial.createActions(
-      Array("Next", "Cancel"),
-      Array(actionType.positive, actionType.negative)
-    );
-    regDial.createInputs(
-      Array(
-        "Your name",
-        "Email Address",
-        "New Password",
-        "Unique Institution ID - UIID"
-      ),
-      Array(
-        "Shravan Kumar, or something?",
-        "youremail@example.domain",
-        "Strong password",
-        "A unique ID for your institution"
-      ),
-      Array("text", "email", "password", "text"),
-      Array(validType.name,validType.email,validType.password,validType.username),
-      Array(null, email, null, uiid),
-      Array("name", "email", "new-password", "username"),
-      Array(true, false, false, false),
-      Array("words", "off", "off", "off")
-    );
+      regDial.validate(1, (_) => {
+        regDial.getInput(2).focus();
+      });
+      regDial.validate(2, (_) => {
+        regDial.getInput(3).focus();
+      });
+      regDial.validate(3);
 
-    regDial.onButtonClick(1, () => {
-      regDial.existence(false);
-    });
-
-    regDial.validate(0,(_) => {regDial.getInput(1).focus()});
-    regDial.validate(1,(_) => {regDial.getInput(2).focus()});
-    regDial.validate(2,(_) => {regDial.getInput(3).focus()});
-    regDial.validate(3);
-    
-    regDial.onButtonClick(0, () => {
-      if (!(
-          stringIsValid(regDial.getInputValue(0), validType.name) &&
-          stringIsValid(regDial.getInputValue(1), validType.email) &&
-          stringIsValid(regDial.getInputValue(2), validType.password) &&
-          stringIsValid(regDial.getInputValue(3), validType.username))
-      ) {
-        regDial.validateNow(0,(_) => {regDial.getInput(1).focus()});
-        regDial.validateNow(1,(_) => {regDial.getInput(2).focus()});
-        regDial.validateNow(2,(_) => {regDial.getInput(3).focus()});
-        regDial.validateNow(3);
-
-      } else {
-        regDial.normalize();
-        regDial.loader();
-        createAccount(
-          regDial,
-          String(regDial.getInputValue(0)).trim(),
-          String(regDial.getInputValue(1)).trim(),
-          regDial.getInputValue(2),
-          String(regDial.getInputValue(3)).trim()
-        );
-      }
-    });
-    regDial.existence(isShowing);
-  })
+      regDial.onButtonClick(0, () => {
+        if (
+          !(
+            stringIsValid(regDial.getInputValue(0), validType.name) &&
+            stringIsValid(regDial.getInputValue(1), validType.email) &&
+            stringIsValid(regDial.getInputValue(2), validType.password) &&
+            stringIsValid(regDial.getInputValue(3), validType.username)
+          )
+        ) {
+          regDial.validateNow(0, (_) => {
+            regDial.getInput(1).focus();
+          });
+          regDial.validateNow(1, (_) => {
+            regDial.getInput(2).focus();
+          });
+          regDial.validateNow(2, (_) => {
+            regDial.getInput(3).focus();
+          });
+          regDial.validateNow(3);
+        } else {
+          regDial.normalize();
+          regDial.loader();
+          createAccount(
+            regDial,
+            String(regDial.getInputValue(0)).trim(),
+            String(regDial.getInputValue(1)).trim(),
+            regDial.getInputValue(2),
+            String(regDial.getInputValue(3)).trim()
+          );
+        }
+      });
+      regDial.existence(isShowing);
+    }
+  );
 };
 
-let saveUserLocally = (data = {})=>{
+let saveUserLocally = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
-      localStorage.setItem(key,data[key]);
+      localStorage.setItem(key, data[key]);
     }
   }
-}
+};
 
-let hasAnyKeyNull = (data={})=>{
-  if(data == null){
+let hasAnyKeyNull = (data = {}) => {
+  if (data == null) {
     return true;
   }
-  if(data == {}){
+  if (data == {}) {
     return true;
   }
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
-      if(data[key]==null||data[key]==constant.nothing){
+      if (data[key] == null || data[key] == constant.nothing) {
         return true;
       }
     }
   }
   return false;
-}
+};
 
-let getUserLocally = async ()=>{
-  let data =  {
-    [constant.sessionID]:localStorage.getItem(constant.sessionID),
-    [constant.sessionUID]:localStorage.getItem(constant.sessionUID),
-    username:localStorage.getItem('username'),
-    uiid:localStorage.getItem('uiid'),
-    createdAt:localStorage.getItem('createdAt'),
+let getUserLocally = async () => {
+  let data = {
+    [constant.sessionID]: localStorage.getItem(constant.sessionID),
+    [constant.sessionUID]: localStorage.getItem(constant.sessionUID),
+    username: localStorage.getItem("username"),
+    uiid: localStorage.getItem("uiid"),
+    createdAt: localStorage.getItem("createdAt"),
   };
   clog("the data");
   clog(data);
-  if(!hasAnyKeyNull(data)){
+  if (!hasAnyKeyNull(data)) {
     clog("here nonull key");
     clog(data);
     return data;
-  }else{
+  } else {
     clog("locally esle post");
-    postData(post.sessionValidate,{
-      getuser:true
-    }).then((response)=>{
-      clog("the response");
-        clog(response);
-      if(response.event == code.auth.SESSION_INVALID){
-        finishSession(_=>{relocate(locate.root)});
-      } else {
-        data = response;
-        saveUserLocally(data);
-      }
-      data
-    }).finally((data)=>{
-      return data;
+    postData(post.sessionValidate, {
+      getuser: true,
     })
+      .then((response) => {
+        clog("the response");
+        clog(response);
+        if (response.event == code.auth.SESSION_INVALID) {
+          finishSession((_) => {
+            relocate(locate.root);
+          });
+        } else {
+          data = response;
+          saveUserLocally(data);
+        }
+        data;
+      })
+      .finally((data) => {
+        return data;
+      });
   }
-}
+};
 
 let createAccount = (dialog, adminname, email, password, uiid) => {
   postData(post.authsignup, {
@@ -1120,14 +1162,16 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
       dialog.loader(false);
       clog(result.event);
       switch (result.event) {
-        case code.auth.ACCOUNT_CREATED:{
-          //loadingBox();
-          clog(result.user);
-          saveUserLocally(result.user);
-          if(!result.user.verified){
-            accountVerificationDialog(true);
+        case code.auth.ACCOUNT_CREATED:
+          {
+            //loadingBox();
+            clog(result.user);
+            saveUserLocally(result.user);
+            if (!result.user.verified) {
+              accountVerificationDialog(true);
+            }
           }
-        }break;
+          break;
         case code.auth.USER_EXIST:
           {
             dialog.inputField[1].showError("Account already exists.");
@@ -1177,7 +1221,7 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
 let accountVerificationDialog = (isShowing = true, emailSent = false) => {
   loadingBox();
   var verify = new Dialog();
-  getUserLocally().then((data)=>{
+  getUserLocally().then((data) => {
     if (emailSent) {
       verify.setDisplay(
         "Waiting for verification",
@@ -1196,14 +1240,14 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
       verify.onButtonClick(0, () => {
         verify.loader();
         verify.existence(false);
-        loadingBox(true,'Checking','This may take a few seconds');
+        loadingBox(true, "Checking", "This may take a few seconds");
         setTimeout(() => {
-          localStorage.setItem('verified',true);
-          relocate(locate.registrationPage,{
-            u:data.uid,
-            target:'registration',
-          })
-        }, 4*1000);
+          localStorage.setItem("verified", true);
+          relocate(locate.registrationPage, {
+            u: data.uid,
+            target: "registration",
+          });
+        }, 4 * 1000);
       });
     } else {
       verify.setDisplay(
@@ -1221,11 +1265,11 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
       });
       verify.onButtonClick(0, () => {
         verify.loader();
-        loadingBox(true,'Sending',`A link is being prepared for ${data.id}.`);
+        loadingBox(true, "Sending", `A link is being prepared for ${data.id}.`);
         //replace with email sender
         setTimeout(() => {
-          accountVerificationDialog(true,true);
-        }, 3*1000);
+          accountVerificationDialog(true, true);
+        }, 3 * 1000);
       });
     }
     verify.existence(isShowing);
@@ -1275,7 +1319,9 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
 
   feedback.largeTextField.input.value = defaultText;
 
-  feedback.validate(0,(_) => {feedback.largeTextField.inputFocus()});
+  feedback.validate(0, (_) => {
+    feedback.largeTextField.inputFocus();
+  });
   feedback.largeTextField.validate();
 
   feedback.onButtonClick(0, () => {
@@ -1286,8 +1332,9 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
       )
     ) {
       feedback.largeTextField.validateNow();
-      feedback.inputField[0].validateNow((_) => {feedback.largeTextField.inputFocus()});
-      
+      feedback.inputField[0].validateNow((_) => {
+        feedback.largeTextField.inputFocus();
+      });
     } else {
       refer(mailTo("schemester@outlook.in"), {
         subject: `From ${feedback.getInputValue(0)}`,
@@ -1318,59 +1365,88 @@ let loadingBox = (
   load.existence(visible);
 };
 
-let checkSessionValidation=(validAction =_=>{relocate(locate.root)}, invalidAction =_=>relocate(locate.adminLoginPage))=>{
-  postData(post.sessionValidate).then((result) => {
-    clog(result.event);
-    if(result.event == code.auth.SESSION_INVALID){
-      invalidAction();
-    }else{
-      validAction();
-    }
-  }).catch(error=>{
-    snackBar(getLogInfo(code.auth.AUTH_REQ_FAILED,jstr(error)),"Report",false);
-  })
-}
-
-
-let receiveSessionData=(validAction =_=>{}, invalidAction =_=>{})=>{
-  postData(post.sessionValidate,{
-    getuser:true
-  }).then((result) => {
-    console.log(result);
-    if (result.event == code.auth.SESSION_INVALID) {
-      invalidAction();
-    } else {
-      if(result == getUserLocally()){
-        clog("match")
-      }else{
-        saveUserLocally(result);
-      }
-      validAction();
-    }
-  }).catch(error=>{
-    clog('in catch sessionvalidation:'+error);
-    clog(navigator.onLine);
-    if(navigator.onLine){
-      postData(post.sessionValidate).then((response)=>{
-        if(response.event == code.auth.SESSION_INVALID){
-          invalidAction();
-        } else {
-          validAction();
-        }
-      })
-    }else{
-      let data = getUserLocally();
-      if(hasAnyKeyNull(data)){
-        clog("haskeynull");
-        snackBar('Couldn\'t connect to the network','Try again',false,_=>{receiveSessionData(_=>{validAction()},_=>{invalidAction()})});
+let checkSessionValidation = (
+  validAction = (_) => {
+    relocate(locate.root);
+  },
+  invalidAction = (_) => relocate(locate.adminLoginPage)
+) => {
+  postData(post.sessionValidate)
+    .then((result) => {
+      clog(result.event);
+      if (result.event == code.auth.SESSION_INVALID) {
+        invalidAction();
       } else {
-        clog("haskeynullnot");
         validAction();
       }
-      clog("locally:"+jstr(data));
-    }
-  });
-}
+    })
+    .catch((error) => {
+      snackBar(
+        getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+        "Report",
+        false
+      );
+    });
+};
+
+let receiveSessionData = (
+  validAction = (_) => {},
+  invalidAction = (_) => {}
+) => {
+  postData(post.sessionValidate, {
+    getuser: true,
+  })
+    .then((result) => {
+      console.log(result);
+      if (result.event == code.auth.SESSION_INVALID) {
+        invalidAction();
+      } else {
+        if (result == getUserLocally()) {
+          clog("match");
+        } else {
+          saveUserLocally(result);
+        }
+        validAction();
+      }
+    })
+    .catch((error) => {
+      clog("in catch sessionvalidation:" + error);
+      clog(navigator.onLine);
+      if (navigator.onLine) {
+        postData(post.sessionValidate).then((response) => {
+          if (response.event == code.auth.SESSION_INVALID) {
+            invalidAction();
+          } else {
+            validAction();
+          }
+        });
+      } else {
+        let data = getUserLocally();
+        if (hasAnyKeyNull(data)) {
+          clog("haskeynull");
+          snackBar(
+            "Couldn't connect to the network",
+            "Try again",
+            false,
+            (_) => {
+              receiveSessionData(
+                (_) => {
+                  validAction();
+                },
+                (_) => {
+                  invalidAction();
+                }
+              );
+            }
+          );
+        } else {
+          clog("haskeynullnot");
+          validAction();
+        }
+        clog("locally:" + jstr(data));
+      }
+    });
+};
 
 let validateTextField = (
   textfield = new TextInput(),
@@ -1407,7 +1483,7 @@ let validateTextField = (
     textfield.inputFocus();
     textfield.onTextInput((_) => {
       textfield.normalize();
-      if (textfield.getInput() != nothing) {
+      if (textfield.getInput() != constant.nothing) {
         validateTextField(textfield, type, (_) => {
           afterValidAction();
         });
@@ -1442,17 +1518,23 @@ let validateTextField = (
   }
 };
 
-let finishSession =(afterfinish = ()=>{relocate(locate.root)})=>{
-  postData(post.authlogout).then(res=>{
-    if(res.event == code.auth.LOGGED_OUT){
+let finishSession = (
+  afterfinish = () => {
+    relocate(locate.root);
+  }
+) => {
+  postData(post.authlogout).then((res) => {
+    if (res.event == code.auth.LOGGED_OUT) {
       localStorage.clear();
       sessionStorage.clear();
       afterfinish();
-    } else{
-      snackBar('Failed to logout','Try again',false,_=>{finishSession()});
+    } else {
+      snackBar("Failed to logout", "Try again", false, (_) => {
+        finishSession();
+      });
     }
-  })
-}
+  });
+};
 
 let setFieldSetof = (
   fieldset,
@@ -1464,7 +1546,7 @@ let setFieldSetof = (
     errorField.innerHTML = errorMsg;
   }
   if (isNormal && errorField != null) {
-    errorField.innerHTML = nothing;
+    errorField.innerHTML = constant.nothing;
   }
   setClassName(
     fieldset,
@@ -1473,6 +1555,8 @@ let setFieldSetof = (
     isNormal
   );
 };
+
+let setClass = (element = new HTMLElement,classname)=>element.className = classname;
 
 let setClassName = (
   element,
@@ -1512,7 +1596,6 @@ let setClassName = (
     }
   }
 };
-
 
 let showElement = (elements, index) => {
   for (var k = 0, j = 0; k < elements.length; k++, j++) {
@@ -1575,7 +1658,8 @@ let stringIsValid = (
     case validType.email:
       return constant.emailRegex.test(String(value).toLowerCase());
     //todo: case inputType.password: return constant.passRegex.test(String(passValue));
-    case validType.username: return stringIsValid(String(value).trim());
+    case validType.username:
+      return stringIsValid(String(value).trim());
     case validType.match:
       return value === ifMatchValue;
     default:
@@ -1616,7 +1700,7 @@ let postData = async (url = String, data = {}) => {
 
 let refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
-  clog(String(href).indexOf('?'));
+  clog(String(href).indexOf("?"));
   window.location.href = href;
 };
 
@@ -1691,7 +1775,7 @@ let addNumberSuffixHTML = (number) => {
   }
 };
 
-let setTimeGreeting =(element = new HTMLElement())=> {
+let setTimeGreeting = (element = new HTMLElement()) => {
   var today = new Date();
   if (today.getHours() < 4) {
     element.innerHTML = "Good night!";
@@ -1704,7 +1788,7 @@ let setTimeGreeting =(element = new HTMLElement())=> {
   } else {
     element.innerHTML = "Schemester";
   }
-}
+};
 
 let getProperDate = (dateTillMillis = String()) => {
   let year = dateTillMillis.substring(0, 4);
@@ -1713,7 +1797,7 @@ let getProperDate = (dateTillMillis = String()) => {
   let hour = dateTillMillis.substring(8, 10);
   let min = dateTillMillis.substring(10, 12);
   let sec = dateTillMillis.substring(12, 14);
-  
+
   clog(dateTillMillis.substring(6, 8));
   return `${getMonthName(
     month - 1
@@ -1733,4 +1817,4 @@ let getDialogButton = (buttonClass, buttonID, label) =>
   `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
 let getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
-  let jstr = (obj)=> JSON.stringify(obj);
+let jstr = (obj) => JSON.stringify(obj);
