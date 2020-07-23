@@ -1,3 +1,5 @@
+const { response } = require("express");
+
 const express = require("express"),
   router = express.Router(),
   cookieParser = require("cookie-parser"),
@@ -5,7 +7,9 @@ const express = require("express"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
   session = require("../workers/session"),
-  Institute = require("../modelschema/Institutions");
+  invite = require("../workers/invitation"),
+  Institute = require("../modelschema/Institutions"),
+  Admin = require("../modelschema/Admins");
 
 const sessionsecret = session.teachersessionsecret;
 router.use(cookieParser(sessionsecret));
@@ -82,6 +86,82 @@ router.get("/session*", (req, res) => {
     .catch((error) => {
       clog("teacher session errror:"+error);
     });
+});
+
+router.get("/external*", async (req, res) => {
+  switch (req.query.type) {
+    case invite.type:{
+      let _id = req.query.in;
+      try{
+        let inst = await Institute.findOne({_id});
+        if(inst){
+          clog(inst.invite.teacher.active);
+          _id = req.query.ad;
+          let admin = await Admin.findOne({_id});
+          if(inst.invite.teacher.active){
+            if(admin){
+              if(admin.uiid == inst.uiid){
+                let creation = inst.invite.teacher.createdAt;
+                let expires = inst.invite.teacher.expiresAt;
+                let response =  invite.checkTimingValidity(creation,expires)
+                if(invite.isValid(response)){
+                  const invite = {
+                    valid:true,
+                    uiid:inst.uiid,
+                    adminemail:admin.email,
+                    adminName:admin.username,
+                    instname:inst.default.institute.instituteName,
+                    expireAt:expires,
+                    target:'teacher'
+                  }
+                  clog(invite);
+                  res.render(view.userinvitaion,{invite})
+                } else if(invite.isExpired(response)){
+                  const invite = {
+                    valid:false,
+                    uiid:inst.uiid,
+                    adminemail:admin.email,
+                    adminName:admin.username,
+                    instname:inst.default.institute.instituteName,
+                    expireAt:expires,
+                    target:'teacher'
+                  };
+                  clog(invite);
+                  res.render(view.userinvitaion,{invite})
+                }else {
+                  throw Error("Invalid link");
+                }
+              } else {
+                throw Error('uiidmismatch');
+              }
+            } else {
+              throw Error('admin null');
+            }
+          } else {
+            const invite = {
+              valid:false,
+              uiid:inst.uiid,
+              adminemail:admin.email,
+              adminName:admin.username,
+              instname:inst.default.institute.instituteName,
+              target:'teacher'
+            };
+            clog(invite);
+            res.render(view.userinvitaion,{invite});
+          }
+          //res.send(admin);
+        } else {
+          throw Error('institution null');
+        }
+      }catch(e){
+        clog(e);
+        res.render(view.notfound);  
+      }
+
+    }break;
+    default:
+      res.render(view.notfound);
+  }
 });
 
 module.exports = router;

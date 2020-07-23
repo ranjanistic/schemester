@@ -101,17 +101,35 @@ class Codes{
                 this.ACCOUNT_VERIFY = 'action/verify-account';
             }
         };
+        class InvitationCodes{
+            constructor(){
+                this.LINK_EXPIRED = 'invite/link-is-expired';
+                this.LINK_INVALID = 'invite/link-is-invalid';
+                this.LINK_ACTIVE = 'invite/link-is-active';
+                this.LINK_EXISTS = 'invite/link-already-exists';
+                this.LINK_CREATED = 'invite/link-creation-success';
+                this.LINK_CREATION_FAILED = 'invite/link-creation-failed';
+                this.LINK_DISABLED = 'invite/link-disabled';
+            }
+        }
         this.auth = new Authcodes();
         this.client = new Clientcodes();
         this.server = new Servercodes();
         this.mail = new Mailcodes();
         this.action  = new ActionCodes();
         this.inst = new InstitutionCodes();
+        this.invite = new InvitationCodes();
     }
     event(code){
         return {
             event:code
         }
+    }
+    eventmsg(code,msg){
+        return {
+            event:code,
+            msg:msg
+        };
     }
 }
 

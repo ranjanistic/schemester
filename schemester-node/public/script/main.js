@@ -104,12 +104,24 @@ class Codes {
         this.ACCOUNT_VERIFY = "action/verify-account";
       }
     }
+    class InvitationCodes {
+      constructor() {
+        this.LINK_EXPIRED = "invite/link-is-expired";
+        this.LINK_INVALID = "invite/link-is-invalid";
+        this.LINK_ACTIVE = "invite/link-is-active";
+        this.LINK_EXISTS = "invite/link-already-exists";
+        this.LINK_CREATED = "invite/link-creation-success";
+        this.LINK_CREATION_FAILED = "invite/link-creation-failed";
+        this.LINK_DISABLED = "invite/link-disabled";
+      }
+    }
     this.auth = new Authcodes();
     this.client = new Clientcodes();
     this.server = new Servercodes();
     this.mail = new Mailcodes();
     this.action = new ActionCodes();
     this.inst = new InstitutionCodes();
+    this.invite = new InvitationCodes();
   }
 }
 const code = new Codes();
@@ -201,7 +213,7 @@ class Colors {
         return this.white;
       case actionType.active:
         return this.active;
-      case actionType.constant.nothing: {
+      case actionType.nothing: {
         return this.transparent;
       }
       default: {
@@ -239,12 +251,14 @@ class TextInput {
     this.caption = captionId ? getElement(captionId) : null;
     this.input = getElement(inputId);
     this.error =
-      errorId != constant.nothing && errorId != null ? getElement(errorId) : null;
+      errorId != constant.nothing && errorId != null
+        ? getElement(errorId)
+        : null;
     this.type = type;
     this.normalize();
   }
-  activate(){
-    setClass(this.fieldset,bodyType.getFieldStyle(bodyType.active));
+  activate() {
+    setClass(this.fieldset, bodyType.getFieldStyle(bodyType.active));
   }
   normalize(isNormal = true, errormsg = null) {
     setFieldSetof(this.fieldset, isNormal, this.error, errormsg);
@@ -624,11 +638,13 @@ class Dialog extends DialogID {
       this.inputField[k].caption.textContent = captions[k];
       this.inputField[k].setInputAttrs(hints[k], types[k]);
       this.inputField[k].input.value =
-        contents != null && contents[k] != null && contents[k] != constant.nothing
+        contents != null &&
+        contents[k] != null &&
+        contents[k] != constant.nothing
           ? contents[k]
-          : value.constant.nothing;
+          : constant.nothing;
       this.inputField[k].input.autocomplete =
-        autocompletes != null ? autocompletes[k] : value.constant.nothing;
+        autocompletes != null ? autocompletes[k] : constant.nothing;
       this.inputField[k].input.spellcheck =
         spellChecks != null ? spellChecks[k] : true;
       this.inputField[k].input.autocapitalize =
@@ -1556,7 +1572,8 @@ let setFieldSetof = (
   );
 };
 
-let setClass = (element = new HTMLElement,classname)=>element.className = classname;
+let setClass = (element = new HTMLElement(), classname) =>
+  (element.className = classname);
 
 let setClassName = (
   element,

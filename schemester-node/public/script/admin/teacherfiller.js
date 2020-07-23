@@ -80,6 +80,7 @@ class TeacherFiller {
     uploadSchedule = () =>{
       postData('/admin/upload',{
         target:'teacherschedule'
+        //todo: teacher schedule upload, one day at a time
       }).then(response=>{
         if(response.event == code.inst.SCHEDULE_UPLOADED){
           if(this.dayCount<this.totalDays){

@@ -9,13 +9,14 @@ class Institution {
     var users = new Users();
     var schedule = new Schedule();
     var teachers = new Teachers();
-
+    var invite = new Invite();
     this.instSchema = new Schema({
       uiid: { type: String, unique : true },
       default: defaults.defaultSchema,
       users: users.userschema,
       schedule: schedule.scheduleschema,
       teacherSchedule: teachers.teacherscheduleschema,
+      invite:invite.invitationschema
     });
   }
   getModel() {
@@ -135,6 +136,21 @@ class Teachers {
     this.teacherscheduleschema = new Schema({
       teacher: scheduleteacherschema,
     });
+  }
+}
+
+class Invite{
+  constructor(){
+    var linkschema = new Schema({
+      active:{type:Boolean,default:false},
+      createdAt:{type:Number,default:0},
+      expiresAt:{type:Number,default:0}
+    },{_id:false})
+
+    this.invitationschema = new Schema({
+      teacher:linkschema,
+      student:linkschema
+    },{_id:false});
   }
 }
 

@@ -40,7 +40,7 @@
             <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            <% if (inst.default.users) { %>
+            <% if (inst.default.users || inst.schedule || inst.teacherschedule ) { %>
             
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
@@ -166,20 +166,21 @@
                 </div>
             </div>
             <% } else { %>
-
-                <div class="fmt-center fmt-padding" >
-                    <div class="heading">Waiting for data</div>
+                <div class="fmt-center fmt-padding container fmt-margin" >
                     <br/>
-                    <div class="group-heading">Add a teacher of <%= inst.default.institute.instituteName %>, by filling their schedule by yourself.</div>
+                    <div class="heading">No schedule available.</div>
                     <br/>
-                    <button class="display-button" id="addteacher">Add a Teacher</button>
+                    <div class="questrial">Add a teacher of <%= inst.default.institute.instituteName %>, by filling their schedule by yourself.</div>
+                    <br/>
+                    <button class="positive-button" id="addteacher">Add Teachers</button>
                     <br/><br/>
-                    <div class="heading">Or</div>
+                    <div class="heading">Otherwise</div>
                     <br/>
-                    <div class="group-heading">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and wait for them 
-                    to add their own schedule.</div>
+                    <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
+                     add their own schedule.</div>
                     <br/>
-                    <button class="display-button" id="inviteteacher">Invite a Teacher</button>
+                    <button class="active-button" id="inviteteacher">Invite Teachers</button>
+                    <br/><br/>
                 </div>
 
             <% } %> 

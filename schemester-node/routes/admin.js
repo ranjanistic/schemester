@@ -5,6 +5,7 @@ const express = require("express"),
   code = require("../hardcodes/events"),
   view = require("../hardcodes/views"),
   session = require("../workers/session"),
+  invite = require("../workers/invitation"),
   Admin = require("../modelschema/Admins"),
   Institute = require("../modelschema/Institutions");
 
@@ -365,170 +366,143 @@ router.post('/upload',(req,res)=>{
       }
     }
   }).catch(error=>{
-    return res.json(code.inst.SCHEDULE_UPLOAD_FAILED)
+    result = {
+      event:code.inst.SCHEDULE_UPLOAD_FAILED,
+      msg:error
+    };
+    return res.json({result});
   })
 })
 
-router.post("/external/*", (req, response) => {
-  switch (req.query.type) {
-    case "invitation":
-      {
-        //todo: Generate only if expired. Check getMoment()<lastlinkdate equality from database.
-        //also check if user has disabled previous link, in {req.query.revoked}, then create and send new link as follows.
-        //var prevlinkData = getPreviousInviteLink();
-        //prevlinkData.time;
-        if (req.query.target == "teacher") {
-          var linkdata = createInviteLink(
-            "priyanshuranjan88@gmail.com", //use session id
-            "mvmnoidab64b", //use session uiid
-            "teacher"
-          );
-          clog("new link:" + linkdata);
-          response.json({ linkdata });
-        } else {
-          response.render(view.notfound);
-        }
-      }
-      break;
-    case "action":
-      {
-        if (req.body.accepted) {
-          res.render(view.admin.settings);
-        } else {
-          res.render(view.loader);
-        }
-      }
-      break;
-    default:
-      response.send(404);
-  }
-});
-
-router.get("/external/*", (req, response) => {
-  clog(req.query);
-  switch (req.query.type) {
-    case "invitation":
-      {
-        if (req.query.target == "teacher") {
-          var invite = getInviteLinkData(req.query);
-          if (invite == null) {
-            response.render(view.notfound);
-          } else {
-            response.render(view.userinvitaion, { invite });
+router.post("/manage", async (req, res) => {
+  clog("in post manage");
+  clog(req.body);
+  switch (req.body.type) {
+    case invite.type: {
+      clog("invite type");
+      session.verify(req,res,sessionsecret).then(async (response)=>{
+        let result;
+        if(session.valid(response)){
+          clog("verified");
+          clog(response);
+          switch(req.body.action){
+            case 'create':{
+              clog("post create link ");
+              let uiid = response.user.uiid;
+              let inst = await Institute.findOne({uiid})
+              if(inst){
+                clog("inst exists");
+                clog(inst.id);
+                clog(inst.invite[req.body.target].active);
+                if(inst.invite[req.body.target].active == true){
+                  clog("already active")
+                  let validresponse = invite.checkTimingValidity(inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt)
+                  if(invite.isValid(validresponse)){
+                    clog("already valid link");
+                    clog(response)
+                    let link = invite.getTemplateLink(response.user.id,inst.id,req.body.target,inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt);
+                    result = {
+                      event:code.invite.LINK_EXISTS,
+                      link:link,
+                      exp:inst.invite[req.body.target].expiresAt
+                    }
+                    clog("returning existing link");
+                    return res.json({result});
+                  }
+                }
+                clog("creating new link");
+                let data = await invite.generateLink(response.user.id,inst.id,req.body.target,req.body.daysvalid);
+                await Institute.findOneAndUpdate(
+                  {uiid:response.user.uiid},
+                  {
+                    invite:{
+                      [req.body.target]:{
+                        active:true,
+                        createdAt:data.create,
+                        expiresAt:data.exp
+                      }
+                    }
+                  },
+                  {useFindAndModify:false},
+                  async (error,document)=>{
+                    if(error){
+                      clog("error creating link");
+                      clog(error);
+                      result = {
+                        event:code.invite.LINK_CREATION_FAILED,
+                        msg:error
+                      };
+                    }else{
+                      if(document){
+                        clog("lick created");
+                        result = {
+                          event:code.invite.LINK_CREATED,
+                          link:data.link,
+                          exp:data.exp
+                        }
+                      } else {
+                        result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                      }
+                    }
+                  }
+                );
+              } else {
+                result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+              }
+              clog("returning result");
+              clog(result);
+              return res.json({result});
+            };
+            case 'disable':{
+              clog("post disabe link");
+              await Institute.findOneAndUpdate(
+                {uiid:response.user.uiid},
+                {
+                  invite:{
+                    [req.body.target]:{
+                      active:false,
+                      createdAt:0,
+                      expiresAt:0
+                    }
+                  }
+                },
+                {useFindAndModify:false},
+                async (error,document)=>{
+                  if(error){
+                    clog("unable to disable");
+                    clog(error);
+                    result = {
+                      event:code.invite.LINK_EXISTS,
+                      msg:error
+                    };
+                  }else{
+                    if(document){
+                      clog("link disabled true");
+                      result = code.event(code.invite.LINK_DISABLED);
+                    } else {
+                      result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                    }
+                  }
+                }
+              );
+              clog("returning result");
+              clog(result);
+              return res.json({result});
+            }
           }
         } else {
-          response.render(view.notfound);
+          result = response;
         }
-      }
-      break;
-    default:
-      response.render(view.notfound);
+        return res.json({result});
+      }).catch(e=>{
+        clog(e);
+        result = code.eventmsg(code.server.DATABASE_ERROR,e);
+        res.json({result});
+      });
+    }break;
+    default:res.send(404);
   }
 });
-
-var getPreviousInviteLinkData = (_) => {
-  //read from database;
-  adb.collection(testInstitute);
-  let expfromdb;
-  let valid = getTheMoment(false) < expfromdb;
-  return {
-    adminName: "Admin kumar",
-    adminEmail: [email], //from session
-    active: [valid],
-    uiid: [query.uiid], //for creation of user email object in users document of institution, for teacher schedule.
-    instituteName: "Institution of Example",
-    exp: [query.exp],
-  };
-};
-
-var createInviteLink = (email, uiid, target) => {
-  let id = String(email).split("@", 1);
-  let dom = String(email).split("@")[1];
-  let exp = getTheMoment(true, 7); // set exp time one week later
-  return jstr({
-    link: `http://localhost:3000/admin/external/?type=invitation&target=${target}&id=${id}&dom=${dom}&uiid=${uiid}&exp=${exp}`,
-    time: [exp],
-  });
-};
-
-var getInviteLinkData = (query) => {
-  let email = `${query.id}@${query.dom}`;
-  clog(getTheMoment(false) + "<" + parseInt(query.exp));
-  let valid = getTheMoment(false) < parseInt(query.exp);
-  if (isInvalidQuery(query)) {
-    return null;
-  }
-  //todo: let admin = getAdminNameFromDB(email); //admin name to be shown
-  //match exp from server, return null if conflict.
-  return {
-    adminName: "Admin kumar",
-    adminEmail: [email], //for user to contact admin if !active, and other verification purposes if active.
-    active: [valid],
-    uiid: [query.uiid], //for creation of user email object in users document of institution, for teacher schedule.
-    instituteName: "Institution of Example",
-    target: [query.target],
-    exp: [query.exp],
-  };
-};
-var getTheMoment = (stringForm = true, dayincrement = 0) => {
-  let d = new Date();
-  let year = d.getFullYear();
-  let month = d.getMonth() + 1;
-  let date = d.getDate();
-  let incrementedDate = date + dayincrement;
-  if (daysInMonth(month, year) - incrementedDate < 0) {
-    incrementedDate = incrementedDate - daysInMonth(month, year);
-    if (12 - (month + 1) < 0) {
-      month = 13 - month;
-      year++;
-    } else {
-      month++;
-    }
-  }
-  incrementedDate =
-    incrementedDate < 10 ? `0${incrementedDate}` : incrementedDate;
-  month = month < 10 ? `0${month}` : month;
-  let hour = d.getHours() < 10 ? `0${d.getHours()}` : d.getHours();
-  let min = d.getMinutes() < 10 ? `0${d.getMinutes()}` : d.getMinutes();
-  let insts = d.getSeconds();
-  let secs = insts < 10 ? `0${insts}` : insts;
-  let instm = d.getMilliseconds();
-  let milli = instm < 10 ? `00${instm}` : instm < 100 ? `0${instm}` : instm;
-  if (stringForm) {
-    return (
-      String(year) +
-      String(month) +
-      String(incrementedDate) +
-      String(hour) +
-      String(min) +
-      String(secs) +
-      String(milli)
-    );
-  } else {
-    return parseInt(
-      String(year) +
-        String(month) +
-        String(incrementedDate) +
-        String(hour) +
-        String(min) +
-        String(secs) +
-        String(milli)
-    );
-  }
-};
-
-let daysInMonth = (month, year) => new Date(year, month, 0).getDate();
-
-var isInvalidQuery = (query) =>
-  query.id == null ||
-  query.dom == null ||
-  query.exp == null ||
-  query.uiid == null ||
-  query.id == "" ||
-  query.dom == "" ||
-  query.exp == "" ||
-  query.uiid == "" ||
-  String(parseInt(query.exp)).length < getTheMoment(true).length;
 
 let getAdminShareDataV = (data = {}) => {
   return {
@@ -545,8 +519,5 @@ let getAdminShareDataV = (data = {}) => {
 let clog = (msg) => console.log(msg);
 
 let jstr = (obj)=> JSON.stringify(obj);
-let i = Institute();
-
-
 
 module.exports = router;
