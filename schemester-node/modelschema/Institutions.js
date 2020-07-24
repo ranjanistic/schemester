@@ -10,12 +10,13 @@ class Institution {
     var schedule = new Schedule();
     var teachers = new Teachers();
     var invite = new Invite();
+
     this.instSchema = new Schema({
       uiid: { type: String, unique : true },
       default: defaults.defaultSchema,
-      users: users.userschema,
       schedule: schedule.scheduleschema,
       teacherSchedule: teachers.teacherscheduleschema,
+      users: users.userschema,
       invite:invite.invitationschema
     });
   }
@@ -60,26 +61,24 @@ class Defaults {
 
 class Users {
   constructor() {
-    var teacherschema = new Schema({
-      teacher: new Schema({
-        teacherID: { type: String },
-        username: String,
-        password: { type: String},
-        createdAt: { type: Date, default: Date.now() },
-      }),
-    },{_id:false});
+    var Teacherschema = new Schema({
+      teacherName:{type:String},
+      teacherID: { type: String },
+      username: {type: String},
+      password: { type: String},
+      createdAt: { type: Date, default: Date.now() },
+    });
     var studentschema = new Schema({
-      student: new Schema({
-        studentID: { type: String },
-        username: String,
-        password: { type: String },
-        createdAt: { type: Date, default: Date.now() },
-      }),
-    },{_id:false});
+      studentName:{type:String},
+      studentID: { type: String },
+      username: String,
+      password: { type: String },
+      createdAt: { type: Date, default: Date.now() },
+    });
 
     this.userschema = new Schema({
-      teachers: teacherschema,
-      students: studentschema,
+      teachers: [Teacherschema],
+      students: [studentschema],
     },{_id:false});
   }
 }
@@ -87,24 +86,24 @@ class Users {
 class Schedule {
   constructor() {
     var sectionschema = new Schema({
-      sectionname: { type: String, unique: false, default:''},
+      sectionname: { type: String, default:''},
       teacherID: { type: String },
       hold: { type: Boolean, default: true },
       subject: { type: String },
-    }); //each section
+    },{_id:false}); //each section
 
     var classschema = new Schema({
-      classname: { type: String, unique: false },
+      classname: { type: String},
       section: sectionschema,
-    }); //each class
+    },{_id:false}); //each class
 
     var periodschema = new Schema({
-      number: { type: Number, unique: false },
+      number: { type: Number},
       class: classschema,
     },{_id:false}); //each period
 
     var dayschema = new Schema({
-      dayname: { type: String, unique: false },
+      dayname: { type: String },
       period: periodschema,
     },{_id:false}); //each day
 
@@ -117,25 +116,25 @@ class Schedule {
 class Teachers {
   constructor() {
     var teacherperiodschema = new Schema({
-      number: { type: Number, unique: false },
+      number: { type: Number },
       classname: { type: String },
       hold: { type: Boolean, default: true },
       subject: { type: String },
-    }); //each period
+    },{_id:false}); //each period
 
     var teacherdayschema = new Schema({
-      dayname: { type: String, unique: false },
+      dayname: { type: String },
       period: teacherperiodschema,
-    }); //each day
+    },{_id:false}); //each day
 
     var scheduleteacherschema = new Schema({
-      teacherID: { type: String,  unique: false },
+      teacherID: { type: String },
       day: teacherdayschema,
-    }); //each teacher
+    },{_id:false}); //each teacher
 
     this.teacherscheduleschema = new Schema({
       teacher: scheduleteacherschema,
-    });
+    },{_id:false});
   }
 }
 

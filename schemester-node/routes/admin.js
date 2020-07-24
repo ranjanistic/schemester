@@ -64,6 +64,9 @@ router.get("/session*", (req, res) => {
                 clog("no inst registered");
                 inst = new Institute({
                   uiid:uiid,
+                  users:{teachers:[],students:[]},
+                  schedule:{},
+                  teacherSchedule:{},
                   invite:{teacher:{},student:{}}
                 });
                 await inst.save();
@@ -442,7 +445,7 @@ router.post("/manage", async (req, res) => {
                       };
                     }else{
                       if(document){
-                        clog("lick created");
+                        clog("link created");
                         result = {
                           event:code.invite.LINK_CREATED,
                           link:data.link,

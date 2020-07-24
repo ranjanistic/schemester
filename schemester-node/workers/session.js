@@ -1,3 +1,4 @@
+
 const code = require("../hardcodes/events.js"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
@@ -27,7 +28,6 @@ class Session {
     }
     console.log("result:" + result);
     if (result == false) {
-      //response.clearCookie(this.sessionKey);
       return event(code.auth.SESSION_INVALID);
     } else {
       return result;
@@ -115,7 +115,7 @@ class Session {
       case this.teachersessionsecret:{
         let inst = await model.findOne({uiid});
         if(!inst) return event(code.inst.INSTITUTION_NOT_EXISTS);
-        
+                
       }
       default: return event(code.server.DATABASE_ERROR)
     }

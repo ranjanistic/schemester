@@ -9,7 +9,7 @@ class View{
         this.forbidden = '403.ejs';
         this.offline = 'offline.ejs';
 
-        this.userinvitaion = 'admin/invitation.ejs';
+        this.userinvitaion = 'invitation.ejs';
 
         this.admin = new AdminViews();
         this.teacher = new TeacherViews();

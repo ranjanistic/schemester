@@ -1,11 +1,14 @@
+
 class Active{
     constructor(data){
+        this.nameField = new TextInput('usernamefield','username','usernameerror',validType.nonempty);
         this.emailField = new TextInput('usermailfield','usermail','usermailerror',validType.email);
         this.passField = new TextInput('userpassfield','userpass','userpasserror',validType.password);
         this.passConfirmField = new TextInput('userpassconffield','userconfpass','userconfpasserror',validType.match);
 
         getElement("expireat").innerHTML = getProperDate(String(data.expiresAt));
 
+        this.nameField.validate(_=>{this.emailField.inputFocus()});
         this.emailField.validate(_=>{this.passField.inputFocus()});
         this.passField.validate(_=>{this.passConfirmField.inputFocus()});
         this.passConfirmField.validate(_=>{},this.passField);
@@ -19,23 +22,37 @@ class Active{
         this.rejectinvite.addEventListener(click,_=>{this.rejectInvitation(data)});
     }            
     acceptInvitation(data){
-        if(!(this.emailField.isValid()&&this.passField.isValid()&&this.passConfirmField.isValid(this.passField.getInput()))){
-            this.emailField.validateNow(_=>{this.passField.inputFocus()});
-            this.passField.validateNow(_=>{this.passConfirmField.inputFocus()});
+        if(!(this.nameField.isValid()&&this.emailField.isValid()&&this.passField.isValid()&&this.passConfirmField.isValid(this.passField.getInput()))){
             this.passConfirmField.validateNow(_=>{},this.passField);
+            this.passField.validateNow(_=>{this.passConfirmField.inputFocus()});
+            this.emailField.validateNow(_=>{this.passField.inputFocus()});
+            this.nameField.validateNow(_=>{this.emailField.inputFocus()});
             return;
         }
         show(this.loader);
+        let username = this.nameField.getInput();
         let usermail = this.emailField.getInput();
         let userpass = this.passField.getInput();
-        let confpass = this.passConfirmField.getInput();
-        if(accept){
-            snackBar('Accepted');
-        }else {
-            snackBar('Rejected');
-        }
+        clog(data.target);
+        postData(`/${data.target}/auth/signup`,{
+            username:username,
+            email:usermail,
+            password:userpass,
+            uiid:data.uiid
+        }).then(response=>{
+            if(response.event == code.auth.ACCOUNT_CREATED){
+                clog("yay!");
+            } else {
+                clog("oof");
+            }
+        }).catch(error=>{
+            snackBar(error);
+        })
+        
+        snackBar('Accepted');
         hide(this.loader);
     }
+
     rejectInvitation(data){
         snackBar('Rejected');
     }

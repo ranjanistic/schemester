@@ -5,7 +5,6 @@ class Invitation{
         this.target = new Target();
         this.domain = 'http://localhost:3000';
         this.defaultValidity = 7;
-
     }
 
     generateLink = async(adminID,instID,target,validdays = this.defaultValidity) =>{

@@ -1502,7 +1502,7 @@ let validateTextField = (
       if (textfield.getInput() != constant.nothing) {
         validateTextField(textfield, type, (_) => {
           afterValidAction();
-        });
+        },ifmatchField);
       } else {
         textfield.onTextInput((_) => {
           textfield.normalize();
@@ -1514,7 +1514,7 @@ let validateTextField = (
             textfield.showError(error);
             validateTextField(textfield, type, (_) => {
               afterValidAction();
-            });
+            },ifmatchField);
           }
         });
       }
@@ -1528,7 +1528,7 @@ let validateTextField = (
         textfield.showError(error);
         validateTextField(textfield, type, (_) => {
           afterValidAction();
-        });
+        },ifmatchField);
       }
     });
   }

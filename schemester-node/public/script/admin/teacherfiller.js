@@ -58,13 +58,12 @@ class TeacherFiller {
           }
           sessionStorage.setItem('teacherID',this.teacherIDField.getInput());
         }
-
         this.validateDaySchedule(_=>{
             this.uploadSchedule();
         })
       }
     }
-    load(show){
+    load(show = true){
       visibilityOf(this.next,!show);
       visibilityOf(this.nloader,show);
     }
@@ -92,7 +91,7 @@ class TeacherFiller {
             this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
             this.teacherIDField.activate();
             this.load(false);
-          } else {;
+          } else {
             new ScheduleComplete(sessionStorage.getItem('teacherID'));
           }
         } else {
@@ -109,34 +108,30 @@ class TeacherFiller {
         snackBar(`Error:${error}`,'Report');
       });
     }
-    validateDaySchedule = async (afterValidate =_=>{})=>{
+    validateDaySchedule = (afterValidate =_=>{})=>{
       let valid = true;
       for(let i=0;i<this.totalPeriods;i++){
-        setTimeout(() => {
-          if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
-            this.teacherClass[i].validateNow(_=>{
-              if(i!=this.totalPeriods){
-                this.teacherSubject[i].inputFocus();
-              }
-            });
-            this.teacherSubject[i].validateNow(_=>{
-              if(i+1!=this.totalPeriods){
-                this.teacherClass[i+1].inputFocus();
-              }
-            });
-            valid = false;
-          } else {
-            clog("valid"+i);
-          }
-          if(valid){
-            this.load();
-            for(let i=0;i<this.totalPeriods;i++){
-              this.teacherClass[i].activate();
-              this.teacherSubject[i].activate();
+        if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
+          this.teacherClass[i].validateNow(_=>{
+            if(i!=this.totalPeriods){
+              this.teacherSubject[i].inputFocus();
             }
-            afterValidate();
-          }
-        }, 100);
+          });
+          this.teacherSubject[i].validateNow(_=>{
+            if(i+1!=this.totalPeriods){
+              this.teacherClass[i+1].inputFocus();
+            }
+          });
+          valid = false;
+        }
+      }
+      if(valid){
+        this.load();
+        for(let i=0;i<this.totalPeriods;i++){
+          this.teacherClass[i].activate();
+          this.teacherSubject[i].activate();
+        }
+        afterValidate();
       }
     }
 }
