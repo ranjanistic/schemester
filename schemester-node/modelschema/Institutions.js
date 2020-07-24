@@ -142,14 +142,15 @@ class Teachers {
 class Invite{
   constructor(){
     var linkschema = new Schema({
-      active:{type:Boolean,default:false},
+      active:{type:Boolean, default:false},
       createdAt:{type:Number,default:0},
       expiresAt:{type:Number,default:0}
     },{_id:false})
-
+    var invteacher = linkschema;
+    var invstudent = linkschema;
     this.invitationschema = new Schema({
-      teacher:linkschema,
-      student:linkschema
+      teacher:invteacher,
+      student:invstudent,
     },{_id:false});
   }
 }

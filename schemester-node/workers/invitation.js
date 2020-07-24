@@ -9,36 +9,46 @@ class Invitation{
     }
 
     generateLink = async(adminID,instID,target,validdays = this.defaultValidity) =>{
-        let link = `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}`;
-        clog(link);
+
         //todo: attach the moment with link for uniqueness
         let creationTime = getTheMoment(false);
-        let timing = getTheMoment(false,validdays);
+        let expiryTime = getTheMoment(false,validdays);
+        let link = `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}&t=${creationTime}`;
+        clog('generated');
+        clog(link);
         return {
             link:link,
             create:creationTime,
-            exp:timing
+            exp:expiryTime
         };
     }
 
-    getTemplateLink(adminID,instID,target){
-        return `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}`;
+    getTemplateLink(adminID,instID,target,createdAt){
+        
+        return `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}&t=${createdAt}`;
     }
 
-    checkTimingValidity =(creation,expiration)=>{
+    checkTimingValidity =(creation,expiration, linktime)=>{
         let current = getTheMoment(false);
         clog("times of link");
+        let t = Number.parseFloat(linktime);
+        clog(linktime);
+        clog("t:"+t);
         clog(creation);
         clog(current);
         clog(expiration);
-        if(creation==0||expiration==0 || current<creation){
-            return code.event(code.invite.LINK_INVALID);
+        clog("brhhh");
+        clog(linktime == String(creation));
+
+        if(creation==0||expiration==0 || linktime!=String(creation) || current<creation){
+          clog('first invalid');
+          return code.event(code.invite.LINK_INVALID);
         }
         if(current>expiration){
-            return code.event(code.invite.LINK_EXPIRED);
+          return code.event(code.invite.LINK_EXPIRED);
         }
         if(current<=expiration&&current>=creation){
-            return code.event(code.invite.LINK_ACTIVE);
+          return code.event(code.invite.LINK_ACTIVE);
         }
         return code.event(code.invite.LINK_INVALID);
     }

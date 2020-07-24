@@ -63,7 +63,8 @@ router.get("/session*", (req, res) => {
               if (!inst) {
                 clog("no inst registered");
                 inst = new Institute({
-                  uiid:uiid
+                  uiid:uiid,
+                  invite:{teacher:{},student:{}}
                 });
                 await inst.save();
                 data.target = "registration";
@@ -294,7 +295,7 @@ async (req,res)=>{
             periodsInDay:req.body.totalperiods,
             daysInWeek:req.body.workingdays,
           }
-        }
+        },
       },
       {useFindAndModify:false},
       async (error,document)=>{
@@ -329,7 +330,12 @@ router.post('/session/receiveinstitution',async (req,res)=>{
     if(!inst){
       clog(uiid);
       inst = new Institute({
-        uiid:uiid
+        uiid:uiid,
+        invite:{
+          teacher:{
+
+          }
+        }
       });
       clog("vallll");
       val = await inst.save();
@@ -396,11 +402,13 @@ router.post("/manage", async (req, res) => {
                 clog(inst.invite[req.body.target].active);
                 if(inst.invite[req.body.target].active == true){
                   clog("already active")
-                  let validresponse = invite.checkTimingValidity(inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt)
+                  let validresponse = invite.checkTimingValidity(inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt,inst.invite[req.body.target].createdAt)
                   if(invite.isValid(validresponse)){
                     clog("already valid link");
                     clog(response)
-                    let link = invite.getTemplateLink(response.user.id,inst.id,req.body.target,inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt);
+                    let link = invite.getTemplateLink(response.user.id,inst.id,req.body.target,inst.invite[req.body.target].createdAt);
+                    clog('templated');
+                    clog(link);
                     result = {
                       event:code.invite.LINK_EXISTS,
                       link:link,

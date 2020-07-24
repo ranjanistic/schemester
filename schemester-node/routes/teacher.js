@@ -95,7 +95,6 @@ router.get("/external*", async (req, res) => {
       try{
         let inst = await Institute.findOne({_id});
         if(inst){
-          clog(inst.invite.teacher.active);
           _id = req.query.ad;
           let admin = await Admin.findOne({_id});
           if(inst.invite.teacher.active){
@@ -103,7 +102,9 @@ router.get("/external*", async (req, res) => {
               if(admin.uiid == inst.uiid){
                 let creation = inst.invite.teacher.createdAt;
                 let expires = inst.invite.teacher.expiresAt;
-                let response =  invite.checkTimingValidity(creation,expires)
+                clog('t='+req.query.t);
+                let response =  invite.checkTimingValidity(creation,expires,req.query.t)
+                clog(response);
                 if(invite.isValid(response)){
                   const invite = {
                     valid:true,

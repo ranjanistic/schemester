@@ -92,7 +92,7 @@ class TeacherFiller {
             this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
             this.teacherIDField.activate();
             this.load(false);
-          } else {
+          } else {;
             new ScheduleComplete(sessionStorage.getItem('teacherID'));
           }
         } else {
@@ -109,32 +109,34 @@ class TeacherFiller {
         snackBar(`Error:${error}`,'Report');
       });
     }
-    validateDaySchedule = (afterValidate =_=>{})=>{
+    validateDaySchedule = async (afterValidate =_=>{})=>{
       let valid = true;
       for(let i=0;i<this.totalPeriods;i++){
-        if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
-          this.teacherClass[i].validateNow(_=>{
-            if(i!=this.totalPeriods){
-              this.teacherSubject[i].inputFocus();
+        setTimeout(() => {
+          if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
+            this.teacherClass[i].validateNow(_=>{
+              if(i!=this.totalPeriods){
+                this.teacherSubject[i].inputFocus();
+              }
+            });
+            this.teacherSubject[i].validateNow(_=>{
+              if(i+1!=this.totalPeriods){
+                this.teacherClass[i+1].inputFocus();
+              }
+            });
+            valid = false;
+          } else {
+            clog("valid"+i);
+          }
+          if(valid){
+            this.load();
+            for(let i=0;i<this.totalPeriods;i++){
+              this.teacherClass[i].activate();
+              this.teacherSubject[i].activate();
             }
-          });
-          this.teacherSubject[i].validateNow(_=>{
-            if(i+1!=this.totalPeriods){
-              this.teacherClass[i+1].inputFocus();
-            }
-          });
-          valid = false;
-        } else {
-          clog("valid"+i);
-        }
-      }
-      if(valid){
-        this.load();
-        for(let i=0;i<this.totalPeriods;i++){
-          this.teacherClass[i].activate();
-          this.teacherSubject[i].activate();
-        }
-        afterValidate();
+            afterValidate();
+          }
+        }, 100);
       }
     }
 }
