@@ -21,7 +21,7 @@ router.get("/", function (req, res) {
 
 router.get("/auth/login*", (req, res) => {
   let result;
-  session.verify(req, res,sessionsecret).then((response) => {
+  session.verify(req,sessionsecret).then((response) => {
     clog("login:" + jstr(response));
     if (!session.valid(response)) {
       let autofill = req.query;
@@ -42,7 +42,7 @@ router.get("/auth/login*", (req, res) => {
 router.get("/session*", (req, res) => {
   let data = req.query;
   clog("response");
-  session.verify(req, res,sessionsecret).then(async (response) => {
+  session.verify(req,sessionsecret).then(async (response) => {
     clog("verify" + jstr(response));
     if (!session.valid(response)) {
       clog("invalid session");
@@ -120,7 +120,7 @@ router.get("/session*", (req, res) => {
 
 //for account settings
 router.post("/account/action", (req, res) => {
-  session.verify(req,res,sessionsecret).then(response=>{
+  session.verify(req,sessionsecret).then(response=>{
     if(!session.valid(response)){
       res.redirect(`/admin/auth/login?target=manage`);
     }else{
@@ -161,7 +161,7 @@ router.post("/session/validate", async (req, res) => {
   } else {
     clog("just verify");
     await session
-      .verify(req, res,sessionsecret)
+      .verify(req,sessionsecret)
       .then((response) => {
         result = response;
         clog("post validate");
@@ -265,7 +265,7 @@ router.post("/session/registerinstitution",
 async (req,res)=>{
   let result;
   clog("in registration final");
-  session.verify(req,res,sessionsecret).then(async (response)=>{
+  session.verify(req,sessionsecret).then(async (response)=>{
     if(!session.valid(response)){
       clog("invalid session");
       await session.finish(res);
@@ -322,7 +322,7 @@ async (req,res)=>{
 })
 
 router.post('/session/receiveinstitution',async (req,res)=>{
-  session.verify(req,res,sessionsecret).then(async response=>{
+  session.verify(req,sessionsecret).then(async response=>{
     let result;
     const {uiid, doc} = req.body;
     if(!session.valid(response)){
@@ -364,7 +364,7 @@ router.post('/session/receiveinstitution',async (req,res)=>{
 
 router.post('/upload',(req,res)=>{
   let result;
-  session.verify(req,res,sessionsecret).then(response=>{
+  session.verify(req,sessionsecret).then(response=>{
     if(session.valid(response)){
       switch(req.body.target){
         case 'teacherschedule':{
@@ -389,7 +389,7 @@ router.post("/manage", async (req, res) => {
   switch (req.body.type) {
     case invite.type: {
       clog("invite type");
-      session.verify(req,res,sessionsecret).then(async (response)=>{
+      session.verify(req,sessionsecret).then(async (response)=>{
         let result;
         if(session.valid(response)){
           clog("verified");

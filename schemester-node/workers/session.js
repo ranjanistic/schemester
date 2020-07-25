@@ -13,7 +13,7 @@ class Session {
     this.expiresIn = 7 * 86400;
   }
 
-  verify = async (request, response, secret) => {
+  verify = async (request, secret) => {
     let token = request.signedCookies[this.sessionKey];
     console.log("token:" + token);
     if (token == null) {

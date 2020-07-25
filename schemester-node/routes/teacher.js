@@ -1,5 +1,3 @@
-const { response } = require("express");
-
 const express = require("express"),
   router = express.Router(),
   cookieParser = require("cookie-parser"),
@@ -19,7 +17,7 @@ router.get("/", function (req, res) {
 });
 
 router.get("/auth/login*", (req, res) => {
-  session.verify(req, res, sessionsecret).then((response) => {
+  session.verify(req, sessionsecret).then((response) => {
     if (session.valid(response)) {
       clog("valid login");
       let link = req.query.target
@@ -173,8 +171,7 @@ router.post("/auth/signup", async (req, res) => {
 });
 
 router.get("/session*", (req, res) => {
-  session
-    .verify(req, res, sessionsecret)
+  session.verify(req, sessionsecret)
     .then((response) => {
       clog(response);
       if (session.valid(response)) {
