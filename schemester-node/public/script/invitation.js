@@ -29,11 +29,17 @@ class Active{
             this.nameField.validateNow(_=>{this.emailField.inputFocus()});
             return;
         }
-        show(this.loader);
+
+        this.load();
         let username = this.nameField.getInput();
         let usermail = this.emailField.getInput();
         let userpass = this.passField.getInput();
         clog(data.target);
+        sessionStorage.setItem('username',username);
+        sessionStorage.setItem('useremail',useremail);
+        sessionStorage.setItem('instname',data.instName);
+        sessionStorage.setItem('uiid',data.uiid);
+        //todo:send verfication using above stored data, user should verify first, then postdata.
         postData(`/${data.target}/auth/signup`,{
             username:username,
             email:usermail,
@@ -41,10 +47,14 @@ class Active{
             uiid:data.uiid
         }).then(response=>{
             if(response.event == code.auth.ACCOUNT_CREATED){
+                //after creation,(or maybe before), show verification dialog, and only after successfull verification, proceed further,
+                //to schedule filler view, as schedule (teacherschedule/schedule subdocuments) is assumed not to be present if user is joining via invitaiton, however if present already
+                //(say, admin added schedule themselves even after inviting), then proceed directly to dashboard (today page, for teachers).
                 clog("yay!");
             } else {
                 clog("oof");
             }
+            this.load(false);
         }).catch(error=>{
             snackBar(error);
         })
@@ -56,29 +66,37 @@ class Active{
     rejectInvitation(data){
         snackBar('Rejected');
     }
+    load(show = true){
+        visibilityOf(this.acceptinvite,!show);
+        visibilityOf(this.rejectinvite,!show);
+        visibilityOf(this.loader,show);
+    }
 }
 class Expired{
     constructor(data){
         this.view = getElement('userinvitationexpired');
         this.useremailfield = new TextInput('requsermailfield','requsermail','requsermailerror',validType.email);
         this.usermessage = new TextInput('usermessagefield','usermessage','usermessageerror');
-
         getElement('expiredat').innerHTML = getProperDate(String(data.expiresAt));
-
         this.useremailfield.validate();
         this.request = getElement('requestInvitation');
-        this.request.addEventListener(click,this.requestInviteAction(data));
+        this.request.onclick =_=>{this.requestInviteAction(data)};
         this.loader = getElement('inviteloader');
-        hide(this.loader);
+        this.load(false);
     }
     requestInviteAction(data){
         if(!this.useremailfield.isValid){
             return this.useremailfield.validateNow();
         }
-        show(this.loader);
+        this.load(true);
         let useremail = this.useremailfield.getInput();
+        //todo: send request email, then change view.
         snackBar(`sent mail from ${useremail} to ${data.adminemail}`);
-        hide(this.loader);
+        this.load(false);
+    }
+    load(show = true){
+        visibilityOf(this.request,!show);
+        visibilityOf(this.loader,show);
     }
 }
 

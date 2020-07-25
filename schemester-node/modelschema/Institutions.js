@@ -62,7 +62,6 @@ class Defaults {
 class Users {
   constructor() {
     var Teacherschema = new Schema({
-      teacherName:{type:String},
       teacherID: { type: String },
       username: {type: String},
       password: { type: String},
@@ -70,9 +69,8 @@ class Users {
       createdAt: { type: Date, default: Date.now() },
     });
     var studentschema = new Schema({
-      studentName:{type:String},
       studentID: { type: String },
-      username: String,
+      username: {type:String},
       password: { type: String },
       verified:{type:Boolean,default:false},
       createdAt: { type: Date, default: Date.now() },

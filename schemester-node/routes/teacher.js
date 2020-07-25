@@ -58,18 +58,9 @@ router.post("/auth/login",async (req, res) => {
         let teacherID = req.body.email;
         clog(uiid);
         clog(teacherID);
-        //todo: retrive teacher from array, if exists.
-      //check if password exists, if not, return '' password, for creation.
-        result = {
-          event:code.auth.USER_EXIST,
-          teacher:{
-            teacherName:"{type:String}",
-            teacherID: teacherID,
-            username: "{type: String}",
-            verified:false,
-            createdAt: { type: Date, default: Date.now()},
-          }
-        }
+        //check response.teacher.verified, show verification dialog after login and proceed further.
+        result = code.event(code.auth.USER_EXIST); //check in users.teachers subdocument array for existence.
+        
         return res.json({result});
       }
       case 'password':{
@@ -80,7 +71,17 @@ router.post("/auth/login",async (req, res) => {
         clog(uiid+email+password+target);
         session.login(req, res, sessionsecret,Institute)
           .then((response) => {
-            result = response;
+            //todo: retrive teacher from array, if exists.
+            result = {
+              event:code.auth.AUTH_SUCCESS,//accordingly
+              teacher:{
+                teacherName:"{type:String}",
+                teacherID: teacherID,
+                username: "{type: String}",
+                verified:"false",
+                createdAt: "{ type: Date, default: Date.now()}",
+              }
+            }
             return res.json({ result });
           })
           .catch((error) => {
@@ -104,70 +105,30 @@ router.post("/auth/signup", async (req, res) => {
     if(inst.users){
       clog(inst.users)
     }else {
-      clog("creating users field");
-      await Institute.find(
-        {
-          uiid:req.body.uiid,
-        },
-        async (error,document)=>{
-          if(error){
-            clog("not found??");
-            clog(error);
-          } else {
-            clog("maybe found it?");
-            clog(document);
+      clog("pushing works!");
+      Institute.updateOne({
+        uiid:req.body.uiid
+      },{
+        $push:{
+          "users.teachers":{
+            username: req.body.username,
+            teacherID: req.body.email,
+            password: req.body.password
           }
         }
-      );
-      // await Institute.findOneAndUpdate(
-      //   {uiid:req.body.uiid},
-      //   {
-      //     users:{
-      //       teachers:[
-      //         {
-      //           teacherName:req.body.username,
-      //           teacherID:req.body.email,
-      //           password:req.body.password
-      //         }
-      //       ]
-      //     }
-      //   },
-      //   {useFindAndModify:false},
-      //   async (error,document)=>{
-      //     if(error){
-      //       clog(error);
-      //     }else {
-      //       clog(document);
-      //     }
-      //   });
+      },{upsert:true},(err,docs)=>{
+        if(err){
+          clog(err);
+          //return result event error
+        }
+        if(docs){
+          clog(docs);
+          //return result event success
+        }
+      })
       
-      //clog(inst.users);
-      //let array = Array(3);
-      // inst.users.teachers.find((teacher)=>{
-      //   clog(teacher);
-      //   if(teacher.email == req.body.email){
-      //     clog("teacher exists")
-      //   } else {
-      //     clog("no such teacher");
-      //   }
-      // });
     }
   }
-
-  // session
-  //   .signup(req, res, sessionsecret, Institute)
-  //   .then((response) => {
-  //     clog("t signup response");
-  //     clog(response);
-  //     result = response;
-  //     return res.json({ result });
-  //   })
-  //   .catch((error) => {
-  //     clog("t signup error");
-  //     clog(error);
-  //     result = { event: code.auth.ACCOUNT_CREATION_FAILED, msg: error };
-  //     return res.status(500).json({ result });
-  //   });
 });
 
 router.get("/session*", (req, res) => {

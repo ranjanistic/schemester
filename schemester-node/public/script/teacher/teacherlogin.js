@@ -172,9 +172,8 @@ class Email{
           clog("yaaaaaaaaaaaas");
           this.emailField.activate();
           this.emailField.disableInput();
-          this.emailCheck(response.teacher.teacherID);
-          //todo:if response.teacher.password == '', new Password(true);
-          new Password(true);
+          this.emailCheck(emailid);
+          new Password();
         };break;
         default:{
           snackBar(response.event,null,false);
@@ -197,25 +196,18 @@ class Email{
 }
 
 class Password{
-  constructor(newuser){
+  constructor(){
     this.previous = getElement("previous");
     this.proceed = getElement("proceed");
     this.logInLoader = getElement("loginLoader");
     this.proceed.innerHTML = "Proceed";
     this.subtext = getElement("subtext");
-    this.subtext.innerHTML = newuser
-      ?`Create a new password for your ${this.getEmail()} account at ${this.getUIID()} institute.`
-      :`Provide your account password to continue with your schedule.`;
+    this.subtext.innerHTML = `Provide your account password to continue with your schedule.`;
     this.target = String(getElement('target').innerHTML);
     this.target = stringIsValid(this.target,validType.nonempty)?this.target:locate.teacher.target.today
     this.passField = new TextInput("userpasswordfield","userpassword","userpassworderror",newuser?validType.password:validType.nonempty,"userpasswordcaption");
     this.passField.show();
     this.passField.enableInput();
-
-    if(newuser){
-      this.passField.setInputAttrs("A strong password");
-      this.passField.setFieldCaption("Create password");
-    }
     this.forgotPassword = getElement("forgotpasswordButton");
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
@@ -241,6 +233,11 @@ class Password{
       target:this.target
     }).then(response=>{
       clog(response);
+      //save response.teacher values to localstorage.
+      //show verification dialog if not verified (response.teacher.verified), and proceed further, and only after verfication,
+      //take the user to dashboard(today schedule page for teachers), if schedule exists in teacherschedule (for users.teachers),
+      // else redirect/relocate to schedule filler, so user itself shall add their schedule, and after fulfilling total week schedule
+      //proceed towards session today/fullweek view etc.
       this.loader(false);
     }).catch(e=>{
       snackBar(e,null,false);
