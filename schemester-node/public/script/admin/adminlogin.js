@@ -1,9 +1,9 @@
 
 class AdminLogin{
   constructor(){
-    this.emailField = new TextInput("email_fieldset","adminemail","emailError",null,validType.email);
-    this.passField = new TextInput("password_fieldset","adminpassword","passError",null,validType.nonempty);
-    this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",null,validType.nonempty);
+    this.emailField = new TextInput("email_fieldset","adminemail","emailError",validType.email);
+    this.passField = new TextInput("password_fieldset","adminpassword","passError",validType.nonempty);
+    this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",validType.nonempty);
 
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");

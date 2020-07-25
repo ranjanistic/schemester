@@ -206,6 +206,40 @@ img{vertical-align:middle}
 .questrial{
     font-family:'Questrial',sans-serif;
 }
+
+.positive{
+    color:#216bf3;
+}
+.negative{
+    color:#c40c0c;
+}
+.neutral{
+    color:#fff
+}
+.active{
+    color:#22a54e
+}
+.b-positive{
+    background-color: #216bf3;
+}
+.b-negative{
+    background-color:#c40c0c;
+}
+.b-neutral{
+    background-color:#fff;
+}
+.b-active{
+    background-color:#22a54e;
+}
+.show{
+    display:block
+}
+.hide{
+    display:none
+}
+.noshadow{
+    box-shadow:0px
+}
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
     border-width: 0;
@@ -253,6 +287,7 @@ img{vertical-align:middle}
     color:#c40c0c;
     font-size: 16px;
     transition: 0.5s ease;
+    margin:4px 2px;
 }
 .text-field-warn{
     border: 3px solid #d66a04;
@@ -261,6 +296,7 @@ img{vertical-align:middle}
     outline:none;
     color:#d66a04;
     font-size: 16px;transition: 0.5s ease;
+    margin:4px 2px;
 }
 .text-field-active{
     border: 3px solid #22a54e;
@@ -270,6 +306,7 @@ img{vertical-align:middle}
     color:#22a54e;
     font-size: 16px;
     transition: 0.5s ease;
+    margin:6px 4px;
 }
 .text-input{
     padding:0;
@@ -669,75 +706,7 @@ img{vertical-align:middle}
     background: #efefef;
   }
 
-  /* The container */
-.check-container {
-    display: block;
-    position: relative;
-    padding-left: 35px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    font-size: 22px;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  
-  /* Hide the browser's default checkbox */
-  .check-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-  }
-  
-  /* Create a custom checkbox */
-  .tickmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 25px;
-    width: 25px;
-    border-radius:12px;
-    background-color: #eeeeee;
-  }
-  
-  /* On mouse-over, add a grey background color */
-  .check-container:hover input ~ .tickmark {
-    background-color: #efefef;
-  }
-  
-  /* When the checkbox is checked, add a blue background */
-  .check-container input:checked ~ .tickmark {
-    background-color: #216bf3;
-  }
-  
-  /* Create the checkmark/indicator (hidden when not checked) */
-  .tickmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-  }
-  
-  /* Show the checkmark when checked */
-  .check-container input:checked ~ .tickmark:after {
-    display: block;
-  }
-  
-  /* Style the checkmark/indicator */
-  .check-container .tickmark:after {
-    left: 9px;
-    top: 5px;
-    width: 5px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 3px 3px 0;
-    -webkit-transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    transform: rotate(45deg);
-  }
-
+ 
 /* The container */
 .radio-box-container {
     display: block;

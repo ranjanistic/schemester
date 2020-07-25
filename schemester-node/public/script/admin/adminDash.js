@@ -63,9 +63,7 @@ class NoDataView{
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
 
-    this.addTeacher.addEventListener(click,_=>{
-      relocate(locate.adminDashPage,{target:'addteacher'});
-    });
+    this.addTeacher.addEventListener(click,_=>{relocate(locate.adminDashPage,{target:'addteacher'})});
     this.inviteTeacher.addEventListener(click,_=>{this.linkGenerator('teacher')});
   }
   linkGenerator =(target)=> {

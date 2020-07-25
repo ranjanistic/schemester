@@ -173,8 +173,41 @@ const constant = new Constant();
 
 class Locations {
   constructor() {
+    class Admin{
+      constructor(){
+        this.session = '/admin/session';
+        this.login = '/admin/auth/login';
+        class Target{
+          constructor(){
+            this.dashboard = 'dashboard';
+            this.settings = 'manage';
+            this.addteacher = 'addteacher';
+          }
+        }
+        this.target = new Target();
+      }
+    }
+    this.admin = new Admin();
+
+    class Teacher{
+      constructor(){
+        this.session = '/teacher/session';
+        this.login = '/teacher/auth/login';
+        class Target{
+          constructor(){
+            this.today = 'today';
+            this.fullweek = 'fullschedule';
+            this.settings = 'settings';
+          }
+        }
+        this.target = new Target();
+      }
+    }
+    this.teacher = new Teacher();
+
     this.adminLoginPage = "/admin/auth/login";
     this.adminDashPage = "/admin/session";
+    
     this.homepage = "/home";
     this.root = "/";
     this.registrationPage = "/admin/session";
@@ -186,6 +219,26 @@ const locate = new Locations();
 
 class Posts {
   constructor() {
+    class Admin{
+      constructor(){
+        this.login = "/admin/auth/login";
+        this.logout = "/admin/auth/logout";
+        this.signup = "/admin/auth/signup";
+        this.sessionValidate = "/admin/session/validate";
+      }
+    }
+    this.admin = new Admin();
+
+    class Teacher{
+      constructor(){
+        this.login = '/teacher/auth/login';
+        this.logout = '/teacher/auth/logout';
+        this.sessionValidate = '/teacher/session/validate';
+
+      }
+    }
+    this.teacher = new Teacher();
+    
     this.sessionValidate = "/admin/session/validate";
     this.authlogin = "/admin/auth/login";
     this.authlogout = "/admin/auth/logout";
@@ -257,6 +310,15 @@ class TextInput {
     this.type = type;
     this.normalize();
   }
+  show(){
+    show(this.fieldset);
+  }
+  hide(){
+    hide(this.fieldset);
+  }
+  visible(isvisible = true){
+    visibilityOf(this.fieldset,isvisible);
+  }
   activate() {
     setClass(this.fieldset, bodyType.getFieldStyle(bodyType.active));
   }
@@ -268,6 +330,12 @@ class TextInput {
   }
   inputFocus() {
     this.input.focus();
+  }
+  disableInput(){
+    this.input.disabled = true;
+  }
+  enableInput(){
+    this.input.disabled = false;
   }
   validateNow(validAction = (_) => {}, ifmatchfield = null) {
     validateTextField(this, this.type, validAction, ifmatchfield);
@@ -323,6 +391,43 @@ class TextInput {
   }
   setInput(value) {
     this.input.value = value;
+  }
+}
+
+class Checkbox{
+  constructor(
+    containerId = String,
+    labelId = String,
+    checkboxId = String,
+    type = actionType.positive
+  ){
+    this.container = getElement(containerId);
+    this.label = getElement(labelId);
+    this.checkbox = getElement(checkboxId);
+    this.type = type;
+    clog(this.type);
+    setClass(this.checkbox,actionType.getCheckStyle(this.type));
+  }
+  setLabel(text = String){
+    this.label.innerHTML = text;
+  }
+  onCheckChange(checked=_=>{},unchecked=_=>{}){
+    this.checkbox.addEventListener('change',_=>{
+      if(this.checkbox.checked){
+        checked();
+      }else{
+        unchecked();
+      }
+    })
+  }
+  show(){
+    show(this.container);
+  }
+  hide(){
+    hide(this.container);
+  }
+  visible(isvisible=true){
+    visibilityOf(this.container,isvisible);
   }
 }
 
@@ -524,6 +629,22 @@ class ViewType {
     this.warning = "warning";
     this.active = "active";
     this.nothing = "nothing";
+  }
+  getCheckStyle(type = new ViewType){
+    switch (type) {
+      case this.neutral:
+        return "tickmark-positive";
+      case this.positive:
+        return "tickmark-positive";
+      case this.negative:
+        return "tickmark-negative";
+      case this.warning:
+        return "tickmark-warning";
+      case this.active:
+        return "tickmark-active";
+      default:
+        return "tickmark-positive";
+    }
   }
   getButtonStyle(type) {
     switch (type) {
@@ -1144,7 +1265,7 @@ let getUserLocally = async () => {
     return data;
   } else {
     clog("locally esle post");
-    postData(post.sessionValidate, {
+    postData(post.admin.sessionValidate, {
       getuser: true,
     })
       .then((response) => {
@@ -1167,7 +1288,7 @@ let getUserLocally = async () => {
 };
 
 let createAccount = (dialog, adminname, email, password, uiid) => {
-  postData(post.authsignup, {
+  postData(post.admin.signup, {
     username: adminname,
     email: email,
     password: password,
@@ -1387,7 +1508,7 @@ let checkSessionValidation = (
   },
   invalidAction = (_) => relocate(locate.adminLoginPage)
 ) => {
-  postData(post.sessionValidate)
+  postData(post.admin.sessionValidate)
     .then((result) => {
       clog(result.event);
       if (result.event == code.auth.SESSION_INVALID) {
@@ -1409,7 +1530,7 @@ let receiveSessionData = (
   validAction = (_) => {},
   invalidAction = (_) => {}
 ) => {
-  postData(post.sessionValidate, {
+  postData(post.admin.sessionValidate, {
     getuser: true,
   })
     .then((result) => {
@@ -1429,7 +1550,7 @@ let receiveSessionData = (
       clog("in catch sessionvalidation:" + error);
       clog(navigator.onLine);
       if (navigator.onLine) {
-        postData(post.sessionValidate).then((response) => {
+        postData(post.admin.sessionValidate).then((response) => {
           if (response.event == code.auth.SESSION_INVALID) {
             invalidAction();
           } else {
@@ -1539,7 +1660,7 @@ let finishSession = (
     relocate(locate.root);
   }
 ) => {
-  postData(post.authlogout).then((res) => {
+  postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       localStorage.clear();
       sessionStorage.clear();
@@ -1825,6 +1946,8 @@ let getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
 let getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
+let getCheckBox = (labelID,label,checkboxID)=>
+`<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
 let getInputField = (fieldID, captionID, inputID, errorID) =>
   `<fieldset class="fmt-row text-field" id="${fieldID}"> 
   <legend class="field-caption" id="${captionID}"></legend> 

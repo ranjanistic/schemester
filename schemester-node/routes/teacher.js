@@ -15,7 +15,7 @@ const sessionsecret = session.teachersessionsecret;
 router.use(cookieParser(sessionsecret));
 
 router.get("/", function (req, res) {
-  //res.redirect("/teacher/auth/login?target=dashboard");
+  res.redirect("/teacher/auth/login?target=today");
 });
 
 router.get("/auth/login*", (req, res) => {
@@ -24,7 +24,7 @@ router.get("/auth/login*", (req, res) => {
       clog("valid login");
       let link = req.query.target
         ? `/teacher/session?u=${response.user.id}&target=${req.query.target}`
-        : `/teacher/session?u=${response.user.id}&target=dashboard`;
+        : `/teacher/session?u=${response.user.id}&target=today`;
       res.redirect(link);
     } else {
       clog("invalid login");
@@ -34,31 +34,65 @@ router.get("/auth/login*", (req, res) => {
   });
 });
 
-router.post(
-  "/auth/login",
-  // [
-  //   check("email", code.auth.EMAIL_INVALID).isEmail(),
-  //   check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
-  //   check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
-  // ],
-  async (req, res) => {
-    let result;
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   result = { event: errors.array()[0].msg };
-    //   return res.json({ result });
-    // }
-    session
-      .login(req, res, sessionsecret, Teacher)
-      .then((response) => {
-        result = response;
-        return res.json({ result });
-      })
-      .catch((error) => {
-        result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
-        clog("t post login:" + jstr(result));
-        return res.json({ result });
-      });
+router.post("/auth/login",async (req, res) => {
+    let result = code.event(code.auth.AUTH_FAILED);
+    clog(req.body);
+    switch(req.body.type){
+      case 'uiid':{
+        clog("case uiid");
+        let uiid = req.body.uiid;
+        clog(uiid);
+        let inst = await Institute.findOne({uiid});
+        if(inst){
+          result = {
+            event:code.inst.INSTITUTION_EXISTS,
+            uiid:uiid
+          }
+        } else {
+          result = {
+            event:code.inst.INSTITUTION_NOT_EXISTS
+          }
+        }
+        return res.json({result});
+      }
+      case 'email':{
+        let uiid = req.body.uiid;
+        let teacherID = req.body.email;
+        clog(uiid);
+        clog(teacherID);
+        //todo: retrive teacher from array, if exists.
+      //check if password exists, if not, return '' password, for creation.
+        result = {
+          event:code.auth.USER_EXIST,
+          teacher:{
+            teacherName:"{type:String}",
+            teacherID: teacherID,
+            username: "{type: String}",
+            verified:false,
+            createdAt: { type: Date, default: Date.now()},
+          }
+        }
+        return res.json({result});
+      }
+      case 'password':{
+        let uiid = req.body.uiid;
+        let email = req.body.email;
+        let password = req.body.password;
+        let target = req.body.target;
+        clog(uiid+email+password+target);
+        session.login(req, res, sessionsecret,Institute)
+          .then((response) => {
+            result = response;
+            return res.json({ result });
+          })
+          .catch((error) => {
+            result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
+            clog("t post login:" + jstr(result));
+            return res.json({ result });
+          });
+      }break;
+      default:{res.json({result})}
+    }
   }
 );
 

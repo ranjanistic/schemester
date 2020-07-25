@@ -66,6 +66,7 @@ class Users {
       teacherID: { type: String },
       username: {type: String},
       password: { type: String},
+      verified:{type:Boolean,default:false},
       createdAt: { type: Date, default: Date.now() },
     });
     var studentschema = new Schema({
@@ -73,6 +74,7 @@ class Users {
       studentID: { type: String },
       username: String,
       password: { type: String },
+      verified:{type:Boolean,default:false},
       createdAt: { type: Date, default: Date.now() },
     });
 

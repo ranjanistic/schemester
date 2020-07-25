@@ -1,6 +1,7 @@
 class Homepage{
     constructor(){
         this.adminLogin = getElement('adminLogin');
+        this.teacherLogin = getElement('teacherLogin');
         this.adminSignup = getElement('registerInstitution');
         this.plans = getElement('plansPricing');
         this.getstarted = getElement('getStarted');
@@ -8,7 +9,8 @@ class Homepage{
         this.adminSignup.addEventListener(click,_=>registrationDialog());
         this.plans.addEventListener(click,_=>refer(locate.planspage));
         this.getstarted.addEventListener(click,_=>registrationDialog());
-        this.adminLogin.addEventListener(click,_=>refer(locate.adminLoginPage));
+        this.adminLogin.addEventListener(click,_=>refer(locate.admin.login));
+        this.teacherLogin.addEventListener(click,_=>refer(locate.teacher.login));
     }    
 }
 
