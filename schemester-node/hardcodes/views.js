@@ -29,7 +29,7 @@ class AdminViews{
 class TeacherViews{
     constructor(){
         this.login = 'teacher/teacher_login.ejs';
-        this.dash = 'teacher/teacher_dash.ejs';
+        this.today = 'teacher/teacher_dash.ejs';
         this.settings = 'teacher/teacher_settings.ejs';
         this.addschedule = 'admin/schedule_filler.ejs';
     }

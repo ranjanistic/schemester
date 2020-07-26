@@ -19,7 +19,7 @@
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
-            <span id="greeting">Schemester</span>
+            <span id="greeting"></span>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;border:4px solid #216bf3">
@@ -30,7 +30,6 @@
                     <button class="neutral-button" id="settingsAdminButton">
                         Settings
                     </button>
-                    
                     <button class="negative-button" id="logoutAdminButton">
                         Logout
                     </button>
@@ -40,12 +39,12 @@
             <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            <% if (inst.users.teachers[0] ) { %>
+            <% if (inst.active) { %>
             
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
                     <div class="fmt-row">
-                        <span class=" heading">Today</span>
+                        <span class=" heading"><%= inst.users.teachers.length %></span>
                         <button class="fmt-right positive-button" style="background-color: #40a556;">Auto-assign</button>
                     </div>
                     <fieldset class="fmt-row box-field">
@@ -166,22 +165,61 @@
                 </div>
             </div>
             <% } else { %>
-                <div class="fmt-center fmt-padding container fmt-margin" >
-                    <br/>
-                    <div class="heading">No schedule yet.</div>
-                    <br/>
-                    <div class="questrial">Add a teacher of <%= inst.default.institute.instituteName %>, by filling their schedule by yourself.</div>
-                    <br/>
-                    <button class="positive-button" id="addteacher">Add Teachers</button>
-                    <br/><br/>
-                    <div class="heading">Otherwise</div>
-                    <br/>
-                    <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
-                     add their own schedule.</div>
-                    <br/>
-                    <button class="active-button" id="inviteteacher">Invite Teachers</button>
-                    <br/><br/>
+                <div class="fmt-row">
+                <% if (inst.users.teachers.length>0) { %>
+                    <div class="fmt-col fmt-half fmt-padding">
+                        <div class="fmt-center container fmt-padding">
+                            <br/>
+                            <span class="heading">Ready?</span>
+                            <br/>
+                            <div class="questrial">So far, <a href="/admin/session?target=manage"><%= inst.users.teachers.length %> teachers</a> have joined the institution on Schemester.
+                                <br/>Would you like to start scheduling now?
+                            </div>
+                            <br/>
+                            <button class="positive-button" id="startschedule">Start Scheduling</button>
+                            <br/><br/>
+                        </div>
+                    </div>
+                    <div class="fmt-col fmt-half fmt-padding">
+                    <div class=" fmt-center fmt-padding container" >
+                <% } else { %>
+                    <div class="fmt-center fmt-padding container fmt-margin" >
+                <% } %>
+                        <br/>
+                        <span class="heading">Schedule waiting.</span>
+                        <br/>
+                        <div class="questrial">Add a teacher of <a href="/admin/session?target=manage"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
+                        <br/>
+                        <button class="positive-button" id="addteacher">Add Teachers</button>
+                        <br/><br/>
+                        <% if (inst.users.teachers.length==0) { %>
+                            <span class="heading">Otherwise</span>
+                            <br/>
+                            <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
+                                add their own schedule.
+                            </div>
+                            <br/>
+                            <button class="active-button" id="inviteteacher">Invite Teachers</button>
+                            <br/><br/>
+                        <% } %>
+                    </div>
+                <% if (inst.users.teachers.length>0) { %>
+                    </div>
+                <% } %>
                 </div>
+                <% if (inst.users.teachers.length>0) { %>
+                    <div class="fmt-row container fmt-padding fmt-margin fmt-center">
+                        <br/>
+                        <span class="heading">Otherwise</span>
+                        <br/>
+                        <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
+                            add their own schedule.
+                        </div>
+                        <br/>
+                        <button class="active-button" id="inviteteacher">Invite Teachers</button>
+                        <br/><br/>
+                    </div>
+                <% } %> 
             <% } %> 
         </div>
 

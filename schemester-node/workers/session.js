@@ -1,7 +1,8 @@
-
 const code = require("../hardcodes/events.js"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
+  Admin = require("../modelschema/Admins"),
+  Institute = require("../modelschema/Institutions"),
   sessionID = "id",
   sessionUID = "uid";
 
@@ -9,6 +10,7 @@ class Session {
   constructor() {
     this.adminsessionsecret = "adminschemesterSecret2001";
     this.teachersessionsecret = "teacherschemesterSecret2001";
+    this.studentsessionsecret = "studentschemesterSecret2001";
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 7 * 86400;
   }
@@ -18,9 +20,9 @@ class Session {
     console.log("token:" + token);
     if (token == null) {
       console.log("nul token");
-      return event(code.auth.SESSION_INVALID);
+      return code.event(code.auth.SESSION_INVALID);
     }
-    let result = event(code.auth.SESSION_INVALID);
+    let result = code.event(code.auth.SESSION_INVALID);
     try {
       result = jwt.verify(token, secret);
     } catch (e) {
@@ -28,7 +30,7 @@ class Session {
     }
     console.log("result:" + result);
     if (result == false) {
-      return event(code.auth.SESSION_INVALID);
+      return code.event(code.auth.SESSION_INVALID);
     } else {
       return result;
     }
@@ -36,18 +38,19 @@ class Session {
 
   finish = async (response) => {
     await response.clearCookie(this.sessionKey);
-    return event(code.auth.LOGGED_OUT);
+    return code.event(code.auth.LOGGED_OUT);
   };
 
-  login = async (request, response, secret, model) => {
-    const { email, password, uiid, target } = request.body;
+  login = async (request, response, secret) => {
     switch (secret) {
       case this.adminsessionsecret: {
-        let user = await model.findOne({ email });
-        if (!user) return event(code.auth.USER_NOT_EXIST);
+        //admin login
+        const { email, password, uiid, target } = request.body;
+        let user = await Admin.findOne({ email });
+        if (!user) return code.event(code.auth.USER_NOT_EXIST);
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return event(code.auth.WRONG_PASSWORD);
-        if (uiid != user.uiid) return event(code.auth.WRONG_UIID);
+        if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+        if (uiid != user.uiid) return code.event(code.auth.WRONG_UIID);
         const payload = {
           user: {
             id: user.id,
@@ -67,30 +70,93 @@ class Session {
       }
       case this.teachersessionsecret:
         {
-          let inst = await model.findOne({ uiid })
-          .where(users.teachers.teacher.teacherID, email);
-          if (inst) {
-            user = inst.users.teachers.teacher;
-          } else {
-            return event(code.inst.INSTITUTION_NOT_EXISTS);
+          //teacher login
+          switch (request.body.type) {
+            case "uiid": {
+              clog("case uiid");
+              const { uiid } = request.body;
+              clog(uiid);
+              let inst = await Institute.findOne({ uiid });
+              return inst
+                ? code.event(code.inst.INSTITUTION_EXISTS)
+                : code.event(code.inst.INSTITUTION_NOT_EXISTS);
+            }
+            case "email": {
+              let result;
+              const { uiid, teacherID } = request.body;
+              clog(uiid);
+              clog(teacherID);
+              let inst = await Institute.findOne({uiid});
+              inst.users.teachers.forEach((teacher)=>{
+                clog(teacher.teacherID);
+                if(teacher.teacherID == teacherID){
+                  result = code.event(code.auth.USER_EXIST);
+                }
+              })
+              return result;
+            }
+            case "password": {
+              const { email, password, uiid, target } = request.body;
+              clog(uiid + email + password + target);
+              let user;
+              let result = code.event(code.auth.USER_NOT_EXIST);
+              //todo:login teacher by matching password
+              let inst = await Institute.findOne({uiid});
+              if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+              if(!inst.users) return code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
+
+              inst.users.teachers.forEach((teacher)=>{
+                if(teacher.teacherID == email){
+                  user = teacher;
+                  clog(user);
+                }
+              });
+              const isMatch = await bcrypt.compare(password, user.password);
+              if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+              const payload = {
+                user: {
+                  id: user.id,
+                  uiid: uiid,
+                },
+              };
+              let token = jwt.sign(payload, secret, {
+                expiresIn: this.expiresIn, //days*seconds/day
+              });
+              response.cookie(this.sessionKey, token, { signed: true });
+              return {
+                event: code.auth.AUTH_SUCCESS,
+                user: getTeacherShareData(user),
+                target: target,
+              };
+            }
+            default: {
+              return code.event(code.auth.AUTH_REQ_FAILED);
+            }
           }
+          //generating token;
+        }
+        break;
+      case this.studentsessionsecret:
+        {
+          //student login
+        
         }
         break;
       default:
-        user = null;
+        return code.event(code.auth.AUTH_REQ_FAILED);
     }
   };
 
-  signup = async (request, response, secret, model) => {
-    const { username, email, password, uiid } = request.body;
+  signup = async (request, response, secret) => {
     switch (secret) {
       case this.adminsessionsecret: {
-        let user = await model.findOne({ email });
-        if (user) return event(code.auth.USER_EXIST);
-        let inst = await model.findOne({ uiid });
-        if (inst) return event(code.server.UIID_TAKEN);
+        const { username, email, password, uiid } = request.body;
+        let user = await Admin.findOne({ email });
+        if (user) return code.event(code.auth.USER_EXIST);
+        let inst = await Admin.findOne({ uiid });
+        if (inst) return code.event(code.server.UIID_TAKEN);
         clog("checks cleared");
-        user = new model({ username, email, password, uiid });
+        user = new Admin({ username, email, password, uiid });
         clog("got new user model");
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
@@ -111,22 +177,80 @@ class Session {
           event: code.auth.ACCOUNT_CREATED,
           user: getAdminShareData(user),
         };
-      }
-      case this.teachersessionsecret:{
-        let inst = await model.findOne({uiid});
-        if(!inst) return event(code.inst.INSTITUTION_NOT_EXISTS);
-                
-      }
-      default: return event(code.server.DATABASE_ERROR)
+      };
+      case this.teachersessionsecret: {
+        const {username,email,password,uiid} = request.body;
+        let inst = await Institute.findOne({ uiid });
+        if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+        
+        //clog(inst.users.teachers.entries());
+        let result;
+        
+        const salt = await bcrypt.genSalt(10);
+        let epassword = await bcrypt.hash(password, salt);
+        
+        await Institute.updateOne({uiid: uiid},{
+            $push: {
+              "users.teachers": {
+                username: username,
+                teacherID: email,
+                password: epassword
+              },
+            },},{
+            upsert: true 
+          },async (err, docs) => {
+            if (err) {
+              clog("not created");
+              clog(err);
+              result = code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED,err);
+            }
+            if (docs) {
+              clog("created?");
+              clog(docs);
+              let user;
+              inst = await Institute.findOne({uiid});
+              inst.users.teachers.forEach((teacher)=>{
+                if(teacher.teacherID == email){
+                  clog("got user");
+                  user = teacher;
+                }
+              });
+              //get this new user from array
+              const payload = {
+                user: {
+                  id: user.id,//use _id
+                  uiid: uiid,
+                },
+              };
+      
+              let token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
+              clog("token:" + token);
+              clog("setting cookie");
+              response.cookie(this.sessionKey, token, { signed: true });
+              clog("cookie set, setting result");
+              result ={
+                event:code.auth.ACCOUNT_CREATED,
+                user: getTeacherShareData(user)
+              }
+              clog("doc result");
+              clog(result);
+            }
+          }
+        );
+        clog("final result");
+        clog(result);
+        return result;
+      };
+      default:return code.event(code.server.DATABASE_ERROR);
     }
   };
   userdata = async (request, model, secret) => {
     let token = request.signedCookies[this.sessionKey];
     if (token == null) {
       console.log("tokennull");
-      return event(code.auth.SESSION_INVALID);
+      return code.event(code.auth.SESSION_INVALID);
     } else {
-      let decode = event(code.auth.SESSION_INVALID);
+      let decode = code.event(code.auth.SESSION_INVALID);
       try {
         decode = jwt.verify(token, secret);
       } catch (e) {
@@ -134,24 +258,24 @@ class Session {
       }
       if (decode == false) {
         console.log("decodefalse");
-        return event(code.auth.SESSION_INVALID);
+        return code.event(code.auth.SESSION_INVALID);
       } else {
         let _id = decode.user.id;
-        switch(secret){
-          case this.adminsessionsecret:{
+        switch (secret) {
+          case this.adminsessionsecret: {
             let user = await model.findOne({ _id });
             if (user) {
               console.log("session_Id");
               console.log(_id);
               return getAdminShareData(user);
             } else {
-              return event(code.auth.SESSION_INVALID);
+              return code.event(code.auth.SESSION_INVALID);
             }
           }
-          case this.teachersessionsecret:{
-
+          case this.teachersessionsecret: {
           }
-          default:return event(code.auth.AUTH_REQ_FAILED);
+          default:
+            return code.event(code.auth.AUTH_REQ_FAILED);
         }
       }
     }
@@ -164,11 +288,6 @@ class Session {
 
 module.exports = new Session();
 
-let event=(code)=> {
-  return {event:code};
-}
-
-
 let getAdminShareData = (data = {}) => {
   return {
     [sessionUID]: data.id,
@@ -176,16 +295,18 @@ let getAdminShareData = (data = {}) => {
     [sessionID]: data.email,
     uiid: data.uiid,
     createdAt: data.createdAt,
+    verified: data.verified,
   };
 };
 
-let getTeacherShareData = (data = {})=>{
+let getTeacherShareData = (data = {}) => {
   return {
-    [sessionUID]:data.id,
-    username:data.username,
-    [sessionID]:data.email,
-    createdAt:data.createdAt
+    [sessionUID]: data.id,
+    username: data.username,
+    [sessionID]: data.teacherID,
+    createdAt: data.createdAt,
+    verified: data.verified,
   };
-}
+};
 
 let clog = (msg) => console.log(msg);

@@ -206,7 +206,7 @@ class Users {
   linkGenerator =(target)=> {
     clog("link generator");
     loadingBox(true,'Generating Link',`A link is being created for your to share with ${target}s of ${localStorage.getItem('uiid')} institute`);
-    postData('/admin/manage',{
+    postData(post.admin.manage,{
       type:'invitation',
       action:'create',
       target:target,

@@ -35,119 +35,67 @@ router.get("/auth/login*", (req, res) => {
 router.post("/auth/login",async (req, res) => {
     let result = code.event(code.auth.AUTH_FAILED);
     clog(req.body);
-    switch(req.body.type){
-      case 'uiid':{
-        clog("case uiid");
-        let uiid = req.body.uiid;
-        clog(uiid);
-        let inst = await Institute.findOne({uiid});
-        if(inst){
-          result = {
-            event:code.inst.INSTITUTION_EXISTS,
-            uiid:uiid
-          }
-        } else {
-          result = {
-            event:code.inst.INSTITUTION_NOT_EXISTS
-          }
-        }
-        return res.json({result});
-      }
-      case 'email':{
-        let uiid = req.body.uiid;
-        let teacherID = req.body.email;
-        clog(uiid);
-        clog(teacherID);
-        //check response.teacher.verified, show verification dialog after login and proceed further.
-        result = code.event(code.auth.USER_EXIST); //check in users.teachers subdocument array for existence.
-        
-        return res.json({result});
-      }
-      case 'password':{
-        let uiid = req.body.uiid;
-        let email = req.body.email;
-        let password = req.body.password;
-        let target = req.body.target;
-        clog(uiid+email+password+target);
-        session.login(req, res, sessionsecret,Institute)
-          .then((response) => {
-            //todo: retrive teacher from array, if exists.
-            result = {
-              event:code.auth.AUTH_SUCCESS,//accordingly
-              teacher:{
-                teacherName:"{type:String}",
-                teacherID: teacherID,
-                username: "{type: String}",
-                verified:"false",
-                createdAt: "{ type: Date, default: Date.now()}",
-              }
-            }
-            return res.json({ result });
-          })
-          .catch((error) => {
-            result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
-            clog("t post login:" + jstr(result));
-            return res.json({ result });
-          });
-      }break;
-      default:{res.json({result})}
-    }
-  }
-);
-
-router.post("/auth/signup", async (req, res) => {
-  clog(req.body);
-  uiid = "bb";
-  let inst = await Institute.findOne({uiid});
-
-  if(inst){
-    clog("yeah bro");
-    if(inst.users){
-      clog(inst.users)
-    }else {
-      clog("pushing works!");
-      Institute.updateOne({
-        uiid:req.body.uiid
-      },{
-        $push:{
-          "users.teachers":{
-            username: req.body.username,
-            teacherID: req.body.email,
-            password: req.body.password
-          }
-        }
-      },{upsert:true},(err,docs)=>{
-        if(err){
-          clog(err);
-          //return result event error
-        }
-        if(docs){
-          clog(docs);
-          //return result event success
-        }
-      })
-      
-    }
-  }
+    session.login(req,res,sessionsecret).then(response=>{
+      clog(response);
+      result = response;
+      return res.json({result});
+    }).catch(error=>{
+      clog(error);
+    })
 });
 
-router.get("/session*", (req, res) => {
-  session.verify(req, sessionsecret)
-    .then((response) => {
+router.post("/auth/signup", (req, res) => {
+  let result = code.event(code.auth.ACCOUNT_CREATION_FAILED);
+  clog(req.body);
+  session.signup(req,res,sessionsecret).then(response=>{
+    result = response;
+    clog("in teacher signup post");
+    clog(response);
+    return res.json({result});
+  }).catch(error=>{
+    clog("in teacher signup post error");
+    clog(error);
+    return res.json({result});
+  });
+});
+
+router.get("/session*", async (req, res) => {
+  session.verify(req, sessionsecret).then(async (response) => {
       clog(response);
-      if (session.valid(response)) {
-        clog("teacher session valid:" + response.event);
-        res.render(view.teacher.dash);
-      } else {
+      if(!session.valid(response)) {
         clog("invalid");
         res.redirect(`/teacher/auth/login?target=${req.query.target}`);
+      } else {
+        clog(response);
+        let target = req.query.target?req.query.target:'today';
+        let uiid = response.user.uiid;
+        let inst = await Institute.findOne({uiid})
+        if(inst.users.teachers){clog("has teachers");}
+        //schedule filler view, as schedule (teacherschedule/schedule subdocuments) is assumed not to be present if user is joining via invitaiton, however if present already
+        //(say, admin added schedule themselves even after inviting), then proceed directly to dashboard (today page, for teachers).                    
+        let user;
+        inst.users.teachers.forEach((teacher)=>{
+          if(teacher.id == response.user.id){
+            user = teacher;
+          }
+        });
+        if(!inst.teacherSchedule[user.teacherID]) {target = 'addschedule'};
+        switch(target){
+          case 'today':{
+            res.render(view.teacher.today,{user,inst});
+          }break;
+          case 'addschedule':{
+            res.render(view.teacher.addschedule,{adata:{isAdmin:false},user,inst});
+          }
+        }
       }
-    })
-    .catch((error) => {
+  }).catch((error) => {
       clog(error);
       res.redirect(`/teacher/auth/login?target=${req.query.target}`);
-    });
+  });
 });
+
+
 
 router.get("/external*", async (req, res) => {
   switch (req.query.type) {
@@ -204,11 +152,13 @@ router.get("/external*", async (req, res) => {
                 throw Error("admin null");
               }
             } else {
+              let expires = inst.invite.teacher.expiresAt;
               const invite = {
                 valid: false,
                 uiid: inst.uiid,
                 adminemail: admin.email,
                 adminName: admin.username,
+                expireAt:expires,
                 instname: inst.default.institute.instituteName,
                 target: "teacher",
               };
@@ -229,6 +179,24 @@ router.get("/external*", async (req, res) => {
       res.render(view.notfound);
   }
 });
+
+router.post('/find',async (req,res)=>{
+  const {email,uiid} = req.body;
+  let result = code.event(code.auth.USER_NOT_EXIST);
+  let inst = await Institute.findOne({uiid});
+  if(inst){
+    inst.users.teachers.forEach((teacher)=>{
+      if(teacher.teacherID == email){
+        clog("found");
+        result = code.event(code.auth.USER_EXIST);
+      }
+    })
+  } else {
+    result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+  }
+  clog(result);
+  return res.json({result});
+})
 
 module.exports = router;
 let clog = (msg) => console.log(msg);

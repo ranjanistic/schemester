@@ -192,7 +192,7 @@ router.post(
       res.json({ result });
       return;
     }
-    session.signup(req, res,sessionsecret, Admin)
+    session.signup(req, res,sessionsecret)
       .then((response) => {
         clog("Response");
         clog(response);
@@ -408,7 +408,7 @@ router.post("/manage", async (req, res) => {
                   let validresponse = invite.checkTimingValidity(inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt,inst.invite[req.body.target].createdAt)
                   if(invite.isValid(validresponse)){
                     clog("already valid link");
-                    clog(response)
+                    clog(response);
                     let link = invite.getTemplateLink(response.user.id,inst.id,req.body.target,inst.invite[req.body.target].createdAt);
                     clog('templated');
                     clog(link);

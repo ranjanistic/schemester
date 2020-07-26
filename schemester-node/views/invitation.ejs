@@ -14,7 +14,7 @@
         <script src="/script/main.js"></script>
         <script src="/script/invitation.js"></script>
     </head>
-    <body>
+    <body class="b-positive">
         <div class="fmt-top fmt-shadow" id="topBar">
             <a href="/"><img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon"></a>
             <span>Invitation</span>
@@ -22,82 +22,72 @@
         </div>
         
         <div class="fmt-padding" style="margin-top: 72px;" id="invitebodyparent">
-        <% if(invite.isAdmin) { %> 
-            <div class="container" id="nontargetview">
-                <div class="heading fmt-row fmt-center">Invitation</div>
-                <div class="questrial fmt-row">
-                    This is an invitation for <b><%= invite.target %>s</b> of <b><%= invite.instname %></b>.
-                    You are currently logged in as <b><%= invite.adminName %></b>(<%= invite.adminemail %>), the administrator of the same institution.
-                    <br/>Share this link only with the <%= invite.target %>s of <%= invite.instname %>, so that they can join and create their schedule.
-                    <br/>If you don't want anyone to be able to use this link,
-                    you can disable it from <a onclick="refer(locate.adminDashPage,{target:'manage'})">your management page</a>.
-                    <br/><center>This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</center>
-                </div>
-                <br/>
-                <div class="fmt-row fmt-center">
-                    <button class="positive-button" id="returntobase">Return to base</button>
-                    <img class="fmt-spin-fast fmt-right" width="50" style="display:none" src="/graphic/blueLoader.svg" id="inviteloader"/>
-                </div>
-            </div>
-
-        <% } else if(invite.valid) { %> 
+        <% if(invite.valid) { %> 
             <div class="container" id="userinvitationactive">
                 <div class="heading fmt-row fmt-center">Invitation</div>
                 <div class="questrial fmt-row">
-                    <b><%= invite.adminName %></b> has invited you to join <b><%= invite.instname %></b> as a <%= invite.target %>.
+                    <b><%= invite.adminName %></b> has invited you to join <b><%= invite.instname %></b> as a <%= invite.target %>, on <a href="/tour">Schemester</a>.
                     Fill up your details, create a password, and join, if you are a
-                    <%= invite.target %> at <b><%= invite.instname %></b> (code name: <b><%= invite.uiid %></b>).<br/><br/>
+                    <%= invite.target %> at <%= invite.instname %> (code name: <b><%= invite.uiid %></b>).<br/><br/>
                     <center><span class="error-caption">This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</span></center>
                 </div>
-                
-                <fieldset class="text-field fmt-row" id="usernamefield">
-                    <legend class="field-caption" >Your name</legend>
-                    <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at <%= invite.instname %>" type="text" id="username" name="username">
-                    <span class="fmt-right error-caption" id="usernameerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="usermailfield">
-                    <legend class="field-caption" >Your email address</legend>
-                    <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail">
-                    <span class="fmt-right error-caption" id="usermailerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="userpassfield">
-                    <legend class="field-caption" >Create your password</legend>
-                    <input class="text-input" required autocomplete="new-password" placeholder="A strong password" type="password" id="userpass" name="userpassword">
-                    <span class="fmt-right error-caption" id="userpasserror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="userpassconffield">
-                    <legend class="field-caption" >Type again to confirm</legend>
-                    <input class="text-input" required autocomplete="new-password" placeholder="Confirm password" type="password" id="userconfpass" name="confuserpassword">
-                    <span class="fmt-right error-caption" id="userconfpasserror"></span>
-                </fieldset>
                 <br/>
-                <div class="fmt-row">
-                    <button class="active-button fmt-right" id="acceptInvitation">Accept & Join</button>
-                    <button class="negative-button fmt-right" id="rejectInvitation">Reject Invitation</button>
-                    <img class="fmt-spin-fast fmt-right" width="50" style="display:none" src="/graphic/blueLoader.svg" id="inviteloader"/>
-                </div></div>
+                <div id="inputview">
+                    <div class="caption fmt-center questrial positive">Provide your details before accepting.</div>
+                    <fieldset class="text-field fmt-row" id="usernamefield">
+                        <legend class="field-caption" >Your name</legend>
+                        <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at <%= invite.instname %>" type="text" id="username" name="username">
+                        <span class="fmt-right error-caption" id="usernameerror"></span>
+                    </fieldset>
+                    <fieldset class="text-field fmt-row" id="usermailfield">
+                        <legend class="field-caption" >Your email address</legend>
+                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail">
+                        <span class="fmt-right error-caption" id="usermailerror"></span>
+                    </fieldset>
+                    <fieldset class="text-field fmt-row" id="userpassfield">
+                        <legend class="field-caption" >Create your password</legend>
+                        <input class="text-input" required autocomplete="new-password" placeholder="A strong password" type="password" id="userpass" name="userpassword">
+                        <span class="fmt-right error-caption" id="userpasserror"></span>
+                    </fieldset>
+                    <fieldset class="text-field fmt-row" id="userpassconffield">
+                        <legend class="field-caption" >Type again to confirm</legend>
+                        <input class="text-input" required autocomplete="new-password" placeholder="Confirm password" type="password" id="userconfpass" name="confuserpassword">
+                        <span class="fmt-right error-caption" id="userconfpasserror"></span>
+                    </fieldset>
+                    <br/>
+                    <div class="fmt-row">
+                        <button class="active-button fmt-right" id="acceptInvitation">Accept & Join</button>
+                        <button class="negative-button fmt-right" id="rejectInvitation">Reject Invitation</button>
+                        <img class="fmt-spin-fast fmt-right" width="50" style="display:none" src="/graphic/blueLoader.svg" id="inviteloader"/>
+                    </div>
+                </div>
+            </div>
         <% } else { %>
             <div class="container" id="userinvitationexpired">
                 <div class="heading fmt-center">Expired</div>
                 <div class="questrial fmt-row">
-                    The link that brought you here is no longer accepting invitations (<b>expired on <span id="expiredat"><%= invite.expireAt %></span></b>). If you think this was a mistake,
-                    then request your admin a new invitation, by filling the details below.
+                    The link that brought you here is no longer accepting invitations.
+                    <% if (invite.expireAt!=0) { %>(<b>expired on<span id="expireat"><%= invite.expireAt %></span></b>).<% } %>
+                    If you think this was a mistake, then request adminsitrator of <%= invite.instname %>, a new invitation on <a href="/tour">Schemester</a>, by filling the details below.
                 </div>
-                <br/>
-                <fieldset class="text-field fmt-row" id="requsermailfield">
-                    <legend class="field-caption">Your email address</legend>
-                    <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="requsermail" name="useremail">
-                    <span class="fmt-right error-caption" id="requsermailerror"></span>
-                </fieldset>
-                <fieldset class="text-field fmt-row" id="usermessagefield">
-                    <legend class="field-caption" >Message for Admin</legend>
-                    <textarea class="text-input" placeholder="Any message for admin?(Optional)" rows="4" id="usermessage" name="usermessage"></textarea>
-                    <span class="fmt-right error-caption" id="usermessageerror"></span>
-                </fieldset>
+                
+                <div id="expinputview">
+                    <fieldset class="text-field fmt-row" id="requsermailfield">
+                        <legend class="field-caption">Your email address</legend>
+                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="requsermail" name="useremail">
+                        <span class="fmt-right error-caption" id="requsermailerror"></span>
+                    </fieldset>
+                    <fieldset class="text-field fmt-row" id="usermessagefield">
+                        <legend class="field-caption" >Message for Admin</legend>
+                        <textarea class="text-input" placeholder="Any message for admin?(Optional)" rows="4" id="usermessage" name="usermessage"></textarea>
+                        <span class="fmt-right error-caption" id="usermessageerror"></span>
+                    </fieldset>
+                
                 <br/>
                 <div class="fmt-row">
                     <button class="active-button" id="requestInvitation">Request Invitation</button>
                     <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="inviteloader"/>
+                </div>
                 </div>
             </div>
         <% } %>

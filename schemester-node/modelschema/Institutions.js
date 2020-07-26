@@ -17,7 +17,8 @@ class Institution {
       schedule: schedule.scheduleschema,
       teacherSchedule: teachers.teacherscheduleschema,
       users: users.userschema,
-      invite:invite.invitationschema
+      invite:invite.invitationschema,
+      active:{type:Boolean,default:false}
     });
   }
   getModel() {

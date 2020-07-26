@@ -105,7 +105,7 @@ class UIID{
         this.uiidField.activate();
         this.uiidField.disableInput();
         if(this.saveuiid){
-          localStorage.setItem('uiid', response.uiid);
+          localStorage.setItem('uiid', uiid);
         }
         new Email();
       } else {
@@ -205,7 +205,7 @@ class Password{
     this.subtext.innerHTML = `Provide your account password to continue with your schedule.`;
     this.target = String(getElement('target').innerHTML);
     this.target = stringIsValid(this.target,validType.nonempty)?this.target:locate.teacher.target.today
-    this.passField = new TextInput("userpasswordfield","userpassword","userpassworderror",newuser?validType.password:validType.nonempty,"userpasswordcaption");
+    this.passField = new TextInput("userpasswordfield","userpassword","userpassworderror",validType.nonempty,"userpasswordcaption");
     this.passField.show();
     this.passField.enableInput();
     this.forgotPassword = getElement("forgotpasswordButton");
@@ -227,12 +227,16 @@ class Password{
   }
   passwordProcedure(password){
     postData(post.teacher.login,{
+      type:'password',
       email:this.getEmail(),
       uiid:this.getUIID(),
       password:password,
       target:this.target
     }).then(response=>{
       clog(response);
+      if(response.event == code.auth.AUTH_SUCCESS){
+        clog("uess");
+      }
       //save response.teacher values to localstorage.
       //show verification dialog if not verified (response.teacher.verified), and proceed further, and only after verfication,
       //take the user to dashboard(today schedule page for teachers), if schedule exists in teacherschedule (for users.teachers),

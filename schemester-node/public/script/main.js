@@ -92,7 +92,8 @@ class Codes {
         this.EMAIL_CHANGED = "mail/email-address-changed";
         this.ACCOUNT_DELETED = "mail/account-deleted";
         this.INSTITUTION_INVITATION = "mail/invite-to-institution";
-        this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
+        this.MAIL_SENT = 'mail/email-send-success';
+        this.MAIL_NOT_SENT = "mail/email-send-failure";
       }
     }
     class ActionCodes {
@@ -224,6 +225,7 @@ class Posts {
         this.login = "/admin/auth/login";
         this.logout = "/admin/auth/logout";
         this.signup = "/admin/auth/signup";
+        this.manage = '/admin/manage'
         this.sessionValidate = "/admin/session/validate";
       }
     }
@@ -916,12 +918,10 @@ class Dialog extends DialogID {
     this.subHeading.style.color = color;
   }
   show() {
-    value.backbluecovered = true;
-    elementFadeVisibility(this.view, true);
+    this.existence(true);
   }
   hide() {
-    value.backbluecovered = false;
-    elementFadeVisibility(this.view, false);
+    this.existence(false);
   }
   existence(show = true) {
     value.backbluecovered = show;
@@ -1861,6 +1861,11 @@ let getRequestBody = (data = {}, isPost = false) => {
   clog(body);
   return body;
 };
+
+let sendEmail = async (to,subject,body,cc,bcc)=>{
+  //todo: send emails from here.
+  return code.mail.MAIL_SENT;
+}
 
 let mailTo = (to) => `mailto:${to}`;
 

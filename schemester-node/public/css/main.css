@@ -51,21 +51,20 @@ body{
 
 a{
     text-decoration: none;
-    font-family:'Questrial',sans-serif;
     color:#216bf3;
-    font-size: 18px;
     transition:0.3s ease;
+    cursor: pointer;
 }
 a:hover{
-    transition:0.3s ease;
-    color:#13397e;
+    color:#147aff;
+    padding:0 4px;
+    text-shadow: 1px 1px 2px #00000034;
+}
+a:active{
+    color:#034ace34;
+    padding:0 8px;
 }
 
-a:focus{
-    color:#034ace;
-    font-size: 17px;
-    transition:0.3s ease;
-}
 img{vertical-align:middle}
 .caption{
     font-size: 16px;
@@ -160,6 +159,7 @@ img{vertical-align:middle}
 .heading{
     color:#216bf3;
     font-size: 54px;
+    text-shadow: 1px 2px 2px #00000034;
     
 }
 .sub-heading{
