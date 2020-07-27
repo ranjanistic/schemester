@@ -1838,7 +1838,6 @@ let postData = async (url = String, data = {}) => {
 
 let refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
-  clog(String(href).indexOf("?"));
   window.location.href = href;
 };
 
@@ -1847,7 +1846,6 @@ let getRequestBody = (data = {}, isPost = false) => {
   let body = constant.nothing;
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
-      clog(key + ":" + data[key]);
       if (isPost) {
         body =
           i > 0 ? `${body}&${key}=${data[key]}` : `${body}${key}=${data[key]}`;
@@ -1858,7 +1856,6 @@ let getRequestBody = (data = {}, isPost = false) => {
       i++;
     }
   }
-  clog(body);
   return body;
 };
 

@@ -44,10 +44,10 @@ router.post("/auth/login",async (req, res) => {
     })
 });
 
-router.post("/auth/signup", (req, res) => {
+router.post("/auth/signup", async (req, res) => {
   let result = code.event(code.auth.ACCOUNT_CREATION_FAILED);
   clog(req.body);
-  session.signup(req,res,sessionsecret).then(response=>{
+  session.signup(req,res,sessionsecret).then((response)=>{
     result = response;
     clog("in teacher signup post");
     clog(response);
@@ -74,18 +74,28 @@ router.get("/session*", async (req, res) => {
         //schedule filler view, as schedule (teacherschedule/schedule subdocuments) is assumed not to be present if user is joining via invitaiton, however if present already
         //(say, admin added schedule themselves even after inviting), then proceed directly to dashboard (today page, for teachers).                    
         let user;
-        inst.users.teachers.forEach((teacher)=>{
-          if(teacher.id == response.user.id){
-            user = teacher;
-          }
-        });
+        try{
+          inst.users.teachers.forEach((teacher)=>{
+            if(teacher.id == response.user.id){
+              throw teacher;
+            }
+          });
+        }catch(teacher){
+          user = teacher;
+        }
         if(!inst.teacherSchedule[user.teacherID]) {target = 'addschedule'};
         switch(target){
           case 'today':{
             res.render(view.teacher.today,{user,inst});
           }break;
+          case 'fullschedule':{
+
+          }break;
           case 'addschedule':{
-            res.render(view.teacher.addschedule,{adata:{isAdmin:false},user,inst});
+            res.render(view.teacher.addschedule,{adata:null,user,inst});
+          }break;
+          default:{
+
           }
         }
       }
@@ -185,12 +195,12 @@ router.post('/find',async (req,res)=>{
   let result = code.event(code.auth.USER_NOT_EXIST);
   let inst = await Institute.findOne({uiid});
   if(inst){
-    inst.users.teachers.forEach((teacher)=>{
-      if(teacher.teacherID == email){
-        clog("found");
-        result = code.event(code.auth.USER_EXIST);
-      }
-    })
+    let found = inst.users.teachers.some((teacher,index)=>{
+      if(teacher.teacherID == email) return true;
+    });
+    if(found){
+      result = code.event(code.auth.USER_EXIST);
+    }
   } else {
     result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
   }

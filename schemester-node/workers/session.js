@@ -86,13 +86,13 @@ class Session {
               const { uiid, teacherID } = request.body;
               clog(uiid);
               clog(teacherID);
-              let inst = await Institute.findOne({uiid});
-              inst.users.teachers.forEach((teacher)=>{
+              let inst = await Institute.findOne({ uiid });
+              inst.users.teachers.forEach((teacher) => {
                 clog(teacher.teacherID);
-                if(teacher.teacherID == teacherID){
+                if (teacher.teacherID == teacherID) {
                   result = code.event(code.auth.USER_EXIST);
                 }
-              })
+              });
               return result;
             }
             case "password": {
@@ -101,12 +101,13 @@ class Session {
               let user;
               let result = code.event(code.auth.USER_NOT_EXIST);
               //todo:login teacher by matching password
-              let inst = await Institute.findOne({uiid});
-              if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-              if(!inst.users) return code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
+              let inst = await Institute.findOne({ uiid });
+              if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+              if (!inst.users)
+                return code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
 
-              inst.users.teachers.forEach((teacher)=>{
-                if(teacher.teacherID == email){
+              inst.users.teachers.forEach((teacher) => {
+                if (teacher.teacherID == email) {
                   user = teacher;
                   clog(user);
                 }
@@ -139,7 +140,6 @@ class Session {
       case this.studentsessionsecret:
         {
           //student login
-        
         }
         break;
       default:
@@ -149,99 +149,103 @@ class Session {
 
   signup = async (request, response, secret) => {
     switch (secret) {
-      case this.adminsessionsecret: {
-        const { username, email, password, uiid } = request.body;
-        let user = await Admin.findOne({ email });
-        if (user) return code.event(code.auth.USER_EXIST);
-        let inst = await Admin.findOne({ uiid });
-        if (inst) return code.event(code.server.UIID_TAKEN);
-        clog("checks cleared");
-        user = new Admin({ username, email, password, uiid });
-        clog("got new user model");
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-        await user.save(); //account created
-        clog("account created");
-        const payload = {
-          user: {
-            id: user.id,
-            uiid: user.uiid,
-          },
-        };
+      case this.adminsessionsecret:
+        {
+          const { username, email, password, uiid } = request.body;
+          let user = await Admin.findOne({ email });
+          if (user) return code.event(code.auth.USER_EXIST);
+          let inst = await Admin.findOne({ uiid });
+          if (inst) return code.event(code.server.UIID_TAKEN);
+          clog("checks cleared");
+          user = new Admin({ username, email, password, uiid });
+          clog("got new user model");
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(password, salt);
+          await user.save(); //account created
+          clog("account created");
+          const payload = {
+            user: {
+              id: user.id,
+              uiid: user.uiid,
+            },
+          };
 
-        let token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
-        clog("token:" + token);
-        response.cookie(this.sessionKey, token, { signed: true });
-        clog("cookie created");
-        return {
-          event: code.auth.ACCOUNT_CREATED,
-          user: getAdminShareData(user),
-        };
-      };
-      case this.teachersessionsecret: {
-        const {username,email,password,uiid} = request.body;
-        let inst = await Institute.findOne({ uiid });
-        if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-        
-        //clog(inst.users.teachers.entries());
-        let result;
-        
-        const salt = await bcrypt.genSalt(10);
-        let epassword = await bcrypt.hash(password, salt);
-        
-        await Institute.updateOne({uiid: uiid},{
-            $push: {
-              "users.teachers": {
-                username: username,
-                teacherID: email,
-                password: epassword
-              },
-            },},{
-            upsert: true 
-          },async (err, docs) => {
-            if (err) {
-              clog("not created");
-              clog(err);
-              result = code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED,err);
-            }
-            if (docs) {
-              clog("created?");
-              clog(docs);
-              let user;
-              inst = await Institute.findOne({uiid});
-              inst.users.teachers.forEach((teacher)=>{
-                if(teacher.teacherID == email){
-                  clog("got user");
-                  user = teacher;
-                }
-              });
-              //get this new user from array
-              const payload = {
-                user: {
-                  id: user.id,//use _id
-                  uiid: uiid,
+          let token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
+          clog("token:" + token);
+          response.cookie(this.sessionKey, token, { signed: true });
+          clog("cookie created");
+          return {
+            event: code.auth.ACCOUNT_CREATED,
+            user: getAdminShareData(user),
+          };
+        }
+        break;
+      case this.teachersessionsecret:
+        {
+          const { username, email, password, uiid } = request.body;
+          let inst = await Institute.findOne({ uiid });
+          if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+
+          let result;
+
+          const salt = await bcrypt.genSalt(10);
+          let epassword = await bcrypt.hash(password, salt);
+
+          let doc = await Institute.updateOne(
+            { uiid: uiid },
+            {
+              $push: {
+                "users.teachers": {
+                  username: username,
+                  teacherID: email,
+                  password: epassword,
                 },
-              };
-      
-              let token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
-              clog("token:" + token);
-              clog("setting cookie");
-              response.cookie(this.sessionKey, token, { signed: true });
-              clog("cookie set, setting result");
-              result ={
-                event:code.auth.ACCOUNT_CREATED,
-                user: getTeacherShareData(user)
-              }
-              clog("doc result");
-              clog(result);
+              },
             }
+          );
+          if (doc) {
+            clog(doc);
+            clog("created?");
+            inst = await Institute.findOne({ uiid });
+            clog("in then");
+            let found = inst.users.teachers.some((teacher, index) => {
+              if (teacher.teacherID == email) {
+                user = teacher;
+                return true;
+              }
+            });
+            clog(found);
+            //get this new user from array
+            const payload = {
+              user: {
+                id: user.id, //use _id
+                uiid: uiid,
+              },
+            };
+            clog("payload");
+            clog(payload);
+            let token = jwt.sign(payload, secret, {
+              expiresIn: this.expiresIn,
+            }); //days*sec/day
+            clog("token:" + token);
+            clog("setting cookie");
+            response.cookie(this.sessionKey, token, { signed: true });
+            clog("cookie set, setting result");
+            result = {
+              event: code.auth.ACCOUNT_CREATED,
+              user: getTeacherShareData(user),
+            };
+            clog("doc result");
+            clog(result);
+            return result;
+          } else {
+            clog("not created");
+            clog(err);
+            return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
           }
-        );
-        clog("final result");
-        clog(result);
-        return result;
-      };
-      default:return code.event(code.server.DATABASE_ERROR);
+        }break;
+      default:
+        return code.event(code.server.DATABASE_ERROR);
     }
   };
   userdata = async (request, model, secret) => {

@@ -362,17 +362,23 @@ router.post('/session/receiveinstitution',async (req,res)=>{
   });
 });
 
-router.post('/upload',(req,res)=>{
+router.post('/schedule',(req,res)=>{
   let result;
+  res.render(view.admin.settings);
+  return;
   session.verify(req,sessionsecret).then(response=>{
     if(session.valid(response)){
-      switch(req.body.target){
-        case 'teacherschedule':{
-          //todo: upload incoming schedule
+      switch(req.body.action){
+        case 'upload':{
+          clog("upload data");
+          clog(req.body.data);
           result = code.event(code.inst.SCHEDULE_UPLOADED)
           return res.json({result});
         }
       }
+    } else {
+      result = code.event(code.auth.SESSION_INVALID);
+      return result;
     }
   }).catch(error=>{
     result = {

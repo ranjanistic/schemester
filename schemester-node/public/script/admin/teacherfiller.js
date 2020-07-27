@@ -1,5 +1,6 @@
 class TeacherFiller {
     constructor() {
+      sessionStorage.clear();
       this.view = getElement("workbox");
 
       this.teacherIDField = new TextInput("teacherEmailField","teacherEmail","teacherEmailError",validType.email);
@@ -77,9 +78,9 @@ class TeacherFiller {
     }
 
     uploadSchedule = () =>{
-      postData('/admin/upload',{
-        target:'teacherschedule'
-        //todo: teacher schedule upload, one day at a time
+      postData('/admin/schedule',{
+        action:'upload',
+        target:'teacher',
       }).then(response=>{
         if(response.event == code.inst.SCHEDULE_UPLOADED){
           if(this.dayCount<this.totalDays){
@@ -128,6 +129,7 @@ class TeacherFiller {
       if(valid){
         this.load();
         for(let i=0;i<this.totalPeriods;i++){
+          sessionStorage.setItem(this.teacherClass[i].getInput(),this.teacherSubject[i].getInput());
           this.teacherClass[i].activate();
           this.teacherSubject[i].activate();
         }

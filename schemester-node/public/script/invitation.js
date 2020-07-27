@@ -87,38 +87,33 @@ class Active {
         this.emailField.showError("Account already exists");
       } else {
         //show verification dialog, and only after successfull verification, proceed further.
-        emailVerification(sessionStorage.getItem("useremail"), (_) => {
-          clog("posting");
-          postData(`/${data.target}/auth/signup`, {
-            username: username,
-            email: usermail,
-            password: userpass,
-            uiid: data.uiid,
-            target: locate.teacher.target.today,
-          }).then((response) => {
-              clog("response");
-              clog(response);
-              switch (response.event) {
-                case code.auth.ACCOUNT_CREATED:
-                  {
-                    relocate(locate.teacher.session, {
-                      target: locate.teacher.target.today,
-                    });
-                  }
-                  break;
-                default: {
-                  if (!navigator.onLine) {
-                    return snackBar("Network error", null, false);
-                  }
-                  snackBar(response.event);
+        clog("posting");
+        postData(`/${data.target}/auth/signup`, {
+          username: username,
+          email: usermail,
+          password: userpass,
+          uiid: data.uiid,
+          target: locate.teacher.target.today,
+        }).then((response) => {
+            clog("response");
+            clog(response);
+            switch (response.event) {
+              case code.auth.ACCOUNT_CREATED:
+                {
+                  relocate(locate.teacher.session, {
+                    target: locate.teacher.target.today,
+                  });
                 }
+                break;
+              default: {
+                if (!navigator.onLine) {
+                  return snackBar("Network error", null, false);
+                }
+                snackBar(response.event);
               }
-              this.load(false);
+            }
+            this.load(false);
         })
-            .catch((error) => {
-              snackBar(error);
-            });
-        });
       }
     });
 
