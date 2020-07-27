@@ -21,8 +21,37 @@ class AdminViews{
         this.login = 'admin/admin_login.ejs';
         this.dash = 'admin/admin_dash.ejs';
         this.settings = 'admin/management.ejs';
-        this.setup = 'admin/edit_detail.ejs';
+        this.registration = 'admin/edit_detail.ejs';
         this.addTeacher = 'admin/teacher_filler.ejs';
+        class Target{
+            constructor(){
+              this.dashboard = 'dashboard';
+              this.settings = 'manage';
+              this.addteacher = 'addteacher';
+              this.manage = 'manage';
+              this.register = 'registration';
+            }
+        }
+        this.target = new Target();
+        class SettingSections{
+            constructor(){
+                this.account = 'setting/account';
+                this.institute = 'setting/institute';
+                this.schedule = 'setting/schedule';
+                this.security = 'settting/security';
+                this.about = 'setting/about';
+            }
+        }
+        this.section = new SettingSections();
+    }
+    getViewByTarget(target = this.target.dashboard){
+        switch(target){
+            case this.target.settings:return this.settings;
+            case this.target.addteacher:return this.addTeacher;
+            case this.target.dashboard:return this.dash;
+            case this.target.register:return this.registration;
+            default:throw "viewnotfound";
+        }
     }
 }
 

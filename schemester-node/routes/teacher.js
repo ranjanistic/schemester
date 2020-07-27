@@ -74,15 +74,13 @@ router.get("/session*", async (req, res) => {
         //schedule filler view, as schedule (teacherschedule/schedule subdocuments) is assumed not to be present if user is joining via invitaiton, however if present already
         //(say, admin added schedule themselves even after inviting), then proceed directly to dashboard (today page, for teachers).                    
         let user;
-        try{
-          inst.users.teachers.forEach((teacher)=>{
-            if(teacher.id == response.user.id){
-              throw teacher;
-            }
-          });
-        }catch(teacher){
-          user = teacher;
-        }
+        let found = inst.users.teachers.some((teacher,index)=>{
+          clog(teacher.id);
+          if(teacher.id == response.user.id){
+            user = teacher;
+          }
+        });
+        if(!found) res.redirect('')
         if(!inst.teacherSchedule[user.teacherID]) {target = 'addschedule'};
         switch(target){
           case 'today':{

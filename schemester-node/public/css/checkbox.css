@@ -1,9 +1,12 @@
 /* The container */
 .check-container {
     position: relative;
-    padding-left: 30px;
     margin: 4px;
+    border-radius: 12px;
+    box-shadow:0px 1px 5px #00000043;
     cursor: pointer;
+    background-color: #e9e9e9;
+    padding: 4px 4px 4px 34px;
     font-family:'Questrial',sans-serif;
     font-size: 16px;
     width:fit-content;
@@ -11,11 +14,18 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-  }
+    transition: 0.2s ease-in-out;
+}
+.check-container:active{
+  box-shadow:0px 0px 0px #00000000;
+  background-color: white;
+  color:white;
+}
   
   /* Hide the browser's default checkbox */
   .check-container input {
     position: absolute;
+    outline: none;
     opacity: 0;
     cursor: pointer;
     height: 0;
@@ -27,11 +37,13 @@
   .tickmark-negative,
   .tickmark-warning,
   .tickmark-active{
+    outline: none;
     position: absolute;
-    top: 0;
+    margin-left: 4px;
     left: 0;
     height: 25px;
     width: 25px;
+    
     background-color: #eee;
     transition:0.3s;
     border-radius:20%;

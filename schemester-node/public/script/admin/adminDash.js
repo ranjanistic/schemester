@@ -89,18 +89,17 @@ class NoDataView{
           Array("Disable Link", "Copy", "Done"),
           Array(actionType.negative, actionType.positive, actionType.neutral)
         );
-        linkdialog.onButtonClick(2, _=> {
-          linkdialog.existence(false);  
-        });
-        linkdialog.onButtonClick(1, _=> {
+        linkdialog.onButtonClick(Array( 
+          _=> {
+          this.revokeLink(target);
+        }, _=> {
           navigator.clipboard.writeText(response.link).then(_=>{snackBar("Link copied to clipboard.")})
           .catch(err=>{
             snackBar("Failed to copy, please do it manually.",null,false);
           });
-        });
-        linkdialog.onButtonClick(0, _=> {
-          this.revokeLink(target);
-        });
+        }, _=> {
+          linkdialog.existence(false);  
+        }));
         linkdialog.show();
       }
       switch(response.event){
@@ -140,13 +139,12 @@ class NoDataView{
           so that they can access and take part in schedule management.`);
         nolinkdialog.createActions(Array('Create Link','Abort'),
           Array(actionType.positive,actionType.negative));
-        nolinkdialog.onButtonClick(0,_=>{
+        nolinkdialog.onButtonClick(Array(_=>{
           nolinkdialog.hide();
           this.linkGenerator(target);
-        })
-        nolinkdialog.onButtonClick(1,_=>{
+        },_=>{
           nolinkdialog.hide();
-        });
+        }));
         nolinkdialog.show();
       } else {
         clog("disabled:false");
@@ -174,7 +172,11 @@ class BaseView{
       finishSession(_=>{ relocate(locate.adminLoginPage,{email:email,uiid:uiid})})
     });
     this.settings.addEventListener(click,(_) => { showLoader();
-      refer(locate.adminSettings,{u:localStorage.getItem(constant.sessionUID),target:'manage'});
+      refer(locate.admin.session,{
+        u:localStorage.getItem(constant.sessionUID),
+        target:locate.admin.target.settings,
+        section:0
+      });
     });
     var prevScrollpos = window.pageYOffset;
     window.onscroll = (_) => {

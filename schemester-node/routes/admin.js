@@ -20,22 +20,15 @@ router.get("/", function (req, res) {
 });
 
 router.get("/auth/login*", (req, res) => {
-  let result;
   session.verify(req,sessionsecret).then((response) => {
-    clog("login:" + jstr(response));
     if (!session.valid(response)) {
-      let autofill = req.query;
+      const autofill = req.query;
       res.render(view.admin.login, { autofill });
     } else {
-      let link =
-        req.query.target != null
-          ? `/admin/session?u=${response.user.id}&target=${req.query.target}`
-          : `/admin/session?u=${response.user.id}&target=dashboard`;
-      res.redirect(link);
+      res.redirect(toSession(response.user.id,req.query.target));
     }
   }).catch(error=>{
-    clog(error);
-    res.send(500).render(view.servererror);
+    res.render(view.servererror,{error});
   });
 });
 
@@ -46,77 +39,57 @@ router.get("/session*", (req, res) => {
     clog("verify" + jstr(response));
     if (!session.valid(response)) {
       clog("invalid session");
-      res.redirect(`/admin/auth/login?target=${data.target}`);
+      res.redirect(toLogin(data.target));
     } else {
       try {
         clog("verify" + jstr(response.user));
         if (data.u == response.user.id) {
           clog("u = user.id");
           const _id = response.user.id;
-          let user = await Admin.findOne({ _id });
-          if (user) {
-            clog(user);
-            let adata = getAdminShareDataV(user);
-            let uiid = adata.uiid;
-            let inst = await Institute.findOne({ uiid });
-            if (data.target != "manage") {
-              if (!inst) {
-                clog("no inst registered");
-                inst = new Institute({
-                  uiid:uiid,
-                  users:{teachers:[],students:[]},
-                  schedule:{},
-                  teacherSchedule:{},
-                  invite:{teacher:{},student:{}}
-                });
-                await inst.save();
-                data.target = "registration";
-              } else {
-                clog("inst hai");
-                if(inst.default!=null){
-                  if(data.target!='addteacher'){
-                    data.target = "dashboard";
-                  }
-                }else{
-                  data.target = "registration";
-                }
-              }
-            }
-            switch (data.target) {
-              case "manage":{
-                  res.render(view.admin.settings, { adata,inst });
-              }break;
-              case "dashboard":{
-                  res.render(view.admin.dash, { adata, inst });
-              }break;
-              case "registration":{
-                clog("inregistration");
-                res.render(view.admin.setup, { adata });
-              }break;
-              case "addteacher":{
-                res.render(view.admin.addTeacher,{adata,inst})
-              }break;
-              default: {
-                res.redirect(`/admin/auth/login?target=${data.target}`);
-              }
-            }
-          } else {
+          const user = await Admin.findOne({ _id });
+          if (!user) {
             session.finish(res).then(response=>{
-              if(response) res.redirect(`/admin/auth/login?target=${data.target}`);
+              if(response) res.redirect(toLogin(data.target));
             });
+          } else {
+            clog(user);
+            let adata = getAdminShareData(user);
+            const uiid = adata.uiid;
+            let inst = await Institute.findOne({ uiid });
+            if (!inst) {
+              clog("no inst registered");
+              data.target = view.admin.target.register;
+            } else {
+              if(data.target==view.admin.target.register){
+                return res.redirect(toSession(adata.uid,view.admin.target.dashboard));
+              }
+            }
+            try{
+              switch(data.target){
+                case view.admin.target.manage:{
+                  return res.render(view.admin.getViewByTarget(data.target),{ adata,inst,section:[data.section]});
+                }
+                case view.admin.target.register:{
+                  return res.render(view.admin.getViewByTarget(data.target), { adata });
+                }
+                default:res.render(view.admin.getViewByTarget(data.target), { adata, inst });
+              }
+            }catch(e){
+              clog(e);
+              res.redirect(toLogin(data.target));
+            }
           }
         } else {
-          res.redirect(`/admin/auth/login?target=${data.target}`);
+          res.redirect(toLogin(data.target));
         }
       } catch (e) {
         clog("session catch");
         clog(e);
-        res.redirect(`/admin/auth/login?target=${data.target}`);
+        res.redirect(toLogin(data.target));
       }
     }
   });
 });
-
 
 //for account settings
 router.post("/account/action", (req, res) => {
@@ -265,6 +238,7 @@ router.post("/session/registerinstitution",
 async (req,res)=>{
   let result;
   clog("in registration final");
+  clog(req.body);
   session.verify(req,sessionsecret).then(async (response)=>{
     if(!session.valid(response)){
       clog("invalid session");
@@ -273,8 +247,19 @@ async (req,res)=>{
       return res.json({result});
     }
     clog(response);
-    
-    await Institute.findOneAndUpdate(
+    const uiid = response.user.uiid;
+    let inst = await Institute.findOne({uiid});
+    if(!inst){
+      inst = new Institute({
+        uiid:uiid,
+        users:{teachers:[],students:[]},
+        schedule:{},
+        teacherSchedule:{},
+        invite:{teacher:{},student:{}}
+      });
+      await inst.save();
+    }
+    let update = await Institute.findOneAndUpdate(
       {uiid:response.user.uiid},
       {
         default:{
@@ -292,28 +277,20 @@ async (req,res)=>{
             startTime:req.body.starttime,
             endTime:req.body.endtime,
             breakStartTime:req.body.breakstarttime,
-            startDay:req.body.firstday,
             periodMinutes:req.body.periodduration,
             breakMinutes:req.body.breakduration,
             periodsInDay:req.body.totalperiods,
-            daysInWeek:req.body.workingdays,
+            daysInWeek:String(req.body.workingdays).split(','),
           }
         },
       },
-      {useFindAndModify:false},
-      async (error,document)=>{
-        if(error){
-          clog("erro");
-          clog(error);
-          result = {event:code.inst.INSTITUTION_DEFAULTS_UNSET}
-        }else{
-          clog("doc");
-          if(document){
-            result = {event:code.inst.INSTITUTION_DEFAULTS_SET}
-          }
-        }
-      }
+      {useFindAndModify:false}
     );
+    if(update){
+      result = code.event(code.inst.INSTITUTION_DEFAULTS_SET);
+    } else {
+      result = code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
+    }
     return res.json({result});
   }).catch((error)=>{
     result = {event:code.server.DATABASE_ERROR,msg:error};
@@ -364,8 +341,6 @@ router.post('/session/receiveinstitution',async (req,res)=>{
 
 router.post('/schedule',(req,res)=>{
   let result;
-  res.render(view.admin.settings);
-  return;
   session.verify(req,sessionsecret).then(response=>{
     if(session.valid(response)){
       switch(req.body.action){
@@ -521,7 +496,17 @@ router.post("/manage", async (req, res) => {
   }
 });
 
-let getAdminShareDataV = (data = {}) => {
+const toSession =(u,target = view.admin.target.dashboard,section = view.admin.section.account)=>
+  target==view.admin.target.manage
+    ?`/admin/session?u=${u}&target=${target}&section=${section}`
+    :`/admin/session?u=${u}&target=${target}`;
+
+const toLogin =(target,section = view.admin.section.account)=>
+  target==view.admin.target.manage
+    ?`/admin/auth/login?target=${target}&section=${section}`
+    :`/admin/auth/login?target=${target}`;
+
+const getAdminShareData = (data = {}) => {
   return {
     isAdmin:true,
     [sessionUID]: data.id,

@@ -190,7 +190,6 @@ class Session {
 
           const salt = await bcrypt.genSalt(10);
           let epassword = await bcrypt.hash(password, salt);
-
           let doc = await Institute.updateOne(
             { uiid: uiid },
             {
@@ -204,6 +203,7 @@ class Session {
             }
           );
           if (doc) {
+            let user;
             clog(doc);
             clog("created?");
             inst = await Institute.findOne({ uiid });

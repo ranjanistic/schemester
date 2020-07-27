@@ -34,7 +34,7 @@ class Management {
     this.back = getElement("backFromSettings");
     this.contactDevs = getElement("contactDevelopers");
     this.logout = getElement("logoutAdmin");
-    
+
     this.admin = new Admin();
     this.inst = new Institution();
     this.schedule = new Schedule();
@@ -42,7 +42,8 @@ class Management {
     this.users = new Users();
     for (var i = 0; i < this.tabs.length; i++) {
       this.tabs[i].addEventListener(
-        click,_=> {
+        click,
+        (_) => {
           this.handleTabClicks(
             event,
             this.tabs,
@@ -55,7 +56,7 @@ class Management {
       );
       this.chips[i].addEventListener(
         click,
-        _=> {
+        (_) => {
           this.handleTabClicks(event, this.chips, this.boxes);
         },
         false
@@ -63,11 +64,16 @@ class Management {
     }
     this.contactDevs.addEventListener(click, feedBackBox, false);
     this.back.addEventListener(click, this.undoAndReturn, false);
-    this.logout.addEventListener(click,_=> {
+    this.logout.addEventListener(
+      click,
+      (_) => {
         showLoader();
-        finishSession(_=>{relocate(locate.adminLoginPage,{target:'manage'})});
-    },false);
-    
+        finishSession((_) => {
+          relocate(locate.adminLoginPage, { target: "manage" });
+        });
+      },
+      false
+    );
   }
   handleTabClicks = (event, clickables, showables, showClass, hideClass) => {
     var e = event.currentTarget;
@@ -79,16 +85,16 @@ class Management {
       }
     }
   };
-   undoAndReturn = _=> {
+  undoAndReturn = (_) => {
     showLoader();
-    relocate(locate.adminDashPage,{
-      u:localStorage.getItem(constant.sessionUID),
-      target:'dashboard'
+    relocate(locate.adminDashPage, {
+      u: localStorage.getItem(constant.sessionUID),
+      target: "dashboard",
     });
-  }
+  };
 }
 
-class Admin{
+class Admin {
   constructor() {
     this.name = getElement("adminName");
     this.email = getElement("adminEmailAddress");
@@ -115,7 +121,7 @@ class Admin{
   }
 }
 
-class Institution{
+class Institution {
   constructor() {
     this.name = getElement("instituteName");
     this.uiid = getElement("uiid");
@@ -180,15 +186,15 @@ class Schedule {
   }
 }
 
-class Security{
+class Security {
   constructor() {
     this.resetPass = getElement("resetPasswordButton");
     this.resetMail = getElement("resetMailButton");
     this.lastLogin = getElement("lastLoginTime");
-    this.deleteAccount = getElement('deleteAdminAccount');
+    this.deleteAccount = getElement("deleteAdminAccount");
     this.resetPass.addEventListener(click, resetPasswordDialog, false);
     this.resetMail.addEventListener(click, changeEmailBox, false);
-    this.deleteAccount.addEventListener(click,adminloginDialog,false);
+    this.deleteAccount.addEventListener(click, adminloginDialog, false);
   }
   setButtonText(resetMail, resetPass) {
     this.resetMail.textContent = resetMail;
@@ -201,102 +207,148 @@ class Security{
 class Users {
   constructor() {
     this.invite = getElement("inviteUsers");
-    this.invite.addEventListener(click,_=>{this.linkGenerator('teacher')},false);
+    this.invite.addEventListener(
+      click,
+      (_) => {
+        this.linkGenerator("teacher");
+      },
+      false
+    );
   }
-  linkGenerator =(target)=> {
+  linkGenerator = (target) => {
     clog("link generator");
-    loadingBox(true,'Generating Link',`A link is being created for your to share with ${target}s of ${localStorage.getItem('uiid')} institute`);
-    postData(post.admin.manage,{
-      type:'invitation',
-      action:'create',
-      target:target,
-      
-    }).then((response)=>{
-      clog("link generate response");
-      clog(response);
-      if(response.event == code.invite.LINK_EXISTS|| response.event == code.invite.LINK_CREATED){
-        clog("link generated box");
-        let linkdialog = new Dialog();
-        linkdialog.setDisplay('Invitation Link',
-          `<center><a href="${response.link}">${response.link}</a>
-            <br/>This Link will automatically expire on <b>${getProperDate(String(response.exp))}</b>.
-          </center>`
-        );
-        linkdialog.createActions(
-          Array("Disable Link", "Copy", "Done"),
-          Array(actionType.negative, actionType.positive, actionType.neutral)
-        );
-        linkdialog.onButtonClick(2, _=> {
-          linkdialog.existence(false);  
-        });
-        linkdialog.onButtonClick(1, _=> {
-          navigator.clipboard.writeText(response.link).then(_=>{snackBar("Link copied to clipboard.")})
-          .catch(err=>{
-            snackBar("Failed to copy, please do it manually.",null,false);
-          });
-        });
-        linkdialog.onButtonClick(0, _=> {
-          this.revokeLink(target);
-        });
-        linkdialog.show();
-      }
-      switch(response.event){
-        case code.invite.LINK_EXISTS:{
-          snackBar('This link already exists and can be shared.');
-        }break;
-        case code.invite.LINK_CREATED:{
-          snackBar('Share this with teachers of your institution.');
-        }break;
-        case code.invite.LINK_CREATION_FAILED:{
-          snackBar(`Unable to generate link:${response.msg}`,'Report');
-        }
-        default:{
-          snackBar(`Error:${response.event}:${response.msg}`,"Report");
-        }
-      }
-    }).catch(error=>{
-      clog(error);
-      snackBar(error);
+    loadingBox(
+      true,
+      "Generating Link",
+      `A link is being created for your to share with ${target}s of ${localStorage.getItem(
+        "uiid"
+      )} institute`
+    );
+    postData(post.admin.manage, {
+      type: "invitation",
+      action: "create",
+      target: target,
     })
+      .then((response) => {
+        clog("link generate response");
+        clog(response);
+        if (
+          response.event == code.invite.LINK_EXISTS ||
+          response.event == code.invite.LINK_CREATED
+        ) {
+          clog("link generated box");
+          let linkdialog = new Dialog();
+          linkdialog.setDisplay(
+            "Invitation Link",
+            `<center><a href="${response.link}">${response.link}</a>
+            <br/>This Link will automatically expire on <b>${getProperDate(
+              String(response.exp)
+            )}</b>.
+          </center>`
+          );
+          linkdialog.createActions(
+            Array("Disable Link", "Copy", "Done"),
+            Array(actionType.negative, actionType.positive, actionType.neutral)
+          );
+
+          linkdialog.onButtonClick(
+            Array(
+              (_) => {
+                this.revokeLink(target);
+              },
+              (_) => {
+                navigator.clipboard
+                  .writeText(response.link)
+                  .then((_) => {
+                    snackBar("Link copied to clipboard.");
+                  })
+                  .catch((err) => {
+                    snackBar(
+                      "Failed to copy, please do it manually.",
+                      null,
+                      false
+                    );
+                  });
+              },
+              (_) => {
+                linkdialog.hide();
+              }
+            )
+          );
+          linkdialog.show();
+        }
+        switch (response.event) {
+          case code.invite.LINK_EXISTS:{
+              snackBar("This link already exists and can be shared.");
+            }
+            break;
+          case code.invite.LINK_CREATED:{
+              snackBar("Share this with teachers of your institution.");
+            }
+            break;
+          case code.invite.LINK_CREATION_FAILED: {
+            snackBar(`Unable to generate link:${response.msg}`, "Report");
+          }
+          default: {
+            snackBar(`Error:${response.event}:${response.msg}`, "Report");
+          }
+        }
+      })
+      .catch((error) => {
+        clog(error);
+        snackBar(error);
+      });
   };
 
-  revokeLink(target){
+  revokeLink(target) {
     clog("revoke link");
-    postData('/admin/manage',{
-      type:'invitation',
-      action:'disable',
-      target:target
-    }).then(response=>{
-      clog("revoke link response");
-      clog(response);
-      if(response.event == code.invite.LINK_DISABLED){
-        clog("link disabled");
-        snackBar('All links are inactive now.');
-        let nolinkdialog = new Dialog();
-        nolinkdialog.setDisplay('Generate Link',`Create a link to share with ${target}s of ${localStorage.getItem('uiid')} institute, 
-          so that they can access and take part in schedule management.`);
-        nolinkdialog.createActions(Array('Create Link','Abort'),
-          Array(actionType.positive,actionType.negative));
-        nolinkdialog.onButtonClick(0,_=>{
-          nolinkdialog.hide();
-          this.linkGenerator(target);
-        })
-        nolinkdialog.onButtonClick(1,_=>{
-          nolinkdialog.hide();
-        });
-        nolinkdialog.show();
-      } else {
-        clog("disabled:false");
-        snackBar(`Link couldn't be disabled.`,'Try again',false,_=>{
-          this.revokeLink(target);
-        });
-      }
-    }).catch(error=>{
-      clog(error);
-      snackBar(error);
-    });
+    postData("/admin/manage", {
+      type: "invitation",
+      action: "disable",
+      target: target,
+    })
+      .then((response) => {
+        clog("revoke link response");
+        clog(response);
+        if (response.event == code.invite.LINK_DISABLED) {
+          clog("link disabled");
+          snackBar("All links are inactive now.");
+          let nolinkdialog = new Dialog();
+          nolinkdialog.setDisplay(
+            "Generate Link",
+            `Create a link to share with ${target}s of ${localStorage.getItem(
+              "uiid"
+            )} institute, 
+          so that they can access and take part in schedule management.`
+          );
+          nolinkdialog.createActions(
+            Array("Create Link", "Abort"),
+            Array(actionType.positive, actionType.negative)
+          );
+          nolinkdialog.onButtonClick(
+            Array(
+              (_) => {
+                nolinkdialog.hide();
+                this.linkGenerator(target);
+              },
+              (_) => {
+                nolinkdialog.hide();
+              }
+            )
+          );
+          nolinkdialog.show();
+        } else {
+          clog("disabled:false");
+          snackBar(`Link couldn't be disabled.`, "Try again", false, (_) => {
+            this.revokeLink(target);
+          });
+        }
+      })
+      .catch((error) => {
+        clog(error);
+        snackBar(error);
+      });
   }
 }
 
-window.onload = _=> window.app = new Management();
-
+window.onload = (_) => (window.app = new Management());

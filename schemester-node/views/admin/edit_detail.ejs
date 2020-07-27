@@ -10,6 +10,7 @@
         <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel="stylesheet" href="/css/fmt.css">
         <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/checkbox.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script async type="text/javascript" src="/script/main.js"></script>
@@ -134,9 +135,11 @@
                             <span class="fmt-right error-caption"  id="endTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="firstDayField">
-                            <legend class="field-caption">First Day of week</legend>
-                            <input class="text-input" autocomplete="bday-day" required placeholder="Monday" type="text" id="firstDay" name="timeDetail">
-                            <span class="fmt-right error-caption"  id="firstDayError"></span>
+                            <legend class="field-caption">Select working days</legend>
+                            <div id="dayselector">
+                                
+                            </div>
+                            <span class="fmt-right error-caption" id="firstDayError"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -155,11 +158,6 @@
                         </fieldset>
                     </div>
                     <div class="fmt-half fmt-row">
-                        <fieldset class="text-field" id="totalDaysField">
-                            <legend class="field-caption">Total working days in a week</legend>
-                            <input class="text-input" required placeholder="Between 1 and 7" min="1" max="7" type="number" id="totalDays" name="durationDetail">
-                            <span class="fmt-right error-caption"  id="totalDaysError"></span>
-                        </fieldset>
                         <fieldset class="text-field" id="totalPeriodsField">
                             <legend class="field-caption">Total Periods in a day</legend>
                             <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail" >

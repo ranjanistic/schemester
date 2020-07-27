@@ -4,12 +4,13 @@ class Administrator{
     constructor(){
         this.collection = "0administrators";
         this.adminSchema = new Schema({
-            username:{type:String, a:true},
-            email:{type:String,unique: true, a:true},
-            password:{type:String, a:true},
-            uiid:{type:String, unique: true, a:true},
+            username:{type:String},
+            email:{type:String,unique: true},
+            password:{type:String},
+            uiid:{type:String, unique: true},
             createdAt:{type:Date, default:Date.now()},
-            verified:{type:Boolean,default:false}
+            verified:{type:Boolean,default:false},
+            vlinkexp:{type:Number,default:0}
         });
     }
     getSchema(){

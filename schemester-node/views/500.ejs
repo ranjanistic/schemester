@@ -33,7 +33,10 @@
         <br/><br/><br/>
         <div class="fmt-row fmt-center" >
             <button class="sub-display-button" style="font-size:32px;font-family: 'Questrial',sans-serif;" id="returnFrom404">Return to base</button>
-        </div >
+        </div>
+        <div class="caption questrial">
+            <%= error %> 
+        </div>
         <script type="text/javascript">
             document.getElementById('returnFrom404').addEventListener('click',function(){
                 window.location.replace('/');

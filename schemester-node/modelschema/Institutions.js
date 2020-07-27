@@ -42,15 +42,14 @@ class Defaults {
     },{_id:false});
 
     var timingschema = new Schema({
-      startTime: { type: String,  },
-      endTime: { type: String,  },
-      breakStartTime: { type: String,  },
-      startDay: { type: String,  },
+      startTime: { type: String},
+      endTime: { type: String},
+      breakStartTime: { type: String},
       periodMinutes: { type: Number,  min: 1, max: 1440 }, //1440 mins = 24 hours (max 1440 minute each period limit, thus 1 minute min period limit/day)
       breakMinutes: { type: Number,  min: 1 },
       periodsInDay: { type: Number,  min: 1, max: 1440 }, //1440 mins = 24 hours (min 1 period each day, thus 1440 max periods limit/day)
-      daysInWeek: { type: Number,  min: 1, max: 7 },  
-    },{_id:false},);
+      daysInWeek: { type: Array },  
+    },{_id:false});
 
     this.defaultSchema = new Schema({
       admin: adminschema,
@@ -67,6 +66,7 @@ class Users {
       username: {type: String},
       password: { type: String},
       verified:{type:Boolean,default:false},
+      vlinkexp:{type:Number,default:0},
       createdAt: { type: Date, default: Date.now() },
     });
     var studentschema = new Schema({
@@ -74,6 +74,7 @@ class Users {
       username: {type:String},
       password: { type: String },
       verified:{type:Boolean,default:false},
+      vlinkexp:{type:Number,default:0},
       createdAt: { type: Date, default: Date.now() },
     });
 

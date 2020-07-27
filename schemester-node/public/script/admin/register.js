@@ -49,7 +49,7 @@ class Stage1 {
       validType.phone
     );
 
-    if(sessionStorage.getItem("uiid") == localStorage.getItem("uiid")){
+    if (sessionStorage.getItem("uiid") == localStorage.getItem("uiid")) {
       this.phoneField.setInput(sessionStorage.getItem("adphone"));
       this.instNameField.setInput(sessionStorage.getItem("instname"));
       this.instEmailField.setInput(sessionStorage.getItem("instemail"));
@@ -157,24 +157,35 @@ class Stage2 {
       "breakStartError",
       validType.nonempty
     );
-    this.day1Field = new TextInput(
-      "firstDayField",
-      "firstDay",
-      "firstDayError",
-      validType.nonempty
-    );
+    this.daySelector = getElement("dayselector");
+    this.daychecks = Array(constant.weekdays.length);
+    this.dayschecked = Array(constant.weekdays.length);
+    var checks = constant.nothing;
+
+    constant.weekdays.forEach((day, index) => {
+      checks += `<label class="check-container fmt-margin" id="daycheckcontainer${index}">
+        <span id="daychecklabel${index}">${day}</span>
+        <input type="checkbox" id="daycheck${index}">
+        <span class="tickmark-positive" id="daycheckview${index}"></span>
+      </label>`;
+    });
+    this.daySelector.innerHTML = checks;
+    constant.weekdays.forEach((_, index) => {
+      this.daychecks[index] = new Checkbox(
+        `daycheckcontainer${index}`,
+        `daychecklabel${index}`,
+        `daycheck${index}`,
+        `daycheckview${index}`
+      );
+    });
+
     this.eachDurationField = new TextInput(
       "eachDurationField",
       "eachDuration",
       "eachDurationError",
       validType.nonempty
     );
-    this.totalDaysField = new TextInput(
-      "totalDaysField",
-      "totalDays",
-      "totalDaysError",
-      validType.nonempty
-    );
+
     this.totalPeriodsField = new TextInput(
       "totalPeriodsField",
       "totalPeriods",
@@ -191,11 +202,11 @@ class Stage2 {
     this.startTimeField.setInput(sessionStorage.getItem("startTimeField"));
     this.endTimeField.setInput(sessionStorage.getItem("endTimeField"));
     this.breakStartField.setInput(sessionStorage.getItem("breakStartField"));
-    this.day1Field.setInput(sessionStorage.getItem("day1Field"));
+
     this.eachDurationField.setInput(
       sessionStorage.getItem("eachDurationField")
     );
-    this.totalDaysField.setInput(sessionStorage.getItem("totalDaysField"));
+
     this.totalPeriodsField.setInput(
       sessionStorage.getItem("totalPeriodsField")
     );
@@ -215,30 +226,20 @@ class Stage2 {
         sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
     });
     this.breakStartField.validate((_) => {
-      this.day1Field.inputFocus(),
+      this.eachDurationField.inputFocus(),
         sessionStorage.setItem(
           "breakStartField",
           this.breakStartField.getInput()
         );
     });
-    this.day1Field.validate((_) => {
-      this.eachDurationField.inputFocus(),
-        sessionStorage.setItem("day1Field", this.day1Field.getInput());
-    });
     this.eachDurationField.validate((_) => {
-      this.totalDaysField.inputFocus(),
+      this.totalPeriodsField.inputFocus(),
         sessionStorage.setItem(
           "eachDurationField",
           this.eachDurationField.getInput()
         );
     });
-    this.totalDaysField.validate((_) => {
-      this.totalPeriodsField.inputFocus(),
-        sessionStorage.setItem(
-          "totalDaysField",
-          this.totalDaysField.getInput()
-        );
-    });
+
     this.totalPeriodsField.validate((_) => {
       this.breakDurationField.inputFocus(),
         sessionStorage.setItem(
@@ -262,50 +263,37 @@ class Stage2 {
         this.startTimeField.isValid() &&
         this.endTimeField.isValid() &&
         this.breakStartField.isValid() &&
-        this.day1Field.isValid() &&
         this.eachDurationField.isValid() &&
-        this.totalDaysField.isValid() &&
         this.totalPeriodsField.isValid() &&
         this.breakDurationField.isValid()
       )
     ) {
       this.startTimeField.validateNow((_) => {
-          sessionStorage.setItem(
-            "startTimeField",
-            this.startTimeField.getInput()
-          );
+        sessionStorage.setItem(
+          "startTimeField",
+          this.startTimeField.getInput()
+        );
       });
       this.endTimeField.validateNow((_) => {
-        
-          sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
+        sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
       });
       this.breakStartField.validateNow((_) => {
-        this.day1Field.inputFocus();
-          sessionStorage.setItem(
-            "breakStartField",
-            this.breakStartField.getInput()
-          );
+        this.eachDurationField.inputFocus();
+        sessionStorage.setItem(
+          "breakStartField",
+          this.breakStartField.getInput()
+        );
       });
-      this.day1Field.validateNow((_) => {
-        
-          sessionStorage.setItem("day1Field", this.day1Field.getInput());
-      });
+
       this.eachDurationField.validateNow((_) => {
-        this.totalDaysField.inputFocus(),
+        this.totalPeriodsField.inputFocus(),
           sessionStorage.setItem(
             "eachDurationField",
             this.eachDurationField.getInput()
           );
       });
-      this.totalDaysField.validateNow((_) => {
-        
-          sessionStorage.setItem(
-            "totalDaysField",
-            this.totalDaysField.getInput()
-          );
-      });
       this.totalPeriodsField.validateNow((_) => {
-        
+        this.breakDurationField.inputFocus(),
           sessionStorage.setItem(
             "totalPeriodsField",
             this.totalPeriodsField.getInput()
@@ -332,7 +320,7 @@ class Stage2 {
         Array("Confirm & Proceed", "Re-check"),
         Array(actionType.active, actionType.warning)
       );
-      confirm.onButtonClick(0, (_) => {
+      confirm.onButtonClick(Array( (_) => {
         confirm.hide();
         loadingBox(
           true,
@@ -362,65 +350,103 @@ class Stage2 {
           starttime: sessionStorage.getItem("startTimeField"),
           endtime: sessionStorage.getItem("endTimeField"),
           breakstarttime: sessionStorage.getItem("breakStartField"),
-          firstday: sessionStorage.getItem("day1Field"),
           periodduration: sessionStorage.getItem("eachDurationField"),
           breakduration: sessionStorage.getItem("breakDurationField"),
-          workingdays: sessionStorage.getItem("totalDaysField"),
           totalperiods: sessionStorage.getItem("totalPeriodsField"),
+          workingdays: String(sessionStorage.getItem("totalDaysField")).split(","),
         };
         clog(getRequestBody(defdata));
-         postData('/admin/session/registerinstitution',
-          defdata
-        ).then(response=>{
-          clog((response));
-          if(response.event == code.auth.SESSION_INVALID){
-            relocate(locate.adminLoginPage,{target:'registration'});
-            return;
-          }
-          if(response.event == code.inst.INSTITUTION_DEFAULTS_UNSET){
-            loadingBox(false);
-            snackBar(`Error:${response.event}:${response.msg}`,'Retry',false,_=>{
-              confirm.getDialogButton(0).click();
-            });
-            return;
-          }
-          if(response.event == code.inst.INSTITUTION_DEFAULTS_SET){
-            //todo: here, save defaults in index db, then hide loading box, and show the finish dialog.
-            //then clear the session database.
-            loadingBox(false);
-            let finish = new Dialog();
-            finish.setDisplay('Insitution Saved','The details have been saved successfully.');
-            finish.createActions(Array('Add teachers','Skip'),Array(actionType.positive,actionType.neutral));
-            finish.onButtonClick(0,_=>{
-              finish.loader();
-              relocate(locate.adminDashPage,{target:'addteacher'});
-            });
-            finish.onButtonClick(1,_=>{
-              finish.loader();
-              relocate(locate.adminDashPage,{
-                u:localStorage.getItem(constant.sessionUID),
-                target:'dashboard'
+        postData(post.admin.register, defdata).then((response) => {
+          clog(response);
+          switch (response.event) {
+            case code.auth.SESSION_INVALID: {
+              return relocate(locate.admin.login, {
+                target: locate.admin.target.register,
               });
-            })
-            finish.show(); 
+            }
+            case code.inst.INSTITUTION_DEFAULTS_UNSET: {
+              loadingBox(false);
+              snackBar(
+                `Error:${response.event}:${response.msg}`,
+                "Retry",
+                false,
+                (_) => {
+                  confirm.getDialogButton(0).click();
+                }
+              );
+              return;
+            }
+            case code.inst.INSTITUTION_DEFAULTS_SET:
+              {
+                loadingBox(false);
+                let finish = new Dialog();
+                finish.setDisplay(
+                  "Insitution registered",
+                  "The details have been saved successfully. You may add teachers, or skip to your dashboard."
+                );
+                finish.createActions(
+                  Array("Add teachers", "Skip"),
+                  Array(actionType.positive, actionType.neutral)
+                );
+                finish.onButtonClick(
+                  Array(
+                    (_) => {
+                      finish.loader();
+                      relocate(locate.admin.session, {
+                        target: locate.admin.target.addteacher,
+                      });
+                    },
+                    (_) => {
+                      finish.loader();
+                      relocate(locate.admin.session, {
+                        u: localStorage.getItem(constant.sessionUID),
+                        target: locate.admin.target.dashboard,
+                      });
+                    }
+                  )
+                );
+                // finish.onButtonClick(0, (_) => {
+
+                // });
+                // finish.onButtonClick(1, (_) => {
+
+                // });
+                finish.show();
+              }
+              break;
           }
         });
-      });
-      confirm.onButtonClick(1, (_) => {
+      }, (_) => {
         confirm.hide();
-      });
+      }));
       confirm.show();
     }
   }
   saveLocally() {
+    let days = Array();
+    this.daychecks.forEach((daycheck, index) => {
+      if (daycheck.isChecked()) {
+        days.push(index);
+      }
+    });
+
     sessionStorage.setItem("startTimeField", this.startTimeField.getInput());
     sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", this.breakStartField.getInput());
-    sessionStorage.setItem("day1Field", this.day1Field.getInput());
-    sessionStorage.setItem("eachDurationField",this.eachDurationField.getInput());
-    sessionStorage.setItem("totalDaysField", this.totalDaysField.getInput());
-    sessionStorage.setItem("totalPeriodsField",this.totalPeriodsField.getInput());
-    sessionStorage.setItem("breakDurationField",this.breakDurationField.getInput());
+
+    sessionStorage.setItem(
+      "eachDurationField",
+      this.eachDurationField.getInput()
+    );
+    sessionStorage.setItem("totalDaysField", days);
+    sessionStorage.setItem(
+      "totalPeriodsField",
+      this.totalPeriodsField.getInput()
+    );
+    sessionStorage.setItem(
+      "breakDurationField",
+      this.breakDurationField.getInput()
+    );
   }
 }
 
@@ -451,23 +477,32 @@ window.onload = (_) => {
     sessionStorage.setItem("endTimeField", s2.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
     sessionStorage.setItem("day1Field", s2.day1Field.getInput());
-    sessionStorage.setItem("eachDurationField",s2.eachDurationField.getInput());
+    sessionStorage.setItem(
+      "eachDurationField",
+      s2.eachDurationField.getInput()
+    );
     sessionStorage.setItem("totalDaysField", s2.totalDaysField.getInput());
-    sessionStorage.setItem("totalPeriodsField",s2.totalPeriodsField.getInput());
-    sessionStorage.setItem("breakDurationField",s2.breakDurationField.getInput());
+    sessionStorage.setItem(
+      "totalPeriodsField",
+      s2.totalPeriodsField.getInput()
+    );
+    sessionStorage.setItem(
+      "breakDurationField",
+      s2.breakDurationField.getInput()
+    );
     relocate(locate.homepage);
   };
 
-//
+  //
   //getUserLocally().then((data) => {
-  //  
+  //
   //  postData("/admin/session/receiveinstitution", {
   //    uiid: data.uiid,
   //    doc: "default",
   //  }).then((response) => {
   //      clog("receiver respnose inst");
   //      clog(data.uiid);
-  //      if(response.event != code.inst.INSTITUTION_DEFAULTS_SET || response.event != code.inst.INSTITUTION_CREATED 
+  //      if(response.event != code.inst.INSTITUTION_DEFAULTS_SET || response.event != code.inst.INSTITUTION_CREATED
   //        || response.event != code.inst.INSTITUTION_EXISTS){
   //        clog("creationfauled:"+response.event);
   //        finishSession();
@@ -478,7 +513,7 @@ window.onload = (_) => {
   //      snackBar(error, "Report");
   //    });
   //});
-//
+  //
   // register.saveExit.onclick = _=>{
 
   //   showLoader();

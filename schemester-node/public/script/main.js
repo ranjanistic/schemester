@@ -1,6 +1,6 @@
 const click = "click",
-  input = "input",
-  nothing = "";
+  change = "change",
+input = "input";
 
 class Codes {
   constructor() {
@@ -92,7 +92,7 @@ class Codes {
         this.EMAIL_CHANGED = "mail/email-address-changed";
         this.ACCOUNT_DELETED = "mail/account-deleted";
         this.INSTITUTION_INVITATION = "mail/invite-to-institution";
-        this.MAIL_SENT = 'mail/email-send-success';
+        this.MAIL_SENT = "mail/email-send-success";
         this.MAIL_NOT_SENT = "mail/email-send-failure";
       }
     }
@@ -174,31 +174,45 @@ const constant = new Constant();
 
 class Locations {
   constructor() {
-    class Admin{
-      constructor(){
-        this.session = '/admin/session';
-        this.login = '/admin/auth/login';
-        class Target{
-          constructor(){
-            this.dashboard = 'dashboard';
-            this.settings = 'manage';
-            this.addteacher = 'addteacher';
+    class Admin {
+      constructor() {
+        this.session = "/admin/session";
+        this.login = "/admin/auth/login";
+
+        class Target {
+          constructor() {
+            this.dashboard = "dashboard";
+            this.settings = "manage";
+            this.manage = "manage";
+            this.addteacher = "addteacher";
+            this.register = "registration";
           }
         }
         this.target = new Target();
+
+        class SettingSections {
+          constructor() {
+            this.account = "setting/account";
+            this.institute = "setting/institute";
+            this.schedule = "setting/schedule";
+            this.security = "settting/security";
+            this.about = "setting/about";
+          }
+        }
+        this.section = new SettingSections();
       }
     }
     this.admin = new Admin();
 
-    class Teacher{
-      constructor(){
-        this.session = '/teacher/session';
-        this.login = '/teacher/auth/login';
-        class Target{
-          constructor(){
-            this.today = 'today';
-            this.fullweek = 'fullschedule';
-            this.settings = 'settings';
+    class Teacher {
+      constructor() {
+        this.session = "/teacher/session";
+        this.login = "/teacher/auth/login";
+        class Target {
+          constructor() {
+            this.today = "today";
+            this.fullweek = "fullschedule";
+            this.settings = "settings";
           }
         }
         this.target = new Target();
@@ -208,7 +222,7 @@ class Locations {
 
     this.adminLoginPage = "/admin/auth/login";
     this.adminDashPage = "/admin/session";
-    
+
     this.homepage = "/home";
     this.root = "/";
     this.registrationPage = "/admin/session";
@@ -220,27 +234,27 @@ const locate = new Locations();
 
 class Posts {
   constructor() {
-    class Admin{
-      constructor(){
+    class Admin {
+      constructor() {
         this.login = "/admin/auth/login";
         this.logout = "/admin/auth/logout";
         this.signup = "/admin/auth/signup";
-        this.manage = '/admin/manage'
+        this.manage = "/admin/manage";
         this.sessionValidate = "/admin/session/validate";
+        this.register = "/admin/session/registerinstitution";
       }
     }
     this.admin = new Admin();
 
-    class Teacher{
-      constructor(){
-        this.login = '/teacher/auth/login';
-        this.logout = '/teacher/auth/logout';
-        this.sessionValidate = '/teacher/session/validate';
-
+    class Teacher {
+      constructor() {
+        this.login = "/teacher/auth/login";
+        this.logout = "/teacher/auth/logout";
+        this.sessionValidate = "/teacher/session/validate";
       }
     }
     this.teacher = new Teacher();
-    
+
     this.sessionValidate = "/admin/session/validate";
     this.authlogin = "/admin/auth/login";
     this.authlogout = "/admin/auth/logout";
@@ -312,14 +326,14 @@ class TextInput {
     this.type = type;
     this.normalize();
   }
-  show(){
+  show() {
     show(this.fieldset);
   }
-  hide(){
+  hide() {
     hide(this.fieldset);
   }
-  visible(isvisible = true){
-    visibilityOf(this.fieldset,isvisible);
+  visible(isvisible = true) {
+    visibilityOf(this.fieldset, isvisible);
   }
   activate() {
     setClass(this.fieldset, bodyType.getFieldStyle(bodyType.active));
@@ -333,10 +347,10 @@ class TextInput {
   inputFocus() {
     this.input.focus();
   }
-  disableInput(){
+  disableInput() {
     this.input.disabled = true;
   }
-  enableInput(){
+  enableInput() {
     this.input.disabled = false;
   }
   validateNow(validAction = (_) => {}, ifmatchfield = null) {
@@ -396,40 +410,55 @@ class TextInput {
   }
 }
 
-class Checkbox{
+class Checkbox {
   constructor(
     containerId = String,
     labelId = String,
     checkboxId = String,
+    checkViewId = null,
     type = actionType.positive
-  ){
+  ) {
     this.container = getElement(containerId);
     this.label = getElement(labelId);
     this.checkbox = getElement(checkboxId);
-    this.type = type;
-    clog(this.type);
-    setClass(this.checkbox,actionType.getCheckStyle(this.type));
+    if(checkViewId){
+      this.checkview = getElement(checkViewId);
+      this.type = type;
+      setClass(this.checkview, actionType.getCheckStyle(this.type));
+    }
   }
-  setLabel(text = String){
+  setLabel(text = String) {
     this.label.innerHTML = text;
   }
-  onCheckChange(checked=_=>{},unchecked=_=>{}){
-    this.checkbox.addEventListener('change',_=>{
-      if(this.checkbox.checked){
+  onCheckChange(checked = (_) => {}, unchecked = (_) => {}) {
+    this.checkbox.addEventListener(change, (_) => {
+      if (this.checkbox.checked) {
         checked();
-      }else{
+      } else {
         unchecked();
       }
-    })
+    });
   }
-  show(){
+  isChecked() {
+    return this.checkbox.checked;
+  }
+  check() {
+    this.checkbox.checked = true;
+  }
+  uncheck() {
+    this.checkbox.checked = false;
+  }
+  checked(ischecked = true) {
+    this.checkbox.checked = ischecked;
+  }
+  show() {
     show(this.container);
   }
-  hide(){
+  hide() {
     hide(this.container);
   }
-  visible(isvisible=true){
-    visibilityOf(this.container,isvisible);
+  visible(isvisible = true) {
+    visibilityOf(this.container, isvisible);
   }
 }
 
@@ -632,7 +661,7 @@ class ViewType {
     this.active = "active";
     this.nothing = "nothing";
   }
-  getCheckStyle(type = new ViewType){
+  getCheckStyle(type = new ViewType()) {
     switch (type) {
       case this.neutral:
         return "tickmark-positive";
@@ -884,15 +913,19 @@ class Dialog extends DialogID {
   getDialogButton(index) {
     return this.dialogButtons[index];
   }
-  onChipClick(index, action) {
-    this.optionsRadio[index].onclick = () => {
-      action();
-    };
+  onChipClick(functions = Array) {
+    this.optionsRadio.forEach((radio,index)=>{
+      radio.onclick = () => {
+        functions[index]();
+      };
+    });
   }
-  onButtonClick(index, action) {
-    this.dialogButtons[index].onclick = () => {
-      action();
-    };
+  onButtonClick(functions = Array) {
+    this.dialogButtons.forEach((button,index)=>{
+      button.onclick = () => {
+        functions[index]();
+      };
+    });
   }
   normalize() {
     this.inputField.forEach((field) => {
@@ -970,7 +1003,8 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
     loginDialog.getInput(1).onchange = (_) => {
       validateTextField(loginDialog.inputField[1], validType.password);
     };
-    loginDialog.onButtonClick(0, (_) => {
+    loginDialog.onButtonClick(Array( 
+      (_) => {
       if (
         !(
           stringIsValid(loginDialog.getInputValue(0), validType.email) &&
@@ -991,17 +1025,16 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
         snackBar("TBD");
         //todo: authenticate
       }
-    });
-    loginDialog.onButtonClick(1, (_) => {
-      loginDialog.existence(false);
-    });
+    },(_)=>{
+      loginDialog.hide();
+    }));
   }
   loginDialog.existence(isShowing);
 };
 
 let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   var resetDialog = new Dialog();
-  if (isShowing) {
+  
     resetDialog.setDisplay(
       "Reset password",
       "Provide us your email address and we'll help you to reset your password via an email.",
@@ -1021,25 +1054,22 @@ let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
 
     resetDialog.validate(0);
 
-    resetDialog.onButtonClick(0, () => {
+    resetDialog.onButtonClick(Array( () => {
       if (!stringIsValid(resetDialog.getInputValue(0), validType.email)) {
         validateTextField(resetDialog.inputField[0], validType.email);
         return;
       }
       sendPassResetLink(); //todo
-      resetDialog.existence(false);
+      resetDialog.hide();
       snackBar(
         "You'll receive a link if your email address was correct. Reset your password from there.",
         "Got it"
       );
-    });
-
-    resetDialog.onButtonClick(1, () => {
-      resetDialog.existence(false);
-    });
-  }
-  resetDialog.existence(isShowing);
-};
+    }, () => {
+      resetDialog.hide();
+    }));
+    resetDialog.existence(isShowing);  
+}
 
 let changeEmailBox = (isShowing = true) => {
   var mailChange = new Dialog();
@@ -1075,7 +1105,8 @@ let changeEmailBox = (isShowing = true) => {
   });
   mailChange.validate(2);
 
-  mailChange.onButtonClick(0, () => {
+  mailChange.onButtonClick(Array( 
+    () => {
     if (
       !(
         stringIsValid(mailChange.getInputValue(0)) &&
@@ -1093,7 +1124,7 @@ let changeEmailBox = (isShowing = true) => {
       return;
     }
     //todo: changeadmniemail
-    mailChange.existence(false);
+    mailChange.hide();
     snackBar(
       "Your email id has been changed to " + mailChange.getInputValue(2),
       "Okay",
@@ -1101,10 +1132,10 @@ let changeEmailBox = (isShowing = true) => {
         snackBar("You need to login again");
       }
     );
-  });
-  mailChange.onButtonClick(1, () => {
-    mailChange.existence(false);
-  });
+  },() => {
+    mailChange.hide();
+  }));
+  
   mailChange.existence(isShowing);
 };
 
@@ -1125,16 +1156,16 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
           Array("Stay logged in", "Log out"),
           Array(actionType.positive, actionType.negative)
         );
-        confirmLogout.onButtonClick(0, () => {
-          confirmLogout.existence(false);
-        });
-        confirmLogout.onButtonClick(1, () => {
-          confirmLogout.loader();
-          finishSession((_) => {
-            registrationDialog(true);
-          });
-        });
-        confirmLogout.existence(true);
+        confirmLogout.onButtonClick(Array(
+          () => {confirmLogout.hide()},
+          () => {
+            confirmLogout.loader();
+            finishSession((_) => {
+              registrationDialog(true);
+            });
+          }
+        ));
+        confirmLogout.show();
       });
     },
     (_) => {
@@ -1173,10 +1204,6 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
         Array("words", "off", "off", "off")
       );
 
-      regDial.onButtonClick(1, () => {
-        regDial.existence(false);
-      });
-
       regDial.validate(0, (_) => {
         regDial.getInput(1).focus();
       });
@@ -1188,7 +1215,8 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
       });
       regDial.validate(3);
 
-      regDial.onButtonClick(0, () => {
+      regDial.onButtonClick(Array( 
+        () => {
         if (
           !(
             stringIsValid(regDial.getInputValue(0), validType.name) &&
@@ -1218,7 +1246,10 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
             String(regDial.getInputValue(3)).trim()
           );
         }
-      });
+      },
+      () => {
+        regDial.hide();
+      }));
       regDial.existence(isShowing);
     }
   );
@@ -1344,7 +1375,7 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
           break;
         default: {
           clog("in default");
-          dialog.existence(false);
+          dialog.hide();
           snackBar(`${result.event}:${result.msg}`, "Report", false);
         }
       }
@@ -1369,14 +1400,10 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
         Array("Verified, now continue", "Abort"),
         Array(actionType.positive, actionType.negative)
       );
-      verify.onButtonClick(1, () => {
+      
+      verify.onButtonClick(Array( () => {
         verify.loader();
-        localStorage.clear();
-        verify.existence(false);
-      });
-      verify.onButtonClick(0, () => {
-        verify.loader();
-        verify.existence(false);
+        verify.hide();
         loadingBox(true, "Checking", "This may take a few seconds");
         setTimeout(() => {
           localStorage.setItem("verified", true);
@@ -1385,7 +1412,11 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
             target: "registration",
           });
         }, 4 * 1000);
-      });
+      }, () => {
+        verify.loader();
+        localStorage.clear();
+        verify.hide();
+      }));
     } else {
       verify.setDisplay(
         "Verification Required",
@@ -1395,27 +1426,25 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
         Array("Send link", "Cancel"),
         Array(actionType.positive, actionType.negative)
       );
-      verify.onButtonClick(1, () => {
-        verify.loader();
-        localStorage.clear();
-        verify.existence(false);
-      });
-      verify.onButtonClick(0, () => {
-        verify.loader();
-        loadingBox(true, "Sending", `A link is being prepared for ${data.id}.`);
-        //replace with email sender
-        setTimeout(() => {
-          accountVerificationDialog(true, true);
-        }, 3 * 1000);
-      });
+      verify.onButtonClick(Array( 
+        () => {
+          verify.loader();
+          loadingBox(true, "Sending", `A link is being prepared for ${data.id}.`);
+          //replace with email sender
+          setTimeout(() => {
+            accountVerificationDialog(true, true);
+          }, 3 * 1000);},
+        () => {
+          verify.loader();
+          localStorage.clear();
+          verify.hide();
+        }
+      ));
     }
     verify.existence(isShowing);
   });
 };
 
-let silentLogin = (email, password, action) => {
-  //todo: login without relocation
-};
 let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   var feedback = new Dialog();
   feedback.setDisplay(
@@ -1447,12 +1476,12 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     Array("Submit", "Abort"),
     Array(actionType.positive, actionType.negative)
   );
-  feedback.onChipClick(0, (_) => {
+  feedback.onChipClick(Array(
+     (_) => {
     feedback.setBackgroundColorType();
-  });
-  feedback.onChipClick(1, (_) => {
+  }, (_) => {
     feedback.setBackgroundColorType(bodyType.negative);
-  });
+  }));
 
   feedback.largeTextField.input.value = defaultText;
 
@@ -1461,7 +1490,8 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   });
   feedback.largeTextField.validate();
 
-  feedback.onButtonClick(0, () => {
+  feedback.onButtonClick(Array( 
+    () => {
     if (
       !(
         stringIsValid(feedback.getInputValue(0), validType.email) &&
@@ -1477,16 +1507,16 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
         subject: `From ${feedback.getInputValue(0)}`,
         body: feedback.largeTextField.getInput(),
       });
-      feedback.existence(false);
+      feedback.hide();
       snackBar(
         "Thanks for the interaction. We'll look forward to that.",
         "Hide"
       );
+    }},
+    () => {
+    feedback.hide();
     }
-  });
-  feedback.onButtonClick(1, () => {
-    feedback.existence(false);
-  });
+  ));
   feedback.existence(isShowing);
 };
 
@@ -1621,9 +1651,14 @@ let validateTextField = (
     textfield.onTextInput((_) => {
       textfield.normalize();
       if (textfield.getInput() != constant.nothing) {
-        validateTextField(textfield, type, (_) => {
-          afterValidAction();
-        },ifmatchField);
+        validateTextField(
+          textfield,
+          type,
+          (_) => {
+            afterValidAction();
+          },
+          ifmatchField
+        );
       } else {
         textfield.onTextInput((_) => {
           textfield.normalize();
@@ -1633,9 +1668,14 @@ let validateTextField = (
             afterValidAction();
           } else {
             textfield.showError(error);
-            validateTextField(textfield, type, (_) => {
-              afterValidAction();
-            },ifmatchField);
+            validateTextField(
+              textfield,
+              type,
+              (_) => {
+                afterValidAction();
+              },
+              ifmatchField
+            );
           }
         });
       }
@@ -1647,9 +1687,14 @@ let validateTextField = (
         afterValidAction();
       } else {
         textfield.showError(error);
-        validateTextField(textfield, type, (_) => {
-          afterValidAction();
-        },ifmatchField);
+        validateTextField(
+          textfield,
+          type,
+          (_) => {
+            afterValidAction();
+          },
+          ifmatchField
+        );
       }
     });
   }
@@ -1859,10 +1904,10 @@ let getRequestBody = (data = {}, isPost = false) => {
   return body;
 };
 
-let sendEmail = async (to,subject,body,cc,bcc)=>{
+let sendEmail = async (to, subject, body, cc, bcc) => {
   //todo: send emails from here.
   return code.mail.MAIL_SENT;
-}
+};
 
 let mailTo = (to) => `mailto:${to}`;
 
@@ -1948,8 +1993,8 @@ let getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
 let getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
-let getCheckBox = (labelID,label,checkboxID)=>
-`<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
+let getCheckBox = (labelID, label, checkboxID) =>
+  `<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
 let getInputField = (fieldID, captionID, inputID, errorID) =>
   `<fieldset class="fmt-row text-field" id="${fieldID}"> 
   <legend class="field-caption" id="${captionID}"></legend> 

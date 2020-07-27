@@ -81,7 +81,7 @@ class UIID{
     if(localStorage.getItem('uiid')){
       this.uiidField.setInput(localStorage.getItem('uiid'));
     }
-    this.rememberuiid = new Checkbox("rememberuiidcontainer",'rememberuiidtext','rememberuiidcheck',actionType.negative);
+    this.rememberuiid = new Checkbox("rememberuiidcontainer",'rememberuiidtext','rememberuiidcheck');
     this.rememberuiid.show();
     this.saveuiid = false;
     this.rememberuiid.setLabel("Remember UIID");

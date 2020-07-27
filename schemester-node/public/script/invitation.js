@@ -173,12 +173,8 @@ let emailVerification = (email, afterVerfied = (_) => {}) => {
     Array("Send link", "Cancel"),
     Array(actionType.positive, actionType.negative)
   );
-  verify.onButtonClick(1, () => {
-    verify.loader();
-    sessionStorage.clear();
-    verify.hide();
-  });
-  verify.onButtonClick(0, () => {
+  
+  verify.onButtonClick(Array( () => {
     verify.loader();
     //replace with email sender
     setTimeout(() => {
@@ -192,19 +188,23 @@ let emailVerification = (email, afterVerfied = (_) => {}) => {
         Array("Verified, now continue", "Abort"),
         Array(actionType.positive, actionType.negative)
       );
-      verify.onButtonClick(1, () => {
-        verify.loader();
-        sessionStorage.clear();
-        verify.hide();
-      });
-      verify.onButtonClick(0, () => {
+      
+      verify.onButtonClick(Array( () => {
         verify.loader();
         //check if verified;
         afterVerfied();
-      });
+      }, () => {
+        verify.loader();
+        sessionStorage.clear();
+        verify.hide();
+      }));
       verify.show();
     }, 3 * 1000);
-  });
+  }, () => {
+    verify.loader();
+    sessionStorage.clear();
+    verify.hide();
+  }));
   verify.show();
 };
 
