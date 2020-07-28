@@ -12,28 +12,25 @@ const express = require("express"),
 const sessionsecret = session.teachersessionsecret;
 router.use(cookieParser(sessionsecret));
 
-router.get("/", function (req, res) {
-  res.redirect("/teacher/auth/login?target=today");
+router.get("/", (req, res)=>{
+  res.redirect(toLogin(view.teacher.target.today));
 });
 
 router.get("/auth/login*", (req, res) => {
-  session.verify(req, sessionsecret).then((response) => {
-    if (session.valid(response)) {
-      clog("valid login");
-      let link = req.query.target
-        ? `/teacher/session?u=${response.user.id}&target=${req.query.target}`
-        : `/teacher/session?u=${response.user.id}&target=today`;
-      res.redirect(link);
-    } else {
-      clog("invalid login");
-      let autofill = req.query;
+  session.verify(req,sessionsecret).then((response) => {
+    if (!session.valid(response)) {
+      const autofill = req.query;
       res.render(view.teacher.login, { autofill });
+    } else {
+      res.redirect(toSession(response.user.id,req.query.target));
     }
+  }).catch(error=>{
+    res.render(view.servererror,{error});
   });
 });
 
 router.post("/auth/login",async (req, res) => {
-    let result = code.event(code.auth.AUTH_FAILED);
+    result = code.event(code.auth.AUTH_FAILED);
     clog(req.body);
     session.login(req,res,sessionsecret).then(response=>{
       clog(response);
@@ -60,50 +57,81 @@ router.post("/auth/signup", async (req, res) => {
 });
 
 router.get("/session*", async (req, res) => {
+  let data = req.query;
   session.verify(req, sessionsecret).then(async (response) => {
       clog(response);
       if(!session.valid(response)) {
         clog("invalid");
-        res.redirect(`/teacher/auth/login?target=${req.query.target}`);
+        res.redirect(toLogin(data.target));
       } else {
+        clog("session valid");
         clog(response);
-        let target = req.query.target?req.query.target:'today';
-        let uiid = response.user.uiid;
-        let inst = await Institute.findOne({uiid})
-        if(inst.users.teachers){clog("has teachers");}
-        //schedule filler view, as schedule (teacherschedule/schedule subdocuments) is assumed not to be present if user is joining via invitaiton, however if present already
-        //(say, admin added schedule themselves even after inviting), then proceed directly to dashboard (today page, for teachers).                    
-        let user;
-        let found = inst.users.teachers.some((teacher,index)=>{
-          clog(teacher.id);
-          if(teacher.id == response.user.id){
-            user = teacher;
-          }
-        });
-        if(!found) res.redirect('')
-        if(!inst.teacherSchedule[user.teacherID]) {target = 'addschedule'};
-        switch(target){
-          case 'today':{
-            res.render(view.teacher.today,{user,inst});
-          }break;
-          case 'fullschedule':{
-
-          }break;
-          case 'addschedule':{
-            res.render(view.teacher.addschedule,{adata:null,user,inst});
-          }break;
-          default:{
-
+        if(data.u != response.user.id){
+          res.redirect(toLogin(data.target));
+        } else {
+          clog("u = user.id");
+          const _id = response.user.id;
+          let uiid = response.user.uiid;
+          let inst = await Institute.findOne({uiid});
+          if(!inst){
+            session.finish(res).then(response=>{
+              if(response) res.redirect(toLogin(data.target));
+            });
+          } else {
+            let teacher;
+            const found = inst.users.teacher.some((user,_)=>{
+              if(user.id == _id){
+                teacher = getTeacherShareData(user);
+                return true;
+              }
+            });
+            if(!found){
+              session.finish(res).then(response=>{
+                if(response) res.redirect(toLogin(data.target));
+              });
+              return;
+            }
+            clog(teacher);
+            try{
+              res.render(view.teacher.getViewByTarget(data.target,{teacher}));
+            }catch(e){
+              clog(e);
+              res.redirect(toLogin(data.target));
+            }
           }
         }
       }
-  }).catch((error) => {
-      clog(error);
-      res.redirect(`/teacher/auth/login?target=${req.query.target}`);
+    }
+  )}
+);
+
+const getTeacherShareData = (data = {}) => {
+  return {
+    [sessionUID]: data.id,
+    username: data.username,
+    [sessionID]: data.teacherID,
+    createdAt: data.createdAt,
+    verified: data.verified,
+    vlinkexp:data.vlinkexp
+  };
+};
+
+let result = {};
+
+router.post("/session/validate",(req,res)=>{
+  session.verify(req,sessionsecret).then(response=>{
+    if(session.valid(response)){
+      clog("isvalidteacher");
+      result = code.event(code.auth.SESSION_VALID);
+    } else {
+      clog("isvalidteachernot");
+      result = response
+    };
+  }).catch(error=>{
+    result = code.eventmsg(code.auth.AUTH_REQ_FAILED,error);
   });
-});
-
-
+  return res.json({result});
+})
 
 router.get("/external*", async (req, res) => {
   switch (req.query.type) {
@@ -206,5 +234,7 @@ router.post('/find',async (req,res)=>{
   return res.json({result});
 })
 
+const toLogin =(target = view.teacher.target.today)=>`/teacher/auth/login?target=${target}`;
+const toSession =(u,target = view.teacher.target.today)=>`/teacher/session?u=${u}&target=${target}`;
 module.exports = router;
 let clog = (msg) => console.log(msg);

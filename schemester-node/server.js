@@ -17,13 +17,17 @@ database.getServer()
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'));
+
 app.use('/admin', admin);
 app.use('/teacher',teacher);
 
 app.get('/', (req,res)=>{
-    res.render(view.loader);
+    const client = req.query.client?req.query.client:null;
+    const data = {client:client}
+    clog(data);
+    res.render(view.loader,{data});
 });
-app.get('/home', (req,res)=>{
+app.get('/home', (_req,res)=>{
     res.render(view.homepage);
 });
 
@@ -31,20 +35,20 @@ app.get('/plans/',(_request,res)=>{
     res.render(view.plans);
 });
 
-
-app.get('/404', (req, res, next)=>{
+const clog =(msg)=>console.log(msg);
+app.get('/404', (_req, _res, next)=>{
     next();
 });
-app.get('/403', (req, res, next)=>{
+app.get('/403', (_req, _res, next)=>{
     var err = new Error('not allowed!');
     err.status = 403;
     next(err);
 });
-app.get('/500', (req, res, next)=>{
+app.get('/500', (_req, _res, next)=>{
     next(new Error('keyboard cat!'));
 });
 
-app.use((req, res, next)=>{
+app.use((req, res, _next)=>{
     res.status(404);
     res.format({
         html: function () {
@@ -59,7 +63,7 @@ app.use((req, res, next)=>{
     })
 });
 
-app.use((err, req, res, next)=>{
+app.use((err, _req, res)=>{
     res.status(err.status || 500);
     res.render('500', { error: err });
 });

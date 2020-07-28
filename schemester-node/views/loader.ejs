@@ -59,10 +59,13 @@
         <span class="fmt-left fmt-padding" id="snackText"></span>
         <button class="fmt-right neutral-button" id="snackButton"></button>
       </div>
+      <span hidden>
+        <span id="client"><%= data.client %></span>
+      </span>
   </body>
   <script type="text/javascript">
-    window.onload = _=>{
-      checkSessionValidation(_=>{relocate(locate.adminDashPage)},_=>{relocate(locate.homepage)});
+    window.onload =_=>{
+      checkSessionValidation(String(getElement("client").innerHTML));
     }
   </script>
   <noscript id="noscript" class="dialog fmt-red" style="display:block">

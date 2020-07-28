@@ -1,14 +1,14 @@
 class TeacherLogin{
   constructor(){
     this.back = getElement("backFromLogin");
-    this.back.addEventListener(click,_=> {showLoader();relocate(locate.root)});
+    this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     hide(getElement("previous"));
     hide(getElement("useremailfield"));
     hide(getElement("userpasswordfield"));
     this.logInLoader = getElement("loginLoader");
     this.proceed = getElement("proceed");
     this.loader(false);
-    let uiid = new UIID();
+    new UIID();
   }
   
   loader=(show=true)=>{
@@ -70,22 +70,40 @@ class TeacherLogin{
 
 
 class UIID{
-  constructor(){
+  constructor(back = false){
     hide(getElement("previous"));
     this.proceed = getElement("proceed");
     this.proceed.innerHTML = "Proceed";
     this.logInLoader = getElement("loginLoader");
+    getElement("subtext").innerHTML = `Please provide the unique ID of your institution to proceed.`;
     this.uiidField = new TextInput("uiidfield","uiid","uiidError",validType.nonempty);
     this.uiidField.show();
     this.uiidField.enableInput();
-    if(localStorage.getItem('uiid')){
-      this.uiidField.setInput(localStorage.getItem('uiid'));
-    }
     this.rememberuiid = new Checkbox("rememberuiidcontainer",'rememberuiidtext','rememberuiidcheck');
     this.rememberuiid.show();
     this.saveuiid = false;
+    this.rememberuiid.onCheckChange(_=>{
+      this.saveuiid = true;
+      this.uiidField.onTextInput(_=>{
+        localStorage.setItem('uiid',this.uiidField.getInput());  
+      })
+      localStorage.setItem('uiid',this.uiidField.getInput());
+    },_=>{
+      this.saveuiid = false
+      localStorage.removeItem('uiid')
+    });
     this.rememberuiid.setLabel("Remember UIID");
-    this.rememberuiid.onCheckChange(_=>{this.saveuiid = true},_=>{this.saveuiid = false});
+    if(localStorage.getItem('uiid')){
+      if(!back){
+        this.rememberuiid.check();
+        this.uiidField.setInput(localStorage.getItem('uiid'));
+        sessionStorage.setItem('uiid',this.uiidField.getInput());
+        this.uiidField.activate();
+        this.uiidField.disableInput();
+        return new Email();
+      }
+    }
+    
     this.uiidField.validate();
     this.uiidCheck(null);
     this.proceed.onclick =_=>{
@@ -107,6 +125,7 @@ class UIID{
         if(this.saveuiid){
           localStorage.setItem('uiid', uiid);
         }
+        sessionStorage.setItem('uiid',uiid);
         new Email();
       } else {
         this.uiidField.showError('No such institution');
@@ -148,7 +167,7 @@ class Email{
     }
     this.previous.onclick=_=>{
       this.emailField.hide();
-      new UIID();
+      new UIID(true);
     };
   }
   getUIID(){

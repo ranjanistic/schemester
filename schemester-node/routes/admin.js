@@ -16,7 +16,7 @@ const sessionUID = "uid";
 router.use(cookieParser(sessionsecret));
 
 router.get("/", function (req, res) {
-  res.redirect("/admin/auth/login?target=dashboard");
+  res.redirect(toLogin(view.admin.target.dashboard));
 });
 
 router.get("/auth/login*", (req, res) => {
@@ -43,7 +43,9 @@ router.get("/session*", (req, res) => {
     } else {
       try {
         clog("verify" + jstr(response.user));
-        if (data.u == response.user.id) {
+        if (data.u != response.user.id) {
+          res.redirect(toLogin(data.target));
+        } else {
           clog("u = user.id");
           const _id = response.user.id;
           const user = await Admin.findOne({ _id });
@@ -60,7 +62,7 @@ router.get("/session*", (req, res) => {
               clog("no inst registered");
               data.target = view.admin.target.register;
             } else {
-              if(data.target==view.admin.target.register){
+              if(data.target==view.admin.target.register||data.target == undefined){
                 return res.redirect(toSession(adata.uid,view.admin.target.dashboard));
               }
             }
@@ -79,8 +81,6 @@ router.get("/session*", (req, res) => {
               res.redirect(toLogin(data.target));
             }
           }
-        } else {
-          res.redirect(toLogin(data.target));
         }
       } catch (e) {
         clog("session catch");
@@ -113,9 +113,10 @@ router.post("/account/action", (req, res) => {
   })
 });
 
-router.post("/session/validate", async (req, res) => {
+router.post("/session/validate", (req, res) => {
   let result;
   const { getuser } = req.body;
+  clog("getuser=");
   clog(getuser);
   if (getuser) {
     clog("getuser");
@@ -129,20 +130,22 @@ router.post("/session/validate", async (req, res) => {
       })
       .catch((error) => {
         clog("errr");
-        throw error;
+        result = code.eventmsg(code.server.DATABASE_ERROR,error);
+
       });
   } else {
     clog("just verify");
-    await session
-      .verify(req,sessionsecret)
+    session.verify(req,sessionsecret)
       .then((response) => {
         result = response;
         clog("post validate");
         clog(result);
-        return res.json({ result });
+        clog("returning");
+        res.json({ result });
       })
       .catch((error) => {
-        return res.json({ event: code.auth.AUTH_REQ_FAILED, msg: error });
+        clog("here");
+        res.json({ event: code.auth.AUTH_REQ_FAILED, msg: error });
       });
   }
 });
@@ -501,7 +504,7 @@ const toSession =(u,target = view.admin.target.dashboard,section = view.admin.se
     ?`/admin/session?u=${u}&target=${target}&section=${section}`
     :`/admin/session?u=${u}&target=${target}`;
 
-const toLogin =(target,section = view.admin.section.account)=>
+const toLogin =(target = view.admin.target.dashboard,section = view.admin.section.account)=>
   target==view.admin.target.manage
     ?`/admin/auth/login?target=${target}&section=${section}`
     :`/admin/auth/login?target=${target}`;
@@ -515,6 +518,7 @@ const getAdminShareData = (data = {}) => {
     uiid: data.uiid,
     createdAt: data.createdAt,
     verified: data.verified,
+    vlinkexp:data.vlinkexp
   };
 };
 

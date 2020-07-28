@@ -45,6 +45,7 @@ class AdminViews{
         this.section = new SettingSections();
     }
     getViewByTarget(target = this.target.dashboard){
+        console.log(target);
         switch(target){
             case this.target.settings:return this.settings;
             case this.target.addteacher:return this.addTeacher;
@@ -60,7 +61,26 @@ class TeacherViews{
         this.login = 'teacher/teacher_login.ejs';
         this.today = 'teacher/teacher_dash.ejs';
         this.settings = 'teacher/teacher_settings.ejs';
-        this.addschedule = 'admin/schedule_filler.ejs';
+        this.addschedule = 'admin/teacher_filler.ejs';
+        class Target {
+            constructor() {
+              this.today = "today";
+              this.fullweek = "fullschedule";
+              this.settings = "settings";
+              this.addschedule = 'addschedule';
+            }
+          }
+          this.target = new Target();
+    }
+    getViewByTarget(target = this.target.today){
+        console.log(target);
+        switch(target){
+            case this.target.today:return this.today;
+            case this.target.settings:return this.settings;
+            case this.target.fullweek:return this.addschedule;
+            case this.target.addschedule:return this.addschedule;
+            default:throw "viewnotfound";
+        }
     }
 }
 

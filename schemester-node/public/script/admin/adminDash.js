@@ -161,6 +161,10 @@ class NoDataView{
 
 class BaseView{
   constructor(){
+    this.navicon = getElement("navicon")
+    this.navicon.onclick=_=>{
+      relocate(locate.root,{client:client.admin});
+    }
     this.greeting = getElement("greeting");
     this.logOut = getElement("logoutAdminButton");
     this.dateTime = getElement("todayDateTime");
@@ -169,7 +173,7 @@ class BaseView{
     this.logOut.addEventListener(click,(_) => {showLoader();
       let email = localStorage.getItem(constant.sessionID);
       let uiid = localStorage.getItem('uiid');
-      finishSession(_=>{ relocate(locate.adminLoginPage,{email:email,uiid:uiid})})
+      finishSession(_=>{relocate(locate.admin.login,{email:email,uiid:uiid,target:locate.admin.target.dashboard})});
     });
     this.settings.addEventListener(click,(_) => { showLoader();
       refer(locate.admin.session,{

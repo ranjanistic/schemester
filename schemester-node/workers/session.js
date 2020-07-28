@@ -12,7 +12,7 @@ class Session {
     this.teachersessionsecret = "teacherschemesterSecret2001";
     this.studentsessionsecret = "studentschemesterSecret2001";
     this.sessionKey = "bailment"; //bailment ~ amaanat
-    this.expiresIn = 7 * 86400;
+    this.expiresIn = 7 * 86400;//days*seconds/day
   }
 
   verify = async (request, secret) => {
@@ -83,52 +83,48 @@ class Session {
             }
             case "email": {
               let result;
-              const { uiid, teacherID } = request.body;
+              const { uiid, email } = request.body;
               clog(uiid);
-              clog(teacherID);
+              clog(email);
               let inst = await Institute.findOne({ uiid });
-              inst.users.teachers.forEach((teacher) => {
-                clog(teacher.teacherID);
-                if (teacher.teacherID == teacherID) {
-                  result = code.event(code.auth.USER_EXIST);
+              let found = inst.users.teachers.some((teacher,_) => {
+                if (teacher.teacherID == email) {
+                  clog(teacher);
+                  return true;
                 }
               });
+              result = found?code.event(code.auth.USER_EXIST):code.event(code.auth.USER_NOT_EXIST);
               return result;
             }
             case "password": {
               const { email, password, uiid, target } = request.body;
               clog(uiid + email + password + target);
               let user;
-              let result = code.event(code.auth.USER_NOT_EXIST);
-              //todo:login teacher by matching password
-              let inst = await Institute.findOne({ uiid });
+              const inst = await Institute.findOne({ uiid });
               if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-              if (!inst.users)
-                return code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
-
-              inst.users.teachers.forEach((teacher) => {
+              let found = inst.users.teachers.some((teacher,_) => {
                 if (teacher.teacherID == email) {
                   user = teacher;
                   clog(user);
+                  return true;
                 }
               });
-              const isMatch = await bcrypt.compare(password, user.password);
-              if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-              const payload = {
-                user: {
-                  id: user.id,
-                  uiid: uiid,
-                },
-              };
-              let token = jwt.sign(payload, secret, {
-                expiresIn: this.expiresIn, //days*seconds/day
-              });
-              response.cookie(this.sessionKey, token, { signed: true });
-              return {
-                event: code.auth.AUTH_SUCCESS,
-                user: getTeacherShareData(user),
-                target: target,
-              };
+              if(found){
+                const isMatch = await bcrypt.compare(password, user.password);
+                if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+                const payload = {user: {id: user.id,uiid: uiid}};
+                const token = jwt.sign(payload, secret, {
+                  expiresIn: this.expiresIn,
+                });
+                response.cookie(this.sessionKey, token, { signed: true });
+                return {
+                  event: code.auth.AUTH_SUCCESS,
+                  user: getTeacherShareData(user),
+                  target: target,
+                };
+              } else {
+                return code.event(code.auth.USER_NOT_EXIST);
+              }
             }
             default: {
               return code.event(code.auth.AUTH_REQ_FAILED);

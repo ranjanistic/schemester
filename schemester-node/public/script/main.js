@@ -1,7 +1,14 @@
 const click = "click",
   change = "change",
-input = "input";
-
+  input = "input";
+class Client{
+  constructor(){
+    this.admin = 'admin';
+    this.teacher = 'teacher';
+    this.student = 'student';
+  }
+}
+const client = new Client();
 class Codes {
   constructor() {
     class Servercodes {
@@ -213,6 +220,7 @@ class Locations {
             this.today = "today";
             this.fullweek = "fullschedule";
             this.settings = "settings";
+            this.addschedule = 'addschedule';
           }
         }
         this.target = new Target();
@@ -421,7 +429,7 @@ class Checkbox {
     this.container = getElement(containerId);
     this.label = getElement(labelId);
     this.checkbox = getElement(checkboxId);
-    if(checkViewId){
+    if (checkViewId) {
       this.checkview = getElement(checkViewId);
       this.type = type;
       setClass(this.checkview, actionType.getCheckStyle(this.type));
@@ -914,14 +922,14 @@ class Dialog extends DialogID {
     return this.dialogButtons[index];
   }
   onChipClick(functions = Array) {
-    this.optionsRadio.forEach((radio,index)=>{
+    this.optionsRadio.forEach((radio, index) => {
       radio.onclick = () => {
         functions[index]();
       };
     });
   }
   onButtonClick(functions = Array) {
-    this.dialogButtons.forEach((button,index)=>{
+    this.dialogButtons.forEach((button, index) => {
       button.onclick = () => {
         functions[index]();
       };
@@ -1003,73 +1011,86 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
     loginDialog.getInput(1).onchange = (_) => {
       validateTextField(loginDialog.inputField[1], validType.password);
     };
-    loginDialog.onButtonClick(Array( 
-      (_) => {
-      if (
-        !(
-          stringIsValid(loginDialog.getInputValue(0), validType.email) &&
-          stringIsValid(loginDialog.getInputValue(1))
-        )
-      ) {
-        validateTextField(
-          loginDialog.inputField[1],
-          validType.password,
-          (_) => {
-            loginDialog.inputField[0].input.focus();
+    loginDialog.onButtonClick(
+      Array(
+        (_) => {
+          if (
+            !(
+              stringIsValid(loginDialog.getInputValue(0), validType.email) &&
+              stringIsValid(loginDialog.getInputValue(1))
+            )
+          ) {
+            validateTextField(
+              loginDialog.inputField[1],
+              validType.password,
+              (_) => {
+                loginDialog.inputField[0].input.focus();
+              }
+            );
+            validateTextField(
+              loginDialog.inputField[0],
+              validType.email,
+              (_) => {
+                loginDialog.inputField[1].input.focus();
+              }
+            );
+          } else {
+            snackBar("TBD");
+            //todo: authenticate
           }
-        );
-        validateTextField(loginDialog.inputField[0], validType.email, (_) => {
-          loginDialog.inputField[1].input.focus();
-        });
-      } else {
-        snackBar("TBD");
-        //todo: authenticate
-      }
-    },(_)=>{
-      loginDialog.hide();
-    }));
+        },
+        (_) => {
+          loginDialog.hide();
+        }
+      )
+    );
   }
   loginDialog.existence(isShowing);
 };
 
 let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   var resetDialog = new Dialog();
-  
-    resetDialog.setDisplay(
-      "Reset password",
-      "Provide us your email address and we'll help you to reset your password via an email.",
-      "/graphic/icons/schemester512.png"
-    );
-    resetDialog.createInputs(
-      Array("Your email address"),
-      Array("you@example.domain"),
-      Array("email"),
-      Array(validType.email),
-      Array(inputvalue)
-    );
-    resetDialog.createActions(
-      Array("Send Link", "Cancel"),
-      Array(actionType.positive, actionType.negative)
-    );
 
-    resetDialog.validate(0);
+  resetDialog.setDisplay(
+    "Reset password",
+    "Provide us your email address and we'll help you to reset your password via an email.",
+    "/graphic/icons/schemester512.png"
+  );
+  resetDialog.createInputs(
+    Array("Your email address"),
+    Array("you@example.domain"),
+    Array("email"),
+    Array(validType.email),
+    Array(inputvalue)
+  );
+  resetDialog.createActions(
+    Array("Send Link", "Cancel"),
+    Array(actionType.positive, actionType.negative)
+  );
 
-    resetDialog.onButtonClick(Array( () => {
-      if (!stringIsValid(resetDialog.getInputValue(0), validType.email)) {
-        validateTextField(resetDialog.inputField[0], validType.email);
-        return;
+  resetDialog.validate(0);
+
+  resetDialog.onButtonClick(
+    Array(
+      () => {
+        if (!stringIsValid(resetDialog.getInputValue(0), validType.email)) {
+          validateTextField(resetDialog.inputField[0], validType.email);
+          return;
+        }
+        sendPassResetLink(); //todo
+        resetDialog.hide();
+        snackBar(
+          "You'll receive a link if your email address was correct. Reset your password from there.",
+          "Got it"
+        );
+      },
+      () => {
+        resetDialog.hide();
       }
-      sendPassResetLink(); //todo
-      resetDialog.hide();
-      snackBar(
-        "You'll receive a link if your email address was correct. Reset your password from there.",
-        "Got it"
-      );
-    }, () => {
-      resetDialog.hide();
-    }));
-    resetDialog.existence(isShowing);  
-}
+    )
+  );
+  resetDialog.existence(isShowing);
+};
 
 let changeEmailBox = (isShowing = true) => {
   var mailChange = new Dialog();
@@ -1105,37 +1126,41 @@ let changeEmailBox = (isShowing = true) => {
   });
   mailChange.validate(2);
 
-  mailChange.onButtonClick(Array( 
-    () => {
-    if (
-      !(
-        stringIsValid(mailChange.getInputValue(0)) &&
-        stringIsValid(mailChange.getInputValue(1), validType.email) &&
-        stringIsValid(mailChange.getInputValue(2), validType.email)
-      )
-    ) {
-      mailChange.validateNow(0, (_) => {
-        mailChange.getInput(1).focus();
-      });
-      mailChange.validateNow(1, (_) => {
-        mailChange.getInput(2).focus();
-      });
-      mailChange.validateNow(2);
-      return;
-    }
-    //todo: changeadmniemail
-    mailChange.hide();
-    snackBar(
-      "Your email id has been changed to " + mailChange.getInputValue(2),
-      "Okay",
+  mailChange.onButtonClick(
+    Array(
       () => {
-        snackBar("You need to login again");
+        if (
+          !(
+            stringIsValid(mailChange.getInputValue(0)) &&
+            stringIsValid(mailChange.getInputValue(1), validType.email) &&
+            stringIsValid(mailChange.getInputValue(2), validType.email)
+          )
+        ) {
+          mailChange.validateNow(0, (_) => {
+            mailChange.getInput(1).focus();
+          });
+          mailChange.validateNow(1, (_) => {
+            mailChange.getInput(2).focus();
+          });
+          mailChange.validateNow(2);
+          return;
+        }
+        //todo: changeadmniemail
+        mailChange.hide();
+        snackBar(
+          "Your email id has been changed to " + mailChange.getInputValue(2),
+          "Okay",
+          () => {
+            snackBar("You need to login again");
+          }
+        );
+      },
+      () => {
+        mailChange.hide();
       }
-    );
-  },() => {
-    mailChange.hide();
-  }));
-  
+    )
+  );
+
   mailChange.existence(isShowing);
 };
 
@@ -1156,15 +1181,19 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
           Array("Stay logged in", "Log out"),
           Array(actionType.positive, actionType.negative)
         );
-        confirmLogout.onButtonClick(Array(
-          () => {confirmLogout.hide()},
-          () => {
-            confirmLogout.loader();
-            finishSession((_) => {
-              registrationDialog(true);
-            });
-          }
-        ));
+        confirmLogout.onButtonClick(
+          Array(
+            () => {
+              confirmLogout.hide();
+            },
+            () => {
+              confirmLogout.loader();
+              finishSession((_) => {
+                registrationDialog(true);
+              });
+            }
+          )
+        );
         confirmLogout.show();
       });
     },
@@ -1215,41 +1244,44 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
       });
       regDial.validate(3);
 
-      regDial.onButtonClick(Array( 
-        () => {
-        if (
-          !(
-            stringIsValid(regDial.getInputValue(0), validType.name) &&
-            stringIsValid(regDial.getInputValue(1), validType.email) &&
-            stringIsValid(regDial.getInputValue(2), validType.password) &&
-            stringIsValid(regDial.getInputValue(3), validType.username)
-          )
-        ) {
-          regDial.validateNow(0, (_) => {
-            regDial.getInput(1).focus();
-          });
-          regDial.validateNow(1, (_) => {
-            regDial.getInput(2).focus();
-          });
-          regDial.validateNow(2, (_) => {
-            regDial.getInput(3).focus();
-          });
-          regDial.validateNow(3);
-        } else {
-          regDial.normalize();
-          regDial.loader();
-          createAccount(
-            regDial,
-            String(regDial.getInputValue(0)).trim(),
-            String(regDial.getInputValue(1)).trim(),
-            regDial.getInputValue(2),
-            String(regDial.getInputValue(3)).trim()
-          );
-        }
-      },
-      () => {
-        regDial.hide();
-      }));
+      regDial.onButtonClick(
+        Array(
+          () => {
+            if (
+              !(
+                stringIsValid(regDial.getInputValue(0), validType.name) &&
+                stringIsValid(regDial.getInputValue(1), validType.email) &&
+                stringIsValid(regDial.getInputValue(2), validType.password) &&
+                stringIsValid(regDial.getInputValue(3), validType.username)
+              )
+            ) {
+              regDial.validateNow(0, (_) => {
+                regDial.getInput(1).focus();
+              });
+              regDial.validateNow(1, (_) => {
+                regDial.getInput(2).focus();
+              });
+              regDial.validateNow(2, (_) => {
+                regDial.getInput(3).focus();
+              });
+              regDial.validateNow(3);
+            } else {
+              regDial.normalize();
+              regDial.loader();
+              createAccount(
+                regDial,
+                String(regDial.getInputValue(0)).trim(),
+                String(regDial.getInputValue(1)).trim(),
+                regDial.getInputValue(2),
+                String(regDial.getInputValue(3)).trim()
+              );
+            }
+          },
+          () => {
+            regDial.hide();
+          }
+        )
+      );
       regDial.existence(isShowing);
     }
   );
@@ -1400,23 +1432,28 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
         Array("Verified, now continue", "Abort"),
         Array(actionType.positive, actionType.negative)
       );
-      
-      verify.onButtonClick(Array( () => {
-        verify.loader();
-        verify.hide();
-        loadingBox(true, "Checking", "This may take a few seconds");
-        setTimeout(() => {
-          localStorage.setItem("verified", true);
-          relocate(locate.registrationPage, {
-            u: data.uid,
-            target: "registration",
-          });
-        }, 4 * 1000);
-      }, () => {
-        verify.loader();
-        localStorage.clear();
-        verify.hide();
-      }));
+
+      verify.onButtonClick(
+        Array(
+          () => {
+            verify.loader();
+            verify.hide();
+            loadingBox(true, "Checking", "This may take a few seconds");
+            setTimeout(() => {
+              localStorage.setItem("verified", true);
+              relocate(locate.registrationPage, {
+                u: data.uid,
+                target: "registration",
+              });
+            }, 4 * 1000);
+          },
+          () => {
+            verify.loader();
+            localStorage.clear();
+            verify.hide();
+          }
+        )
+      );
     } else {
       verify.setDisplay(
         "Verification Required",
@@ -1426,20 +1463,27 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
         Array("Send link", "Cancel"),
         Array(actionType.positive, actionType.negative)
       );
-      verify.onButtonClick(Array( 
-        () => {
-          verify.loader();
-          loadingBox(true, "Sending", `A link is being prepared for ${data.id}.`);
-          //replace with email sender
-          setTimeout(() => {
-            accountVerificationDialog(true, true);
-          }, 3 * 1000);},
-        () => {
-          verify.loader();
-          localStorage.clear();
-          verify.hide();
-        }
-      ));
+      verify.onButtonClick(
+        Array(
+          () => {
+            verify.loader();
+            loadingBox(
+              true,
+              "Sending",
+              `A link is being prepared for ${data.id}.`
+            );
+            //replace with email sender
+            setTimeout(() => {
+              accountVerificationDialog(true, true);
+            }, 3 * 1000);
+          },
+          () => {
+            verify.loader();
+            localStorage.clear();
+            verify.hide();
+          }
+        )
+      );
     }
     verify.existence(isShowing);
   });
@@ -1476,12 +1520,16 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
     Array("Submit", "Abort"),
     Array(actionType.positive, actionType.negative)
   );
-  feedback.onChipClick(Array(
-     (_) => {
-    feedback.setBackgroundColorType();
-  }, (_) => {
-    feedback.setBackgroundColorType(bodyType.negative);
-  }));
+  feedback.onChipClick(
+    Array(
+      (_) => {
+        feedback.setBackgroundColorType();
+      },
+      (_) => {
+        feedback.setBackgroundColorType(bodyType.negative);
+      }
+    )
+  );
 
   feedback.largeTextField.input.value = defaultText;
 
@@ -1490,33 +1538,36 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   });
   feedback.largeTextField.validate();
 
-  feedback.onButtonClick(Array( 
-    () => {
-    if (
-      !(
-        stringIsValid(feedback.getInputValue(0), validType.email) &&
-        stringIsValid(feedback.largeTextField.getInput())
-      )
-    ) {
-      feedback.largeTextField.validateNow();
-      feedback.inputField[0].validateNow((_) => {
-        feedback.largeTextField.inputFocus();
-      });
-    } else {
-      refer(mailTo("schemester@outlook.in"), {
-        subject: `From ${feedback.getInputValue(0)}`,
-        body: feedback.largeTextField.getInput(),
-      });
-      feedback.hide();
-      snackBar(
-        "Thanks for the interaction. We'll look forward to that.",
-        "Hide"
-      );
-    }},
-    () => {
-    feedback.hide();
-    }
-  ));
+  feedback.onButtonClick(
+    Array(
+      () => {
+        if (
+          !(
+            stringIsValid(feedback.getInputValue(0), validType.email) &&
+            stringIsValid(feedback.largeTextField.getInput())
+          )
+        ) {
+          feedback.largeTextField.validateNow();
+          feedback.inputField[0].validateNow((_) => {
+            feedback.largeTextField.inputFocus();
+          });
+        } else {
+          refer(mailTo("schemester@outlook.in"), {
+            subject: `From ${feedback.getInputValue(0)}`,
+            body: feedback.largeTextField.getInput(),
+          });
+          feedback.hide();
+          snackBar(
+            "Thanks for the interaction. We'll look forward to that.",
+            "Hide"
+          );
+        }
+      },
+      () => {
+        feedback.hide();
+      }
+    )
+  );
   feedback.existence(isShowing);
 };
 
@@ -1533,27 +1584,67 @@ let loadingBox = (
 };
 
 let checkSessionValidation = (
-  validAction = (_) => {
-    relocate(locate.root);
-  },
-  invalidAction = (_) => relocate(locate.adminLoginPage)
+  clientType = null,
+  validAction = null,
+  invalidAction = (_) => relocate(locate.homepage)
 ) => {
-  postData(post.admin.sessionValidate)
-    .then((result) => {
-      clog(result.event);
-      if (result.event == code.auth.SESSION_INVALID) {
-        invalidAction();
-      } else {
-        validAction();
+  clog(validAction);
+  switch (clientType) {
+    case client.admin: {
+      postData(post.admin.sessionValidate)
+        .then((result) => {
+          if (result.event == code.auth.SESSION_INVALID) {
+            invalidAction();
+          } else {
+            clog("ad sess");
+            if(validAction == null){
+              clog("isnull");
+              validAction =_=>{relocate(locate.admin.session,{target:locate.admin.target.dashboard})};
+            }
+            validAction();
+          }
+        })
+        .catch((error) => {
+          clog("error in admin validation");
+          snackBar(getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),"Report");
+        });
+    }break;
+    case client.teacher:{
+      postData(post.teacher.sessionValidate)
+        .then((result) => {
+          if (result.event == code.auth.SESSION_INVALID) {
+            invalidAction();
+          } else {
+            if(validAction == null){
+              validAction =_=>{relocate(locate.teacher.session,{target:locate.teacher.target.today})}
+            }
+            validAction();
+          }
+        })
+        .catch((error) => {
+          clog("error in teacher validation");
+          snackBar(
+            getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+            "Report",
+            false
+          );
+        });
+    }break;
+    default:{
+      clog("in target default");
+      if(validAction == null){
+        switch (clientType) {
+          case client.admin: {validAction =_=>{relocate(locate.admin.session,{target:locate.admin.target.dashboard})}}break;
+          case client.teacher:{validAction =_=>{relocate(locate.teacher.session,{target:locate.teacher.target.today})}}break;
+        }
       }
-    })
-    .catch((error) => {
-      snackBar(
-        getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
-        "Report",
-        false
-      );
-    });
+      checkSessionValidation(client.admin,null,_=>{
+        checkSessionValidation(client.teacher,null,_=>{
+          invalidAction()
+        });
+      });
+    }
+  }
 };
 
 let receiveSessionData = (

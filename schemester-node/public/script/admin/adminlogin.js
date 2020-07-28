@@ -16,8 +16,7 @@ class AdminLogin{
       this.target = 'dashboard';
     }
     
-    this.back.addEventListener(click,_=> {showLoader();relocate(locate.root)});
-
+    this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     this.emailField.validate(_=>{this.passField.inputFocus()});
     this.passField.validate(_=>{this.uiidField.inputFocus()});
     this.uiidField.validate();

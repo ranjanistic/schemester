@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+
 class Administrator{
     constructor(){
         this.collection = "0administrators";
