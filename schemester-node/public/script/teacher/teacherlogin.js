@@ -15,57 +15,6 @@ class TeacherLogin{
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.proceed, !show);
   }
-  
-
-  handleAuthResult=(result)=>{
-    switch (result.event) {
-      case code.auth.AUTH_SUCCESS:{
-        this.emailField.showValid();
-        this.passField.showValid();
-        this.uiidField.showValid();
-        saveUserLocally(result.user);
-
-        relocate(locate.adminDashPage,{
-          u:result.uid,
-          target:result.target
-        });
-      }break;
-      case code.auth.WRONG_PASSWORD:{
-        this.passField.showError(constant.nothing);
-        show(this.forgotPassword);
-        this.proceed.innerHTML = "Retry";
-      }break;
-      case code.auth.WRONG_UIID:{
-        this.uiidField.showError("Incorrect UIID.");
-      }break;
-      case code.auth.REQ_LIMIT_EXCEEDED:{
-        snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
-        this.proceed.textContent = "Disabled";
-      }break;
-      case code.auth.USER_NOT_EXIST:{
-        this.emailField.showError("Account not found.");
-        this.proceed.textContent = "Retry";
-        snackBar("Try registering a new account?","Create Account",true,_=>{registrationDialog(true,this.emailField.getInput(),this.uiidField.getInput())})
-      }break;
-      case code.auth.EMAIL_INVALID:{
-        validateTextField(this.emailField,validType.email);
-      }break;
-      case code.auth.ACCOUNT_RESTRICTED:{
-        this.proceed.textContent = "Retry";
-        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)});
-      }break;
-      case code.auth.AUTH_REQ_FAILED:{
-        this.proceed.textContent = "Retry";
-        snackBar("Request failed.", null, false);
-      }break;
-      default: {
-        this.proceed.textContent = "Retry";
-        show(this.forgotPassword);
-        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
-      }
-    }
-    this.loader(false);
-  }
 }
 
 
@@ -216,6 +165,7 @@ class Email{
 
 class Password{
   constructor(){
+    this.view = getElement("workbox");
     this.previous = getElement("previous");
     this.proceed = getElement("proceed");
     this.logInLoader = getElement("loginLoader");
@@ -231,15 +181,15 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,getEmail())}, false);
+    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.getEmail())}, false);
     this.previous.onclick = _=>{
       this.passField.hide();
       new Email();
     };
     this.proceed.onclick =_=>{
-      if(!this.passField.isValid()){
-        return this.passField.validateNow();
-      }
+      this.passField.validateNow();
+      if(!this.passField.isValid())return;
+      hide(this.forgotPassword);
       this.loader();
       this.passwordProcedure(this.passField.getInput());
     };
@@ -253,14 +203,7 @@ class Password{
       target:this.target
     }).then(response=>{
       clog(response);
-      if(response.event == code.auth.AUTH_SUCCESS){
-        clog("uess");
-      }
-      //save response.teacher values to localstorage.
-      //show verification dialog if not verified (response.teacher.verified), and proceed further, and only after verfication,
-      //take the user to dashboard(today schedule page for teachers), if schedule exists in teacherschedule (for users.teachers),
-      // else redirect/relocate to schedule filler, so user itself shall add their schedule, and after fulfilling total week schedule
-      //proceed towards session today/fullweek view etc.
+      this.handleAuthResult(response);
       this.loader(false);
     }).catch(e=>{
       snackBar(e,null,false);
@@ -275,7 +218,54 @@ class Password{
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.proceed, !show);
+    opacityOf(this.view,show?0.5:1);
   }
+
+  
+  handleAuthResult=(result)=>{
+    switch (result.event) {
+      case code.auth.AUTH_SUCCESS:{
+        showLoader();
+        saveUserLocally(result.user);
+        relocate(locate.teacher.session,{
+          u:result.user.uid,
+          target:result.target
+        });
+      }break;
+      case code.auth.WRONG_PASSWORD:{
+        this.passField.showError(constant.nothing);
+        show(this.forgotPassword);
+        this.proceed.innerHTML = "Retry";
+      }break;
+      case code.inst.INSTITUTION_NOT_EXISTS:{
+        localStorage.clear();
+        location.reload();
+      }break;
+      case code.auth.EMAIL_INVALID:{
+        this.previous.click();
+      }break;
+      case code.auth.REQ_LIMIT_EXCEEDED:{
+        snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
+        this.proceed.textContent = "Disabled";
+      }break;
+      case code.auth.ACCOUNT_RESTRICTED:{
+        this.proceed.textContent = "Retry";
+        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)
+      });
+      }break;
+      case code.auth.AUTH_REQ_FAILED:{
+        this.proceed.textContent = "Retry";
+        snackBar("Request failed.", null, false);
+      }break;
+      default: {
+        this.proceed.textContent = "Retry";
+        show(this.forgotPassword);
+        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
+      }
+    }
+    this.loader(false);
+  }
+
 }
 
 window.onload =_=> window.app = new TeacherLogin();

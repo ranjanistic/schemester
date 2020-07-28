@@ -11,7 +11,7 @@ class Register {
     this.stage1Loader = getElement("stage1load");
     this.stage2Loader = getElement("stage2load");
     this.logout.onclick = () => {
-      finishSession();
+      finishSession(client.admin);
     };
   }
 }
@@ -405,12 +405,6 @@ class Stage2 {
                     }
                   )
                 );
-                // finish.onButtonClick(0, (_) => {
-
-                // });
-                // finish.onButtonClick(1, (_) => {
-
-                // });
                 finish.show();
               }
               break;

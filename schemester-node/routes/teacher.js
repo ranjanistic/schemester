@@ -41,6 +41,13 @@ router.post("/auth/login",async (req, res) => {
     })
 });
 
+router.post("/auth/logout", (_, res) => {
+  session.finish(res).then((response) => {
+    let result = response;
+    return res.json({ result });
+  });
+});
+
 router.post("/auth/signup", async (req, res) => {
   let result = code.event(code.auth.ACCOUNT_CREATION_FAILED);
   clog(req.body);
@@ -79,7 +86,7 @@ router.get("/session*", async (req, res) => {
             });
           } else {
             let teacher;
-            const found = inst.users.teacher.some((user,_)=>{
+            const found = inst.users.teachers.some((user,_)=>{
               if(user.id == _id){
                 teacher = getTeacherShareData(user);
                 return true;
@@ -91,11 +98,20 @@ router.get("/session*", async (req, res) => {
               });
               return;
             }
+            if(false){//schedule is not present for this teacher
+              data.target = view.teacher.target.addschedule;
+              res.render(view.teacher.getViewByTarget(data.target),{adata:{},teacher,inst})
+            } else {//schedule is present yet data filler view? No, show dashboard(today view) instead.
+              if(data.target==view.teacher.target.addschedule){
+                return res.redirect(toLogin(view.teacher.target.today));
+              }
+            }
             clog(teacher);
             try{
-              res.render(view.teacher.getViewByTarget(data.target,{teacher}));
+              res.render(view.teacher.getViewByTarget(data.target),{teacher,inst});
             }catch(e){
               clog(e);
+              data.target = view.teacher.target.today;
               res.redirect(toLogin(data.target));
             }
           }
@@ -107,9 +123,9 @@ router.get("/session*", async (req, res) => {
 
 const getTeacherShareData = (data = {}) => {
   return {
-    [sessionUID]: data.id,
+    [session.sessionUID]: data.id,
     username: data.username,
-    [sessionID]: data.teacherID,
+    [session.sessionID]: data.teacherID,
     createdAt: data.createdAt,
     verified: data.verified,
     vlinkexp:data.vlinkexp

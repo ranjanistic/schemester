@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Today · Schemester</title>
+        <title>Schedule · Schemester</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -14,17 +14,15 @@
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/main.js"></script>
-        <script src="/script/teacher/teacherdash.js"></script>
     </head>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root,{client:client.teacher})">
-            <span id="greeting">Today</span>
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
+            <span>This session</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
-            <button class="neutral-button fmt-right" id="logout">Logout</button>
         </div>
         <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
-            <%= teacher %>
+            <%= JSON.stringify(teacher) %>
         </div>
     </body>
 </html>

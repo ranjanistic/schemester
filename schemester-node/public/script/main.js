@@ -1188,7 +1188,7 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
             },
             () => {
               confirmLogout.loader();
-              finishSession((_) => {
+              finishSession(client.admin,(_) => {
                 registrationDialog(true);
               });
             }
@@ -1335,7 +1335,7 @@ let getUserLocally = async () => {
         clog("the response");
         clog(response);
         if (response.event == code.auth.SESSION_INVALID) {
-          finishSession((_) => {
+          finishSession(client.admin,(_) => {
             relocate(locate.root);
           });
         } else {
@@ -1792,10 +1792,12 @@ let validateTextField = (
 };
 
 let finishSession = (
+  clientType,
   afterfinish = () => {
     relocate(locate.root);
   }
 ) => {
+  
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       localStorage.clear();
@@ -1803,7 +1805,7 @@ let finishSession = (
       afterfinish();
     } else {
       snackBar("Failed to logout", "Try again", false, (_) => {
-        finishSession();
+        finishSession(clientType);
       });
     }
   });

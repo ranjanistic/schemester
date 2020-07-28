@@ -68,8 +68,8 @@ class Management {
       click,
       (_) => {
         showLoader();
-        finishSession((_) => {
-          relocate(locate.adminLoginPage, { target: "manage" });
+        finishSession(client.admin,(_) => {
+          relocate(locate.admin.login, { target: locate.admin.target.manage });
         });
       },
       false

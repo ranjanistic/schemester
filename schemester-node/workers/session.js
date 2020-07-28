@@ -11,6 +11,8 @@ class Session {
     this.adminsessionsecret = "adminschemesterSecret2001";
     this.teachersessionsecret = "teacherschemesterSecret2001";
     this.studentsessionsecret = "studentschemesterSecret2001";
+    this.sessionID = "id",
+    this.sessionUID = "uid";
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 7 * 86400;//days*seconds/day
   }

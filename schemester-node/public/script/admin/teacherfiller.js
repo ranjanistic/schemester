@@ -13,9 +13,8 @@ class TeacherFiller {
       this.next = getElement("nextSchedule");
       this.nloader = getElement("nextLoader");
       this.load(false);
-      this.totalDays = Number.parseInt(getElement("daysInWeek").innerHTML);
+      this.totalDays = String(getElement("daysInWeek").innerHTML).split(',');
       this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
-      this.firstDay = getElement("startDay").innerHTML;
 
       this.dayCount = constant.weekdays.indexOf(this.firstDay);
       
@@ -83,7 +82,7 @@ class TeacherFiller {
         target:'teacher',
       }).then(response=>{
         if(response.event == code.inst.SCHEDULE_UPLOADED){
-          if(this.dayCount<this.totalDays){
+          if(this.dayCount<this.totalDays.length){
             this.dayCount++;
             this.dayView.innerHTML = constant.weekdays[this.dayCount];
             this.clearForm();

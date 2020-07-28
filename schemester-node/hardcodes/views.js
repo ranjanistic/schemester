@@ -62,6 +62,7 @@ class TeacherViews{
         this.today = 'teacher/teacher_dash.ejs';
         this.settings = 'teacher/teacher_settings.ejs';
         this.addschedule = 'admin/teacher_filler.ejs';
+        this.fullschedule = 'teacher/full_schedule.ejs'
         class Target {
             constructor() {
               this.today = "today";
@@ -77,7 +78,7 @@ class TeacherViews{
         switch(target){
             case this.target.today:return this.today;
             case this.target.settings:return this.settings;
-            case this.target.fullweek:return this.addschedule;
+            case this.target.fullweek:return this.fullschedule;
             case this.target.addschedule:return this.addschedule;
             default:throw "viewnotfound";
         }
