@@ -1,28 +1,27 @@
 class TeacherFiller {
     constructor() {
       sessionStorage.clear();
+      this.data = new ReceiveData();
       this.view = getElement("workbox");
-
-      this.teacherIDField = new TextInput("teacherEmailField","teacherEmail","teacherEmailError",validType.email);
-      this.teacherID = getElement("teacherEmailView");
-      show(this.teacherIDField.input);
-      hide(this.teacherID);
-
-      this.dayView = getElement("teacherDay");
-
       this.next = getElement("nextSchedule");
       this.nloader = getElement("nextLoader");
       this.load(false);
-      this.totalDays = String(getElement("daysInWeek").innerHTML).split(',');
-      this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
-
-      this.dayCount = constant.weekdays.indexOf(this.firstDay);
       
+      if(this.data.isAdmin){
+        this.teacherIDField = new TextInput("teacherEmailField","teacherEmail","teacherEmailError",validType.email);
+        this.teacherID = getElement("teacherEmailView");
+      }
 
-      this.teacherClass = Array(this.totalPeriods);
-      this.teacherSubject = Array(this.totalPeriods);
+      this.dayCaption = getElement("teacherDayCaption");
+      this.dayView = getElement("teacherDay");
+      this.dayCount = 0;
+      this.setDayCaption();
+      this.setDayView();
 
-      for(let i = 0;i<this.totalPeriods;i++){
+      this.teacherClass = Array(this.data.totalPeriods);
+      this.teacherSubject = Array(this.data.totalPeriods);
+
+      for(let i = 0;i<this.data.totalPeriods;i++){
         this.teacherClass[i] = new TextInput(
           `teacherClassField${i}`,
           `teacherClass${i}`,
@@ -37,7 +36,7 @@ class TeacherFiller {
         );
       }
 
-      for(let i = 0;i<this.totalPeriods;i++){
+      for(let i = 0;i<this.data.totalPeriods;i++){
         this.teacherClass[i].validate(_=>{
           if(i+1!=this.totalPeriods){
             this.teacherSubject[i].inputFocus();
@@ -51,24 +50,35 @@ class TeacherFiller {
       }
       
       this.next.onclick =_=>{
-        if(this.dayCount == constant.weekdays.indexOf(this.firstDay)){
-          if(!this.teacherIDField.isValid()){
-            this.teacherIDField.validateNow();
-            return;
+        if(this.dayCount == 0){
+          if(this.data.isAdmin){
+            if(!this.teacherIDField.isValid()){
+              return this.teacherIDField.validateNow();
+            }
+            sessionStorage.setItem('teacherID',this.teacherIDField.getInput());
           }
-          sessionStorage.setItem('teacherID',this.teacherIDField.getInput());
         }
         this.validateDaySchedule(_=>{
-            this.uploadSchedule();
+          if(this.data.isAdmin){
+            this.uploadScheduleByAdmin();
+          } else {
+            this.uploadScheduleByTeacher();
+          }
         })
       }
+    }
+    setDayCaption(){
+      this.dayCaption.innerHTML = `Day ${this.dayCount+1} of ${this.data.totalDays.length}`
+    }
+    setDayView(){
+      this.dayView.innerHTML = constant.weekdays[Number(this.data.totalDays[this.dayCount])]
     }
     load(show = true){
       visibilityOf(this.next,!show);
       visibilityOf(this.nloader,show);
     }
     clearForm(){
-      for(let i=0;i<this.totalPeriods;i++){
+      for(let i=0;i<this.data.totalPeriods;i++){
         this.teacherClass[i].setInput(constant.nothing);
         this.teacherSubject[i].setInput(constant.nothing);
         this.teacherClass[i].normalize();
@@ -76,23 +86,34 @@ class TeacherFiller {
       }
     }
 
-    uploadSchedule = () =>{
+    uploadScheduleByTeacher = ()=>{
+      //todo
+    }
+    uploadScheduleByAdmin = () =>{
+
       postData('/admin/schedule',{
         action:'upload',
         target:'teacher',
+        teacherID:sessionStorage.getItem('teacherID'),
+        data:{
+          //todo
+        }
       }).then(response=>{
         if(response.event == code.inst.SCHEDULE_UPLOADED){
-          if(this.dayCount<this.totalDays.length){
-            this.dayCount++;
-            this.dayView.innerHTML = constant.weekdays[this.dayCount];
+          this.dayCount++;
+          if(this.dayCount<this.data.totalDays.length){
+            this.setDayCaption();
+            this.setDayView();
             this.clearForm();
-            hide(this.teacherIDField.input);
-            show(this.teacherID);
-            this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
-            this.teacherIDField.activate();
+            if(this.data.isAdmin){
+              hide(this.teacherIDField.input);
+              show(this.teacherID);
+              this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
+              this.teacherIDField.activate();
+            }
             this.load(false);
           } else {
-            new ScheduleComplete(sessionStorage.getItem('teacherID'));
+            new ScheduleComplete(this.data);
           }
         } else {
           if(!navigator.onLine){
@@ -110,15 +131,15 @@ class TeacherFiller {
     }
     validateDaySchedule = (afterValidate =_=>{})=>{
       let valid = true;
-      for(let i=0;i<this.totalPeriods;i++){
+      for(let i=0;i<this.data.totalPeriods;i++){
         if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
           this.teacherClass[i].validateNow(_=>{
-            if(i!=this.totalPeriods){
+            if(i!=this.data.totalPeriods){
               this.teacherSubject[i].inputFocus();
             }
           });
           this.teacherSubject[i].validateNow(_=>{
-            if(i+1!=this.totalPeriods){
+            if(i+1!=this.data.totalPeriods){
               this.teacherClass[i+1].inputFocus();
             }
           });
@@ -127,7 +148,7 @@ class TeacherFiller {
       }
       if(valid){
         this.load();
-        for(let i=0;i<this.totalPeriods;i++){
+        for(let i=0;i<this.data.totalPeriods;i++){
           sessionStorage.setItem(this.teacherClass[i].getInput(),this.teacherSubject[i].getInput());
           this.teacherClass[i].activate();
           this.teacherSubject[i].activate();
@@ -137,10 +158,25 @@ class TeacherFiller {
     }
 }
 
+class ReceiveData{
+  constructor(){
+    this.isAdmin = getElement("isAdmin").innerHTML?true:false;
+    this.uiid = getElement("uiid").innerHTML;
+    this.totalDays = String(getElement("daysInWeek").innerHTML).split(',');
+    this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
+    if(!this.isAdmin){
+      this.teacherName = getElement("teachername").innerHTML;
+      this.teacherEmail = getElement("teacheremail").innerHTML;
+      this.teacherVerified = getElement("teacherverfied").innerHTML=='true'?true:false;
+      this.teacherid = getElement("teacherID").innerHTML;
+    }
+  }
+}
+
 class ScheduleComplete{
-  constructor(teacherID){
+  constructor(data){
     this.view = getElement("workbox");
-    this.view.innerHTML = this.content(teacherID);
+    this.view.innerHTML = data.isAdmin?this.content(sessionStorage.getItem('teacherID')):data.teacherName;
     this.addAnother = getElement("addAnother");
     this.exit = getElement("exitadder");
 

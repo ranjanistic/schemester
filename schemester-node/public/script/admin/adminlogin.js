@@ -1,6 +1,8 @@
 
 class AdminLogin{
   constructor(){
+    value.backbluecovered = true;
+    this.view = getElement("workbox");
     this.emailField = new TextInput("email_fieldset","adminemail","emailError",validType.email);
     this.passField = new TextInput("password_fieldset","adminpassword","passError",validType.nonempty);
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",validType.nonempty);
@@ -32,6 +34,7 @@ class AdminLogin{
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.logInButton, !show);
+    opacityOf(this.view,show?0.5:1);
   }
   loginAdmin =(email,password, uiid)=>{
     if(!(stringIsValid(email,validType.email)&&stringIsValid(password)&&stringIsValid(uiid))){

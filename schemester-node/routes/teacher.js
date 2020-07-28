@@ -98,9 +98,9 @@ router.get("/session*", async (req, res) => {
               });
               return;
             }
-            if(false){//schedule is not present for this teacher
+            if(true){//todo: if schedule is not present for this teacher
               data.target = view.teacher.target.addschedule;
-              res.render(view.teacher.getViewByTarget(data.target),{adata:{},teacher,inst})
+              return res.render(view.teacher.getViewByTarget(data.target),{adata:{},teacher,inst})
             } else {//schedule is present yet data filler view? No, show dashboard(today view) instead.
               if(data.target==view.teacher.target.addschedule){
                 return res.redirect(toLogin(view.teacher.target.today));

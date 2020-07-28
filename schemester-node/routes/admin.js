@@ -78,6 +78,7 @@ router.get("/session*", (req, res) => {
               }
             }catch(e){
               clog(e);
+              data.target = view.admin.target.dashboard;
               res.redirect(toLogin(data.target));
             }
           }
@@ -116,7 +117,7 @@ router.post("/account/action", (req, res) => {
 router.post("/session/validate", (req, res) => {
   let result;
   const { getuser } = req.body;
-  clog("getuser=");
+  clog("getuser="); 
   clog(getuser);
   if (getuser) {
     clog("getuser");
@@ -359,10 +360,7 @@ router.post('/schedule',(req,res)=>{
       return result;
     }
   }).catch(error=>{
-    result = {
-      event:code.inst.SCHEDULE_UPLOAD_FAILED,
-      msg:error
-    };
+    result = code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED,error);
     return res.json({result});
   })
 })

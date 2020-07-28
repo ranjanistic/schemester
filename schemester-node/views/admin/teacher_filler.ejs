@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html>
-    <title>Teacher Filler · Schemester</title>
+    <title>
+        <% if (adata.isAdmin) { %>
+            Teacher Filler · Schemester
+        <% } else { %>
+            Schedule Filler · Schemester
+        <% } %>
+    </title>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" id="viewportTag">
@@ -22,13 +28,13 @@
                 <span id="greeting">Add Teacher</span>
             <% } else { %>
                 <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
-                <span id="greeting">Add your schedule</span>
+                <span id="greeting">Create schedule</span>
             <% } %>
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
                     <div class="fmt-padding" id="settingsButton">Settings</div>
-                    <div class="fmt-padding" id="logoutAdminButton" onclick="finishSession()">Logout</div>
+                    <div class="fmt-padding" id="logoutAdminButton">Logout</div>
                 </div>
             </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
@@ -38,42 +44,45 @@
             <div class="container" id="workbox">
                 <div class="fmt-row">
                     <div class="fmt-col fmt-half">
-                        <fieldset class="text-field-active" id="teacherEmailField">
-                            <% if (adata.isAdmin) { %>
-                            <legend class="field-caption">Email address of teacher</legend>
-                            <% } else { %>
-                                <legend class="field-caption">Your email address</legend>
-                            <% } %>  
-                            <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
-                            <span id="teacherEmailView" style="font-size:24px"></span>
-                            <span class="fmt-right error-caption"  id="teacherEmailError"></span>
-                        </fieldset>
+                        <% if (adata.isAdmin) { %>
+                            <fieldset class="text-field" id="teacherEmailField">
+                                <legend class="field-caption">Email address of teacher</legend>
+                                <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
+                                <span id="teacherEmailView" style="font-size:24px"></span>
+                                <span class="fmt-right error-caption"  id="teacherEmailError"></span>
+                            </fieldset>
+                        <% } else { %>
+                            <div class="fmt-left">
+                            <div class="active group-heading"><%= teacher.username %></div>
+                            <div class="group-text"><%= teacher.id %></div>
+                            </div>
+                        <% } %>  
                     </div>
                     <div class="fmt-col fmt-half">
-                    <div class="fmt-right" style="padding:12px">
-                        <button class="positive-button" id="nextSchedule">Next</button>
-                        <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
-                    </div>
-                    <div class="fmt-half fmt-right">
+                    <div class="fmt-half">
                         <fieldset class="text-field-active" id="teacherDayField">
-                            <legend class="field-caption">Day</legend>
+                            <legend class="field-caption" id="teacherDayCaption">Day</legend>
                             <!-- <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail"> -->
                             <span id="teacherDay" style="font-size:24px"><%= inst.default.timings.startDay %> </span>
                             <span class="fmt-right error-caption"  id="teacherDayError"></span>
                         </fieldset>
                     </div>
+                    <div class="fmt-right" style="padding:12px">
+                        <button class="positive-button" id="nextSchedule">Save & Next</button>
+                        <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
+                    </div>
                     </div>
                 </div>
                 <br/>
 
-                <div class="fmt-row group-heading" style="color:#216bf3;">
+                <div class="fmt-row group-heading active">
                     <div class="fmt-col" style="width: 20%;">
                         Period
                     </div>
-                    <div class="fmt-col n" style="width: 30%;">
+                    <div class="fmt-col" style="width: 30%;">
                         Class
                     </div>
-                    <div class="fmt-col -blue" style="width: 50%;">
+                    <div class="fmt-col" style="width: 50%;">
                         Subject
                     </div>
                 </div>
@@ -82,8 +91,16 @@
 
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
                         <div class="fmt-row" style="margin-bottom:4px">
-                            <div class="fmt-col fmt-center" style="width:20%;padding:18px;color:#216bf3">
-                                <%= index+1 %>
+                            <div class="fmt-col fmt-center active" style="width:20%;padding:18px;">
+                                <% if(index+1>3) {%>
+                                    <%= index+1 %><sup>th</sup>
+                                <% } else if(index+1 == 1) {%>
+                                    <%= index+1 %><sup>st</sup>
+                                <% } else if(index+1 == 2) {%>
+                                    <%= index+1 %><sup>nd</sup>
+                                <% } else if(index+1 == 3) {%>
+                                    <%= index+1 %><sup>rd</sup>
+                                <% } %>
                             </div>
                             <div class="fmt-col fm-purple" style="width:30%">
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">
@@ -109,9 +126,16 @@
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
         <span hidden>
+            <span id="isAdmin"><%= adata.isAdmin %></span>
+            <span id="uiid"><%= inst.uiid %></span>
             <span id="periodsInDay"><%= inst.default.timings.periodsInDay %></span>
-            <span id="startDay"><%= inst.default.timings.startDay %></span>
             <span id="daysInWeek"><%= inst.default.timings.daysInWeek %></span>
+            <% if(!adata.isAdmin) { %> 
+                <span id="teachername"><%= teacher.username %></span>
+                <span id="teacheremail"><%= teacher.id %></span>
+                <span id="teacherverfied"><%= teacher.verified %></span>
+                <span id="teacherID"><%= teacher.uid %></span>
+            <% } %>
         </span>
     </body>
 </html>

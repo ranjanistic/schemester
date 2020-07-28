@@ -120,22 +120,22 @@ class Teachers {
     var teacherperiodschema = new Schema({
       number: { type: Number },
       classname: { type: String },
-      hold: { type: Boolean, default: true },
       subject: { type: String },
+      hold: { type: Boolean, default: true },
     },{_id:false}); //each period
 
     var teacherdayschema = new Schema({
-      dayname: { type: String },
-      period: teacherperiodschema,
+      dayIndex: { type: Number },
+      period: [teacherperiodschema],
     },{_id:false}); //each day
 
     var scheduleteacherschema = new Schema({
       teacherID: { type: String },
-      day: teacherdayschema,
+      day: [teacherdayschema],
     },{_id:false}); //each teacher
 
     this.teacherscheduleschema = new Schema({
-      teacher: scheduleteacherschema,
+      teacher: [scheduleteacherschema],
     },{_id:false});
   }
 }
