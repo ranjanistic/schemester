@@ -69,9 +69,8 @@ class AdminLogin{
         this.passField.showValid();
         this.uiidField.showValid();
         saveUserLocally(result.user);
-
         relocate(locate.adminDashPage,{
-          u:result.uid,
+          u:result.user.uid,
           target:result.target
         });
       }break;

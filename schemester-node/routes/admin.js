@@ -1,3 +1,6 @@
+const bodyParser = require("body-parser");
+const { ObjectId } = require("mongodb");
+
 const express = require("express"),
   router = express.Router(),
   cookieParser = require("cookie-parser"),
@@ -20,8 +23,12 @@ router.get("/", function (req, res) {
 });
 
 router.get("/auth/login*", (req, res) => {
+  clog("admin login get");
   session.verify(req,sessionsecret).then((response) => {
+    clog("verification");
+    clog(response);
     if (!session.valid(response)) {
+      clog("invalid session");
       const autofill = req.query;
       res.render(view.admin.login, { autofill });
     } else {
@@ -34,39 +41,62 @@ router.get("/auth/login*", (req, res) => {
 
 router.get("/session*", (req, res) => {
   let data = req.query;
-  clog("response");
+  clog("admin session");
+  clog(data);
   session.verify(req,sessionsecret).then(async (response) => {
-    clog("verify" + jstr(response));
     if (!session.valid(response)) {
       clog("invalid session");
       res.redirect(toLogin(data.target));
     } else {
+      clog("valid session");
+      clog(response);
       try {
-        clog("verify" + jstr(response.user));
         if (data.u != response.user.id) {
+          clog("data.u != response.user.id");
           res.redirect(toLogin(data.target));
         } else {
-          clog("u = user.id");
-          const _id = response.user.id;
-          const user = await Admin.findOne({ _id });
-          if (!user) {
+          clog("data.u == response.user.id");
+          const query = {_id:ObjectId(response.user.id)};
+          clog(query);
+          const options = {
+            sort:0,
+            projection:{
+              _id:1,
+              uiid:1,
+              username:1,
+              email:1,
+              verified:1,
+              createdAt:1
+            }
+          }
+          const admin = await Admin.findOne(query);
+          clog(admin);
+          if (!admin) {
+            clog("no admin, finishing session");
             session.finish(res).then(response=>{
               if(response) res.redirect(toLogin(data.target));
             });
           } else {
-            clog(user);
-            let adata = getAdminShareData(user);
-            const uiid = adata.uiid;
-            let inst = await Institute.findOne({ uiid });
+            clog(admin);
+            let adata = getAdminShareData(admin);
+            clog("adata");
+            clog(adata);
+            const query = {uiid:adata.uiid}
+            let inst = await Institute.findOne(query);
             if (!inst) {
               clog("no inst registered");
               data.target = view.admin.target.register;
             } else {
+              clog("hasInst");
+              clog(inst);
               if(data.target==view.admin.target.register||data.target == undefined){
                 return res.redirect(toSession(adata.uid,view.admin.target.dashboard));
               }
             }
             try{
+              if(adata.verified == false){
+                return res.render(view.verification,{user:adata});
+              }
               switch(data.target){
                 case view.admin.target.manage:{
                   return res.render(view.admin.getViewByTarget(data.target),{ adata,inst,section:[data.section]});
@@ -205,14 +235,17 @@ router.post("/auth/login",
       return res.json({ result });
     }
     let result = { event: code.auth.AUTH_REQ_FAILED };
-    await session
-      .login(req, res, sessionsecret,Admin)
+    clog("inpost admin login");
+    session
+      .login(req, res, sessionsecret)
       .then((response) => {
-        clog("post login:" + jstr(response));
+        clog("post login");
+        clog(response);
         result = response;
         return res.json({ result });
       })
       .catch((error) => {
+        clog(error);
         result = { event: code.auth.AUTH_REQ_FAILED, msg: error };
         clog("post login:" + jstr(result));
         return res.json({ result });
@@ -345,15 +378,69 @@ router.post('/session/receiveinstitution',async (req,res)=>{
 
 router.post('/schedule',(req,res)=>{
   let result;
-  session.verify(req,sessionsecret).then(response=>{
+  session.verify(req,sessionsecret).then(async response=>{
     if(session.valid(response)){
-      switch(req.body.action){
-        case 'upload':{
-          clog("upload data");
-          clog(req.body.data);
-          result = code.event(code.inst.SCHEDULE_UPLOADED)
-          return res.json({result});
-        }
+      switch(req.body.target){
+        case 'teacher':{
+          switch(req.body.action){
+            case 'upload':{
+              clog("upload data");
+              clog(req.body);
+              let inst = await Institute.findOne({uiid:response.user.uiid});
+              if(!inst){
+                result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                return res.json({result});
+              }
+              Institute.findOneAndUpdate(
+                { uiid: response.user.uiid, "schedule.teachers.teacherID": req.body.teacherID },
+                {
+                  $set: {
+                    "schedule.teachers.day": req.body.data
+                  }
+                },{useFindAndModify:false},
+                function(err,doc) {
+                  clog(doc?doc:"no doc");
+                  clog(err?err:"no err");
+                  if(!doc){
+                    Institute.updateOne(
+                      { uiid: response.user.uiid},
+                      {
+                        $set: {
+                          "schedule.teachers":{
+                            teacherID:req.body.teacherID,
+                            day:req.body.data
+                          }
+                        }
+                      },
+                      function(err,doc) {
+                        clog(doc?doc:"no doc");
+                        clog(err?err:"no err");
+                      }
+                    );
+                  }
+                }
+              );
+              return;
+              let doc = await Institute.updateOne({uiid:response.user.uiid},
+                {
+                  $push:{
+                    "schedule.teachers":{
+                      teacherID:req.body.teacherID,
+                      day:req.body.data
+                    }
+                  }
+              });
+              clog(await doc);
+              if(await doc){
+                result = code.event(code.inst.SCHEDULE_UPLOADED)
+                return res.json({result});
+              }
+            }break;
+            case 'update':{
+
+            }break;
+          }
+        }break;
       }
     } else {
       result = code.event(code.auth.SESSION_INVALID);
@@ -510,7 +597,7 @@ const toLogin =(target = view.admin.target.dashboard,section = view.admin.sectio
 const getAdminShareData = (data = {}) => {
   return {
     isAdmin:true,
-    [sessionUID]: data.id,
+    [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.email,
     uiid: data.uiid,

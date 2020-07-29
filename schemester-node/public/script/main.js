@@ -1364,12 +1364,9 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
       switch (result.event) {
         case code.auth.ACCOUNT_CREATED:
           {
-            //loadingBox();
             clog(result.user);
             saveUserLocally(result.user);
-            if (!result.user.verified) {
-              accountVerificationDialog(true);
-            }
+            relocate(locate.admin.session,{target:locate.admin.target.register});
           }
           break;
         case code.auth.USER_EXIST:
@@ -1796,8 +1793,7 @@ let finishSession = (
   afterfinish = () => {
     relocate(locate.root);
   }
-) => {
-  
+) => {  
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       localStorage.clear();
@@ -1963,7 +1959,7 @@ let relocate = (path, data = null) => {
   window.location.replace(path);
 };
 
-let postData = async (url = String, data = {}) => {
+const postData = async (url = String, data = {}) => {
   const response = await fetch(url, {
     method: constant.post,
     mode: "same-origin",
@@ -1973,6 +1969,20 @@ let postData = async (url = String, data = {}) => {
   let res = await response.json();
   return await res.result;
 };
+
+const postJsonData = async(url = String,data = {}) =>{
+  const response = await fetch(url, {
+    method: constant.post,
+    mode: "same-origin",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  const content = await response.json();
+  return await content.result;
+}
 
 let refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;

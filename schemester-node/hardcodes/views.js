@@ -10,7 +10,7 @@ class View{
         this.offline = 'offline.ejs';
 
         this.userinvitaion = 'invitation.ejs';
-
+        this.verification = 'verification.ejs';
         this.admin = new AdminViews();
         this.teacher = new TeacherViews();
     }

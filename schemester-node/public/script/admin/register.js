@@ -256,7 +256,17 @@ class Stage2 {
 
     this.save = getElement("saveStage2");
   }
-
+  durationValid(){
+    const getNumeric=(value)=>{
+      return Number(String(value).replace(':',''))
+    }
+    let start = getNumeric(this.startTimeField.getInput());
+    let end = getNumeric(this.endTimeField.getInput());
+    let periods = Number(this.totalPeriodsField.getInput())
+    let pdur = Number(this.eachDurationField.getInput());
+    let bdur = Number(this.breakDurationField.getInput());
+    clog(((end - start)-bdur)/pdur);
+  }
   saveInstitution() {
     if (
       !(
@@ -308,17 +318,39 @@ class Stage2 {
     } else {
       this.saveLocally();
       let confirm = new Dialog();
+      let dindex = String(sessionStorage.getItem("totalDaysField")).split(',');
+      let days = constant.weekdays[Number(dindex[0])];
+      for(let i=1;i<dindex.length;i++){
+        days =`${days}, ${constant.weekdays[Number(dindex[i])]}`;
+      }
       confirm.setDisplay(
-        "Schedule",
-        `Proceed to create schedule for <b>${sessionStorage.getItem(
+        "Confirmation",
+        `<center>Proceed to create schedule for <b>${sessionStorage.getItem(
           "instname"
-        )}</b>?`
+        )}</b>?</center>
+        <br/>
+        <div class="questrial">
+        <ul>
+          <li>Administrator : <b>${sessionStorage.getItem("adname")}</b></li>
+          <li>Admin email address : <b>${sessionStorage.getItem("ademail")}</b></li>
+          <li>Admin contact number : <b>${sessionStorage.getItem("adphone")}</b></li>
+          <li>Institute email address : <b>${sessionStorage.getItem("instemail")}</b></li>
+          <li>Institute phone : <b>${sessionStorage.getItem("instphone")}</b></li>
+          <li>Day starts at: <b>${sessionStorage.getItem("startTimeField")} hours</b></li>
+          <li>Day ends at : <b>${sessionStorage.getItem("endTimeField")} hours</b></li>
+          <li>Break starts at : <b>${sessionStorage.getItem("breakStartField")} hours</b></li>
+          <li>Each period duration : <b>${sessionStorage.getItem("eachDurationField")} minutes</b></li>
+          <li>Break duration : <b>${sessionStorage.getItem("breakDurationField")} minutes</b></li>
+          <li>Periods in a day : <b>${sessionStorage.getItem("totalPeriodsField")}</b></li>
+          <li>Working days :<b>${days}</li>
+        <ul>
+        </div>`
       );
-      confirm.setBackgroundColor(colors.transparent, this.view);
+      //confirm.setBackgroundColor(colors.transparent, this.view);
       confirm.setDialogColor(colors.white);
       confirm.createActions(
-        Array("Confirm & Proceed", "Re-check"),
-        Array(actionType.active, actionType.warning)
+        Array("Confirm & Proceed", "Edit"),
+        Array(actionType.active, actionType.neutral)
       );
       confirm.onButtonClick(Array( (_) => {
         confirm.hide();
@@ -329,7 +361,7 @@ class Stage2 {
             "instname"
           )}'s (${sessionStorage.getItem(
             "uiid"
-          )})</b> schedule structure, please wait...`
+          )})</br> schedule structure, please wait...`
         );
         snackBar(
           `Your institution's UIID is, <b>${sessionStorage.getItem(
@@ -343,7 +375,7 @@ class Stage2 {
           adminemail: sessionStorage.getItem("ademail"),
           adminphone: sessionStorage.getItem("adphone"),
 
-          instname: sessionStorage.getItem("instname"),
+          instname:  sessionStorage.getItem("instname"),
           instemail: sessionStorage.getItem("instemail"),
           instphone: sessionStorage.getItem("instphone"),
 
@@ -600,6 +632,7 @@ window.onload = (_) => {
   //     clog(teacherSchedule);
   //   };
   // };
+
 };
 
 var teacherSchedule = [];

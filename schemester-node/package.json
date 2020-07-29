@@ -19,6 +19,7 @@
     "express-jwt": "^6.0.0",
     "express-validator": "^6.6.0",
     "jsonwebtoken": "^8.5.1",
+    "mongodb": "^3.5.9",
     "mongoose": "^5.9.21",
     "node-fetch": "^2.6.0",
     "nodejs-nodemailer-outlook": "^1.2.3",

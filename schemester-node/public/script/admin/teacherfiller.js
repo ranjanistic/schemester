@@ -38,12 +38,12 @@ class TeacherFiller {
 
       for(let i = 0;i<this.data.totalPeriods;i++){
         this.teacherClass[i].validate(_=>{
-          if(i+1!=this.totalPeriods){
+          if(i+1!=this.data.totalPeriods){
             this.teacherSubject[i].inputFocus();
           }
         });
         this.teacherSubject[i].validate(_=>{
-          if(i+1!=this.totalPeriods){
+          if(i+1!=this.data.totalPeriods){
             this.teacherClass[i+1].inputFocus();
           }
         });
@@ -60,7 +60,7 @@ class TeacherFiller {
         }
         this.validateDaySchedule(_=>{
           if(this.data.isAdmin){
-            this.uploadScheduleByAdmin();
+            this.uploadScheduleByAdmin(this.data.totalDays[this.dayCount]);
           } else {
             this.uploadScheduleByTeacher();
           }
@@ -89,16 +89,43 @@ class TeacherFiller {
     uploadScheduleByTeacher = ()=>{
       //todo
     }
-    uploadScheduleByAdmin = () =>{
-
-      postData('/admin/schedule',{
+    uploadScheduleByAdmin = (dayindex) =>{
+      // let teacer = [
+      //   {
+      //     teacherID:"",
+      //     days:[
+      //       {
+      //         dindex:"",
+      //         periods:[
+      //           {
+      //             class:"",
+      //             subject:""
+      //           },
+      //         ]
+      //       }
+      //     ]
+      //   },
+      // ]
+      let periods = Array();
+      for(let i=0;i<this.data.totalPeriods;i++){
+        periods.push({
+          classname:this.teacherClass[i].getInput(),
+          subject:this.teacherSubject[i].getInput()
+        });
+      }
+      clog(periods);
+      let data = {
+        dayIndex:Number(dayindex),
+        period:periods
+      }
+      clog(data);
+      postJsonData('/admin/schedule',{
         action:'upload',
         target:'teacher',
         teacherID:sessionStorage.getItem('teacherID'),
-        data:{
-          //todo
-        }
+        data:data
       }).then(response=>{
+        clog(response);
         if(response.event == code.inst.SCHEDULE_UPLOADED){
           this.dayCount++;
           if(this.dayCount<this.data.totalDays.length){

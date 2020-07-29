@@ -16,7 +16,6 @@ class Session {
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 7 * 86400;//days*seconds/day
   }
-
   verify = async (request, secret) => {
     let token = request.signedCookies[this.sessionKey];
     console.log("token:" + token);
@@ -48,15 +47,18 @@ class Session {
       case this.adminsessionsecret: {
         //admin login
         const { email, password, uiid, target } = request.body;
-        let user = await Admin.findOne({ email });
-        if (!user) return code.event(code.auth.USER_NOT_EXIST);
-        const isMatch = await bcrypt.compare(password, user.password);
+        const query = {email:email};
+        //clog(Admin.collectionName);
+        const admin = await Admin.findOne(query);
+        if (!admin) return code.event(code.auth.USER_NOT_EXIST)
+        clog(admin._id);
+        const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        if (uiid != user.uiid) return code.event(code.auth.WRONG_UIID);
+        if (uiid != admin.uiid) return code.event(code.auth.WRONG_UIID);
         const payload = {
           user: {
-            id: user.id,
-            uiid: user.uiid,
+            id: admin._id,
+            uiid: admin.uiid,
           },
         };
 
@@ -66,7 +68,7 @@ class Session {
         response.cookie(this.sessionKey, token, { signed: true });
         return {
           event: code.auth.AUTH_SUCCESS,
-          user: getAdminShareData(user),
+          user: getAdminShareData(admin),
           target: target,
         };
       }
@@ -150,34 +152,44 @@ class Session {
       case this.adminsessionsecret:
         {
           const { username, email, password, uiid } = request.body;
-          let user = await Admin.findOne({ email });
+          let user = await Admin.findOne({ email:email });
           if (user) return code.event(code.auth.USER_EXIST);
-          let inst = await Admin.findOne({ uiid });
+          let inst = await Admin.findOne({ uiid:uiid });
           if (inst) return code.event(code.server.UIID_TAKEN);
           clog("checks cleared");
-          user = new Admin({ username, email, password, uiid });
-          clog("got new user model");
+          //user = new Admin({ username, email, password, uiid });
+          //clog("got new user model");
           const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(password, salt);
-          await user.save(); //account created
-          clog("account created");
+          const epassword = await bcrypt.hash(password, salt);
+          const newAdmin = {
+            username:username,
+            email:email,
+            password:epassword,
+            uiid:uiid,
+            createAt:new Date().toUTCString(),
+            verified:false,
+            vlinkexp:0
+          }
+          const result = await Admin.insertOne(newAdmin);
+          if(result.insertedCount==0) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
+          //account created
+          clog("result");
+          const admin = result.ops[0];
           const payload = {
             user: {
-              id: user.id,
-              uiid: user.uiid,
+              id: admin._id,
+              uiid: admin.uiid,
             },
           };
-
-          let token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
+          const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
           clog("token:" + token);
           response.cookie(this.sessionKey, token, { signed: true });
           clog("cookie created");
           return {
             event: code.auth.ACCOUNT_CREATED,
-            user: getAdminShareData(user),
+            user: getAdminShareData(admin),
           };
         }
-        break;
       case this.teachersessionsecret:
         {
           const { username, email, password, uiid } = request.body;
@@ -292,7 +304,7 @@ module.exports = new Session();
 
 let getAdminShareData = (data = {}) => {
   return {
-    [sessionUID]: data.id,
+    [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.email,
     uiid: data.uiid,
@@ -303,7 +315,7 @@ let getAdminShareData = (data = {}) => {
 
 let getTeacherShareData = (data = {}) => {
   return {
-    [sessionUID]: data.id,
+    [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.teacherID,
     createdAt: data.createdAt,

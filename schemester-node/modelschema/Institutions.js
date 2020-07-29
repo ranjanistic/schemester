@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
+const database = require("../config/db");
 class Institution {
   constructor() {
+    this.Institute = database.collection('1institutions');
     this.institutions = "1institutions";
 
     var defaults = new Defaults();
@@ -11,11 +12,14 @@ class Institution {
     var teachers = new Teachers();
     var invite = new Invite();
 
+    var scheduleSchema = new Schema({
+      teachers:[teachers.teacherscheduleschema],
+      students:[schedule.scheduleschema],
+    },{_id:false});
     this.instSchema = new Schema({
       uiid: { type: String, unique : true },
       default: defaults.defaultSchema,
-      schedule: schedule.scheduleschema,
-      teacherSchedule: teachers.teacherscheduleschema,
+      schedule: scheduleSchema,
       users: users.userschema,
       invite:invite.invitationschema,
       active:{type:Boolean,default:false}
@@ -90,23 +94,22 @@ class Schedule {
     var sectionschema = new Schema({
       sectionname: { type: String, default:''},
       teacherID: { type: String },
-      hold: { type: Boolean, default: true },
       subject: { type: String },
+      hold: { type: Boolean, default: true },
     },{_id:false}); //each section
 
     var classschema = new Schema({
       classname: { type: String},
-      section: sectionschema,
+      section: [sectionschema],
     },{_id:false}); //each class
 
     var periodschema = new Schema({
-      number: { type: Number},
-      class: classschema,
+      class: [classschema],
     },{_id:false}); //each period
 
     var dayschema = new Schema({
-      dayname: { type: String },
-      period: periodschema,
+      dayIndex: { type: String },
+      period: [periodschema],
     },{_id:false}); //each day
 
     this.scheduleschema = new Schema({
@@ -118,7 +121,6 @@ class Schedule {
 class Teachers {
   constructor() {
     var teacherperiodschema = new Schema({
-      number: { type: Number },
       classname: { type: String },
       subject: { type: String },
       hold: { type: Boolean, default: true },
@@ -129,13 +131,9 @@ class Teachers {
       period: [teacherperiodschema],
     },{_id:false}); //each day
 
-    var scheduleteacherschema = new Schema({
+    this.teacherscheduleschema = new Schema({
       teacherID: { type: String },
       day: [teacherdayschema],
-    },{_id:false}); //each teacher
-
-    this.teacherscheduleschema = new Schema({
-      teacher: [scheduleteacherschema],
     },{_id:false});
   }
 }
@@ -156,4 +154,4 @@ class Invite{
   }
 }
 
-module.exports = new Institution().getModel();
+module.exports = new Institution().Institute;

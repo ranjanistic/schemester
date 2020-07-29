@@ -4,18 +4,17 @@ const express = require('express'),
     code = require('./hardcodes/events'),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
-    database = require("./config/db"),
     app = express();
 
 // Initiate Mongo Server
-database.getServer()
-.then(db=>{
-    console.log(`Connected: ${db.connection.name}`);  
-})
-.catch(error=>console.log(error));
+// database.getServer().then(db=>{
+//     clog(`Connected to: ${db.databaseName}`);
+// })
+// .catch(error=>console.log(error));
 
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(express.static('public'));
 
 app.use('/admin', admin);

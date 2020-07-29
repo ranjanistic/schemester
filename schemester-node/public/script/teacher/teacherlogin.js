@@ -78,6 +78,7 @@ class UIID{
         new Email();
       } else {
         this.uiidField.showError('No such institution');
+        localStorage.clear();
       }
       this.loader(false);
     }).catch(e=>{

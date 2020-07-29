@@ -111,6 +111,15 @@ class Codes{
                 this.LINK_CREATION_FAILED = 'invite/link-creation-failed';
                 this.LINK_DISABLED = 'invite/link-disabled';
             }
+        };
+        class ScheduleCodes{
+            constructor(){
+                this.SCHEDULE_EXISTS = 'schedule/schedule-exists';
+                this.SCHEDULE_CREATED = 'schedule/schedule-created';
+                this.SCHEDULE_NOT_EXIST = 'schedule/schedule-not-available';
+                this.SCHEDULE_NOT_CREATED = 'schedule/creation-failed';
+                this.SCHEDULE_UPDATED = 'schedule/update-sucess';
+            }
         }
         this.auth = new Authcodes();
         this.client = new Clientcodes();
@@ -119,6 +128,7 @@ class Codes{
         this.action  = new ActionCodes();
         this.inst = new InstitutionCodes();
         this.invite = new InvitationCodes();
+        this.schedule = new ScheduleCodes();
     }
     event(code){
         return {
