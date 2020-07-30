@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const database = require("../config/db");
+// setInterval(() => {
+//   database.collection('1institutions').countDocuments().then(value=>{
+//     console.log(value);
+//   })
+// }, 1000);
 class Institution {
   constructor() {
     this.Institute = database.collection('1institutions');
-    this.institutions = "1institutions";
-
     var defaults = new Defaults();
     var users = new Users();
     var schedule = new Schedule();

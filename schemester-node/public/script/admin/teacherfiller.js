@@ -1,3 +1,4 @@
+
 class TeacherFiller {
     constructor() {
       sessionStorage.clear();
@@ -50,6 +51,7 @@ class TeacherFiller {
       }
       
       this.next.onclick =_=>{
+        new Snackbar().hide();
         if(this.dayCount == 0){
           if(this.data.isAdmin){
             if(!this.teacherIDField.isValid()){
@@ -90,70 +92,36 @@ class TeacherFiller {
       //todo
     }
     uploadScheduleByAdmin = (dayindex) =>{
-      // let teacer = [
-      //   {
-      //     teacherID:"",
-      //     days:[
-      //       {
-      //         dindex:"",
-      //         periods:[
-      //           {
-      //             class:"",
-      //             subject:""
-      //           },
-      //         ]
-      //       }
-      //     ]
-      //   },
-      // ]
-      let periods = Array();
+      var periods = Array();
       for(let i=0;i<this.data.totalPeriods;i++){
         periods.push({
           classname:this.teacherClass[i].getInput(),
-          subject:this.teacherSubject[i].getInput()
+          subject:this.teacherSubject[i].getInput(),
+          hold:true
         });
       }
-      clog(periods);
-      let data = {
+      const data = {
         dayIndex:Number(dayindex),
         period:periods
       }
-      clog(data);
-      postJsonData('/admin/schedule',{
+      postJsonData(post.admin.schedule,{
         action:'upload',
         target:'teacher',
         teacherID:sessionStorage.getItem('teacherID'),
         data:data
       }).then(response=>{
         clog(response);
-        if(response.event == code.inst.SCHEDULE_UPLOADED){
-          this.dayCount++;
-          if(this.dayCount<this.data.totalDays.length){
-            this.setDayCaption();
-            this.setDayView();
-            this.clearForm();
-            if(this.data.isAdmin){
-              hide(this.teacherIDField.input);
-              show(this.teacherID);
-              this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
-              this.teacherIDField.activate();
-            }
-            this.load(false);
-          } else {
-            new ScheduleComplete(this.data);
-          }
-        } else {
-          if(!navigator.onLine){
-            snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
-              new Snackbar().hide();
-                this.next.click();
-            })
-          } else {
-            snackBar(`An error occurred:${response.event}`,'Report');
-          }
-        }
+        this.handleScheduleResponse(response);
+        this.load(false);
       }).catch(error=>{
-        snackBar(`Error:${error}`,'Report');
+        if(!navigator.onLine){
+          snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
+            new Snackbar().hide();
+            this.next.click();
+          });
+        } else {
+          snackBar(`Error:${error}`,'Report');
+        }
       });
     }
     validateDaySchedule = (afterValidate =_=>{})=>{
@@ -181,6 +149,41 @@ class TeacherFiller {
           this.teacherSubject[i].activate();
         }
         afterValidate();
+      }
+    }
+    handleScheduleResponse(response){
+      switch(response.event){
+        case code.schedule.SCHEDULE_CREATED:{
+          this.dayCount++;
+          if(this.dayCount<this.data.totalDays.length){
+            this.setDayCaption();
+            this.setDayView();
+            this.clearForm();
+            if(this.data.isAdmin){
+              hide(this.teacherIDField.input);
+              show(this.teacherID);
+              this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
+              this.teacherIDField.activate();
+            }
+          } else {
+            new ScheduleComplete(this.data);
+          }
+        }break;
+        case code.schedule.SCHEDULE_EXISTS:{
+          snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.active,_=>{
+            refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users});
+          });
+        }break;
+        default:{
+          if(!navigator.onLine){
+            snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
+              new Snackbar().hide();
+              this.next.click();
+            });
+          } else {
+            snackBar(`An error occurred:${response.event}`,'Report');
+          }
+        }
       }
     }
 }

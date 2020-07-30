@@ -21,6 +21,28 @@
         <script async type="text/javascript" src="/script/main.js"></script>
         <script async type="text/javascript" src="/script/admin/teacherfiller.js"></script>
     </head>
+    <%
+    addNumberSuffixHTML = function(number = Number){
+        var str = String(number)
+         switch (number) {
+          case 1: 
+          return number + "st"
+          case 2: 
+          return number + "nd"
+          case 3:
+          return number + "rd"
+          default:
+            if (number > 9) {
+                if (Number(str.charAt(str.length - 2)) == 1) {
+                    return number + "th";
+                } else {
+                    return (str.substring(0,str.length-1) +addNumberSuffixHTML(Number(str.charAt(str.length - 1))))
+                }
+            } else {
+                return number + "th";
+            }
+        }
+    }%>
     <body>
         <div id="topBar">
             <% if (adata.isAdmin) { %>
@@ -92,15 +114,7 @@
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
                         <div class="fmt-row" style="margin-bottom:4px">
                             <div class="fmt-col fmt-center active" style="width:20%;padding:18px;">
-                                <% if(index+1>3) {%>
-                                    <%= index+1 %><sup>th</sup>
-                                <% } else if(index+1 == 1) {%>
-                                    <%= index+1 %><sup>st</sup>
-                                <% } else if(index+1 == 2) {%>
-                                    <%= index+1 %><sup>nd</sup>
-                                <% } else if(index+1 == 3) {%>
-                                    <%= index+1 %><sup>rd</sup>
-                                <% } %>
+                                <%= addNumberSuffixHTML(index+1) %>
                             </div>
                             <div class="fmt-col fm-purple" style="width:30%">
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">

@@ -30,28 +30,29 @@ app.get('/home', (_req,res)=>{
     res.render(view.homepage);
 });
 
-app.get('/plans/',(_request,res)=>{
+app.get('/plans',(_request,res)=>{
     res.render(view.plans);
 });
 
 const clog =(msg)=>console.log(msg);
+
 app.get('/404', (_req, _res, next)=>{
     next();
 });
 app.get('/403', (_req, _res, next)=>{
-    var err = new Error('not allowed!');
-    err.status = 403;
-    next(err);
+    // var err = new Error('not allowed!');
+    // err.status = 403;
+    next();
 });
-app.get('/500', (_req, _res, next)=>{
-    next(new Error('keyboard cat!'));
+app.get('/500', (req, res, next)=>{
+    next();
 });
 
-app.use((req, res, _next)=>{
+app.use((req, res, next)=>{
     res.status(404);
     res.format({
         html: function () {
-        res.render('404', { url: req.url })
+        res.render(view.notfound, { url: req.url })
         },
         json: function () {
         res.json({ error: 'Not found' })
@@ -62,11 +63,11 @@ app.use((req, res, _next)=>{
     })
 });
 
-app.use((err, _req, res)=>{
+app.use((err, req, res)=>{
     res.status(err.status || 500);
-    res.render('500', { error: err });
+    res.render(view.servererror, { error: err });
 });
 
 app.listen(3000, _=> {
     console.log('listening on 3000');
-})
+});

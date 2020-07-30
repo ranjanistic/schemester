@@ -16,6 +16,8 @@ try {
   client.connect();
   const database = client.db(dbName);
   if(database)console.log("connected to " + database.databaseName);
+
+
   module.exports = database;
   // return await mongoose.connect(getLocalDBLink(), {
   //   useNewUrlParser: true,

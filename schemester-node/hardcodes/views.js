@@ -38,6 +38,7 @@ class AdminViews{
                 this.account = 'setting/account';
                 this.institute = 'setting/institute';
                 this.schedule = 'setting/schedule';
+                this.users = 'setting/users';
                 this.security = 'settting/security';
                 this.about = 'setting/about';
             }

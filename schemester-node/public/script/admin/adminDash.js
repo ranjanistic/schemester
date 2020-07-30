@@ -1,7 +1,6 @@
 //the admin dashboard script
 class Dashboard {
   constructor() {
-    
     this.dayInput = getElement("dayinput");
     this.dayDropdown = getElement("daydropdown");
     this.teacherChipToday = getElement("teacherRadioToday");
@@ -73,7 +72,6 @@ class NoDataView{
       type:'invitation',
       action:'create',
       target:target,
-      
     }).then((response)=>{
       clog("link generate response");
       clog(response);
@@ -202,8 +200,8 @@ class BaseView{
 window.onload = (_) => {
   window.fragment = new BaseView();
     try{
-      window.app = new Dashboard();
-    }catch{
       window.app =new NoDataView();
+    }catch{
+      window.app = new Dashboard();
     }
 };

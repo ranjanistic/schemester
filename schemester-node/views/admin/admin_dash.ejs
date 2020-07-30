@@ -16,6 +16,17 @@
         <script type="text/javascript" src="/script/main.js"></script>
         <script type="text/javascript" src="/script/admin/adminDash.js"></script>
     </head>
+    <%countObjects = function(object){
+            let i = 0;
+            for(let key in object){
+                i++;
+            }
+            return i;
+    };
+    isEmptyObject = function(object){
+        for(let key in object){return false;}
+        return true;
+    }%>
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
@@ -40,7 +51,6 @@
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
             <% if (inst.active) { %>
-            
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
                     <div class="fmt-row">
@@ -166,13 +176,13 @@
             </div>
             <% } else { %>
                 <div class="fmt-row">
-                <% if (inst.users.teachers.length>0) { %>
+                <% if (!isEmptyObject(inst.users.teachers)) { %>
                     <div class="fmt-col fmt-half fmt-padding">
                         <div class="fmt-center container fmt-padding">
                             <br/>
                             <span class="heading">Ready?</span>
                             <br/>
-                            <div class="questrial">So far, <a href="/admin/session?target=manage"><%= inst.users.teachers.length %> teachers</a> have joined the institution on Schemester.
+                            <div class="questrial">So far, <a href="/admin/session?target=manage&section=3"><%= countObjects(inst.users.teachers) %> teachers</a> have joined the institution on Schemester.
                                 <br/>Would you like to start scheduling now?
                             </div>
                             <br/>
@@ -187,12 +197,17 @@
                 <% } %>
                         <br/>
                         <span class="heading">Schedule waiting.</span>
-                        <br/>
+                        <% if (!isEmptyObject(inst.schedule.teachers)) { %>
+                            <br/>
+                            <div class="questrial">You have added schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:'locate.admin.target'})"><%= countObjects(inst.schedule.teachers) %> teachers</a>, of which <%= countObjects(inst.users.teachers) %> have accepted.</div> 
+                        <% } else { %>
+                            <br/>
+                        <% } %>
                         <div class="questrial">Add a teacher of <a href="/admin/session?target=manage"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
                         <br/>
                         <button class="positive-button" id="addteacher">Add Teachers</button>
                         <br/><br/>
-                        <% if (inst.users.teachers.length==0) { %>
+                        <% if (isEmptyObject(inst.users.teachers)) { %>
                             <span class="heading">Otherwise</span>
                             <br/>
                             <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
@@ -203,11 +218,11 @@
                             <br/><br/>
                         <% } %>
                     </div>
-                <% if (inst.users.teachers.length>0) { %>
+                <% if (!isEmptyObject(inst.users.teachers)) { %>
                     </div>
                 <% } %>
                 </div>
-                <% if (inst.users.teachers.length>0) { %>
+                <% if (!isEmptyObject(inst.users.teachers)) { %>
                     <div class="fmt-row container fmt-padding fmt-margin fmt-center">
                         <br/>
                         <span class="heading">Otherwise</span>
@@ -222,7 +237,6 @@
                 <% } %> 
             <% } %> 
         </div>
-
         <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
             id="todayDateTime" style="width:fit-content;right:0;">
         </span>

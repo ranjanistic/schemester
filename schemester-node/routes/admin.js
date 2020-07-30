@@ -24,26 +24,29 @@ router.get("/", function (req, res) {
 
 router.get("/auth/login*", (req, res) => {
   clog("admin login get");
-  session.verify(req,sessionsecret).then((response) => {
-    clog("verification");
-    clog(response);
-    if (!session.valid(response)) {
-      clog("invalid session");
-      const autofill = req.query;
-      res.render(view.admin.login, { autofill });
-    } else {
-      res.redirect(toSession(response.user.id,req.query.target));
-    }
-  }).catch(error=>{
-    res.render(view.servererror,{error});
-  });
+  session
+    .verify(req, sessionsecret)
+    .then((response) => {
+      clog("verification");
+      clog(response);
+      if (!session.valid(response)) {
+        clog("invalid session");
+        const autofill = req.query;
+        res.render(view.admin.login, { autofill });
+      } else {
+        res.redirect(toSession(response.user.id, req.query.target));
+      }
+    })
+    .catch((error) => {
+      res.render(view.servererror, { error });
+    });
 });
 
 router.get("/session*", (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
-  session.verify(req,sessionsecret).then(async (response) => {
+  session.verify(req, sessionsecret).then(async (response) => {
     if (!session.valid(response)) {
       clog("invalid session");
       res.redirect(toLogin(data.target));
@@ -56,57 +59,59 @@ router.get("/session*", (req, res) => {
           res.redirect(toLogin(data.target));
         } else {
           clog("data.u == response.user.id");
-          const query = {_id:ObjectId(response.user.id)};
-          clog(query);
-          const options = {
-            sort:0,
-            projection:{
-              _id:1,
-              uiid:1,
-              username:1,
-              email:1,
-              verified:1,
-              createdAt:1
-            }
-          }
-          const admin = await Admin.findOne(query);
-          clog(admin);
+          const admin = await Admin.findOne({
+            _id: ObjectId(response.user.id),
+          });
           if (!admin) {
             clog("no admin, finishing session");
-            session.finish(res).then(response=>{
-              if(response) res.redirect(toLogin(data.target));
+            session.finish(res).then((response) => {
+              if (response) res.redirect(toLogin(data.target));
             });
           } else {
             clog(admin);
             let adata = getAdminShareData(admin);
             clog("adata");
             clog(adata);
-            const query = {uiid:adata.uiid}
-            let inst = await Institute.findOne(query);
+            let inst = await Institute.findOne({ uiid: adata.uiid });
             if (!inst) {
               clog("no inst registered");
               data.target = view.admin.target.register;
             } else {
               clog("hasInst");
               clog(inst);
-              if(data.target==view.admin.target.register||data.target == undefined){
-                return res.redirect(toSession(adata.uid,view.admin.target.dashboard));
+              if (
+                data.target == view.admin.target.register ||
+                data.target == undefined
+              ) {
+                return res.redirect(
+                  toSession(adata.uid, view.admin.target.dashboard)
+                );
               }
             }
-            try{
-              if(adata.verified == false){
-                return res.render(view.verification,{user:adata});
+            try {
+              if (adata.verified == false) {
+                return res.render(view.verification, { user: adata });
               }
-              switch(data.target){
-                case view.admin.target.manage:{
-                  return res.render(view.admin.getViewByTarget(data.target),{ adata,inst,section:[data.section]});
+              switch (data.target) {
+                case view.admin.target.manage: {
+                  return res.render(view.admin.getViewByTarget(data.target), {
+                    adata,
+                    inst,
+                    section: [data.section],
+                  });
                 }
-                case view.admin.target.register:{
-                  return res.render(view.admin.getViewByTarget(data.target), { adata });
+                case view.admin.target.register: {
+                  return res.render(view.admin.getViewByTarget(data.target), {
+                    adata,
+                  });
                 }
-                default:res.render(view.admin.getViewByTarget(data.target), { adata, inst });
+                default:
+                  res.render(view.admin.getViewByTarget(data.target), {
+                    adata,
+                    inst,
+                  });
               }
-            }catch(e){
+            } catch (e) {
               clog(e);
               data.target = view.admin.target.dashboard;
               res.redirect(toLogin(data.target));
@@ -124,35 +129,39 @@ router.get("/session*", (req, res) => {
 
 //for account settings
 router.post("/account/action", (req, res) => {
-  session.verify(req,sessionsecret).then(response=>{
-    if(!session.valid(response)){
+  session.verify(req, sessionsecret).then((response) => {
+    if (!session.valid(response)) {
       res.redirect(`/admin/auth/login?target=manage`);
-    }else{
+    } else {
       switch (req.body.action) {
-        case code.action.CHANGE_PASSWORD:{
-
-        }break;
-        case code.action.CHANGE_ID:{
-
-        }break;
-        case code.action.ACCOUNT_DELETE:{
-
-        }break;
-        default:res.redirect(`/admin/auth/login?target=manage`);
+        case code.action.CHANGE_PASSWORD:
+          {
+          }
+          break;
+        case code.action.CHANGE_ID:
+          {
+          }
+          break;
+        case code.action.ACCOUNT_DELETE:
+          {
+          }
+          break;
+        default:
+          res.redirect(`/admin/auth/login?target=manage`);
       }
     }
-  })
+  });
 });
 
 router.post("/session/validate", (req, res) => {
   let result;
   const { getuser } = req.body;
-  clog("getuser="); 
+  clog("getuser=");
   clog(getuser);
   if (getuser) {
     clog("getuser");
     session
-      .userdata(req, Admin,sessionsecret)
+      .userdata(req, Admin, sessionsecret)
       .then((response) => {
         result = response;
         clog("postttt");
@@ -161,12 +170,12 @@ router.post("/session/validate", (req, res) => {
       })
       .catch((error) => {
         clog("errr");
-        result = code.eventmsg(code.server.DATABASE_ERROR,error);
-
+        result = code.eventmsg(code.server.DATABASE_ERROR, error);
       });
   } else {
     clog("just verify");
-    session.verify(req,sessionsecret)
+    session
+      .verify(req, sessionsecret)
       .then((response) => {
         result = response;
         clog("post validate");
@@ -199,7 +208,8 @@ router.post(
       res.json({ result });
       return;
     }
-    session.signup(req, res,sessionsecret)
+    session
+      .signup(req, res, sessionsecret)
       .then((response) => {
         clog("Response");
         clog(response);
@@ -207,7 +217,7 @@ router.post(
         return res.json({ result });
       })
       .catch((error) => {
-        clog('error');
+        clog("error");
         clog(error);
         result = { event: code.auth.ACCOUNT_CREATION_FAILED, msg: error };
         return res.status(500).json({ result });
@@ -222,7 +232,8 @@ router.post("/auth/logout", (_, res) => {
   });
 });
 
-router.post("/auth/login",
+router.post(
+  "/auth/login",
   [
     check("email", code.auth.EMAIL_INVALID).isEmail(),
     check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
@@ -253,362 +264,416 @@ router.post("/auth/login",
   }
 );
 
-
-router.post("/session/registerinstitution",
-// [
-//   check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
-//   check("adminPhone",code.inst.INVALID_ADMIN_PHONE).isNumeric(),
-//   check("adminEmail",code.inst.INVALID_ADMIN_EMAIL).isEmail(),
-//   check("instName",code.inst.INVALID_INST_NAME).notEmpty(),
-//   check("instPhone",code.inst.INVALID_INST_PHONE).isNumeric(),
-//   check("instUIID",code.inst.INVALID_INST_UIID).notEmpty(),
-//   check("startTime",code.inst.INVALID_TIME_START).notEmpty(),
-//   check("endTime",code.inst.INVALID_TIME_END).notEmpty(),
-//   check("breakStartTime",code.inst.INVALID_TIME_BREAKSTART).notEmpty(),
-//   check("weekStartDay",code.inst.INVALID_DAY).notEmpty(),
-//   check("periodDuration",code.inst.INVALID_DURATION_PERIOD).isNumeric(),
-//   check("breakDuration",code.inst.INVALID_DURATION_BREAK).isNumeric(),
-//   check("workingDays",code.inst.INVALID_WORKING_DAYS).isLength({min:1,max:7}),
-//   check("periodsInDay",code.inst.INVALID_PERIODS).isLength({min:1,max:1440})
-// ]
-// ,
-async (req,res)=>{
-  let result;
-  clog("in registration final");
-  clog(req.body);
-  session.verify(req,sessionsecret).then(async (response)=>{
-    if(!session.valid(response)){
-      clog("invalid session");
-      await session.finish(res);
-      result = {event:code.auth.SESSION_INVALID};
-      return res.json({result});
-    }
-    clog(response);
-    const uiid = response.user.uiid;
-    let inst = await Institute.findOne({uiid});
-    if(!inst){
-      inst = new Institute({
-        uiid:uiid,
-        users:{teachers:[],students:[]},
-        schedule:{},
-        teacherSchedule:{},
-        invite:{teacher:{},student:{}}
-      });
-      await inst.save();
-    }
-    let update = await Institute.findOneAndUpdate(
-      {uiid:response.user.uiid},
-      {
-        default:{
-          admin:{
-            email:req.body.adminemail,
-            username:req.body.adminname,
-            phone:req.body.adminphone
-          },
-          institute:{
-            instituteName:req.body.instname,
-            email:req.body.instemail,
-            phone:req.body.instphone
-          },
-          timings:{
-            startTime:req.body.starttime,
-            endTime:req.body.endtime,
-            breakStartTime:req.body.breakstarttime,
-            periodMinutes:req.body.periodduration,
-            breakMinutes:req.body.breakduration,
-            periodsInDay:req.body.totalperiods,
-            daysInWeek:String(req.body.workingdays).split(','),
-          }
-        },
-      },
-      {useFindAndModify:false}
-    );
-    if(update){
-      result = code.event(code.inst.INSTITUTION_DEFAULTS_SET);
-    } else {
-      result = code.event(code.inst.INSTITUTION_DEFAULTS_UNSET);
-    }
-    return res.json({result});
-  }).catch((error)=>{
-    result = {event:code.server.DATABASE_ERROR,msg:error};
-    return res.json({result});
-  })
-})
-
-router.post('/session/receiveinstitution',async (req,res)=>{
-  session.verify(req,sessionsecret).then(async response=>{
+router.post(
+  "/session/registerinstitution",
+  // [
+  //   check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
+  //   check("adminPhone",code.inst.INVALID_ADMIN_PHONE).isNumeric(),
+  //   check("adminEmail",code.inst.INVALID_ADMIN_EMAIL).isEmail(),
+  //   check("instName",code.inst.INVALID_INST_NAME).notEmpty(),
+  //   check("instPhone",code.inst.INVALID_INST_PHONE).isNumeric(),
+  //   check("instUIID",code.inst.INVALID_INST_UIID).notEmpty(),
+  //   check("startTime",code.inst.INVALID_TIME_START).notEmpty(),
+  //   check("endTime",code.inst.INVALID_TIME_END).notEmpty(),
+  //   check("breakStartTime",code.inst.INVALID_TIME_BREAKSTART).notEmpty(),
+  //   check("weekStartDay",code.inst.INVALID_DAY).notEmpty(),
+  //   check("periodDuration",code.inst.INVALID_DURATION_PERIOD).isNumeric(),
+  //   check("breakDuration",code.inst.INVALID_DURATION_BREAK).isNumeric(),
+  //   check("workingDays",code.inst.INVALID_WORKING_DAYS).isLength({min:1,max:7}),
+  //   check("periodsInDay",code.inst.INVALID_PERIODS).isLength({min:1,max:1440})
+  // ]
+  // ,
+  async (req, res) => {
     let result;
-    const {uiid, doc} = req.body;
-    if(!session.valid(response)){
-      result = {event:code.auth.SESSION_INVALID}
-      return res.json({result});
-    }
-    let inst = await Institute.findOne({uiid});
-    if(!inst){
-      clog(uiid);
-      inst = new Institute({
-        uiid:uiid,
-        invite:{
-          teacher:{
-
-          }
+    clog("in registration final");
+    clog(req.body);
+    const data = req.body;
+    session.verify(req, sessionsecret).then(async (response) => {
+      if (!session.valid(response)) {
+        clog("invalid session");
+        await session.finish(res);
+        result = { event: code.auth.SESSION_INVALID };
+        return res.json({ result });
+      }
+      clog(response);
+      let inst = await Institute.findOne({ uiid: response.user.uiid });
+      if (!inst) {
+        clog("creating inst");
+        const registerdoc = {
+          uiid: response.user.uiid,
+          default: {
+            admin: {
+              email: data.adminemail,
+              username: data.adminname,
+              phone: data.adminphone,
+            },
+            institute: {
+              instituteName: data.instname,
+              email: data.instemail,
+              phone: data.instphone,
+              prefs: {},
+            },
+            timings: {
+              startTime: data.starttime,
+              endTime: data.endtime,
+              breakStartTime: data.breakstarttime,
+              periodMinutes: data.periodduration,
+              breakMinutes: data.breakduration,
+              periodsInDay: data.totalperiods,
+              daysInWeek: String(data.workingdays).split(","),
+            },
+          },
+          users: {
+            teachers: [],
+            students: [],
+          },
+          schedule: {
+            teachers: [],
+            students: [],
+          },
+          invite: {
+            teachers: {
+              active: false,
+              createdAt: 0,
+              expiresAt: 0,
+            },
+            students: {
+              active: false,
+              createdAt: 0,
+              expiresAt: 0,
+            },
+          },
+          active: false,
+          restricted: false,
+        };
+        const done = await Institute.insertOne(registerdoc);
+        if (done.insertedCount == 1) {
+          clog("institute created");
+          result = code.event(code.inst.INSTITUTION_CREATED);
+          return res.json({ result });
+        } else {
+          result = code.event(code.inst.INSTITUTION_CREATION_FAILED);
+          return res.json({ result });
         }
-      });
-      clog("vallll");
-      val = await inst.save();
-      clog("val:"+val);
-      if (val){
-        result = {event:code.inst.INSTITUTION_CREATED};
-      }else{
-        result = {event:code.inst.INSTITUTION_CREATION_FAILED};
       }
-    } else {
-      if(inst[doc]){
-        result = {event:code.inst.INSTITUTION_DEFAULTS_SET};
-      } else{
-        result = {event:code.inst.INSTITUTION_EXISTS};
+    });
+  }
+);
+
+router.post("/session/receiveinstitution", async (req, res) => {
+  session
+    .verify(req, sessionsecret)
+    .then(async (response) => {
+      let result;
+      const { uiid, doc } = req.body;
+      if (!session.valid(response)) {
+        result = { event: code.auth.SESSION_INVALID };
+        return res.json({ result });
       }
-    }
-    return res.json({result})
-  }).catch(error=>{
-    result = {event:code.server.DATABASE_ERROR,msg:error};
-    return res.json({result});
-  });
+      let inst = await Institute.findOne({ uiid });
+      if (!inst) {
+        clog(uiid);
+        inst = new Institute({
+          uiid: uiid,
+          invite: {
+            teacher: {},
+          },
+        });
+        clog("vallll");
+        val = await inst.save();
+        clog("val:" + val);
+        if (val) {
+          result = { event: code.inst.INSTITUTION_CREATED };
+        } else {
+          result = { event: code.inst.INSTITUTION_CREATION_FAILED };
+        }
+      } else {
+        if (inst[doc]) {
+          result = { event: code.inst.INSTITUTION_DEFAULTS_SET };
+        } else {
+          result = { event: code.inst.INSTITUTION_EXISTS };
+        }
+      }
+      return res.json({ result });
+    })
+    .catch((error) => {
+      result = { event: code.server.DATABASE_ERROR, msg: error };
+      return res.json({ result });
+    });
 });
 
-router.post('/schedule',(req,res)=>{
+router.post("/schedule", (req, res) => {
   let result;
-  session.verify(req,sessionsecret).then(async response=>{
-    if(session.valid(response)){
-      switch(req.body.target){
-        case 'teacher':{
-          switch(req.body.action){
-            case 'upload':{
-              clog("upload data");
-              clog(req.body);
-              let inst = await Institute.findOne({uiid:response.user.uiid});
-              if(!inst){
-                result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
-                return res.json({result});
-              }
-              Institute.findOneAndUpdate(
-                { uiid: response.user.uiid, "schedule.teachers.teacherID": req.body.teacherID },
-                {
-                  $set: {
-                    "schedule.teachers.day": req.body.data
-                  }
-                },{useFindAndModify:false},
-                function(err,doc) {
-                  clog(doc?doc:"no doc");
-                  clog(err?err:"no err");
-                  if(!doc){
-                    Institute.updateOne(
-                      { uiid: response.user.uiid},
-                      {
-                        $set: {
-                          "schedule.teachers":{
-                            teacherID:req.body.teacherID,
-                            day:req.body.data
-                          }
+  session.verify(req, sessionsecret).then(async (response) => {
+    if (session.valid(response)) {
+      switch (req.body.target) {
+        case "teacher":{
+            switch (req.body.action) {
+              case "upload":{
+                const body = req.body;
+                let inst = await Institute.findOne({uiid: response.user.uiid,});
+                if (!inst) {
+                  result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                  return res.json({ result });
+                }
+                let overwriting = false;//if existing teacher schedule being overwritten after completion.
+                let incomplete = false;//if existing teacher schedule being rewritten without completion.
+                let found = inst.schedule.teachers.some((teacher, index) => {
+                  if (teacher.teacherID == body.teacherID) {
+                    if(teacher.days.length == inst.default.timings.daysInWeek.length){
+                      overwriting = true;
+                    } else{
+                      incomplete = teacher.days.some((day,index)=>{
+                        if(body.data.dayIndex <= day.dayIndex){
+                          return true;
                         }
-                      },
-                      function(err,doc) {
-                        clog(doc?doc:"no doc");
-                        clog(err?err:"no err");
-                      }
-                    );
+                      });
+                    }
+                    return true;
+                  }
+                });
+                if(overwriting){  //completed schedule, must be edited from schedule view.
+                  result = code.event(code.schedule.SCHEDULE_EXISTS);
+                  return res.json({result});
+                }
+                if(incomplete){ //remove teacher schedule
+                  Institute.findOneAndUpdate({ uiid:response.user.uiid },{
+                    $pull:{'schedule.teachers': { teacherID: body.teacherID }}
+                  });
+                  found = false;  //add as a new teacher schedule
+                }
+                if (found) {//existing teacher schedule, incomplete (new day index)
+                  const filter = {
+                    uiid: response.user.uiid,
+                    "schedule.teachers":{$elemMatch:{"teacherID":body.teacherID}}//existing schedule teacherID
+                  };
+                  const newdocument = {
+                    $push: {"schedule.teachers.$[outer].days":body.data}//new day push
+                  };
+                  const options = { 
+                    "arrayFilters":[{"outer.teacherID":body.teacherID}]
+                  };
+                  let doc = await Institute.findOneAndUpdate(filter,newdocument,options);
+                  clog("schedule appended?");
+                  if (doc) {
+                    result = code.event(code.schedule.SCHEDULE_CREATED);
+                    return res.json({ result });  //new day created.
+                  }
+                } else {  //no existing schedule teacherID
+                  const filter = { uiid: response.user.uiid };
+                  const options = { upsert: true };
+                  const newdocument = {
+                    $push: {"schedule.teachers": {teacherID: body.teacherID, days: [body.data]}}  //new teacher schedule push
+                  };
+                  let doc = await Institute.findOneAndUpdate(filter,newdocument,options);
+                  clog("schedule updated?");
+                  if (doc) {
+                    result = code.event(code.schedule.SCHEDULE_CREATED);
+                    return res.json({ result });  //new teacher new day created.
                   }
                 }
-              );
-              return;
-              let doc = await Institute.updateOne({uiid:response.user.uiid},
-                {
-                  $push:{
-                    "schedule.teachers":{
-                      teacherID:req.body.teacherID,
-                      day:req.body.data
-                    }
-                  }
-              });
-              clog(await doc);
-              if(await doc){
-                result = code.event(code.inst.SCHEDULE_UPLOADED)
-                return res.json({result});
-              }
-            }break;
-            case 'update':{
-
-            }break;
-          }
+              }break;
+              case "update":{}break;
+            }
         }break;
       }
     } else {
       result = code.event(code.auth.SESSION_INVALID);
       return result;
     }
-  }).catch(error=>{
-    result = code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED,error);
-    return res.json({result});
-  })
-})
+  }).catch((error) => {
+    clog(error);
+    result = code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED, error);
+    return res.json({ result });
+  });
+});
 
 router.post("/manage", async (req, res) => {
   clog("in post manage");
   clog(req.body);
   switch (req.body.type) {
-    case invite.type: {
-      clog("invite type");
-      session.verify(req,sessionsecret).then(async (response)=>{
-        let result;
-        if(session.valid(response)){
-          clog("verified");
-          clog(response);
-          switch(req.body.action){
-            case 'create':{
-              clog("post create link ");
-              let uiid = response.user.uiid;
-              let inst = await Institute.findOne({uiid})
-              if(inst){
-                clog("inst exists");
-                clog(inst.id);
-                clog(inst.invite[req.body.target].active);
-                if(inst.invite[req.body.target].active == true){
-                  clog("already active")
-                  let validresponse = invite.checkTimingValidity(inst.invite[req.body.target].createdAt,inst.invite[req.body.target].expiresAt,inst.invite[req.body.target].createdAt)
-                  if(invite.isValid(validresponse)){
-                    clog("already valid link");
-                    clog(response);
-                    let link = invite.getTemplateLink(response.user.id,inst.id,req.body.target,inst.invite[req.body.target].createdAt);
-                    clog('templated');
-                    clog(link);
-                    result = {
-                      event:code.invite.LINK_EXISTS,
-                      link:link,
-                      exp:inst.invite[req.body.target].expiresAt
-                    }
-                    clog("returning existing link");
-                    return res.json({result});
-                  }
-                }
-                clog("creating new link");
-                let data = await invite.generateLink(response.user.id,inst.id,req.body.target,req.body.daysvalid);
-                await Institute.findOneAndUpdate(
-                  {uiid:response.user.uiid},
-                  {
-                    invite:{
-                      [req.body.target]:{
-                        active:true,
-                        createdAt:data.create,
-                        expiresAt:data.exp
-                      }
-                    }
-                  },
-                  {useFindAndModify:false},
-                  async (error,document)=>{
-                    if(error){
-                      clog("error creating link");
-                      clog(error);
-                      result = {
-                        event:code.invite.LINK_CREATION_FAILED,
-                        msg:error
-                      };
-                    }else{
-                      if(document){
-                        clog("link created");
+    case invite.type:
+      {
+        clog("invite type");
+        session
+          .verify(req, sessionsecret)
+          .then(async (response) => {
+            let result;
+            if (session.valid(response)) {
+              clog("verified");
+              clog(response);
+              switch (req.body.action) {
+                case "create": {
+                  clog("post create link ");
+                  let uiid = response.user.uiid;
+                  let inst = await Institute.findOne({ uiid });
+                  if (inst) {
+                    clog("inst exists");
+                    clog(inst.id);
+                    clog(inst.invite[req.body.target].active);
+                    if (inst.invite[req.body.target].active == true) {
+                      clog("already active");
+                      let validresponse = invite.checkTimingValidity(
+                        inst.invite[req.body.target].createdAt,
+                        inst.invite[req.body.target].expiresAt,
+                        inst.invite[req.body.target].createdAt
+                      );
+                      if (invite.isValid(validresponse)) {
+                        clog("already valid link");
+                        clog(response);
+                        let link = invite.getTemplateLink(
+                          response.user.id,
+                          inst.id,
+                          req.body.target,
+                          inst.invite[req.body.target].createdAt
+                        );
+                        clog("templated");
+                        clog(link);
                         result = {
-                          event:code.invite.LINK_CREATED,
-                          link:data.link,
-                          exp:data.exp
-                        }
-                      } else {
-                        result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                          event: code.invite.LINK_EXISTS,
+                          link: link,
+                          exp: inst.invite[req.body.target].expiresAt,
+                        };
+                        clog("returning existing link");
+                        return res.json({ result });
                       }
                     }
+                    clog("creating new link");
+                    let data = await invite.generateLink(
+                      response.user.id,
+                      inst.id,
+                      req.body.target,
+                      req.body.daysvalid
+                    );
+                    await Institute.findOneAndUpdate(
+                      { uiid: response.user.uiid },
+                      {
+                        invite: {
+                          [req.body.target]: {
+                            active: true,
+                            createdAt: data.create,
+                            expiresAt: data.exp,
+                          },
+                        },
+                      },
+                      { useFindAndModify: false },
+                      async (error, document) => {
+                        if (error) {
+                          clog("error creating link");
+                          clog(error);
+                          result = {
+                            event: code.invite.LINK_CREATION_FAILED,
+                            msg: error,
+                          };
+                        } else {
+                          if (document) {
+                            clog("link created");
+                            result = {
+                              event: code.invite.LINK_CREATED,
+                              link: data.link,
+                              exp: data.exp,
+                            };
+                          } else {
+                            result = code.event(
+                              code.inst.INSTITUTION_NOT_EXISTS
+                            );
+                          }
+                        }
+                      }
+                    );
+                  } else {
+                    result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
                   }
-                );
-              } else {
-                result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
-              }
-              clog("returning result");
-              clog(result);
-              return res.json({result});
-            };
-            case 'disable':{
-              clog("post disabe link");
-              await Institute.findOneAndUpdate(
-                {uiid:response.user.uiid},
-                {
-                  invite:{
-                    [req.body.target]:{
-                      active:false,
-                      createdAt:0,
-                      expiresAt:0
-                    }
-                  }
-                },
-                {useFindAndModify:false},
-                async (error,document)=>{
-                  if(error){
-                    clog("unable to disable");
-                    clog(error);
-                    result = {
-                      event:code.invite.LINK_EXISTS,
-                      msg:error
-                    };
-                  }else{
-                    if(document){
-                      clog("link disabled true");
-                      result = code.event(code.invite.LINK_DISABLED);
-                    } else {
-                      result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
-                    }
-                  }
+                  clog("returning result");
+                  clog(result);
+                  return res.json({ result });
                 }
-              );
-              clog("returning result");
-              clog(result);
-              return res.json({result});
+                case "disable": {
+                  clog("post disabe link");
+                  await Institute.findOneAndUpdate(
+                    { uiid: response.user.uiid },
+                    {
+                      invite: {
+                        [req.body.target]: {
+                          active: false,
+                          createdAt: 0,
+                          expiresAt: 0,
+                        },
+                      },
+                    },
+                    { useFindAndModify: false },
+                    async (error, document) => {
+                      if (error) {
+                        clog("unable to disable");
+                        clog(error);
+                        result = {
+                          event: code.invite.LINK_EXISTS,
+                          msg: error,
+                        };
+                      } else {
+                        if (document) {
+                          clog("link disabled true");
+                          result = code.event(code.invite.LINK_DISABLED);
+                        } else {
+                          result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                        }
+                      }
+                    }
+                  );
+                  clog("returning result");
+                  clog(result);
+                  return res.json({ result });
+                }
+              }
+            } else {
+              result = response;
             }
-          }
-        } else {
-          result = response;
-        }
-        return res.json({result});
-      }).catch(e=>{
-        clog(e);
-        result = code.eventmsg(code.server.DATABASE_ERROR,e);
-        res.json({result});
-      });
-    }break;
-    default:res.send(404);
+            return res.json({ result });
+          })
+          .catch((e) => {
+            clog(e);
+            result = code.eventmsg(code.server.DATABASE_ERROR, e);
+            res.json({ result });
+          });
+      }
+      break;
+    default:
+      res.send(404);
   }
 });
 
-const toSession =(u,target = view.admin.target.dashboard,section = view.admin.section.account)=>
-  target==view.admin.target.manage
-    ?`/admin/session?u=${u}&target=${target}&section=${section}`
-    :`/admin/session?u=${u}&target=${target}`;
+const toSession = (
+  u,
+  target = view.admin.target.dashboard,
+  section = view.admin.section.account
+) =>
+  target == view.admin.target.manage
+    ? `/admin/session?u=${u}&target=${target}&section=${section}`
+    : `/admin/session?u=${u}&target=${target}`;
 
-const toLogin =(target = view.admin.target.dashboard,section = view.admin.section.account)=>
-  target==view.admin.target.manage
-    ?`/admin/auth/login?target=${target}&section=${section}`
-    :`/admin/auth/login?target=${target}`;
+const toLogin = (
+  target = view.admin.target.dashboard,
+  section = view.admin.section.account
+) =>
+  target == view.admin.target.manage
+    ? `/admin/auth/login?target=${target}&section=${section}`
+    : `/admin/auth/login?target=${target}`;
 
 const getAdminShareData = (data = {}) => {
   return {
-    isAdmin:true,
+    isAdmin: true,
     [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.email,
     uiid: data.uiid,
     createdAt: data.createdAt,
     verified: data.verified,
-    vlinkexp:data.vlinkexp
+    vlinkexp: data.vlinkexp,
   };
 };
 
 let clog = (msg) => console.log(msg);
 
-let jstr = (obj)=> JSON.stringify(obj);
+let jstr = (obj) => JSON.stringify(obj);
 
 module.exports = router;
