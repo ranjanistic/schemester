@@ -110,6 +110,7 @@ class Codes{
                 this.LINK_CREATED = 'invite/link-creation-success';
                 this.LINK_CREATION_FAILED = 'invite/link-creation-failed';
                 this.LINK_DISABLED = 'invite/link-disabled';
+                this.LINK_DISABLE_FAILED = 'invite/link-disable-failed';
             }
         };
         class ScheduleCodes{

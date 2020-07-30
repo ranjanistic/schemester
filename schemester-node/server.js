@@ -6,12 +6,6 @@ const express = require('express'),
     teacher = require('./routes/teacher'),
     app = express();
 
-// Initiate Mongo Server
-// database.getServer().then(db=>{
-//     clog(`Connected to: ${db.databaseName}`);
-// })
-// .catch(error=>console.log(error));
-
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

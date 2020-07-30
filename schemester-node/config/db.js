@@ -1,7 +1,4 @@
-const { Db } = require('mongodb');
-
 const MongoClient = require('mongodb').MongoClient;
-//const mongoose = require("mongoose"),
 const dbName = "schemesterDB",
 getLocalDBLink = () => {
   return `mongodb://localhost:27017/${dbName}`;
@@ -16,21 +13,9 @@ try {
   client.connect();
   const database = client.db(dbName);
   if(database)console.log("connected to " + database.databaseName);
-
-
   module.exports = database;
-  // return await mongoose.connect(getLocalDBLink(), {
-  //   useNewUrlParser: true,
-  //   useCreateIndex: true,
-  //   useUnifiedTopology: true,
-  // });
 } catch (e) {
   console.log(e);
 }
-
-// run().then(db=>{
-//   console.log(`Connected to: ${db.databaseName}`);
-//   collection = new Collections(db);
-// }).catch(console.dir);
 
 

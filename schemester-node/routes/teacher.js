@@ -6,8 +6,8 @@ const express = require("express"),
   view = require("../hardcodes/views"),
   session = require("../workers/session"),
   invite = require("../workers/invitation"),
-  Institute = require("../modelschema/Institutions"),
-  Admin = require("../modelschema/Admins");
+  Institute = require("../collections/Institutions"),
+  Admin = require("../collections/Admins");
 
 const sessionsecret = session.teachersessionsecret;
 router.use(cookieParser(sessionsecret));

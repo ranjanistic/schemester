@@ -63,7 +63,7 @@ class NoDataView{
     this.inviteTeacher = getElement("inviteteacher");
 
     this.addTeacher.addEventListener(click,_=>{relocate(locate.admin.session,{target:'addteacher'})});
-    this.inviteTeacher.addEventListener(click,_=>{this.linkGenerator('teacher')});
+    this.inviteTeacher.addEventListener(click,_=>{this.linkGenerator('teachers')});
   }
   linkGenerator =(target)=> {
     clog("link generator");

@@ -1,8 +1,8 @@
 const code = require("../hardcodes/events.js"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
-  Admin = require("../modelschema/Admins"),
-  Institute = require("../modelschema/Institutions"),
+  Admin = require("../collections/Admins"),
+  Institute = require("../collections/Institutions"),
   sessionID = "id",
   sessionUID = "uid";
 

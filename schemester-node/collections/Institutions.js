@@ -1,14 +1,32 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const database = require("../config/db");
-// setInterval(() => {
+// setInterval(() => {  //for midnight 00:00:00:000 schedule reset (bulkwrite) of all documents (institutions)
 //   database.collection('1institutions').countDocuments().then(value=>{
 //     console.log(value);
 //   })
 // }, 1000);
+/* Temporary changes will start with :: (colons), for example:-
+   If a teacher of an uiid (institution) marks their (hold:false) for a period in present schedule day,
+   then admin or system checks for free teachers at same period on same day. Upon assignment of a free teacher,
+   the 'teacherID' for that period of students(class) will append like-
+      [defaultTeacherID]::[freeteacherID]
+   The colons (::) will indicate that this period of the day has been rescheduled for this day, and thus, 
+   will signify the midnight function that the substring after color(inclusive) has to be removed the very next day,
+   and hold is set to be true (hold:true). The same will repeat everyday.
+
+   (special case- default teacher on a long term holiday, use extra field for holiday duration/or jobscheduler/alarmmanager of android OS,
+     or, don't change the (hold:false) status automatically; let that be changed only by the teacher itself the next day.)
+
+   Also, to preserve the free period of that temporary teacher who has been reassigned for the day, a similar pattern will follow for
+   their 'classname' field, like -
+   [nothing]::[newclassname] {default is nothing '', because free teacher period.}
+   And rest procedure same as of class' schedule.
+*/
 class Institution {
   constructor() {
     this.Institute = database.collection('1institutions');
+    return;
     var defaults = new Defaults();
     var users = new Users();
     var schedule = new Schedule();

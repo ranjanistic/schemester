@@ -9,8 +9,8 @@ const express = require("express"),
   view = require("../hardcodes/views"),
   session = require("../workers/session"),
   invite = require("../workers/invitation"),
-  Admin = require("../modelschema/Admins"),
-  Institute = require("../modelschema/Institutions");
+  Admin = require("../collections/Admins"),
+  Institute = require("../collections/Institutions");
 
 const sessionsecret = session.adminsessionsecret;
 const sessionID = "id";
@@ -491,98 +491,82 @@ router.post("/schedule", (req, res) => {
 router.post("/manage", async (req, res) => {
   clog("in post manage");
   clog(req.body);
-  switch (req.body.type) {
-    case invite.type:
-      {
+  const data = req.body;
+  switch (data.type) {
+    case invite.type:{
         clog("invite type");
-        session
-          .verify(req, sessionsecret)
-          .then(async (response) => {
+        session.verify(req, sessionsecret).then(async (response) => {
             let result;
             if (session.valid(response)) {
               clog("verified");
               clog(response);
-              switch (req.body.action) {
+              switch (data.action) {
                 case "create": {
                   clog("post create link ");
-                  let uiid = response.user.uiid;
-                  let inst = await Institute.findOne({ uiid });
-                  if (inst) {
-                    clog("inst exists");
-                    clog(inst.id);
-                    clog(inst.invite[req.body.target].active);
-                    if (inst.invite[req.body.target].active == true) {
-                      clog("already active");
-                      let validresponse = invite.checkTimingValidity(
-                        inst.invite[req.body.target].createdAt,
-                        inst.invite[req.body.target].expiresAt,
-                        inst.invite[req.body.target].createdAt
-                      );
-                      if (invite.isValid(validresponse)) {
-                        clog("already valid link");
-                        clog(response);
-                        let link = invite.getTemplateLink(
-                          response.user.id,
-                          inst.id,
-                          req.body.target,
-                          inst.invite[req.body.target].createdAt
-                        );
-                        clog("templated");
-                        clog(link);
-                        result = {
-                          event: code.invite.LINK_EXISTS,
-                          link: link,
-                          exp: inst.invite[req.body.target].expiresAt,
-                        };
-                        clog("returning existing link");
-                        return res.json({ result });
-                      }
-                    }
-                    clog("creating new link");
-                    let data = await invite.generateLink(
-                      response.user.id,
-                      inst.id,
-                      req.body.target,
-                      req.body.daysvalid
+                  const inst = await Institute.findOne({ uiid:response.user.uiid});
+                  if(!inst) {
+                    result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                    return res.json({result});
+                  }
+                  clog("inst exists");
+                  clog(inst._id);
+                  clog(inst.invite[data.target].active);
+                  if (inst.invite[data.target].active == true) {
+                    clog("already active");
+                    const validresponse = invite.checkTimingValidity(
+                      inst.invite[data.target].createdAt,
+                      inst.invite[data.target].expiresAt,
+                      inst.invite[data.target].createdAt
                     );
-                    await Institute.findOneAndUpdate(
-                      { uiid: response.user.uiid },
-                      {
-                        invite: {
-                          [req.body.target]: {
-                            active: true,
-                            createdAt: data.create,
-                            expiresAt: data.exp,
-                          },
-                        },
-                      },
-                      { useFindAndModify: false },
-                      async (error, document) => {
-                        if (error) {
-                          clog("error creating link");
-                          clog(error);
-                          result = {
-                            event: code.invite.LINK_CREATION_FAILED,
-                            msg: error,
-                          };
-                        } else {
-                          if (document) {
-                            clog("link created");
-                            result = {
-                              event: code.invite.LINK_CREATED,
-                              link: data.link,
-                              exp: data.exp,
-                            };
-                          } else {
-                            result = code.event(
-                              code.inst.INSTITUTION_NOT_EXISTS
-                            );
-                          }
+                    if (invite.isValid(validresponse)) {
+                      clog("already valid link");
+                      clog(response);
+                      let link = invite.getTemplateLink(
+                        response.user.id,
+                        inst._id,
+                        data.target,
+                        inst.invite[data.target].createdAt
+                      );
+                      clog("templated");
+                      clog(link);
+                      result = {
+                        event: code.invite.LINK_EXISTS,
+                        link: link,
+                        exp: inst.invite[data.target].expiresAt,
+                      };
+                      clog("returning existing link");
+                      return res.json({ result });
+                    }
+                  }
+                  clog("creating new link");
+                  const genlink = await invite.generateLink(
+                    response.user.id,
+                    inst._id,
+                    data.target,
+                    data.daysvalid
+                  );
+                  const path = "invite." + data.target;
+                  const document = await Institute.findOneAndUpdate(
+                    { uiid: response.user.uiid },
+                    {
+                      $set:{
+                        [path]:{
+                          active: true,
+                          createdAt: genlink.create,
+                          expiresAt: genlink.exp,
                         }
                       }
-                    );
+                    }
+                  );
+                  if (document) {
+                    clog("link created");
+                    result = {
+                      event: code.invite.LINK_CREATED,
+                      link: genlink.link,
+                      exp: genlink.exp,
+                    };
                   } else {
-                    result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
+                    result = code.event(code.invite.LINK_CREATION_FAILED);
                   }
                   clog("returning result");
                   clog(result);
@@ -590,36 +574,25 @@ router.post("/manage", async (req, res) => {
                 }
                 case "disable": {
                   clog("post disabe link");
-                  await Institute.findOneAndUpdate(
+                  const path = "invite."+ req.body.target;
+                  const doc = await Institute.findOneAndUpdate(
                     { uiid: response.user.uiid },
                     {
-                      invite: {
-                        [req.body.target]: {
+                      $set:{
+                        [path]:{
                           active: false,
                           createdAt: 0,
                           expiresAt: 0,
-                        },
-                      },
-                    },
-                    { useFindAndModify: false },
-                    async (error, document) => {
-                      if (error) {
-                        clog("unable to disable");
-                        clog(error);
-                        result = {
-                          event: code.invite.LINK_EXISTS,
-                          msg: error,
-                        };
-                      } else {
-                        if (document) {
-                          clog("link disabled true");
-                          result = code.event(code.invite.LINK_DISABLED);
-                        } else {
-                          result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
                         }
                       }
                     }
                   );
+                  if (doc) {
+                    clog("link disabled true");
+                    result = code.event(code.invite.LINK_DISABLED);
+                  } else {
+                    result = code.event(code.invite.LINK_DISABLE_FAILED);
+                  }
                   clog("returning result");
                   clog(result);
                   return res.json({ result });
@@ -627,8 +600,8 @@ router.post("/manage", async (req, res) => {
               }
             } else {
               result = response;
+              return res.json({ result });
             }
-            return res.json({ result });
           })
           .catch((e) => {
             clog(e);
@@ -637,8 +610,7 @@ router.post("/manage", async (req, res) => {
           });
       }
       break;
-    default:
-      res.send(404);
+    default:res.sendStatus(500);
   }
 });
 
