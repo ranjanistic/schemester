@@ -182,7 +182,7 @@
                             <br/>
                             <span class="heading">Ready?</span>
                             <br/>
-                            <div class="questrial">So far, <a href="/admin/session?target=manage&section=3"><%= countObjects(inst.users.teachers) %> teachers</a> have joined the institution on Schemester.
+                            <div class="questrial">So far, <a href="/admin/session?target=manage&section=3"><%= countObjects(inst.users.teachers) %> teachers</a> have joined your institution on Schemester.
                                 <br/>Would you like to start scheduling now?
                             </div>
                             <br/>
@@ -192,18 +192,19 @@
                     </div>
                     <div class="fmt-col fmt-half fmt-padding">
                     <div class=" fmt-center fmt-padding container" >
+                    <br/>
                 <% } else { %>
                     <div class="fmt-center fmt-padding container fmt-margin" >
                 <% } %>
-                        <br/>
-                        <span class="heading">Schedule waiting.</span>
+                        <span class="heading">Add</span>
                         <% if (!isEmptyObject(inst.schedule.teachers)) { %>
                             <br/>
-                            <div class="questrial">You have added schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:'locate.admin.target'})"><%= countObjects(inst.schedule.teachers) %> teachers</a>, of which <%= countObjects(inst.users.teachers) %> have accepted.</div> 
+                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:'locate.admin.target'})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
+                            You can add another teacher's schedule.</div> 
                         <% } else { %>
                             <br/>
+                            <div class="questrial">Add a teacher of <a href="/admin/session?target=manage"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
                         <% } %>
-                        <div class="questrial">Add a teacher of <a href="/admin/session?target=manage"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
                         <br/>
                         <button class="positive-button" id="addteacher">Add Teachers</button>
                         <br/><br/>

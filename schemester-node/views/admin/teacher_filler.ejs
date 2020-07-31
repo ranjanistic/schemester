@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <title>
-        <% if (adata.isAdmin) { %>
+        <% if (user.isAdmin) { %>
             Teacher Filler · Schemester
         <% } else { %>
             Schedule Filler · Schemester
@@ -45,7 +45,7 @@
     }%>
     <body>
         <div id="topBar">
-            <% if (adata.isAdmin) { %>
+            <% if (user.isAdmin) { %>
                 <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromTeacherFiller" onclick="refer(locate.adminDashPage)">
                 <span id="greeting">Add Teacher</span>
             <% } else { %>
@@ -66,17 +66,17 @@
             <div class="container" id="workbox">
                 <div class="fmt-row">
                     <div class="fmt-col fmt-half">
-                        <% if (adata.isAdmin) { %>
+                        <% if (user.isAdmin) { %>
                             <fieldset class="text-field" id="teacherEmailField">
                                 <legend class="field-caption">Email address of teacher</legend>
                                 <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
                                 <span id="teacherEmailView" style="font-size:24px"></span>
                                 <span class="fmt-right error-caption"  id="teacherEmailError"></span>
                             </fieldset>
-                        <% } else { %>
+                        <% } else if(user.isTeacher) { %>
                             <div class="fmt-left">
-                            <div class="active group-heading"><%= teacher.username %></div>
-                            <div class="group-text"><%= teacher.id %></div>
+                            <div class="fmt-left positive group-heading"><%= user.username %></div>
+                            <div class="group-text"><%= user.id %></div>
                             </div>
                         <% } %>  
                     </div>
@@ -140,15 +140,16 @@
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
         <span hidden>
-            <span id="isAdmin"><%= adata.isAdmin %></span>
+            <span id="isAdmin"><%= user.isAdmin %></span>
             <span id="uiid"><%= inst.uiid %></span>
             <span id="periodsInDay"><%= inst.default.timings.periodsInDay %></span>
             <span id="daysInWeek"><%= inst.default.timings.daysInWeek %></span>
-            <% if(!adata.isAdmin) { %> 
-                <span id="teachername"><%= teacher.username %></span>
-                <span id="teacheremail"><%= teacher.id %></span>
-                <span id="teacherverfied"><%= teacher.verified %></span>
-                <span id="teacherID"><%= teacher.uid %></span>
+            <% if(user.isTeacher) { %>
+                <span id="isTeacher"><%= user.isTeacher %></span>
+                <span id="teachername"><%= user.username %></span>
+                <span id="teacheremail"><%= user.id %></span>
+                <span id="teacherverfied"><%= user.verified %></span>
+                <span id="teacherID"><%= user.uid %></span>
             <% } %>
         </span>
     </body>

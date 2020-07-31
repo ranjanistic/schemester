@@ -33,7 +33,9 @@
                         <br/><br/>If you click the blue button, a link will be sent to your provided email address, and you should visit that link before it expires.</br>
                         This small step will get you verified, and would be a giant leap for us, as we'll fully trust you after that.
                         <br/>
+                        <% if(user.isAdmin){ %>
                         <span class="negative">In case you've mistakenly provided us the wrong email, you can reset your account too, and then provide us with your own email address.</span>
+                        <% } %>
                     </div><br/><br/>
                     <div class="fmt-row">
                         <button class="positive-button" id="sendlink">Send link to <%= user.id %> </button>
@@ -48,6 +50,13 @@
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
         <span hidden>
+            <% if(user.isAdmin) { %>
+            <span id="client">admin</span>
+            <% } else if(user.isTeacher){ %>
+            <span id="client">teacher</span>
+            <% } else if(user.isStudent) { %>
+            <span id="client">student</span>
+            <% } %>
             <span id="email"><%= user.id %></span>
             <span id="uid"><%= user.uid %></span>
             <span id="uiid"><%= user.uiid %></span>

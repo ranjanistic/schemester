@@ -105,6 +105,12 @@ router.get("/session*", (req, res) => {
                     adata,
                   });
                 }
+                case view.admin.target.addteacher:{
+                  return res.render(view.admin.getViewByTarget(data.target), {
+                    user:adata,
+                    inst,
+                  });
+                }
                 default:
                   res.render(view.admin.getViewByTarget(data.target), {
                     adata,
@@ -411,7 +417,7 @@ router.post("/schedule", (req, res) => {
             switch (req.body.action) {
               case "upload":{
                 const body = req.body;
-                let inst = await Institute.findOne({uiid: response.user.uiid,});
+                let inst = await Institute.findOne({uiid: response.user.uiid});
                 if (!inst) {
                   result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
                   return res.json({ result });
@@ -460,13 +466,12 @@ router.post("/schedule", (req, res) => {
                     return res.json({ result });  //new day created.
                   }
                 } else {  //no existing schedule teacherID
-                  const filter = { uiid: response.user.uiid };
-                  const options = { upsert: true };
+                  const filter = { uiid: response.user.uiid }
                   const newdocument = {
                     $push: {"schedule.teachers": {teacherID: body.teacherID, days: [body.data]}}  //new teacher schedule push
                   };
-                  let doc = await Institute.findOneAndUpdate(filter,newdocument,options);
-                  clog("schedule updated?");
+                  let doc = await Institute.findOneAndUpdate(filter,newdocument);
+                  clog("schedule created?");
                   if (doc) {
                     result = code.event(code.schedule.SCHEDULE_CREATED);
                     return res.json({ result });  //new teacher new day created.
@@ -518,7 +523,7 @@ router.post("/manage", async (req, res) => {
                       inst.invite[data.target].expiresAt,
                       inst.invite[data.target].createdAt
                     );
-                    if (invite.isValid(validresponse)) {
+                    if (invite.isActive(validresponse)) {
                       clog("already valid link");
                       clog(response);
                       let link = invite.getTemplateLink(

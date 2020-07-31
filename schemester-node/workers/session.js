@@ -1,3 +1,5 @@
+const { ObjectId } = require("mongodb");
+
 const code = require("../hardcodes/events.js"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
@@ -72,76 +74,53 @@ class Session {
           target: target,
         };
       }
-      case this.teachersessionsecret:
-        {
-          //teacher login
-          switch (request.body.type) {
-            case "uiid": {
-              clog("case uiid");
-              const { uiid } = request.body;
-              clog(uiid);
-              let inst = await Institute.findOne({ uiid });
-              return inst
-                ? code.event(code.inst.INSTITUTION_EXISTS)
-                : code.event(code.inst.INSTITUTION_NOT_EXISTS);
-            }
-            case "email": {
-              let result;
-              const { uiid, email } = request.body;
-              clog(uiid);
-              clog(email);
-              let inst = await Institute.findOne({ uiid });
-              let found = inst.users.teachers.some((teacher,_) => {
-                if (teacher.teacherID == email) {
-                  clog(teacher);
-                  return true;
-                }
-              });
-              result = found?code.event(code.auth.USER_EXIST):code.event(code.auth.USER_NOT_EXIST);
-              return result;
-            }
-            case "password": {
-              const { email, password, uiid, target } = request.body;
-              clog(uiid + email + password + target);
-              let user;
-              const inst = await Institute.findOne({ uiid });
-              if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-              let found = inst.users.teachers.some((teacher,_) => {
-                if (teacher.teacherID == email) {
-                  user = teacher;
-                  clog(user);
-                  return true;
-                }
-              });
-              if(found){
-                const isMatch = await bcrypt.compare(password, user.password);
+      case this.teachersessionsecret:{
+        //teacher login
+        clog(request.body);
+        const inst = await Institute.findOne({uiid:request.body.uiid});
+        switch (request.body.type) {
+          case "uiid": {
+            return inst
+              ? code.event(code.inst.INSTITUTION_EXISTS)
+              : code.event(code.inst.INSTITUTION_NOT_EXISTS);
+          }
+          default:{
+            if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+            const userInst = await Institute.findOne({uiid:request.body.uiid,"users.teachers":{$elemMatch:{"teacherID":request.body.email}}},
+              {projection:{_id:0,"users.teachers.$":1}}
+            );
+            switch(request.body.type){
+              case "email": {
+                return userInst?code.event(code.auth.USER_EXIST):code.event(code.auth.USER_NOT_EXIST);
+              }
+              case "password": {
+                const { password, uiid, target } = request.body;
+                if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
+                clog("user teacher");
+                const teacher = userInst.users.teachers[0];
+                clog(teacher);
+                const isMatch = await bcrypt.compare(password, teacher.password);
                 if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-                const payload = {user: {id: user.id,uiid: uiid}};
+                const payload = {user: {id: teacher._id,uiid: uiid}};
                 const token = jwt.sign(payload, secret, {
                   expiresIn: this.expiresIn,
                 });
                 response.cookie(this.sessionKey, token, { signed: true });
                 return {
                   event: code.auth.AUTH_SUCCESS,
-                  user: getTeacherShareData(user),
+                  user: getTeacherShareData(teacher),
                   target: target,
                 };
-              } else {
-                return code.event(code.auth.USER_NOT_EXIST);
               }
-            }
-            default: {
-              return code.event(code.auth.AUTH_REQ_FAILED);
+              default:return code.event(code.auth.AUTH_REQ_FAILED);
             }
           }
-          //generating token;
         }
-        break;
-      case this.studentsessionsecret:
-        {
-          //student login
-        }
-        break;
+      }break;
+      case this.studentsessionsecret:{
+          //todo:student login
+          return;
+      }
       default:
         return code.event(code.auth.AUTH_REQ_FAILED);
     }
@@ -190,64 +169,64 @@ class Session {
             user: getAdminShareData(admin),
           };
         }
-      case this.teachersessionsecret:
-        {
+      case this.teachersessionsecret:{
           const { username, email, password, uiid } = request.body;
-          let inst = await Institute.findOne({ uiid });
+          const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-
+          const userinst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}});
+          if(userinst) return code.event(code.auth.USER_EXIST);
+          clog("checks cleared");
           let result;
-
           const salt = await bcrypt.genSalt(10);
-          let epassword = await bcrypt.hash(password, salt);
-          let doc = await Institute.updateOne(
+          const epassword = await bcrypt.hash(password, salt);
+          const doc = await Institute.findOneAndUpdate(
             { uiid: uiid },
             {
               $push: {
                 "users.teachers": {
+                  _id: new ObjectId(),
                   username: username,
                   teacherID: email,
                   password: epassword,
+                  createdAt: Date.now(),
+                  verified:false,
+                  vlinkexp:0
                 },
               },
             }
           );
           if (doc) {
-            let user;
-            clog(doc);
             clog("created?");
-            inst = await Institute.findOne({ uiid });
-            clog("in then");
-            let found = inst.users.teachers.some((teacher, index) => {
-              if (teacher.teacherID == email) {
-                user = teacher;
-                return true;
-              }
+            const userInst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}},{
+              projection:{_id:0,"users.teachers.$":1}
             });
-            clog(found);
-            //get this new user from array
-            const payload = {
-              user: {
-                id: user.id, //use _id
-                uiid: uiid,
-              },
-            };
-            clog("payload");
-            clog(payload);
-            let token = jwt.sign(payload, secret, {
-              expiresIn: this.expiresIn,
-            }); //days*sec/day
-            clog("token:" + token);
-            clog("setting cookie");
-            response.cookie(this.sessionKey, token, { signed: true });
-            clog("cookie set, setting result");
-            result = {
-              event: code.auth.ACCOUNT_CREATED,
-              user: getTeacherShareData(user),
-            };
-            clog("doc result");
-            clog(result);
-            return result;
+            const user = userInst.users.teachers[0];
+            if(user){
+              const payload = {
+                user: {
+                  id: user._id,
+                  uiid: uiid
+                },
+              };
+              clog("payload");
+              clog(payload);
+              const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
+              clog("token:" + token);
+              clog("setting cookie");
+              response.cookie(this.sessionKey, token, { signed: true });
+              clog("cookie set, setting result");
+              result = {
+                event: code.auth.ACCOUNT_CREATED,
+                user: getTeacherShareData(user),
+              };
+              clog("return result");
+              clog(result);
+              return result;
+            } else{
+              clog("not found");
+              return code.event(code.server.DATABASE_ERROR);
+            }
+            
           } else {
             clog("not created");
             clog(err);
@@ -302,8 +281,9 @@ class Session {
 
 module.exports = new Session();
 
-let getAdminShareData = (data = {}) => {
+const getAdminShareData = (data = {}) => {
   return {
+    isAdmin:true,
     [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.email,
@@ -313,8 +293,9 @@ let getAdminShareData = (data = {}) => {
   };
 };
 
-let getTeacherShareData = (data = {}) => {
+const getTeacherShareData = (data = {}) => {
   return {
+    isTeacher:true,
     [sessionUID]: data._id,
     username: data.username,
     [sessionID]: data.teacherID,

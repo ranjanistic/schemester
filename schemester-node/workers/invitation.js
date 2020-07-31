@@ -30,13 +30,12 @@ class Invitation{
     checkTimingValidity =(creation,expiration, linktime)=>{
         let current = getTheMoment(false);
         clog("times of link");
-        let t = Number.parseFloat(linktime);
+        let t = Number(linktime);
         clog(linktime);
-        clog("t:"+t);
+        clog(t);
         clog(creation);
         clog(current);
         clog(expiration);
-        clog("brhhh");
         clog(linktime == String(creation));
 
         if(creation==0||expiration==0 || linktime!=String(creation) || current<creation){
@@ -51,7 +50,7 @@ class Invitation{
         }
         return code.event(code.invite.LINK_INVALID);
     }
-    isValid(response){
+    isActive(response){
         return response.event == code.invite.LINK_ACTIVE;
     }
     isExpired(response){

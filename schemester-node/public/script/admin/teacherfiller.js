@@ -58,13 +58,17 @@ class TeacherFiller {
               return this.teacherIDField.validateNow();
             }
             sessionStorage.setItem('teacherID',this.teacherIDField.getInput());
+          } else if(this.data.isTeacher){
+            sessionStorage.setItem('teacherID',this.data.teacherEmail);
           }
         }
         this.validateDaySchedule(_=>{
           if(this.data.isAdmin){
             this.uploadScheduleByAdmin(this.data.totalDays[this.dayCount]);
+          } else if(this.data.isTeacher){
+            this.uploadScheduleByTeacher(this.data.totalDays[this.dayCount]);
           } else {
-            this.uploadScheduleByTeacher();
+            alert("illegal");
           }
         })
       }
@@ -88,8 +92,37 @@ class TeacherFiller {
       }
     }
 
-    uploadScheduleByTeacher = ()=>{
-      //todo
+    uploadScheduleByTeacher = (dayindex)=>{
+      var periods = Array();
+      for(let i=0;i<this.data.totalPeriods;i++){
+        periods.push({
+          classname:this.teacherClass[i].getInput(),
+          subject:this.teacherSubject[i].getInput(),
+          hold:true
+        });
+      }
+      const data = {
+        dayIndex:Number(dayindex),
+        period:periods
+      }
+      postJsonData(post.teacher.schedule,{
+        action:'upload',
+        teacherID:sessionStorage.getItem('teacherID'),
+        data:data
+      }).then(response=>{
+        clog(response);
+        this.handleScheduleResponse(response);
+        this.load(false);
+      }).catch(error=>{
+        if(!navigator.onLine){
+          snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
+            new Snackbar().hide();
+            this.next.click();
+          });
+        } else {
+          snackBar(`Error:${error}`,'Report');
+        }
+      });
     }
     uploadScheduleByAdmin = (dayindex) =>{
       var periods = Array();
@@ -144,7 +177,6 @@ class TeacherFiller {
       if(valid){
         this.load();
         for(let i=0;i<this.data.totalPeriods;i++){
-          sessionStorage.setItem(this.teacherClass[i].getInput(),this.teacherSubject[i].getInput());
           this.teacherClass[i].activate();
           this.teacherSubject[i].activate();
         }
@@ -166,13 +198,19 @@ class TeacherFiller {
               this.teacherIDField.activate();
             }
           } else {
-            new ScheduleComplete(this.data);
+            if(this.data.isAdmin){
+              new ScheduleComplete(this.data);
+            } else if(this.data.isTeacher){
+              location.reload();
+            }
           }
         }break;
         case code.schedule.SCHEDULE_EXISTS:{
-          snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.active,_=>{
-            refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users});
-          });
+          if(this.data.isAdmin){
+            snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.warning,_=>{
+              refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users});
+            });
+          }
         }break;
         default:{
           if(!navigator.onLine){
@@ -194,7 +232,9 @@ class ReceiveData{
     this.uiid = getElement("uiid").innerHTML;
     this.totalDays = String(getElement("daysInWeek").innerHTML).split(',');
     this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
+    clog(this.isAdmin);
     if(!this.isAdmin){
+      this.isTeacher = getElement("isTeacher").innerHTML?true:false;
       this.teacherName = getElement("teachername").innerHTML;
       this.teacherEmail = getElement("teacheremail").innerHTML;
       this.teacherVerified = getElement("teacherverfied").innerHTML=='true'?true:false;

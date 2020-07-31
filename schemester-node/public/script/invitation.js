@@ -71,53 +71,55 @@ class Active {
     }
 
     //this.load();
-    let username = this.nameField.getInput();
-    let usermail = this.emailField.getInput();
-    let userpass = this.passField.getInput();
+    const username = this.nameField.getInput();
+    const usermail = this.emailField.getInput();
+    const userpass = this.passField.getInput();
     clog(data.target);
     sessionStorage.setItem("username", username);
     sessionStorage.setItem("useremail", usermail);
     sessionStorage.setItem("instname", data.instName);
     sessionStorage.setItem("uiid", data.uiid);
-    postData(`/teacher/find`, {
+    postData(`/${data.target}/find`, {
       email: sessionStorage.getItem("useremail"),
-      uiid: sessionStorage.getItem("uiid"),
+      uiid: sessionStorage.getItem("uiid")
     }).then((response) => {
       if (response.event == code.auth.USER_EXIST) {
         this.emailField.showError("Account already exists");
       } else {
-        //show verification dialog, and only after successfull verification, proceed further.
         clog("posting");
         postData(`/${data.target}/auth/signup`, {
           username: username,
           email: usermail,
           password: userpass,
           uiid: data.uiid,
-          target: locate.teacher.target.today,
         }).then((response) => {
             clog("response");
             clog(response);
             switch (response.event) {
-              case code.auth.ACCOUNT_CREATED:
-                {
+              case code.auth.ACCOUNT_CREATED:{
+                if(data.target == 'teacher'){
                   relocate(locate.teacher.session, {
-                    target: locate.teacher.target.today,
+                    u:response.user.uid,
+                    target: locate.teacher.target.addschedule
                   });
                 }
+              }
                 break;
               default: {
                 if (!navigator.onLine) {
-                  return snackBar("Network error", null, false);
+                  snackBar("Network error", null, false);
+                } else {
+                  snackBar(response.event);
                 }
-                snackBar(response.event);
               }
             }
             this.load(false);
+        }).catch(e=>{
+          clog(e);
+          this.load(false);
         })
       }
     });
-
-    hide(this.loader);
   }
 
   rejectInvitation(data) {

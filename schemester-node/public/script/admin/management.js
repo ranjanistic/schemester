@@ -210,7 +210,7 @@ class Users {
     this.invite.addEventListener(
       click,
       (_) => {
-        this.linkGenerator("teachers");
+        this.linkGenerator("teacher");
       },
       false
     );
