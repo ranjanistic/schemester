@@ -15,7 +15,7 @@ const sessionsecret = session.teachersessionsecret;
 router.use(cookieParser(sessionsecret));
 
 router.get("/", (req, res)=>{
-  res.redirect(toLogin(view.teacher.target.today));
+  res.redirect(toLogin(view.teacher.target.dash));
 });
 
 router.get("/auth/login*", (req, res) => {
@@ -96,44 +96,55 @@ router.get("/session*", async (req, res) => {
             const scheduleinst = await Institute.findOne({uiid:response.user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.id}}},
               {projection:{_id:0,"schedule.teachers.$":1}}
             );
-            let inst;
-            if(!scheduleinst){  //no schedule for this user teacher
-              clog("no schedule");
-              inst = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"teacherID":teacher.id}}},
-                {
-                  projection:{
+            const inst = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"teacherID":teacher.id}}},
+              {
+                projection:{
                     _id:1,
+                    uiid:1,
                     default:1,
+                    schedule:1,
                     "users.teachers.$":1,
-                  }
                 }
-              );
-              clog(inst);
+              }
+            );
+            clog(inst);
+            if(!scheduleinst){  //no schedule for this user teacher
+              clog("no schedule");  
               data.target = view.teacher.target.addschedule;
               return res.render(view.teacher.addschedule,{user:teacher,inst})
             } else {  //schedule exists;
               const schedule = scheduleinst.schedule.teachers[0];
               clog("schedule");
               clog(schedule);
-              inst = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
-              {
-                projection:{
-                  _id:1,
-                  uiid:1,
-                  default:1,
-                  "users.teachers.$":1,
-                  schedule:1
+              // inst = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
+              //   {
+              //     projection:{
+              //       _id:1,
+              //       uiid:1,
+              //       default:1,
+              //       schedule:1,
+              //       "users.teachers.$":1,
+              //     }
+              //   }
+              // );
+              clog("inst");
+              clog(inst);
+
+              if(Object.keys(schedule.days).length != inst.default.timings.daysInWeek.length){
+                Institute.findOneAndUpdate({uiid:response.user.uiid},{
+                  $pull:{'schedule.teachers': { teacherID: teacher.id }}
+                });
+                return res.redirect(toSession(teacher.uid,view.teacher.target.addschedule));
+              } else {  
+                if(data.target==view.teacher.target.addschedule||data.target==undefined){
+                  return res.redirect(toLogin(view.teacher.target.dash));
                 }
-              }
-              );
-              if(data.target==view.teacher.target.addschedule||data.target==undefined){
-                return res.redirect(toLogin(view.teacher.target.today));
               }
               try{
                 res.render(view.teacher.getViewByTarget(data.target),{teacher,inst});
               }catch(e){
                 clog(e);
-                data.target = view.teacher.target.today;
+                data.target = view.teacher.target.dash;
                 res.redirect(toLogin(data.target));
               }
             }
@@ -144,8 +155,12 @@ router.get("/session*", async (req, res) => {
   )}
 );
 
+
+router.get('/today',(req,res)=>{
+  res.render(view.teacher.today);
+})
+
 router.post('/schedule',async (req,res)=>{
-  const data = req.query;
   session.verify(req, sessionsecret).then(async (response) => {
     if(!session.valid(response)){
       return res.json({result:code.auth.SESSION_INVALID});
@@ -155,7 +170,7 @@ router.post('/schedule',async (req,res)=>{
         const body = req.body;
         let inst = await Institute.findOne({uiid: response.user.uiid});
         if (!inst) return res.json({ result:code.inst.INSTITUTION_NOT_EXISTS});
-        
+
         let overwriting = false;//if existing teacher schedule being overwritten after completion.
         let incomplete = false;//if existing teacher schedule being rewritten without completion.
         let found = inst.schedule.teachers.some((teacher, index) => {
@@ -177,7 +192,8 @@ router.post('/schedule',async (req,res)=>{
           return res.json({result});
         }
         if(incomplete){ //remove teacher schedule
-          Institute.findOneAndUpdate({ uiid:response.user.uiid },{
+          clog("is incomplete")
+          await Institute.findOneAndUpdate({ uiid:response.user.uiid },{
             $pull:{'schedule.teachers': { teacherID: body.teacherID }}
           });
           found = false;  //add as a new teacher schedule
@@ -342,7 +358,7 @@ router.post('/find',async (req,res)=>{
   return res.json({result});
 });
 
-const toLogin =(target = view.teacher.target.today)=>`/teacher/auth/login?target=${target}`;
-const toSession =(u,target = view.teacher.target.today)=>`/teacher/session?u=${u}&target=${target}`;
+const toLogin =(target = view.teacher.target.dash)=>`/teacher/auth/login?target=${target}`;
+const toSession =(u,target = view.teacher.target.dash)=>`/teacher/session?u=${u}&target=${target}`;
 module.exports = router;
 let clog = (msg) => console.log(msg);

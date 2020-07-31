@@ -60,13 +60,15 @@ class AdminViews{
 class TeacherViews{
     constructor(){
         this.login = 'teacher/teacher_login.ejs';
-        this.today = 'teacher/teacher_dash.ejs';
+        this.dash = 'teacher/teacher_dash.ejs';
         this.settings = 'teacher/teacher_settings.ejs';
         this.addschedule = 'admin/teacher_filler.ejs';
-        this.fullschedule = 'teacher/full_schedule.ejs'
+        this.fullschedule = 'teacher/full_schedule.ejs';
+        this.today = 'teacher/today.ejs';
+
         class Target {
             constructor() {
-              this.today = "today";
+              this.dash = "today";
               this.fullweek = "fullschedule";
               this.settings = "settings";
               this.addschedule = 'addschedule';
@@ -74,10 +76,10 @@ class TeacherViews{
           }
           this.target = new Target();
     }
-    getViewByTarget(target = this.target.today){
+    getViewByTarget(target = this.target.dash){
         console.log(target);
         switch(target){
-            case this.target.today:return this.today;
+            case this.target.dash:return this.dash;
             case this.target.settings:return this.settings;
             case this.target.fullweek:return this.fullschedule;
             case this.target.addschedule:return this.addschedule;

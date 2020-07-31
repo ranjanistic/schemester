@@ -145,9 +145,10 @@ class Session {
             email:email,
             password:epassword,
             uiid:uiid,
-            createAt:new Date().toUTCString(),
+            createAt:Date.now(),
             verified:false,
-            vlinkexp:0
+            vlinkexp:0,
+            prefs:{}
           }
           const result = await Admin.insertOne(newAdmin);
           if(result.insertedCount==0) return code.event(code.auth.ACCOUNT_CREATION_FAILED);

@@ -228,7 +228,7 @@ class Locations {
         this.login = "/teacher/auth/login";
         class Target {
           constructor() {
-            this.today = "today";
+            this.today = "dash";
             this.fullweek = "fullschedule";
             this.settings = "settings";
             this.addschedule = 'addschedule';

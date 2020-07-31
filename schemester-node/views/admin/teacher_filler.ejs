@@ -55,8 +55,10 @@
             <span class="fmt-dropdown-hover fmt-right">
                 <img src="/graphic/menudotsvertical.svg" id="menuButton">
                 <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+                    <% if (user.isAdmin) { %>
                     <div class="fmt-padding" id="settingsButton">Settings</div>
-                    <div class="fmt-padding" id="logoutAdminButton">Logout</div>
+                    <% } %>
+                    <div class="fmt-padding" id="logout">Logout</div>
                 </div>
             </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
@@ -89,7 +91,7 @@
                             <span class="fmt-right error-caption"  id="teacherDayError"></span>
                         </fieldset>
                     </div>
-                    <div class="fmt-right" style="padding:12px">
+                    <div class="fmt-right fmt-hide-small" style="padding:12px">
                         <button class="positive-button" id="nextSchedule">Save & Next</button>
                         <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
                     </div>
@@ -97,33 +99,33 @@
                 </div>
                 <br/>
 
-                <div class="fmt-row group-heading active">
-                    <div class="fmt-col" style="width: 20%;">
+                <div class="fmt-row group-heading active fmt-hide-small">
+                    <div class="fmt-col fmt-quarter">
                         Period
                     </div>
-                    <div class="fmt-col" style="width: 30%;">
+                    <div class="fmt-col fmt-third">
                         Class
                     </div>
-                    <div class="fmt-col" style="width: 50%;">
+                    <div class="fmt-col fmt-third">
                         Subject
                     </div>
                 </div>
 
-                <div class="fmt-row container" style="padding:4px" id="teacherFillerBox">
+                <div class="fmt-row fmt-center" style="padding:4px" id="teacherFillerBox">
 
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
-                        <div class="fmt-row" style="margin-bottom:4px">
-                            <div class="fmt-col fmt-center active" style="width:20%;padding:18px;">
-                                <%= addNumberSuffixHTML(index+1) %>
+                        <div class="fmt-row tab-container" style="margin-bottom:4px">
+                            <div class="fmt-col fmt-quarter fmt-center active" style="padding:18px;">
+                                <%= addNumberSuffixHTML(index+1) %><span class="fmt-hide-large fmt-hide-medium"> period</span>
                             </div>
-                            <div class="fmt-col fm-purple" style="width:30%">
+                            <div class="fmt-col fmt-third" >
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">
                                     <legend class="field-caption">Class assigned</legend>
                                     <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
                                     <span class="fmt-right error-caption"  id="teacherClassError<%= index %>"></span>
                                 </fieldset>
                             </div>
-                            <div class="fmt-col" style="width:50%">
+                            <div class="fmt-col fmt-third" >
                                 <fieldset class="text-field" id="teacherSubjectField<%= index %>">
                                     <legend class="field-caption">Subject to be taken</legend>
                                     <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
@@ -132,6 +134,11 @@
                             </div>
                         </div>
                     <% } %>
+                    <div class="fmt-hide-large fmt-hide-medium fmt-center">
+                        <br/>
+                        <button class="fmt-row positive-button" style="width:100%" id="next2">Save & Next</button>
+                        <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="nextloader2"/>
+                    </div>
                 </div>
             </div>
         </div>

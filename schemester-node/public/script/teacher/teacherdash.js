@@ -1,13 +1,25 @@
-class Today{
+class TeacherDash{
     constructor(){
-        this.logout = getElement("logout");
-        this.logout.onclick =_=>{
-            showLoader();
-            finishSession(client.teacher,_=>{
-                relocate(locate.teacher.login);
-            });
+        this.frame = getElement("frame");
+        this.viewload = getElement('viewload');
+        this.today = getElement("todaytab");
+        this.fullweek = getElement("fulltab");
+        this.today.onclick = _=>{
+            this.frame.src = '/teacher/today';
         }
+        this.fullweek.onclick =_=>{
+            this.frame.src = '/home';
+        }
+        
+        // this.logout.onclick =_=>{
+        //     showLoader();
+        //     finishSession(_=>{
+        //         relocate(locate.teacher.login);
+        //     });
+        // }
+    }
+    load(){
+        this.viewload
     }
 }
-
-window.onload=_=>window.app = new Today();
+window.onload=_=>window.app = new TeacherDash();

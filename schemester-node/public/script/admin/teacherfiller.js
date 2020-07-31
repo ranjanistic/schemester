@@ -4,8 +4,11 @@ class TeacherFiller {
       sessionStorage.clear();
       this.data = new ReceiveData();
       this.view = getElement("workbox");
+      this.logout = getElement("logout");
       this.next = getElement("nextSchedule");
       this.nloader = getElement("nextLoader");
+      this.next2 = getElement("next2");
+      this.nloader2 = getElement("nextloader2");
       this.load(false);
       
       if(this.data.isAdmin){
@@ -49,7 +52,9 @@ class TeacherFiller {
           }
         });
       }
-      
+      this.logout.onclick =_=>{
+        finishSession();
+      }
       this.next.onclick =_=>{
         new Snackbar().hide();
         if(this.dayCount == 0){
@@ -72,6 +77,7 @@ class TeacherFiller {
           }
         })
       }
+      this.next2.onclick = this.next.onclick;
     }
     setDayCaption(){
       this.dayCaption.innerHTML = `Day ${this.dayCount+1} of ${this.data.totalDays.length}`
@@ -82,6 +88,8 @@ class TeacherFiller {
     load(show = true){
       visibilityOf(this.next,!show);
       visibilityOf(this.nloader,show);
+      visibilityOf(this.next2,!show);
+      visibilityOf(this.nloader2,show);
     }
     clearForm(){
       for(let i=0;i<this.data.totalPeriods;i++){

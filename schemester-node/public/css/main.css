@@ -238,6 +238,71 @@ img{vertical-align:middle}
 .noshadow{
     box-shadow:0px
 }
+.tab-container{
+    color: inherit;
+    background-color: inherit;
+    border-radius: 12px;
+    font-size:inherit;
+    padding:8px 12px;
+    box-shadow: 1px 5px 10px #00000011;
+    transition: 0.3s ease;
+}
+
+.tab-container:hover{
+    box-shadow: 1px 5px 10px #00000044;
+}
+
+.fit-container{
+    color: black;
+    background-color: white;
+    border-radius: 12px;
+    font-size:22px;
+    margin:8px 0;
+    padding:0px;
+    box-shadow: 1px 5px 10px #00000011;
+    transition: 0.3s ease;
+}
+
+.fit-container:hover{
+    box-shadow: 1px 5px 10px #00000044;
+}
+.bottom-tab{
+    bottom:0;
+    background-color: white;
+    border-radius:4px 4px 0 0;
+    box-shadow: -5px -5px 10px #00000011;
+    transition: 0.3s ease;
+    position:fixed;
+    width:100%;z-index:1
+}
+.bottom-tab-section{
+    color:#343434;
+    background:white;
+    font-size:16px;
+    border-radius:4px 4px 0 0;
+    transition:0.3s ease;
+    padding:4px 8px;
+
+    outline:none;
+    border:0;
+    cursor:pointer;
+
+}
+.bottom-tab-section:focus{
+    color:#216bf3;
+    background:#eee;
+}
+/* .bottom-tab-section:focus{
+    color:#216bf3;
+    background:#eee;
+    font-size:44px;
+} */
+.bottom-tab-section-selected{
+    color:#216bf3;
+    background:white;
+    font-size:16px;
+    transition:0.3s ease;
+}
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
     border-width: 0;

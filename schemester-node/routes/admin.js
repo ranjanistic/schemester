@@ -338,12 +338,12 @@ router.post(
             students: [],
           },
           invite: {
-            teachers: {
+            teacher: {
               active: false,
               createdAt: 0,
               expiresAt: 0,
             },
-            students: {
+            student: {
               active: false,
               createdAt: 0,
               expiresAt: 0,

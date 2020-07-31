@@ -206,7 +206,9 @@ class Stage2 {
     this.eachDurationField.setInput(
       sessionStorage.getItem("eachDurationField")
     );
-
+    String(sessionStorage.getItem("totalDaysField")).split(',').forEach((dayi,index)=>{
+      this.daychecks[dayi].checked();
+    })
     this.totalPeriodsField.setInput(
       sessionStorage.getItem("totalPeriodsField")
     );
@@ -342,7 +344,7 @@ class Stage2 {
           <li>Each period duration : <b>${sessionStorage.getItem("eachDurationField")} minutes</b></li>
           <li>Break duration : <b>${sessionStorage.getItem("breakDurationField")} minutes</b></li>
           <li>Periods in a day : <b>${sessionStorage.getItem("totalPeriodsField")}</b></li>
-          <li>Working days :<b>${days}</li>
+          <li>Working days : <b>${days}</li>
         <ul>
         </div>`
       );
@@ -396,7 +398,7 @@ class Stage2 {
                 target: locate.admin.target.register,
               });
             }
-            case code.inst.INSTITUTION_DEFAULTS_UNSET: {
+            case code.inst.INSTITUTION_CREATION_FAILED: {
               loadingBox(false);
               snackBar(
                 `Error:${response.event}:${response.msg}`,
@@ -408,7 +410,7 @@ class Stage2 {
               );
               return;
             }
-            case code.inst.INSTITUTION_DEFAULTS_SET:
+            case code.inst.INSTITUTION_CREATED:
               {
                 loadingBox(false);
                 let finish = new Dialog();
