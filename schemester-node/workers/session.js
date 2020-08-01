@@ -147,7 +147,6 @@ class Session {
             uiid:uiid,
             createAt:Date.now(),
             verified:false,
-            vlinkexp:0,
             prefs:{}
           }
           const result = await Admin.insertOne(newAdmin);
@@ -191,7 +190,8 @@ class Session {
                   password: epassword,
                   createdAt: Date.now(),
                   verified:false,
-                  vlinkexp:0
+                  vacations:[],
+                  prefs:{}
                 },
               },
             }
@@ -238,13 +238,13 @@ class Session {
         return code.event(code.server.DATABASE_ERROR);
     }
   };
-  userdata = async (request, model, secret) => {
-    let token = request.signedCookies[this.sessionKey];
+  userdata = async (request, secret) => {
+    const token = request.signedCookies[this.sessionKey];
     if (token == null) {
       console.log("tokennull");
       return code.event(code.auth.SESSION_INVALID);
     } else {
-      let decode = code.event(code.auth.SESSION_INVALID);
+      let decode = code.event(code.auth.AUTH_REQ_FAILED);
       try {
         decode = jwt.verify(token, secret);
       } catch (e) {
@@ -254,19 +254,23 @@ class Session {
         console.log("decodefalse");
         return code.event(code.auth.SESSION_INVALID);
       } else {
-        let _id = decode.user.id;
         switch (secret) {
           case this.adminsessionsecret: {
-            let user = await model.findOne({ _id });
-            if (user) {
-              console.log("session_Id");
-              console.log(_id);
-              return getAdminShareData(user);
+            let admin = await Admin.findOne({ _id:decode.user.id});
+            if (admin) {
+              return getAdminShareData(admin);
             } else {
-              return code.event(code.auth.SESSION_INVALID);
+              return code.event(code.auth.USER_NOT_EXIST);
             }
           }
           case this.teachersessionsecret: {
+            const userinst = await Institute.findOne({uiid:decode.user.uiid,"users.teachers":{$elemMatch:{"_id":decode.user.id}}},
+            {$projection:{
+              _id:0,
+              "users.teachers.$":1
+            }});
+            const teacher = userinst.users.teachers[0];
+            return teacher?getTeacherShareData(teacher):code.event(code.auth.USER_NOT_EXIST);
           }
           default:
             return code.event(code.auth.AUTH_REQ_FAILED);
@@ -291,6 +295,7 @@ const getAdminShareData = (data = {}) => {
     uiid: data.uiid,
     createdAt: data.createdAt,
     verified: data.verified,
+    prefs:data.prefs
   };
 };
 
@@ -302,6 +307,8 @@ const getTeacherShareData = (data = {}) => {
     [sessionID]: data.teacherID,
     createdAt: data.createdAt,
     verified: data.verified,
+    vacations:data.vacations,
+    prefs:data.prefs
   };
 };
 

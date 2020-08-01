@@ -90,6 +90,7 @@ class Codes{
                 this.ACCOUNT_DELETED = 'mail/account-deleted';
                 this.INSTITUTION_INVITATION = 'mail/invite-to-institution';
                 this.ERROR_MAIL_NOTSENT = 'mail/email-not-sent';
+                this.MAIL_SENT = 'mail/email-sent-success';
             }
         }
         class ActionCodes{
@@ -113,6 +114,17 @@ class Codes{
                 this.LINK_DISABLE_FAILED = 'invite/link-disable-failed';
             }
         };
+        class VerificationCodes{
+            constructor(){
+                this.LINK_GENERATED = 'verify/link-generated';
+                this.LINK_VALID = 'verify/link-is-valid';
+                this.LINK_EXPIRED = 'verify/link-is-expired';
+                this.LINK_INVALID = 'verify/invalid-illegal-link';
+                this.VERIFIED = 'verify/verification-success';
+                this.NOT_VERIFIED = 'verify/verification-failed';
+            }
+        
+        }
         class ScheduleCodes{
             constructor(){
                 this.SCHEDULE_EXISTS = 'schedule/schedule-exists';
@@ -129,6 +141,7 @@ class Codes{
         this.action  = new ActionCodes();
         this.inst = new InstitutionCodes();
         this.invite = new InvitationCodes();
+        this.verify = new VerificationCodes();
         this.schedule = new ScheduleCodes();
     }
     event(code){

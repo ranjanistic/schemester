@@ -9,6 +9,7 @@ const express = require("express"),
   view = require("../hardcodes/views"),
   session = require("../workers/session"),
   invite = require("../workers/invitation"),
+  verify = require("../workers/verification"),
   Admin = require("../collections/Admins"),
   Institute = require("../collections/Institutions");
 
@@ -351,6 +352,8 @@ router.post(
           },
           active: false,
           restricted: false,
+          vacations:[],
+          prefs:{}
         };
         const done = await Institute.insertOne(registerdoc);
         if (done.insertedCount == 1) {
@@ -495,127 +498,171 @@ router.post("/schedule", (req, res) => {
 
 router.post("/manage", async (req, res) => {
   clog("in post manage");
-  clog(req.body);
-  const data = req.body;
-  switch (data.type) {
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    clog(e);
+    return res.json({ result:code.eventmsg(code.auth.AUTH_REQ_FAILED, e)});
+  }).then(async (response) => {
+    if(!session.valid(response)){
+      return res.json({ result:response});
+    }
+    clog(req.body);
+    const data = req.body;
+    switch (data.type) {
     case invite.type:{
-        clog("invite type");
-        session.verify(req, sessionsecret).then(async (response) => {
-            let result;
-            if (session.valid(response)) {
-              clog("verified");
+      clog("invite type");
+      switch (data.action) {
+        case "create": {
+          clog("post create link ");
+          const inst = await Institute.findOne({ uiid:response.user.uiid});
+          if(!inst) return res.json({result:code.event(code.inst.INSTITUTION_NOT_EXISTS)});
+
+          if (inst.invite[data.target].active == true) {
+            clog("already active");
+            const validresponse = invite.checkTimingValidity(
+              inst.invite[data.target].createdAt,
+              inst.invite[data.target].expiresAt,
+              inst.invite[data.target].createdAt
+            );
+            if (invite.isActive(validresponse)) {
+              clog("already valid link");
               clog(response);
-              switch (data.action) {
-                case "create": {
-                  clog("post create link ");
-                  const inst = await Institute.findOne({ uiid:response.user.uiid});
-                  if(!inst) {
-                    result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
-                    return res.json({result});
-                  }
-                  clog("inst exists");
-                  clog(inst._id);
-                  clog(inst.invite[data.target].active);
-                  if (inst.invite[data.target].active == true) {
-                    clog("already active");
-                    const validresponse = invite.checkTimingValidity(
-                      inst.invite[data.target].createdAt,
-                      inst.invite[data.target].expiresAt,
-                      inst.invite[data.target].createdAt
-                    );
-                    if (invite.isActive(validresponse)) {
-                      clog("already valid link");
-                      clog(response);
-                      let link = invite.getTemplateLink(
-                        response.user.id,
-                        inst._id,
-                        data.target,
-                        inst.invite[data.target].createdAt
-                      );
-                      clog("templated");
-                      clog(link);
-                      result = {
-                        event: code.invite.LINK_EXISTS,
-                        link: link,
-                        exp: inst.invite[data.target].expiresAt,
-                      };
-                      clog("returning existing link");
-                      return res.json({ result });
-                    }
-                  }
-                  clog("creating new link");
-                  const genlink = await invite.generateLink(
-                    response.user.id,
-                    inst._id,
-                    data.target,
-                    data.daysvalid
-                  );
-                  const path = "invite." + data.target;
-                  const document = await Institute.findOneAndUpdate(
-                    { uiid: response.user.uiid },
-                    {
-                      $set:{
-                        [path]:{
-                          active: true,
-                          createdAt: genlink.create,
-                          expiresAt: genlink.exp,
-                        }
-                      }
-                    }
-                  );
-                  if (document) {
-                    clog("link created");
-                    result = {
-                      event: code.invite.LINK_CREATED,
-                      link: genlink.link,
-                      exp: genlink.exp,
-                    };
-                  } else {
-                    result = code.event(code.invite.LINK_CREATION_FAILED);
-                  }
-                  clog("returning result");
-                  clog(result);
-                  return res.json({ result });
-                }
-                case "disable": {
-                  clog("post disabe link");
-                  const path = "invite."+ req.body.target;
-                  const doc = await Institute.findOneAndUpdate(
-                    { uiid: response.user.uiid },
-                    {
-                      $set:{
-                        [path]:{
-                          active: false,
-                          createdAt: 0,
-                          expiresAt: 0,
-                        }
-                      }
-                    }
-                  );
-                  if (doc) {
-                    clog("link disabled true");
-                    result = code.event(code.invite.LINK_DISABLED);
-                  } else {
-                    result = code.event(code.invite.LINK_DISABLE_FAILED);
-                  }
-                  clog("returning result");
-                  clog(result);
-                  return res.json({ result });
-                }
-              }
-            } else {
-              result = response;
+              let link = invite.getTemplateLink(
+                response.user.id,
+                inst._id,
+                data.target,
+                inst.invite[data.target].createdAt
+              );
+              clog("templated");
+              clog(link);
+              result = {
+                event: code.invite.LINK_EXISTS,
+                link: link,
+                exp: inst.invite[data.target].expiresAt,
+              };
+              clog("returning existing link");
               return res.json({ result });
             }
-          })
-          .catch((e) => {
-            clog(e);
-            result = code.eventmsg(code.server.DATABASE_ERROR, e);
-            res.json({ result });
-          });
+          }
+          clog("creating new link");
+          const genlink = await invite.generateLink(
+            response.user.id,
+            inst._id,
+            data.target,
+            data.daysvalid
+          );
+          const path = "invite." + data.target;
+          const document = await Institute.findOneAndUpdate(
+            { uiid: response.user.uiid },
+            {
+              $set:{
+                [path]:{
+                  active: true,
+                  createdAt: genlink.create,
+                  expiresAt: genlink.exp,
+                }
+              }
+            }
+          );
+          if (document) {
+            clog("link created");
+            result = {
+              event: code.invite.LINK_CREATED,
+              link: genlink.link,
+              exp: genlink.exp,
+            };
+          } else {
+            result = code.event(code.invite.LINK_CREATION_FAILED);
+          }
+          clog("returning result");
+          clog(result);
+          return res.json({ result });
+        }
+        case "disable": {
+          clog("post disabe link");
+          const path = "invite."+ req.body.target;
+          const doc = await Institute.findOneAndUpdate(
+            { uiid: response.user.uiid },
+            {
+              $set:{
+                [path]:{
+                  active: false,
+                  createdAt: 0,
+                  expiresAt: 0,
+                }
+              }
+            }
+          );
+          if (doc) {
+            clog("link disabled true");
+            result = code.event(code.invite.LINK_DISABLED);
+          } else {
+            result = code.event(code.invite.LINK_DISABLE_FAILED);
+          }
+          clog("returning result");
+          clog(result);
+          return res.json({ result });
+        }
       }
-      break;
+    }break;
+    case verify.type:{
+      switch(data.action){
+        case 'send':{
+          clog(response);
+          const linkdata = verify.generateLink(verify.target.admin,{
+            uid:response.user.id
+          });
+          clog(linkdata);
+          //todo: send email then save.
+          let admin = await Admin.findOneAndUpdate(
+            {_id:ObjectId(response.user.id)},
+            { $set:{
+                "vlinkexp":linkdata.exp
+              }
+            });
+          clog(admin);
+          return admin?res.json({result:code.event(code.mail.MAIL_SENT)}):res.json({result:code.event(code.mail.ERROR_MAIL_NOTSENT)})
+        } break;
+        case 'check':{
+          const admin = await Admin.findOne({_id:ObjectId(response.user.id)});
+          if(!admin) return res.json({result:code.event(code.auth.USER_NOT_EXIST)})
+          return admin.verified
+            ?res.json({result:code.event(code.verify.VERIFIED)})
+            :res.json({result:code.event(code.verify.NOT_VERIFIED)});
+        }break;
+      }
+    }break;
     default:res.sendStatus(500);
+  }
+  });
+});
+
+router.get('/external*',async (req,res)=>{
+  const query = req.query;
+  switch(query.type){
+    case verify.type:{//verification link
+      if(!query.u) return res.render(view.notfound);
+      try{
+        const admin = await Admin.findOne(
+          {_id:ObjectId(query.u)},
+        );
+        if(!admin || !admin.vlinkexp) return res.render(view.notfound);
+        if(!verify.isValidTime(admin.vlinkexp)) return res.render(view.verification,{user:{expired:true}});
+
+        const doc = await Admin.findOneAndUpdate(
+          {_id:ObjectId(query.u)},
+          {$set:{verified:true},$unset:{vlinkexp:null}},
+          {returnOriginal:false}
+        );
+        if(!doc) return res.render(view.notfound);
+        return res.render(view.verification,{user:getAdminShareData(doc.value)});
+        
+      }catch(e){
+        clog(e);
+        return res.render(view.notfound);
+      }
+    }break;
+    default:res.render(view.notfound);
   }
 });
 

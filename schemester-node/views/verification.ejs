@@ -15,15 +15,31 @@
         <script src="/script/main.js"></script>
         <script src="/script/verification.js"></script>
     </head>
+    <%if(user.expired) {%>
+    <body class="b-negative">
+        <div id="topBar" style="background-color: #c40c0c;">
+    <% } else { %>
     <body class="b-positive">
         <div id="topBar">
+    <% } %>
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root)">
             <span>Account Verification</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
-            <button class="neutral-button fmt-right" id="logout">Logout</button>
         </div>
         <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
-            <div class="fmt-col container"> 
+            <div class="fmt-col container" id="workbox">
+            <%if(user.expired) {%>
+                <div class="fmt-row heading fmt-center negative">Expired</div><br/>
+                <div class="fmt-row questrial">
+                    This link is no longer valid.<br/><br/>
+                    The link that brought you here has expired now. Verification links are only valid for 900 seconds (15 minutes).
+                    Try verifying again, after signing in to your account.<br/><br/>
+                    <b class="negative">Make sure to visit your verification link before it's too late.</b>
+                </div><br/><br/>
+                <div class="fmt-row">
+                    <button class="fmt-right positive-button" id="returnhome">Return to base</button>
+                </div>
+            <% } else { %>
                 <%if(!user.verified) {%>
                     <div class="fmt-row heading fmt-center">Verification</div><br/>
                     <div class="fmt-row questrial">
@@ -38,14 +54,31 @@
                         <% } %>
                     </div><br/><br/>
                     <div class="fmt-row">
-                        <button class="positive-button" id="sendlink">Send link to <%= user.id %> </button>
+                        <img class="fmt-spin-fast fmt-center fmt-left" width="50" src="/graphic/blueLoader.svg" id="verifyLoader"/>
+                        <button class="positive-button fmt-left" id="sendlink">Send link to <%= user.id %> </button>
+                        <button class="active-button fmt-left" id="checkverified">Check</button>
+                        <% if(user.isAdmin){ %>
                         <button class="fmt-right negative-button" id="resetaccount">Reset account</button>
+                        <% } %>
                         <button class="fmt-right neutral-button" id="later">Not now</button>
                     </div>
+                <% } else { %>
+                    <div class="fmt-row heading fmt-center active">Verified</div><br/>
+                    <div class="fmt-row questrial">
+                        Hello <%= user.username %>!<br/><br/>
+                        Cheers! You have successfully verified your account (<%= user.id %>).
+                        As <% if(user.isAdmin) { %>an administrator<% } else if(user.isTeacher){ %>a teacher<% } else if(user.isStudent) { %>a student<% } %>,
+                        you may now continue your journey with <a href="/tour">Schemester</a>.
+                    </div><br/><br/>
+                    <div class="fmt-row">
+                        <button class="fmt-right positive-button" id="continueSession">Continue</button>
+                        <button class="fmt-right neutral-button" id="explore">Explore Schemester</button>
+                    </div>
                 <% } %>
+            <% } %>
             </div>
         </div>
-        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+        <div id="snackBar" class="fmt-animate-bottom">
             <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
@@ -57,6 +90,8 @@
             <% } else if(user.isStudent) { %>
             <span id="client">student</span>
             <% } %>
+            <span id="expired"><%= user.expired %></span>
+            <span id="verified"><%= user.verified %></span>
             <span id="email"><%= user.id %></span>
             <span id="uid"><%= user.uid %></span>
             <span id="uiid"><%= user.uiid %></span>

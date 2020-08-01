@@ -23,7 +23,6 @@ class Invitation{
     }
 
     getTemplateLink(adminID,instID,target,createdAt){
-        
         return `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}&t=${createdAt}`;
     }
 
@@ -61,7 +60,7 @@ class Invitation{
     }
 }
 
-let getTheMoment = (stringForm = true, dayincrement = 0) => {
+const getTheMoment = (stringForm = true, dayincrement = 0) => {
     let d = new Date();
     let year = d.getFullYear();
     let month = d.getMonth() + 1;
@@ -96,18 +95,19 @@ let getTheMoment = (stringForm = true, dayincrement = 0) => {
         String(milli)
       );
     } else {
-      return parseInt(
+      return Number(
         String(year) +
-          String(month) +
-          String(incrementedDate) +
-          String(hour) +
-          String(min) +
-          String(secs) +
-          String(milli)
+        String(month) +
+        String(incrementedDate) +
+        String(hour) +
+        String(min) +
+        String(secs) +
+        String(milli)
       );
     }
 };
-let daysInMonth = (month, year) => new Date(year, month, 0).getDate();
+
+const daysInMonth = (month, year) => new Date(year, month, 0).getDate();
 
 class Target{
     constructor(){
