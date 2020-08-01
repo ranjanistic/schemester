@@ -26,7 +26,6 @@ class AdminViews{
         class Target{
             constructor(){
               this.dashboard = 'dashboard';
-              this.settings = 'manage';
               this.addteacher = 'addteacher';
               this.manage = 'manage';
               this.register = 'registration';
@@ -48,7 +47,7 @@ class AdminViews{
     getViewByTarget(target = this.target.dashboard){
         console.log(target);
         switch(target){
-            case this.target.settings:return this.settings;
+            case this.target.manage:return this.settings;
             case this.target.addteacher:return this.addTeacher;
             case this.target.dashboard:return this.dash;
             case this.target.register:return this.registration;

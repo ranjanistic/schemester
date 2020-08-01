@@ -171,7 +171,7 @@ class BaseView{
     this.logOut.addEventListener(click,(_) => {showLoader();
       let email = localStorage.getItem(constant.sessionID);
       let uiid = localStorage.getItem('uiid');
-      finishSession(client.admin,_=>{relocate(locate.admin.login,{email:email,uiid:uiid,target:locate.admin.target.dashboard})});
+      finishSession(_=>{relocate(locate.admin.login,{email:email,uiid:uiid,target:locate.admin.target.dashboard})});
     });
     this.settings.addEventListener(click,(_) => { showLoader();
       refer(locate.admin.session,{
