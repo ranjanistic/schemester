@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Login · Admin · Schemester</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script src="/script/main.js"></script>
+    </head>
+    
+    <body>
+        <div id="topBar">
+            <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromSettings">
+            <span id="greeting">Viewing teacher ID</span>
+            <span class="fmt-dropdown-hover fmt-right">
+                <img src="/graphic/menudotsvertical.svg" id="menuButton">
+                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+                    <div class="fmt-padding" id="logoutAdmin">Logout</div>
+                </div>
+            </span>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <input type="text" class="searcher fmt-right" name="search">
+        </div>
+        <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
+            <div class="fmt-row fmt-padding">
+                <div class="fmt-col fmt-half">
+                    <div class="fmt-row group-heading positive fmt-left">Teacher/Class Name</div>
+                    <div class="questrial fmt-row">teacherid@somehting/taken by <a>5 teachers</a></div>
+                </div>
+                <div class="fmt-col fmt-half " id="actions">
+                    <div class="fmt-row fmt-right">
+                        <button class="active-button">Email</button>
+                        <button class="positive-button">Setup</button>
+                        <button class="negative-button">Actions</button>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="fmt-row fmt-center" id="dayTabs">
+                <div class="fmt-col tab-button" style="width:20%">
+                    Monday
+                </div>
+                <div class="fmt-col tab-button-selected" style="width:20%">
+                    Monday
+                </div>
+                <div class="fmt-col tab-button" style="width:20%">
+                    Monday
+                </div>
+                <div class="fmt-col tab-button" style="width:20%">
+                    Monday
+                </div>
+                <div class="fmt-col tab-button" style="width:20%">
+                    Monday
+                </div>
+            </div>
+            
+        </div>
+        <span hidden>
+            <% if (group.Class) { %>
+                <span id="client">student</span>
+            <% } else if(group.teacher) {%>
+                <span id="client">teacher</span>
+                <span id="teacherID"><%= teacher.teacherID %></span>
+                <span id="teachername"><%= teacher.username %></span>
+                <span id="teacherverified"><%= teacher.verified %></span>
+            <% } else { %>
+                <span id="client">teacher</span>
+                <span id="teacherID"><% null %></span>
+            <% } %>
+            <span id="daysinweek"><%= inst.default.timings.daysInWeek %></span>
+            <span id="periodcount"><%= inst.default.timings.periodsInDay %></span>
+        </span>
+    </body>
+</html>

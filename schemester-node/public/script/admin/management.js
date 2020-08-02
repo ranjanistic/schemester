@@ -242,6 +242,13 @@ class Users {
                 this.load(false,false);
                 response.teachers.forEach((teacher,index)=>{
                   this.appendList(this.getSlate(teacher.username,teacher.teacherID));
+                  getElement(`view${teacher.teacherID}`).onclick=_=>{
+                    refer(locate.admin.session,{
+                      target:'viewschedule',
+                      client:client.teacher,
+                      teacherID:teacher.teacherID
+                    })
+                  }
                 })
               }
             })
@@ -257,7 +264,7 @@ class Users {
             <span class="group-text questrial">${email}</span>
         </div>
         <div class="fmt-col fmt-third">
-            <button class="positive-button fmt-right">View</button>
+            <button class="positive-button fmt-right"id="view${email}">View</button>
         </div>
         </div>`
       }
@@ -269,7 +276,6 @@ class Users {
             this.listview.innerHTML = this.getDefaultView();
           }
         }
-this.listview.innerHTML = show?this.getLoaderView():noview?this.getDefaultView():'';
       }
       appendList(slate){
         let last = this.listview.innerHTML;
@@ -280,7 +286,7 @@ this.listview.innerHTML = show?this.getLoaderView():noview?this.getDefaultView()
         }
       }
       getLoaderView(){
-        return `<div class="fmt-center" id="listLoader">
+        return `<div class="fmt-center" id="tlistLoader">
         <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
@@ -294,7 +300,73 @@ this.listview.innerHTML = show?this.getLoaderView():noview?this.getDefaultView()
     this.teacher = new Teacher();
     class Classes{
       constructor(){
-
+        this.listview = getElement("classList");
+        this.search = getElement("classSearch");
+        this.load(false);
+        this.search.oninput =_=>{
+          if(this.search.value){
+            this.load();
+            postJsonData(post.admin.manage,{
+              type:'search',
+              q:this.search.value
+            }).then(response=>{
+              if(response.event== 'OK'){
+                this.load(false,false);
+                response.classes.forEach((Class,index)=>{
+                  this.appendList(this.getSlate(Class.classname,Class.teachercount));
+                  getElement(`view${teacher.teacherID}`).onclick=_=>{
+                    refer(locate.admin.session,{
+                      target:'viewschedule',
+                      client:client.student,
+                      classname:Class.classname
+                    });
+                  }
+                })
+              }
+            })
+          }else {
+            this.load(false);  
+          }
+        }
+      }
+      getSlate(classname,teachercount){
+        return `<div class="fmt-row container" style="margin:4px 0px">
+        <div class="fmt-col fmt-twothird">
+            <span class="group-text positive">${classname}</span><br/>
+            <span class="group-text questrial">Taken by ${teachercount} teachers</span>
+        </div>
+        <div class="fmt-col fmt-third">
+            <button class="positive-button fmt-right"id="view${classname}">View</button>
+        </div>
+        </div>`
+      }
+      load(show = true,noview = true){
+        if(show){
+          this.listview.innerHTML = this.getLoaderView();
+        } else {
+          if(noview){
+            this.listview.innerHTML = this.getDefaultView();
+          }
+        }
+      }
+      appendList(slate){
+        let last = this.listview.innerHTML;
+        if(last == this.getDefaultView()||last == this.getLoaderView()){
+          this.listview.innerHTML = slate
+        } else {
+          this.listview.innerHTML = last + slate
+        }
+      }
+      getLoaderView(){
+        return `<div class="fmt-center" id="clistLoader">
+        <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
+        </div>`;
+      }
+      getDefaultView(){
+        return '<div class="fmt-center">Start Typing...<div>';
+      }
+      clearList(){
+        this.listview.innerHTML = "Start typing";
       }
     }
     this.classes = new Classes();

@@ -254,6 +254,40 @@ img{vertical-align:middle}
     box-shadow: 1px 5px 10px #00000044;
 }
 
+.tab-button-selected,.tab-button{
+    padding:8px;
+    font-family:'Questrial', sans-serif;
+    border:2px solid #216bf3;
+    transition:0.3s;
+}
+.tab-button-selected{
+    border-width:2px 2px 0 2px;
+    background-color: #fff;
+    border-radius:4px 4px 0 0;
+    color:#216bf3;
+    font-weight: bold;
+}
+.tab-button{
+    border-width: 0 0 2px 0;
+    background-color: #ddd;
+    border-radius:4px 4px 0 0;
+    color:#161616a1;
+    font-weight: lighter;
+    cursor:pointer;
+}
+.tab-button:hover{
+    background-color: #0259fa0e;
+    border-width:2px 0px 0 0px;
+    color:black;
+    
+    border-color:#216bf369;
+}
+.tab-button:active{
+    background-color: #216bf344;
+    border-width:2px 2px 0 2px;
+    border-color:#216bf369;
+}
+
 .fit-container{
     color: black;
     background-color: white;

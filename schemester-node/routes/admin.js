@@ -113,6 +113,63 @@ router.get("/session*", (req, res) => {
                     inst,
                   });
                 }
+                case view.admin.target.viewschedule:{
+                  const inst = await Institute.findOne({uiid:response.user.uiid});
+                  if(data.client == 'teacher'){
+                    const teacherScheduleInst = await Institute.findOne(
+                      {uiid:response.user.uiid,
+                        "schedule.teachers":{$elemMatch:{"teacherID":data.teacherID}}
+                      },
+                      {
+                        projection:{
+                          "schedule.teachers.$":1
+                        }
+                      }
+                    );
+                    const teacherInst = await Institute.findOne({uiid:response.user.uiid,
+                     "users.teachers":{$elemMatch:{"teacherID":data.teacherID}}},
+                     {projection:{"users.teachers.$":1}}
+                    );
+                    if(teacherInst && teacherScheduleInst){
+                      return res.render(view.admin.scheduleview,{
+                        group:{teacher:teacherInst.users.teachers[0]},
+                        schedule:teacherScheduleInst.schedule.teachers[0],
+                        inst
+                      });
+                    }
+                    if(!(teacherInst && teacherScheduleInst)){
+                      return res.render(view.admin.scheduleview,{
+                        group:{teacher:false},
+                        schedule:false,
+                        inst
+                      });
+                    }
+                    if(!teacherInst && teacherScheduleInst){
+                      return res.render(view.admin.scheduleview,{
+                        group:{teacher:false},
+                        schedule:teacherScheduleInst.schedule.teachers[0],
+                        inst
+                      });
+                    } else {
+                      return res.render(view.admin.scheduleview,{
+                        group:{teacher:teacherInst.users.teachers[0]},
+                        schedule:false,
+                        inst
+                      });
+                    }
+                  } else if(data.client == 'student') {
+                    const scheduleInst = await Institute.findOne({uiid:response.user.uiid,"schedule.students":{$elemMatch:{"classname":data.classname}}},
+                      {projection:{
+                        "schedule.students.$":1
+                      }}
+                    );
+                    if(!scheduleInst) res.render(view.admin.scheduleview,{schedule:false});
+                    const schedule = scheduleInst.schedule.students[0];
+                    return res.render(view.admin.scheduleview,{group:{Class:true},schedule,inst});
+                  } else {
+                    res.render(view.notfound);
+                  }
+                }
                 default:
                   res.render(view.admin.getViewByTarget(data.target), {
                     adata,
