@@ -66,6 +66,7 @@ a:active{
 }
 
 img{vertical-align:middle}
+
 .caption{
     font-size: 16px;
     font-weight: 500;
@@ -109,6 +110,7 @@ img{vertical-align:middle}
     -webkit-transition: width 0.4s ease-in-out;
     transition: 0.4s ease-in-out;
   }
+
   .searcher:hover{
       box-shadow: 1px 5px 5px #00000022;
       cursor: pointer;
@@ -361,6 +363,7 @@ img{vertical-align:middle}
     font-size: 16px;transition: 0.5s ease;
     margin:4px 2px;
 }
+
 .text-field-active{
     border: 3px solid #00893E;
     border-radius: 8px;
@@ -638,6 +641,7 @@ img{vertical-align:middle}
     position:relative;
     padding:22px 0;
     outline:0;
+    overflow-wrap:anywhere;
     width:80%;
 }
 @media (max-width:600px){.dialog-box{margin:0 10px;width:auto!important}.dialog{padding-top:30px}}

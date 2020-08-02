@@ -404,9 +404,11 @@ class TextInput {
     });
   }
   onTextInput(action = (_) => {}) {
-    this.input.oninput = () => {
-      action();
-    };
+    if(this.input){
+      this.input.oninput = () => {
+        action();
+      };
+    }
   }
   onTextDefocus(action) {
     this.input.onchange = () => {

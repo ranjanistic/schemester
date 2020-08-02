@@ -35,7 +35,7 @@ router.get("/auth/login*", (req, res) => {
         const autofill = req.query;
         res.render(view.admin.login, { autofill });
       } else {
-        res.redirect(toSession(response.user.id, req.query.target));
+        res.redirect(toSession(response.user.id, req.query.target,req.query.section));
       }
     })
     .catch((error) => {
@@ -57,7 +57,7 @@ router.get("/session*", (req, res) => {
       try {
         if (data.u != response.user.id) {
           clog("data.u != response.user.id");
-          res.redirect(toLogin(data.target));
+          res.redirect(toLogin(data.target,data.section));
         } else {
           clog("data.u == response.user.id");
           const admin = await Admin.findOne({
@@ -87,18 +87,19 @@ router.get("/session*", (req, res) => {
                 return res.redirect(
                   toSession(adata.uid, view.admin.target.dashboard)
                 );
-              }
+             }
             }
             try {
               if (adata.verified == false) {
                 return res.render(view.verification, { user: adata });
               }
+            
               switch (data.target) {
                 case view.admin.target.manage: {
                   return res.render(view.admin.getViewByTarget(data.target), {
                     adata,
                     inst,
-                    section: [data.section],
+                    section: data.section,
                   });
                 }
                 case view.admin.target.register: {
@@ -632,6 +633,31 @@ router.post("/manage", async (req, res) => {
         }break;
       }
     }break;
+    case 'search':{
+      switch(data.target){
+        case 'teacher':{
+          let inst = await Institute.findOne({uiid:response.user.uiid});
+          if(!inst) return code.inst.INSTITUTION_NOT_EXISTS;
+          let teachers = Array();
+          inst.users.teachers.forEach((teacher,index)=>{
+            if(String(teacher.username).toLowerCase() == String(data.q).toLowerCase() ||
+             String(teacher.username).toLowerCase().includes(String(data.q).toLowerCase()) ||
+             String(teacher.teacherID) == String(data.q).toLowerCase()||
+             String(teacher.teacherID).includes(String(data.q).toLowerCase())){
+              teachers.push({
+                username:teacher.username,
+                teacherID:teacher.teacherID
+              });
+            }
+          });
+          return res.json({result:{
+            event:'OK',
+            teachers:teachers
+          }});
+        }
+        default: res.sendStatus(500);
+      }
+    }
     default:res.sendStatus(500);
   }
   });

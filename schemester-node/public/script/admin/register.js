@@ -178,7 +178,11 @@ class Stage2 {
         `daycheckview${index}`
       );
     });
-
+    if(sessionStorage.getItem("totalDaysField")){
+      String(sessionStorage.getItem("totalDaysField")).split(',').forEach((dayi,index)=>{
+        this.daychecks[dayi].checked();
+      });
+    }
     this.eachDurationField = new TextInput(
       "eachDurationField",
       "eachDuration",
@@ -206,9 +210,7 @@ class Stage2 {
     this.eachDurationField.setInput(
       sessionStorage.getItem("eachDurationField")
     );
-    String(sessionStorage.getItem("totalDaysField")).split(',').forEach((dayi,index)=>{
-      this.daychecks[dayi].checked();
-    })
+    
     this.totalPeriodsField.setInput(
       sessionStorage.getItem("totalPeriodsField")
     );
@@ -257,6 +259,7 @@ class Stage2 {
     });
 
     this.save = getElement("saveStage2");
+    this.workingdaysField = new TextInput("workingdaysfield",null,"workingdayserror");
   }
   durationValid(){
     const getNumeric=(value)=>{
@@ -269,7 +272,19 @@ class Stage2 {
     let bdur = Number(this.breakDurationField.getInput());
     clog(((end - start)-bdur)/pdur);
   }
+  noneChecked(){
+    let valid = this.daychecks.some((check,index)=>{
+      return (check.isChecked())
+    });
+    if(!valid){
+      this.workingdaysField.showError("Select at least one",false);
+      this.daychecks.forEach((day,i)=>{
+        day.onCheckChange(_=>{this.workingdaysField.normalize()},_=>{this.workingdaysField.showError("Select at least one",false);});
+      })
+    }
+  }
   saveInstitution() {
+    this.noneChecked();
     if (
       !(
         this.startTimeField.isValid() &&

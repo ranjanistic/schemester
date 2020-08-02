@@ -177,7 +177,7 @@ class BaseView{
       refer(locate.admin.session,{
         u:localStorage.getItem(constant.sessionUID),
         target:locate.admin.target.settings,
-        section:0
+        section:locate.admin.section.users
       });
     });
     var prevScrollpos = window.pageYOffset;

@@ -2,7 +2,16 @@
 
 class Management {
   constructor() {
-    this.displayIndex = 0;
+    this.sectionreq = getElement("section").innerHTML;
+    switch(this.sectionreq){
+        case locate.admin.section.institute:this.displayIndex = 1;break;
+        case locate.admin.section.schedule:this.displayIndex = 2;break;
+        case locate.admin.section.users:this.displayIndex = 3;break;
+        case locate.admin.section.security:this.displayIndex = 4;break;
+        case locate.admin.section.about:this.displayIndex = 5;break;
+      default:this.displayIndex = 0;break;
+    }
+    
     this.tabs = Array(
       getElement("adminTab"),
       getElement("institutionTab"),
@@ -68,7 +77,7 @@ class Management {
       click,
       (_) => {
         showLoader();
-        finishSession(client.admin,(_) => {
+        finishSession((_) => {
           relocate(locate.admin.login, { target: locate.admin.target.manage });
         });
       },
@@ -92,6 +101,7 @@ class Management {
       target: "dashboard",
     });
   };
+
 }
 
 class Admin {
@@ -210,10 +220,84 @@ class Users {
     this.invite.addEventListener(
       click,
       (_) => {
-        this.linkGenerator("teacher");
+        this.linkGenerator(client.teacher);
       },
       false
     );
+
+    class Teacher{
+      constructor(){
+        this.listview = getElement("teacherList");
+        this.search = getElement("teacherSearch");
+        this.load(false);
+        this.search.oninput =_=>{
+          if(this.search.value){
+            this.load();
+            postJsonData(post.admin.manage,{
+              type:'search',
+              target:client.teacher,
+              q:this.search.value
+            }).then(response=>{
+              if(response.event== 'OK'){
+                this.load(false,false);
+                response.teachers.forEach((teacher,index)=>{
+                  this.appendList(this.getSlate(teacher.username,teacher.teacherID));
+                })
+              }
+            })
+          }else {
+            this.load(false);  
+          }
+        }
+      }
+      getSlate(name,email){
+        return `<div class="fmt-row container" style="margin:4px 0px">
+        <div class="fmt-col fmt-twothird">
+            <span class="group-text positive">${name}</span><br/>
+            <span class="group-text questrial">${email}</span>
+        </div>
+        <div class="fmt-col fmt-third">
+            <button class="positive-button fmt-right">View</button>
+        </div>
+        </div>`
+      }
+      load(show = true,noview = true){
+        if(show){
+          this.listview.innerHTML = this.getLoaderView();
+        } else {
+          if(noview){
+            this.listview.innerHTML = this.getDefaultView();
+          }
+        }
+this.listview.innerHTML = show?this.getLoaderView():noview?this.getDefaultView():'';
+      }
+      appendList(slate){
+        let last = this.listview.innerHTML;
+        if(last == this.getDefaultView()||last == this.getLoaderView()){
+          this.listview.innerHTML = slate
+        } else {
+          this.listview.innerHTML = last + slate
+        }
+      }
+      getLoaderView(){
+        return `<div class="fmt-center" id="listLoader">
+        <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
+        </div>`;
+      }
+      getDefaultView(){
+        return '<div class="fmt-center">Start Typing...<div>';
+      }
+      clearList(){
+        this.listview.innerHTML = "Start typing";
+      }
+    }
+    this.teacher = new Teacher();
+    class Classes{
+      constructor(){
+
+      }
+    }
+    this.classes = new Classes();
   }
   linkGenerator = (target) => {
     clog("link generator");

@@ -39,8 +39,8 @@
                 <div class="group-heading" id="adminHead">Administrator</div>
                 <div class="fmt-col">
                     <div class="fmt-row">
-                        <fieldset class="text-field" id="adminNameField">
-                            <legend class="field-caption">Name Visible to people of your institution</legend>
+                        <fieldset class="text-field-active" id="adminNameField">
+                            <legend class="field-caption">Name visible to people of your institution</legend>
                             <span style="font-size: 24px;" id="adminNameView"><%= adata.username %> </span>
                             <!-- <input class="text-input" required autocomplete="name"  placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails"> -->
                             <span class="fmt-right error-caption"  id="adminNameError"></span>
@@ -48,19 +48,16 @@
                     </div>
                 </div>
                 <div class="fmt-half">
-                    <fieldset class="fmt-col text-field" id="emailField">
+                    <fieldset class="fmt-col text-field-active" id="emailField">
                         <legend class="field-caption">Email Address</legend>
                         <span style="font-size: 24px;" id="adminEmailView"><%= adata.id %></span>
-                        <button class="positive-button fmt-right" style="margin:0 4px" id="verifiedEmail">C</button>
-                        <button class="warning-button fmt-right" style="margin:0 4px" id="changeEmail">V</button>
                     </fieldset>
                 </div>
-                <div class="fmt-half">
+                <div class="fmt-half fmt-padding-small">
                     <div class="fmt-row">
                         <fieldset class="text-field fmt-right" id="adminPhoneField">
                             <legend class="field-caption">Your contact number</legend>
-                            <span style="font-size:24px;">+91</span>
-                            <input class="text-input" style="width:fit-content" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails">
+                            <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails">
                             <span class="fmt-right error-caption"  id="adminPhoneError"></span><!-- add break in span -->
                         </fieldset>
                     </div>
@@ -79,7 +76,7 @@
                             </fieldset>
                         </div>
                         <div class="fmt-row">
-                            <fieldset class="text-field" id="uiidField">
+                            <fieldset class="text-field-active" id="uiidField">
                                 <legend class="field-caption">UIID Permanent</legend>
                                 <span style="font-size: 24px;" id="uiidView"><%= adata.uiid %></span>
                                 <!-- <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" > -->
@@ -98,7 +95,7 @@
                         <div class="fmt-row">
                             <fieldset class="text-field fmt-right" id="instPhoneField">
                                 <legend class="field-caption">Telephone Number</legend>
-                                <span style="font-size:24px;">0120-</span><input class="text-input" style="width:fit-content" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails">
+                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails">
                                 <span class="fmt-right error-caption"  id="instPhoneError"></span>
                             </fieldset>
                         </div>
@@ -136,7 +133,7 @@
                         </fieldset>
                         <fieldset class="text-field" id="workingdaysfield">
                             <legend class="field-caption">Select working days</legend>
-                            <div id="dayselector" >
+                            <div id="dayselector">
                             </div>
                             <span class="fmt-right error-caption" id="workingdayserror"></span>
                         </fieldset>
