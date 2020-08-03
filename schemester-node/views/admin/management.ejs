@@ -13,7 +13,6 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/main.js"></script>
         <script src="/script/admin/management.js"></script>
-        <script src="/script/admin/adb.js"></script>
     </head>
     <%countObjects = function(object){
         let i = 0;
@@ -156,10 +155,10 @@
                                 <div class="fmt-col sub-container">
                                     <div class="fmt-row">
                                         <span class="sub-heading">Teachers</span>
-                                        <button class="fmt-right positive-button" id="inviteUsers">Invite teachers</button>
+                                        <button class="fmt-right positive-button" id="inviteUsers">Invite</button>
                                     </div>
                                     <div class="fmt-row">
-                                        <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers) %> teachers" id="teacherSearch" style="width:100%"/>
+                                        <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
                                     </div>
                                     <br/>
                                     <div class="fmt-row" id="teacherList">
@@ -171,7 +170,7 @@
                                 <div class="sub-container">
                                     <span class="sub-heading">Classes</span>
                                     <div>
-                                        <input type="text" class="dropdown-input fmt-padding" placeholder="Search teacher" id="classSearch" style="width:100%"/>
+                                        <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search teacher" id="classSearch" style="width:100%"/>
                                     </div>
                                     <br/>
                                     <div class="fmt-row" id="classList">

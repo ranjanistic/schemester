@@ -20,7 +20,7 @@ const sessionUID = "uid";
 router.use(cookieParser(sessionsecret));
 
 router.get("/", function (req, res) {
-  res.redirect(toLogin(view.admin.target.dashboard));
+  res.redirect(toLogin());
 });
 
 router.get("/auth/login*", (req, res) => {
@@ -28,14 +28,13 @@ router.get("/auth/login*", (req, res) => {
   session
     .verify(req, sessionsecret)
     .then((response) => {
-      clog("verification");
       clog(response);
       if (!session.valid(response)) {
-        clog("invalid session");
-        const autofill = req.query;
-        res.render(view.admin.login, { autofill });
+        return res.render(view.admin.login, { autofill: req.query });
       } else {
-        res.redirect(toSession(response.user.id, req.query.target,req.query.section));
+        let data = req.query;
+        delete data["u"];
+        return res.redirect(toSession(response.user.id, data));
       }
     })
     .catch((error) => {
@@ -47,149 +46,145 @@ router.get("/session*", (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
-  session.verify(req, sessionsecret).then(async (response) => {
-    if (!session.valid(response)) {
-      clog("invalid session");
-      res.redirect(toLogin(data.target));
-    } else {
-      clog("valid session");
-      clog(response);
+  session
+    .verify(req, sessionsecret)
+    .catch((e) => {
+      clog("session catch");
+      clog(e);
+      return res.redirect(toLogin(data));
+    })
+    .then(async (response) => {
+      if (!session.valid(response)) return res.redirect(toLogin(data));
       try {
-        if (data.u != response.user.id) {
-          clog("data.u != response.user.id");
-          res.redirect(toLogin(data.target,data.section));
-        } else {
-          clog("data.u == response.user.id");
-          const admin = await Admin.findOne({
-            _id: ObjectId(response.user.id),
+        if (data.u != response.user.id) return res.redirect(toLogin(data));
+
+        const admin = await Admin.findOne({ _id: ObjectId(response.user.id) });
+        if (!admin)
+          return session.finish(res).then((response) => {
+            if (response) res.redirect(toLogin(data));
           });
-          if (!admin) {
-            clog("no admin, finishing session");
-            session.finish(res).then((response) => {
-              if (response) res.redirect(toLogin(data.target));
-            });
-          } else {
-            clog(admin);
-            let adata = getAdminShareData(admin);
-            clog("adata");
-            clog(adata);
-            let inst = await Institute.findOne({ uiid: adata.uiid });
-            if (!inst) {
-              clog("no inst registered");
-              data.target = view.admin.target.register;
-            } else {
-              clog("hasInst");
-              clog(inst);
-              if (
-                data.target == view.admin.target.register ||
-                data.target == undefined
-              ) {
-                return res.redirect(
-                  toSession(adata.uid, view.admin.target.dashboard)
-                );
-             }
-            }
-            try {
-              if (adata.verified == false) {
-                return res.render(view.verification, { user: adata });
-              }
-            
-              switch (data.target) {
-                case view.admin.target.manage: {
-                  return res.render(view.admin.getViewByTarget(data.target), {
-                    adata,
-                    inst,
-                    section: data.section,
-                  });
-                }
-                case view.admin.target.register: {
-                  return res.render(view.admin.getViewByTarget(data.target), {
-                    adata,
-                  });
-                }
-                case view.admin.target.addteacher:{
-                  return res.render(view.admin.getViewByTarget(data.target), {
-                    user:adata,
-                    inst,
-                  });
-                }
-                case view.admin.target.viewschedule:{
-                  const inst = await Institute.findOne({uiid:response.user.uiid});
-                  if(data.client == 'teacher'){
-                    const teacherScheduleInst = await Institute.findOne(
-                      {uiid:response.user.uiid,
-                        "schedule.teachers":{$elemMatch:{"teacherID":data.teacherID}}
-                      },
-                      {
-                        projection:{
-                          "schedule.teachers.$":1
-                        }
-                      }
-                    );
-                    const teacherInst = await Institute.findOne({uiid:response.user.uiid,
-                     "users.teachers":{$elemMatch:{"teacherID":data.teacherID}}},
-                     {projection:{"users.teachers.$":1}}
-                    );
-                    if(teacherInst && teacherScheduleInst){
-                      return res.render(view.admin.scheduleview,{
-                        group:{teacher:teacherInst.users.teachers[0]},
-                        schedule:teacherScheduleInst.schedule.teachers[0],
-                        inst
-                      });
-                    }
-                    if(!(teacherInst && teacherScheduleInst)){
-                      return res.render(view.admin.scheduleview,{
-                        group:{teacher:false},
-                        schedule:false,
-                        inst
-                      });
-                    }
-                    if(!teacherInst && teacherScheduleInst){
-                      return res.render(view.admin.scheduleview,{
-                        group:{teacher:false},
-                        schedule:teacherScheduleInst.schedule.teachers[0],
-                        inst
-                      });
-                    } else {
-                      return res.render(view.admin.scheduleview,{
-                        group:{teacher:teacherInst.users.teachers[0]},
-                        schedule:false,
-                        inst
-                      });
-                    }
-                  } else if(data.client == 'student') {
-                    const scheduleInst = await Institute.findOne({uiid:response.user.uiid,"schedule.students":{$elemMatch:{"classname":data.classname}}},
-                      {projection:{
-                        "schedule.students.$":1
-                      }}
-                    );
-                    if(!scheduleInst) res.render(view.admin.scheduleview,{schedule:false});
-                    const schedule = scheduleInst.schedule.students[0];
-                    return res.render(view.admin.scheduleview,{group:{Class:true},schedule,inst});
-                  } else {
-                    res.render(view.notfound);
-                  }
-                }
-                default:
-                  res.render(view.admin.getViewByTarget(data.target), {
-                    adata,
-                    inst,
-                  });
-              }
-            } catch (e) {
-              clog(e);
-              data.target = view.admin.target.dashboard;
-              res.redirect(toLogin(data.target));
-            }
+        let adata = getAdminShareData(admin);
+        if (!adata.verified) return res.render(view.verification, { user: adata });
+        let inst = await Institute.findOne({ uiid: response.user.uiid });
+        if (!inst) {
+          data.target = view.admin.target.register;
+        } else {
+          if (
+            data.target == view.admin.target.register ||
+            data.target == undefined
+          ) {
+            return res.redirect(
+              toSession(adata.uid, { target: view.admin.target.dashboard })
+            );
           }
         }
+        try {
+          switch (data.target) {
+            case view.admin.target.register: {
+              return res.render(view.admin.getViewByTarget(data.target), {
+                adata,
+              });
+            }
+            case view.admin.target.addteacher: {
+              return res.render(view.admin.getViewByTarget(data.target), {
+                user: adata,
+                inst,
+              });
+            }
+            case view.admin.target.manage: {
+              return res.render(view.admin.getViewByTarget(data.target), {
+                adata,
+                inst,
+                section: data.section,
+              });
+            }
+            case view.admin.target.viewschedule: {
+                clog(data);
+                if (data.client == "teacher") {
+                  const teacherScheduleInst = await Institute.findOne({
+                    uiid: response.user.uiid,
+                      "schedule.teachers": {
+                        $elemMatch: { teacherID: data.teacherID },
+                      }
+                  }, {
+                    projection: {
+                      _id: 0, "schedule.teachers.$": 1 
+                    } 
+                  });
+                  const teacherInst = await Institute.findOne({
+                    uiid: response.user.uiid,
+                    "users.teachers": {
+                      $elemMatch: { teacherID: data.teacherID },
+                    },
+                  },{
+                    projection: {
+                       _id: 0, "users.teachers.$": 1 
+                    } 
+                  });
+                  if (teacherInst && teacherScheduleInst) {
+                    return res.render(view.admin.scheduleview, {
+                      group: { teacher: true },
+                      teacher: teacherInst.users.teachers[0],
+                      schedule: teacherScheduleInst.schedule.teachers[0],
+                      inst,
+                    });
+                  }
+                  if (!teacherInst && !teacherScheduleInst) {
+                    return res.render(view.admin.scheduleview, {
+                      group: { teacher: false },
+                      schedule: false,
+                      inst,
+                    });
+                  }
+                  if (!teacherInst && teacherScheduleInst) {
+                    clog("here");
+                    return res.render(view.admin.scheduleview, {
+                      group: { teacher: false },
+                      schedule: teacherScheduleInst.schedule.teachers[0],
+                      inst,
+                    });
+                  } else {
+                    return res.render(view.admin.scheduleview, {
+                      group: { teacher: true },
+                      teacher: teacherInst.users.teachers[0],
+                      schedule: false,
+                      inst,
+                    });
+                  }
+                } else if (data.client == "student") {
+                  const scheduleInst = await Institute.findOne({
+                    uiid: response.user.uiid,
+                    "schedule.students": {
+                      $elemMatch: { classname: data.classname },
+                    },
+                  },{
+                    projection: {
+                      "_id":0,
+                      "schedule.students.$": 1,
+                    },
+                  });
+                  if (!scheduleInst) res.render(view.admin.scheduleview, { schedule: false });
+                  return res.render(view.admin.scheduleview, {
+                    group: { Class: true },
+                    schedule:scheduleInst.schedule.students[0],
+                    inst,
+                  });
+                } else {
+                  return res.render(view.notfound);
+                }
+            } break;
+            default: return res.render(view.admin.getViewByTarget(data.target), {adata,inst,});
+          }
+        } catch (e) {
+          clog(e);
+          data.target = view.admin.target.dashboard;
+          return res.redirect(toLogin(data));
+        }
       } catch (e) {
-        clog("session catch");
         clog(e);
-        res.redirect(toLogin(data.target));
+        return res.render(view.servererror);
       }
-    }
-  });
+    });
 });
 
 //for account settings
@@ -410,8 +405,8 @@ router.post(
           },
           active: false,
           restricted: false,
-          vacations:[],
-          prefs:{}
+          vacations: [],
+          prefs: {},
         };
         const done = await Institute.insertOne(registerdoc);
         if (done.insertedCount == 1) {
@@ -471,301 +466,440 @@ router.post("/session/receiveinstitution", async (req, res) => {
 
 router.post("/schedule", (req, res) => {
   let result;
-  session.verify(req, sessionsecret).then(async (response) => {
-    if (session.valid(response)) {
-      switch (req.body.target) {
-        case "teacher":{
+  session
+    .verify(req, sessionsecret)
+    .catch((error) => {
+      clog(error);
+      return res.json({
+        result: code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED, error),
+      });
+    })
+    .then(async (response) => {
+      if (!session.valid(response))
+        return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+      const inst = await Institute.findOne({ uiid: response.user.uiid });
+      if (!inst)
+        return res.json({
+          result: code.event(code.inst.INSTITUTION_NOT_EXISTS),
+        });
+      const body = req.body;
+      switch (body.target) {
+        case "teacher":
+          {
             switch (req.body.action) {
-              case "upload":{
-                const body = req.body;
-                let inst = await Institute.findOne({uiid: response.user.uiid});
-                if (!inst) {
-                  result = code.event(code.inst.INSTITUTION_NOT_EXISTS);
-                  return res.json({ result });
-                }
-                let overwriting = false;//if existing teacher schedule being overwritten after completion.
-                let incomplete = false;//if existing teacher schedule being rewritten without completion.
-                let found = inst.schedule.teachers.some((teacher, index) => {
-                  if (teacher.teacherID == body.teacherID) {
-                    if(teacher.days.length == inst.default.timings.daysInWeek.length){
-                      overwriting = true;
-                    } else{
-                      incomplete = teacher.days.some((day,index)=>{
-                        if(body.data.dayIndex <= day.dayIndex){
-                          return true;
-                        }
-                      });
+              case "upload":
+                {
+                  let overwriting = false; //if existing teacher schedule being overwritten after completion.
+                  let incomplete = false; //if existing teacher schedule being rewritten without completion.
+                  let found = inst.schedule.teachers.some((teacher, index) => {
+                    if (teacher.teacherID == body.teacherID) {
+                      if (
+                        teacher.days.length ==
+                        inst.default.timings.daysInWeek.length
+                      ) {
+                        overwriting = true;
+                      } else {
+                        incomplete = teacher.days.some((day, index) => {
+                          if (body.data.dayIndex <= day.dayIndex) {
+                            return true;
+                          }
+                        });
+                      }
+                      return true;
                     }
-                    return true;
-                  }
-                });
-                if(overwriting){  //completed schedule, must be edited from schedule view.
-                  result = code.event(code.schedule.SCHEDULE_EXISTS);
-                  return res.json({result});
-                }
-                if(incomplete){ //remove teacher schedule
-                  Institute.findOneAndUpdate({ uiid:response.user.uiid },{
-                    $pull:{'schedule.teachers': { teacherID: body.teacherID }}
                   });
-                  found = false;  //add as a new teacher schedule
-                }
-                if (found) {//existing teacher schedule, incomplete (new day index)
-                  const filter = {
-                    uiid: response.user.uiid,
-                    "schedule.teachers":{$elemMatch:{"teacherID":body.teacherID}}//existing schedule teacherID
-                  };
-                  const newdocument = {
-                    $push: {"schedule.teachers.$[outer].days":body.data}//new day push
-                  };
-                  const options = { 
-                    "arrayFilters":[{"outer.teacherID":body.teacherID}]
-                  };
-                  let doc = await Institute.findOneAndUpdate(filter,newdocument,options);
-                  clog("schedule appended?");
-                  if (doc) {
-                    result = code.event(code.schedule.SCHEDULE_CREATED);
-                    return res.json({ result });  //new day created.
+                  if (overwriting) {
+                    //completed schedule, must be edited from schedule view.
+                    result = code.event(code.schedule.SCHEDULE_EXISTS);
+                    return res.json({ result });
                   }
-                } else {  //no existing schedule teacherID
-                  const filter = { uiid: response.user.uiid }
-                  const newdocument = {
-                    $push: {"schedule.teachers": {teacherID: body.teacherID, days: [body.data]}}  //new teacher schedule push
-                  };
-                  let doc = await Institute.findOneAndUpdate(filter,newdocument);
-                  clog("schedule created?");
-                  if (doc) {
-                    result = code.event(code.schedule.SCHEDULE_CREATED);
-                    return res.json({ result });  //new teacher new day created.
+                  if (incomplete) {
+                    //remove teacher schedule
+                    Institute.findOneAndUpdate(
+                      { uiid: response.user.uiid },
+                      {
+                        $pull: {
+                          "schedule.teachers": { teacherID: body.teacherID },
+                        },
+                      }
+                    );
+                    found = false; //add as a new teacher schedule
+                  }
+                  if (found) {
+                    //existing teacher schedule, incomplete (new day index)
+                    const filter = {
+                      uiid: response.user.uiid,
+                      "schedule.teachers": {
+                        $elemMatch: { teacherID: body.teacherID },
+                      }, //existing schedule teacherID
+                    };
+                    const newdocument = {
+                      $push: { "schedule.teachers.$[outer].days": body.data }, //new day push
+                    };
+                    const options = {
+                      arrayFilters: [{ "outer.teacherID": body.teacherID }],
+                    };
+                    const doc = await Institute.findOneAndUpdate(
+                      filter,
+                      newdocument,
+                      options
+                    );
+                    clog("schedule appended?");
+                    if (doc)
+                      return res.json({
+                        result: code.event(code.schedule.SCHEDULE_CREATED),
+                      }); //new day created.
+                  } else {
+                    //no existing schedule teacherID
+                    const filter = { uiid: response.user.uiid };
+                    const newdocument = {
+                      $push: {
+                        "schedule.teachers": {
+                          teacherID: body.teacherID,
+                          days: [body.data],
+                        },
+                      }, //new teacher schedule push
+                    };
+                    const doc = await Institute.findOneAndUpdate(
+                      filter,
+                      newdocument
+                    );
+                    clog("schedule created?");
+                    if (doc)
+                      return res.json({
+                        result: code.event(code.schedule.SCHEDULE_CREATED),
+                      }); //new teacher new day created.
                   }
                 }
-              }break;
-              case "update":{}break;
+                break;
+              case "receive":
+                {
+                  const teacherInst = await Institute.findOne({
+                      uiid: response.user.uiid,
+                      "schedule.teachers": {
+                        $elemMatch: {
+                          "teacherID": body.teacherID,
+                        },
+                      },
+                    },
+                    {
+                      projection: {
+                        _id: 0,
+                        "schedule.teachers.$": 1,
+                      },
+                    }
+                  );
+                  if (teacherInst) {
+                    return res.json({
+                      result: {
+                        event: "OK",
+                        schedule: teacherInst.schedule.teachers[0],
+                      },
+                    });
+                  } else {
+                    return res.json({
+                      result: code.event(code.schedule.SCHEDULE_NOT_EXIST),
+                    });
+                  }
+                }
+                break;
+              case "update":
+                {
+                }
+                break;
+              default:
+                throw Error("invalid teacher schedule action");
             }
-        }break;
+          }
+          break;
       }
-    } else {
-      result = code.event(code.auth.SESSION_INVALID);
-      return result;
-    }
-  }).catch((error) => {
-    clog(error);
-    result = code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED, error);
-    return res.json({ result });
-  });
+    });
 });
 
 router.post("/manage", async (req, res) => {
   clog("in post manage");
-  session.verify(req, sessionsecret)
-  .catch(e=>{
-    clog(e);
-    return res.json({ result:code.eventmsg(code.auth.AUTH_REQ_FAILED, e)});
-  }).then(async (response) => {
-    if(!session.valid(response)){
-      return res.json({ result:response});
-    }
-    clog(req.body);
-    const data = req.body;
-    switch (data.type) {
-    case invite.type:{
-      clog("invite type");
-      switch (data.action) {
-        case "create": {
-          clog("post create link ");
-          const inst = await Institute.findOne({ uiid:response.user.uiid});
-          if(!inst) return res.json({result:code.event(code.inst.INSTITUTION_NOT_EXISTS)});
+  session
+    .verify(req, sessionsecret)
+    .catch((e) => {
+      clog(e);
+      return res.json({ result: code.eventmsg(code.auth.AUTH_REQ_FAILED, e) });
+    })
+    .then(async (response) => {
+      if (!session.valid(response)) {
+        return res.json({ result: response });
+      }
+      clog(req.body);
+      const data = req.body;
+      switch (data.type) {
+        case invite.type:
+          {
+            clog("invite type");
+            switch (data.action) {
+              case "create": {
+                clog("post create link ");
+                const inst = await Institute.findOne({
+                  uiid: response.user.uiid,
+                });
+                if (!inst)
+                  return res.json({
+                    result: code.event(code.inst.INSTITUTION_NOT_EXISTS),
+                  });
 
-          if (inst.invite[data.target].active == true) {
-            clog("already active");
-            const validresponse = invite.checkTimingValidity(
-              inst.invite[data.target].createdAt,
-              inst.invite[data.target].expiresAt,
-              inst.invite[data.target].createdAt
-            );
-            if (invite.isActive(validresponse)) {
-              clog("already valid link");
-              clog(response);
-              let link = invite.getTemplateLink(
-                response.user.id,
-                inst._id,
-                data.target,
-                inst.invite[data.target].createdAt
-              );
-              clog("templated");
-              clog(link);
-              result = {
-                event: code.invite.LINK_EXISTS,
-                link: link,
-                exp: inst.invite[data.target].expiresAt,
-              };
-              clog("returning existing link");
-              return res.json({ result });
-            }
-          }
-          clog("creating new link");
-          const genlink = await invite.generateLink(
-            response.user.id,
-            inst._id,
-            data.target,
-            data.daysvalid
-          );
-          const path = "invite." + data.target;
-          const document = await Institute.findOneAndUpdate(
-            { uiid: response.user.uiid },
-            {
-              $set:{
-                [path]:{
-                  active: true,
-                  createdAt: genlink.create,
-                  expiresAt: genlink.exp,
+                if (inst.invite[data.target].active == true) {
+                  clog("already active");
+                  const validresponse = invite.checkTimingValidity(
+                    inst.invite[data.target].createdAt,
+                    inst.invite[data.target].expiresAt,
+                    inst.invite[data.target].createdAt
+                  );
+                  if (invite.isActive(validresponse)) {
+                    clog("already valid link");
+                    clog(response);
+                    let link = invite.getTemplateLink(
+                      response.user.id,
+                      inst._id,
+                      data.target,
+                      inst.invite[data.target].createdAt
+                    );
+                    clog("templated");
+                    clog(link);
+                    result = {
+                      event: code.invite.LINK_EXISTS,
+                      link: link,
+                      exp: inst.invite[data.target].expiresAt,
+                    };
+                    clog("returning existing link");
+                    return res.json({ result });
+                  }
                 }
-              }
-            }
-          );
-          if (document) {
-            clog("link created");
-            result = {
-              event: code.invite.LINK_CREATED,
-              link: genlink.link,
-              exp: genlink.exp,
-            };
-          } else {
-            result = code.event(code.invite.LINK_CREATION_FAILED);
-          }
-          clog("returning result");
-          clog(result);
-          return res.json({ result });
-        }
-        case "disable": {
-          clog("post disabe link");
-          const path = "invite."+ req.body.target;
-          const doc = await Institute.findOneAndUpdate(
-            { uiid: response.user.uiid },
-            {
-              $set:{
-                [path]:{
-                  active: false,
-                  createdAt: 0,
-                  expiresAt: 0,
+                clog("creating new link");
+                const genlink = await invite.generateLink(
+                  response.user.id,
+                  inst._id,
+                  data.target,
+                  data.daysvalid
+                );
+                const path = "invite." + data.target;
+                const document = await Institute.findOneAndUpdate(
+                  { uiid: response.user.uiid },
+                  {
+                    $set: {
+                      [path]: {
+                        active: true,
+                        createdAt: genlink.create,
+                        expiresAt: genlink.exp,
+                      },
+                    },
+                  }
+                );
+                if (document) {
+                  clog("link created");
+                  result = {
+                    event: code.invite.LINK_CREATED,
+                    link: genlink.link,
+                    exp: genlink.exp,
+                  };
+                } else {
+                  result = code.event(code.invite.LINK_CREATION_FAILED);
                 }
+                clog("returning result");
+                clog(result);
+                return res.json({ result });
+              }
+              case "disable": {
+                clog("post disabe link");
+                const path = "invite." + req.body.target;
+                const doc = await Institute.findOneAndUpdate(
+                  { uiid: response.user.uiid },
+                  {
+                    $set: {
+                      [path]: {
+                        active: false,
+                        createdAt: 0,
+                        expiresAt: 0,
+                      },
+                    },
+                  }
+                );
+                if (doc) {
+                  clog("link disabled true");
+                  result = code.event(code.invite.LINK_DISABLED);
+                } else {
+                  result = code.event(code.invite.LINK_DISABLE_FAILED);
+                }
+                clog("returning result");
+                clog(result);
+                return res.json({ result });
               }
             }
-          );
-          if (doc) {
-            clog("link disabled true");
-            result = code.event(code.invite.LINK_DISABLED);
-          } else {
-            result = code.event(code.invite.LINK_DISABLE_FAILED);
           }
-          clog("returning result");
-          clog(result);
-          return res.json({ result });
-        }
-      }
-    }break;
-    case verify.type:{
-      switch(data.action){
-        case 'send':{
-          clog(response);
-          const linkdata = verify.generateLink(verify.target.admin,{
-            uid:response.user.id
-          });
-          clog(linkdata);
-          //todo: send email then save.
-          let admin = await Admin.findOneAndUpdate(
-            {_id:ObjectId(response.user.id)},
-            { $set:{
-                "vlinkexp":linkdata.exp
-              }
-            });
-          clog(admin);
-          return admin?res.json({result:code.event(code.mail.MAIL_SENT)}):res.json({result:code.event(code.mail.ERROR_MAIL_NOTSENT)})
-        } break;
-        case 'check':{
-          const admin = await Admin.findOne({_id:ObjectId(response.user.id)});
-          if(!admin) return res.json({result:code.event(code.auth.USER_NOT_EXIST)})
-          return admin.verified
-            ?res.json({result:code.event(code.verify.VERIFIED)})
-            :res.json({result:code.event(code.verify.NOT_VERIFIED)});
-        }break;
-      }
-    }break;
-    case 'search':{
-      switch(data.target){
-        case 'teacher':{
-          let inst = await Institute.findOne({uiid:response.user.uiid});
-          if(!inst) return code.inst.INSTITUTION_NOT_EXISTS;
-          let teachers = Array();
-          inst.users.teachers.forEach((teacher,index)=>{
-            if(String(teacher.username).toLowerCase() == String(data.q).toLowerCase() ||
-             String(teacher.username).toLowerCase().includes(String(data.q).toLowerCase()) ||
-             String(teacher.teacherID) == String(data.q).toLowerCase()||
-             String(teacher.teacherID).includes(String(data.q).toLowerCase())){
-              teachers.push({
-                username:teacher.username,
-                teacherID:teacher.teacherID
+          break;
+        case verify.type:
+          {
+            switch (data.action) {
+              case "send":
+                {
+                  clog(response);
+                  const linkdata = verify.generateLink(verify.target.admin, {
+                    uid: response.user.id,
+                  });
+                  clog(linkdata);
+                  //todo: send email then save.
+                  let admin = await Admin.findOneAndUpdate(
+                    { _id: ObjectId(response.user.id) },
+                    {
+                      $set: {
+                        vlinkexp: linkdata.exp,
+                      },
+                    }
+                  );
+                  clog(admin);
+                  return admin
+                    ? res.json({ result: code.event(code.mail.MAIL_SENT) })
+                    : res.json({
+                        result: code.event(code.mail.ERROR_MAIL_NOTSENT),
+                      });
+                }
+                break;
+              case "check":
+                {
+                  const admin = await Admin.findOne({
+                    _id: ObjectId(response.user.id),
+                  });
+                  if (!admin)
+                    return res.json({
+                      result: code.event(code.auth.USER_NOT_EXIST),
+                    });
+                  return admin.verified
+                    ? res.json({ result: code.event(code.verify.VERIFIED) })
+                    : res.json({
+                        result: code.event(code.verify.NOT_VERIFIED),
+                      });
+                }
+                break;
+            }
+          }
+          break;
+        case "search": {
+          switch (data.target) {
+            case "teacher": {
+              let inst = await Institute.findOne({ uiid: response.user.uiid });
+              if (!inst) return code.inst.INSTITUTION_NOT_EXISTS;
+              let teachers = Array();
+              inst.users.teachers.forEach((teacher, index) => {
+                if (
+                  String(teacher.username).toLowerCase() ==
+                    String(data.q).toLowerCase() ||
+                  String(teacher.username)
+                    .toLowerCase()
+                    .includes(String(data.q).toLowerCase()) ||
+                  String(teacher.teacherID) == String(data.q).toLowerCase() ||
+                  String(teacher.teacherID).includes(
+                    String(data.q).toLowerCase()
+                  )
+                ) {
+                  teachers.push({
+                    username: teacher.username,
+                    teacherID: teacher.teacherID,
+                  });
+                }
+              });
+              inst.schedule.teachers.forEach((teacher, index) => {
+                clog(teacher.teacherID);
+                let nope = teachers.filter((t) => {
+                  clog(t);
+                  return t.teacherID != teacher.teacherID;
+                });
+                clog(nope);
+                if (nope) {
+                  if (
+                    String(teacher.teacherID).includes(
+                      String(data.q).toLowerCase()
+                    )
+                  ) {
+                    teachers.push({
+                      username: "Not set",
+                      teacherID: teacher.teacherID,
+                    });
+                  }
+                }
+              });
+              clog(teachers);
+              return res.json({
+                result: {
+                  event: "OK",
+                  teachers: teachers,
+                },
               });
             }
-          });
-          return res.json({result:{
-            event:'OK',
-            teachers:teachers
-          }});
+            default:
+              res.sendStatus(500);
+          }
         }
-        default: res.sendStatus(500);
+        default:
+          res.sendStatus(500);
       }
-    }
-    default:res.sendStatus(500);
-  }
-  });
+    });
 });
 
-router.get('/external*',async (req,res)=>{
+router.get("/external*", async (req, res) => {
   const query = req.query;
-  switch(query.type){
-    case verify.type:{//verification link
-      if(!query.u) return res.render(view.notfound);
-      try{
-        const admin = await Admin.findOne(
-          {_id:ObjectId(query.u)},
-        );
-        if(!admin || !admin.vlinkexp) return res.render(view.notfound);
-        if(!verify.isValidTime(admin.vlinkexp)) return res.render(view.verification,{user:{expired:true}});
+  switch (query.type) {
+    case verify.type:
+      {
+        //verification link
+        if (!query.u) return res.render(view.notfound);
+        try {
+          const admin = await Admin.findOne({ _id: ObjectId(query.u) });
+          if (!admin || !admin.vlinkexp) return res.render(view.notfound);
+          if (!verify.isValidTime(admin.vlinkexp))
+            return res.render(view.verification, { user: { expired: true } });
 
-        const doc = await Admin.findOneAndUpdate(
-          {_id:ObjectId(query.u)},
-          {$set:{verified:true},$unset:{vlinkexp:null}},
-          {returnOriginal:false}
-        );
-        if(!doc) return res.render(view.notfound);
-        return res.render(view.verification,{user:getAdminShareData(doc.value)});
-        
-      }catch(e){
-        clog(e);
-        return res.render(view.notfound);
+          const doc = await Admin.findOneAndUpdate(
+            { _id: ObjectId(query.u) },
+            { $set: { verified: true }, $unset: { vlinkexp: null } },
+            { returnOriginal: false }
+          );
+          if (!doc) return res.render(view.notfound);
+          return res.render(view.verification, {
+            user: getAdminShareData(doc.value),
+          });
+        } catch (e) {
+          clog(e);
+          return res.render(view.notfound);
+        }
       }
-    }break;
-    default:res.render(view.notfound);
+      break;
+    default:
+      res.render(view.notfound);
   }
 });
 
-const toSession = (
-  u,
-  target = view.admin.target.dashboard,
-  section = view.admin.section.account
-) =>
-  target == view.admin.target.manage
-    ? `/admin/session?u=${u}&target=${target}&section=${section}`
-    : `/admin/session?u=${u}&target=${target}`;
-
-const toLogin = (
-  target = view.admin.target.dashboard,
-  section = view.admin.section.account
-) =>
-  target == view.admin.target.manage
-    ? `/admin/auth/login?target=${target}&section=${section}`
-    : `/admin/auth/login?target=${target}`;
-
+const toSession = (u, query = { target: view.admin.target.dashboard }) => {
+  let path = `/admin/session?u=${u}`;
+  for (var key in query) {
+    if (query.hasOwnProperty(key)) {
+      path = `${path}&${key}=${query[key]}`;
+    }
+  }
+  clog("path");
+  clog(path);
+  return path;
+};
+const toLogin = (query = { target: view.admin.target.dashboard }) => {
+  let i = 0;
+  let path = "/admin/auth/login";
+  for (var key in query) {
+    if (query.hasOwnProperty(key)) {
+      path =
+        i > 0 ? `${path}&${key}=${query[key]}` : `${path}?${key}=${query[key]}`;
+      i++;
+    }
+  }
+  clog("path");
+  clog(path);
+  return path;
+};
 const getAdminShareData = (data = {}) => {
   return {
     isAdmin: true,

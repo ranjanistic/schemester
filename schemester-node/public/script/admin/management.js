@@ -243,11 +243,12 @@ class Users {
                 response.teachers.forEach((teacher,index)=>{
                   this.appendList(this.getSlate(teacher.username,teacher.teacherID));
                   getElement(`view${teacher.teacherID}`).onclick=_=>{
+                    clog(teacher.teacherID);
                     refer(locate.admin.session,{
                       target:'viewschedule',
                       client:client.teacher,
                       teacherID:teacher.teacherID
-                    })
+                    });
                   }
                 })
               }
@@ -274,6 +275,8 @@ class Users {
         } else {
           if(noview){
             this.listview.innerHTML = this.getDefaultView();
+          } else {
+            this.listview.innerHTML = "";
           }
         }
       }

@@ -1478,7 +1478,9 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
           },
           () => {
             verify.loader();
+            let t = localStorage.getItem("theme");
             localStorage.clear();
+            localStorage.setItem("theme",t);
             verify.hide();
           }
         )
@@ -1508,7 +1510,9 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
           },
           () => {
             verify.loader();
+            let t = localStorage.getItem("theme");
             localStorage.clear();
+            localStorage.setItem("theme",t);
             verify.hide();
           }
         )
@@ -1827,7 +1831,9 @@ const finishSession = (
 ) => {  
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
+      const t = localStorage.getItem("theme");
       localStorage.clear();
+      localStorage.setItem("theme",t);
       sessionStorage.clear();
       afterfinish();
     } else {
@@ -2062,7 +2068,7 @@ let idbSupported = () => {
   return window.indexedDB;
 };
 
-let addNumberSuffixHTML = (number) => {
+const addNumberSuffixHTML = (number = Number) => {
   var str = String(number);
   switch (number) {
     case 1:

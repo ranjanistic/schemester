@@ -19,23 +19,12 @@ class Session {
     this.expiresIn = 7 * 86400;//days*seconds/day
   }
   verify = async (request, secret) => {
-    let token = request.signedCookies[this.sessionKey];
-    console.log("token:" + token);
-    if (token == null) {
-      console.log("nul token");
-      return code.event(code.auth.SESSION_INVALID);
-    }
-    let result = code.event(code.auth.SESSION_INVALID);
+    const token = request.signedCookies[this.sessionKey];
     try {
-      result = jwt.verify(token, secret);
+      if (!token) return code.event(code.auth.SESSION_INVALID);
+      return jwt.verify(token, secret);
     } catch (e) {
-      result = false;
-    }
-    console.log("result:" + result);
-    if (result == false) {
-      return code.event(code.auth.SESSION_INVALID);
-    } else {
-      return result;
+      return code.eventmsg(code.auth.SESSION_INVALID,e);
     }
   };
 
@@ -45,15 +34,12 @@ class Session {
   };
 
   login = async (request, response, secret) => {
+    const body = request.body;
     switch (secret) {
-      case this.adminsessionsecret: {
-        //admin login
-        const { email, password, uiid, target } = request.body;
-        const query = {email:email};
-        //clog(Admin.collectionName);
-        const admin = await Admin.findOne(query);
+      case this.adminsessionsecret: { //admin login
+        const { email, password, uiid, target } = body;
+        const admin = await Admin.findOne({email:email});
         if (!admin) return code.event(code.auth.USER_NOT_EXIST)
-        clog(admin._id);
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
         if (uiid != admin.uiid) return code.event(code.auth.WRONG_UIID);
@@ -63,22 +49,17 @@ class Session {
             uiid: admin.uiid,
           },
         };
-
-        let token = jwt.sign(payload, secret, {
-          expiresIn: this.expiresIn, //days*seconds/day
-        });
+        const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn,});
         response.cookie(this.sessionKey, token, { signed: true });
         return {
           event: code.auth.AUTH_SUCCESS,
           user: getAdminShareData(admin),
-          target: target,
+          target: target
         };
       }
-      case this.teachersessionsecret:{
-        //teacher login
-        clog(request.body);
-        const inst = await Institute.findOne({uiid:request.body.uiid});
-        switch (request.body.type) {
+      case this.teachersessionsecret:{ //teacher login
+        const inst = await Institute.findOne({uiid:body.uiid});
+        switch (body.type) {
           case "uiid": {
             return inst
               ? code.event(code.inst.INSTITUTION_EXISTS)
@@ -86,19 +67,16 @@ class Session {
           }
           default:{
             if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-            const userInst = await Institute.findOne({uiid:request.body.uiid,"users.teachers":{$elemMatch:{"teacherID":request.body.email}}},
-              {projection:{_id:0,"users.teachers.$":1}}
+            const userInst = await Institute.findOne({uiid:body.uiid,"users.teachers":{$elemMatch:{"teacherID":body.email}}},
+              {projection:{"_id":0,"users.teachers.$":1}}
             );
-            switch(request.body.type){
-              case "email": {
+            switch(body.type){
+              case "email":
                 return userInst?code.event(code.auth.USER_EXIST):code.event(code.auth.USER_NOT_EXIST);
-              }
               case "password": {
-                const { password, uiid, target } = request.body;
+                const { password, uiid, target } = body;
                 if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
-                clog("user teacher");
                 const teacher = userInst.users.teachers[0];
-                clog(teacher);
                 const isMatch = await bcrypt.compare(password, teacher.password);
                 if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
                 const payload = {user: {id: teacher._id,uiid: uiid}};
@@ -128,19 +106,16 @@ class Session {
 
   signup = async (request, response, secret) => {
     switch (secret) {
-      case this.adminsessionsecret:
-        {
+      case this.adminsessionsecret:{
           const { username, email, password, uiid } = request.body;
-          let user = await Admin.findOne({ email:email });
-          if (user) return code.event(code.auth.USER_EXIST);
-          let inst = await Admin.findOne({ uiid:uiid });
+          const admin = await Admin.findOne({ email:email });
+          if (admin) return code.event(code.auth.USER_EXIST);
+          const inst = await Admin.findOne({ uiid:uiid });
           if (inst) return code.event(code.server.UIID_TAKEN);
           clog("checks cleared");
-          //user = new Admin({ username, email, password, uiid });
-          //clog("got new user model");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
-          const newAdmin = {
+          const newAdminDoc = {
             username:username,
             email:email,
             password:epassword,
@@ -149,24 +124,22 @@ class Session {
             verified:false,
             prefs:{}
           }
-          const result = await Admin.insertOne(newAdmin);
+          const result = await Admin.insertOne(newAdminDoc);
           if(result.insertedCount==0) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           //account created
           clog("result");
-          const admin = result.ops[0];
+          const newadmin = result.ops[0];
           const payload = {
             user: {
-              id: admin._id,
-              uiid: admin.uiid,
+              id: newadmin._id,
+              uiid: newadmin.uiid,
             },
           };
-          const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn }); //days*sec/day
-          clog("token:" + token);
+          const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
           response.cookie(this.sessionKey, token, { signed: true });
-          clog("cookie created");
           return {
             event: code.auth.ACCOUNT_CREATED,
-            user: getAdminShareData(admin),
+            user: getAdminShareData(newadmin)
           };
         }
       case this.teachersessionsecret:{
@@ -194,94 +167,67 @@ class Session {
                   prefs:{}
                 },
               },
+            },{
+              returnOriginal:false
             }
           );
-          if (doc) {
-            clog("created?");
-            const userInst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}},{
-              projection:{_id:0,"users.teachers.$":1}
-            });
-            const user = userInst.users.teachers[0];
-            if(user){
-              const payload = {
-                user: {
-                  id: user._id,
-                  uiid: uiid
-                },
-              };
-              clog("payload");
-              clog(payload);
-              const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
-              clog("token:" + token);
-              clog("setting cookie");
-              response.cookie(this.sessionKey, token, { signed: true });
-              clog("cookie set, setting result");
-              result = {
-                event: code.auth.ACCOUNT_CREATED,
-                user: getTeacherShareData(user),
-              };
-              clog("return result");
-              clog(result);
-              return result;
-            } else{
-              clog("not found");
-              return code.event(code.server.DATABASE_ERROR);
-            }
-            
-          } else {
-            clog("not created");
-            clog(err);
-            return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
-          }
-        }break;
-      default:
-        return code.event(code.server.DATABASE_ERROR);
+          clog(doc);
+          if(!doc) return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
+          clog("created?");
+          const userInst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}},{
+            projection:{_id:0,"users.teachers.$":1}
+          });
+          if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
+          const teacher = userInst.users.teachers[0];
+          const payload = {
+            user: {
+              id: teacher._id,
+              uiid: uiid
+            },
+          };
+          const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
+          response.cookie(this.sessionKey, token, { signed: true });
+          return {
+            event: code.auth.ACCOUNT_CREATED,
+            user: getTeacherShareData(teacher),
+          };
+      }break;
+      default: return code.event(code.server.DATABASE_ERROR);
     }
   };
   userdata = async (request, secret) => {
-    const token = request.signedCookies[this.sessionKey];
-    if (token == null) {
-      console.log("tokennull");
-      return code.event(code.auth.SESSION_INVALID);
-    } else {
-      let decode = code.event(code.auth.AUTH_REQ_FAILED);
-      try {
-        decode = jwt.verify(token, secret);
-      } catch (e) {
-        decode = false;
-      }
-      if (decode == false) {
-        console.log("decodefalse");
-        return code.event(code.auth.SESSION_INVALID);
-      } else {
-        switch (secret) {
-          case this.adminsessionsecret: {
-            let admin = await Admin.findOne({ _id:decode.user.id});
-            if (admin) {
-              return getAdminShareData(admin);
-            } else {
-              return code.event(code.auth.USER_NOT_EXIST);
-            }
-          }
-          case this.teachersessionsecret: {
-            const userinst = await Institute.findOne({uiid:decode.user.uiid,"users.teachers":{$elemMatch:{"_id":decode.user.id}}},
-            {$projection:{
-              _id:0,
-              "users.teachers.$":1
-            }});
-            const teacher = userinst.users.teachers[0];
-            return teacher?getTeacherShareData(teacher):code.event(code.auth.USER_NOT_EXIST);
-          }
-          default:
-            return code.event(code.auth.AUTH_REQ_FAILED);
+    this.verify(request,secret)
+    .catch(e=>{
+      clog(e);
+      return code.event(code.auth.AUTH_REQ_FAILED)
+    })
+    .then(async response=>{
+      if(!this.valid(response)) return code.event(code.auth.SESSION_INVALID);
+      switch (secret) {
+        case this.adminsessionsecret: {
+          const admin = await Admin.findOne({ _id:response.user.id});
+          return admin?getAdminShareData(admin):code.event(code.auth.USER_NOT_EXIST);
         }
+        case this.teachersessionsecret: {
+          const userinst = await Institute.findOne({
+            uiid:response.user.uiid,
+            "users.teachers":{
+              $elemMatch:{"_id":response.user.id}
+            }
+          },{
+            $projection:{
+              "_id":0,
+              "users.teachers.$":1
+            }
+          });
+          return userinst?getTeacherShareData(userinst.users.teachers[0]):code.event(code.auth.USER_NOT_EXIST);
+        }
+        default: return code.event(code.auth.AUTH_REQ_FAILED);
       }
-    }
+    });
   };
 
-  valid = (response) => {
-    return response.event != code.auth.SESSION_INVALID;
-  };
+  valid = (response) => response.event != code.auth.SESSION_INVALID;
 }
 
 module.exports = new Session();
