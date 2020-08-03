@@ -1,3 +1,7 @@
+if(localStorage.getItem("theme")){
+  document.documentElement.setAttribute('data-theme',localStorage.getItem("theme"));
+}
+
 const click = "click",
   change = "change",
   input = "input";
