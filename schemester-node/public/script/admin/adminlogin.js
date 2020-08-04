@@ -69,11 +69,11 @@ class AdminLogin{
         this.passField.showValid();
         this.uiidField.showValid();
         saveUserLocally(result.user);
-        relocate(locate.adminDashPage,{
+        return relocate(locate.admin.session,{
           u:result.user.uid,
-          target:result.target
+          target:locate.admin.target.dashboard
         });
-      }break;
+      }
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);

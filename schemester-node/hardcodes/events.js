@@ -1,5 +1,7 @@
 class Codes{
     constructor(){
+        this.OK = 'OK/true';
+        this.NO = 'NO/false';
         class Servercodes{
             constructor(){
                 this.DATABASE_ERROR = 'server/database-error:';        

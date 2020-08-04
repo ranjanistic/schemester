@@ -1,163 +1,178 @@
-if(localStorage.getItem("theme")){
-  document.documentElement.setAttribute('data-theme',localStorage.getItem("theme"));
+if (localStorage.getItem("theme")) {
+  document.documentElement.setAttribute(
+    "data-theme",
+    localStorage.getItem("theme")
+  );
 }
 
 const click = "click",
   change = "change",
   input = "input";
-class Client{
-  constructor(){
-    this.admin = 'admin';
-    this.teacher = 'teacher';
-    this.student = 'student';
+class Client {
+  constructor() {
+    this.admin = "admin";
+    this.teacher = "teacher";
+    this.student = "student";
   }
 }
 const client = new Client();
 class Codes {
-  constructor(){
-    class Servercodes{
-        constructor(){
-            this.DATABASE_ERROR = 'server/database-error:';        
-            this.UIID_TAKEN = 'server/uiid-already-taken';
-            this.UIID_AVAILABLE = 'server/uiid-available';
-        }
-    }
-    class Clientcodes{
-        constructor(){
-            this.NETWORK_FAILURE = 'client/network-error';
-            this.NOT_SIGNED_IN = 'client/not-signed-in';
-        }
-    }
-    
-    class Authcodes{
-        constructor(){
-            this.WRONG_PASSWORD = 'auth/wrong-password';
-            this.WEAK_PASSWORD = 'auth/weak-password';
-            this.USER_NOT_EXIST = 'auth/no-user-found';
-            this.USER_NOT_VERIFIED = 'auth/user-not-verified';
-            this.USER_VERIFIED = 'auth/user-is-verified';
-            this.USER_EXIST = 'auth/user-found';
-            this.AUTH_FAILED = 'auth/authentication-failed';
-            this.SESSION_VALID = 'auth/user-logged-in';
-            this.SESSION_INVALID = 'auth/user-not-logged-in';
-            this.EMAIL_INVALID = 'auth/invalid-email';
-            this.PASSWORD_INVALID = 'auth/invalid-password';
-            this.LOGGED_OUT = 'auth/logged-out';
-            this.ACCOUNT_CREATED = 'auth/account-created';
-            this.NAME_INVALID = 'auth/invalid-name';
-            this.ACCOUNT_CREATION_FAILED = 'auth/account-not-created';
-            this.AUTH_SUCCESS = 'auth/sign-in-success';
-            this.ACCOUNT_RESTRICTED = "auth/account-disabled";
-            this.AUTH_REQ_FAILED = "auth/request-failed";
-            this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
-            this.UIID_INVALID = "auth/invalid-uiid";
-            this.WRONG_UIID = "auth/wrong-uiid";
-        }
-    }
-    
-    class InstitutionCodes{
-        constructor(){
-            this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
-            this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
-            this.INVALID_ADMIN_NAME = "inst/invalid-name";
-    
-            this.INVALID_INST_NAME = "inst/invalid-institution-name";
-            this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
-            this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
-    
-            this.INVALID_TIME = "inst/invalid-time-value";
-            this.INVALID_TIME_START = "inst/invalid-start-time";
-            this.INVALID_TIME_END = "inst/invalid-end-time";
-            this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
-    
-            this.INVALID_DURATION = "inst/invalid-duration";
-            this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
-            this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
-            this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
-            this.INVALID_PERIODS = "inst/invalid-periods-a-day";
-    
-            this.INVALID_DATE = "inst/invalid-date-value";
-            this.INVALID_DAY = "inst/invalid-day-name";
-            this.INVALID_PERIOD = "inst/invalid-period";
-            this.INVALID_CLASS = "inst/invalid-class-name";
-            this.INVALID_SECTION = "inst/invalid-section-name";
-            
-            this.INSTITUTION_NOT_EXISTS = 'inst/institution-not-exists';
-            this.INSTITUTION_EXISTS = 'inst/institution-exists';
-            this.INSTITUTION_CREATED = 'inst/institution-created';
-            this.INSTITUTION_CREATION_FAILED = 'inst/institution-not-created';
-    
-            this.INSTITUTION_DEFAULTS_SET = 'inst/institution-defaults-saved';
-            this.INSTITUTION_DEFAULTS_UNSET = 'inst/institution-defaults-not-saved';
-    
-            this.SCHEDULE_UPLOADED = 'inst/schedule-upload-success';
-            this.SCHEDULE_UPLOAD_FAILED = 'inst/schedule-upload-failed';
-        }
-    }
-    
-    
-    class Mailcodes{
-        constructor(){
-            this.ACCOUNT_VERIFICATION = 'mail/account-verification';
-            this.RESET_PASSWORD = 'mail/reset-password';
-            this.PASSWORD_CHANGED = 'mail/password-changed';
-            this.EMAIL_CHANGED = 'mail/email-address-changed';
-            this.ACCOUNT_DELETED = 'mail/account-deleted';
-            this.INSTITUTION_INVITATION = 'mail/invite-to-institution';
-            this.ERROR_MAIL_NOTSENT = 'mail/email-not-sent';
-            this.MAIL_SENT = 'mail/email-sent-success';
-        }
-    }
-    class ActionCodes{
-        constructor(){
-            this.ACCOUNT_DELETE = 'action/delete-account';
-            this.CHANGE_PASSWORD = 'action/change-password';
-            this.CHANGE_ID = 'action/change-id-email';
-            this.SEND_INVITE = 'action/send-invitation';
-            this.ACCOUNT_VERIFY = 'action/verify-account';
-        }
-    };
-    class InvitationCodes{
-        constructor(){
-            this.LINK_EXPIRED = 'invite/link-is-expired';
-            this.LINK_INVALID = 'invite/link-is-invalid';
-            this.LINK_ACTIVE = 'invite/link-is-active';
-            this.LINK_EXISTS = 'invite/link-already-exists';
-            this.LINK_CREATED = 'invite/link-creation-success';
-            this.LINK_CREATION_FAILED = 'invite/link-creation-failed';
-            this.LINK_DISABLED = 'invite/link-disabled';
-        }
-    };
-    class VerificationCodes{
-      constructor(){
-          this.LINK_GENERATED = 'verify/link-generated';
-          this.LINK_VALID = 'verify/link-is-valid';
-          this.LINK_EXPIRED = 'verify/link-is-expired';
-          this.LINK_INVALID = 'verify/invalid-illegal-link';
-          this.VERIFIED = 'verify/verification-success';
-          this.NOT_VERIFIED = 'verify/verification-failed';
+  constructor() {
+    this.OK = "OK";
+    this.NO = "NO";
+    class Servercodes {
+      constructor() {
+        this.DATABASE_ERROR = "server/database-error:";
+        this.UIID_TAKEN = "server/uiid-already-taken";
+        this.UIID_AVAILABLE = "server/uiid-available";
       }
-  
-  }
-    class ScheduleCodes{
-        constructor(){
-            this.SCHEDULE_EXISTS = 'schedule/schedule-exists';
-            this.SCHEDULE_CREATED = 'schedule/schedule-created';
-            this.SCHEDULE_NOT_EXIST = 'schedule/schedule-not-available';
-            this.SCHEDULE_NOT_CREATED = 'schedule/creation-failed';
-            this.SCHEDULE_UPDATED = 'schedule/update-sucess';
-        }
+    }
+    class Clientcodes {
+      constructor() {
+        this.NETWORK_FAILURE = "client/network-error";
+        this.NOT_SIGNED_IN = "client/not-signed-in";
+      }
+    }
+
+    class Authcodes {
+      constructor() {
+        this.WRONG_PASSWORD = "auth/wrong-password";
+        this.WEAK_PASSWORD = "auth/weak-password";
+        this.USER_NOT_EXIST = "auth/no-user-found";
+        this.USER_NOT_VERIFIED = "auth/user-not-verified";
+        this.USER_VERIFIED = "auth/user-is-verified";
+        this.USER_EXIST = "auth/user-found";
+        this.AUTH_FAILED = "auth/authentication-failed";
+        this.SESSION_VALID = "auth/user-logged-in";
+        this.SESSION_INVALID = "auth/user-not-logged-in";
+        this.EMAIL_INVALID = "auth/invalid-email";
+        this.PASSWORD_INVALID = "auth/invalid-password";
+        this.LOGGED_OUT = "auth/logged-out";
+        this.ACCOUNT_CREATED = "auth/account-created";
+        this.NAME_INVALID = "auth/invalid-name";
+        this.ACCOUNT_CREATION_FAILED = "auth/account-not-created";
+        this.AUTH_SUCCESS = "auth/sign-in-success";
+        this.ACCOUNT_RESTRICTED = "auth/account-disabled";
+        this.AUTH_REQ_FAILED = "auth/request-failed";
+        this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
+        this.UIID_INVALID = "auth/invalid-uiid";
+        this.WRONG_UIID = "auth/wrong-uiid";
+      }
+    }
+
+    class InstitutionCodes {
+      constructor() {
+        this.INVALID_ADMIN_PHONE = "inst/invalid-phone-number";
+        this.INVALID_ADMIN_EMAIL = "inst/invalid-email-address";
+        this.INVALID_ADMIN_NAME = "inst/invalid-name";
+
+        this.INVALID_INST_NAME = "inst/invalid-institution-name";
+        this.INVALID_INST_UIID = "inst/invalid-institution-uiid";
+        this.INVALID_INST_PHONE = "inst/invalid-institution-phone";
+
+        this.INVALID_TIME = "inst/invalid-time-value";
+        this.INVALID_TIME_START = "inst/invalid-start-time";
+        this.INVALID_TIME_END = "inst/invalid-end-time";
+        this.INVALID_TIME_BREAKSTART = "inst/invalid-breakstart-time";
+
+        this.INVALID_DURATION = "inst/invalid-duration";
+        this.INVALID_DURATION_PERIOD = "inst/invalid-period-duration";
+        this.INVALID_DURATION_BREAK = "inst/invalid-break-duration";
+        this.INVALID_WORKING_DAYS = "inst/invalid-working-days";
+        this.INVALID_PERIODS = "inst/invalid-periods-a-day";
+
+        this.INVALID_DATE = "inst/invalid-date-value";
+        this.INVALID_DAY = "inst/invalid-day-name";
+        this.INVALID_PERIOD = "inst/invalid-period";
+        this.INVALID_CLASS = "inst/invalid-class-name";
+        this.INVALID_SECTION = "inst/invalid-section-name";
+
+        this.INSTITUTION_NOT_EXISTS = "inst/institution-not-exists";
+        this.INSTITUTION_EXISTS = "inst/institution-exists";
+        this.INSTITUTION_CREATED = "inst/institution-created";
+        this.INSTITUTION_CREATION_FAILED = "inst/institution-not-created";
+
+        this.INSTITUTION_DEFAULTS_SET = "inst/institution-defaults-saved";
+        this.INSTITUTION_DEFAULTS_UNSET = "inst/institution-defaults-not-saved";
+
+        this.SCHEDULE_UPLOADED = "inst/schedule-upload-success";
+        this.SCHEDULE_UPLOAD_FAILED = "inst/schedule-upload-failed";
+      }
+    }
+
+    class Mailcodes {
+      constructor() {
+        this.ACCOUNT_VERIFICATION = "mail/account-verification";
+        this.RESET_PASSWORD = "mail/reset-password";
+        this.PASSWORD_CHANGED = "mail/password-changed";
+        this.EMAIL_CHANGED = "mail/email-address-changed";
+        this.ACCOUNT_DELETED = "mail/account-deleted";
+        this.INSTITUTION_INVITATION = "mail/invite-to-institution";
+        this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
+        this.MAIL_SENT = "mail/email-sent-success";
+      }
+    }
+    class ActionCodes {
+      constructor() {
+        this.ACCOUNT_DELETE = "action/delete-account";
+        this.CHANGE_PASSWORD = "action/change-password";
+        this.CHANGE_ID = "action/change-id-email";
+        this.SEND_INVITE = "action/send-invitation";
+        this.ACCOUNT_VERIFY = "action/verify-account";
+      }
+    }
+    class InvitationCodes {
+      constructor() {
+        this.LINK_EXPIRED = "invite/link-is-expired";
+        this.LINK_INVALID = "invite/link-is-invalid";
+        this.LINK_ACTIVE = "invite/link-is-active";
+        this.LINK_EXISTS = "invite/link-already-exists";
+        this.LINK_CREATED = "invite/link-creation-success";
+        this.LINK_CREATION_FAILED = "invite/link-creation-failed";
+        this.LINK_DISABLED = "invite/link-disabled";
+        this.LINK_DISABLE_FAILED = "invite/link-disable-failed";
+      }
+    }
+    class VerificationCodes {
+      constructor() {
+        this.LINK_GENERATED = "verify/link-generated";
+        this.LINK_VALID = "verify/link-is-valid";
+        this.LINK_EXPIRED = "verify/link-is-expired";
+        this.LINK_INVALID = "verify/invalid-illegal-link";
+        this.VERIFIED = "verify/verification-success";
+        this.NOT_VERIFIED = "verify/verification-failed";
+      }
+    }
+    class ScheduleCodes {
+      constructor() {
+        this.SCHEDULE_EXISTS = "schedule/schedule-exists";
+        this.SCHEDULE_CREATED = "schedule/schedule-created";
+        this.SCHEDULE_NOT_EXIST = "schedule/schedule-not-available";
+        this.SCHEDULE_NOT_CREATED = "schedule/creation-failed";
+        this.SCHEDULE_UPDATED = "schedule/update-sucess";
+      }
     }
     this.auth = new Authcodes();
     this.client = new Clientcodes();
     this.server = new Servercodes();
     this.mail = new Mailcodes();
-    this.action  = new ActionCodes();
+    this.action = new ActionCodes();
     this.inst = new InstitutionCodes();
     this.invite = new InvitationCodes();
     this.verify = new VerificationCodes();
     this.schedule = new ScheduleCodes();
-}
+  }
+  event(code) {
+    return {
+      event: code,
+    };
+  }
+  eventmsg(code, msg) {
+    return {
+      event: code,
+      msg: msg,
+    };
+  }
 }
 const code = new Codes();
 
@@ -208,6 +223,10 @@ const constant = new Constant();
 
 class Locations {
   constructor() {
+    this.homepage = "/home";
+    this.root = "/";
+    this.planspage = "/plans";
+
     class Admin {
       constructor() {
         this.session = "/admin/session";
@@ -243,27 +262,26 @@ class Locations {
       constructor() {
         this.session = "/teacher/session";
         this.login = "/teacher/auth/login";
+        this.fragment = "/teacher/fragment";
         class Target {
           constructor() {
-            this.today = "dash";
-            this.fullweek = "fullschedule";
+            this.dash = "dash";
             this.settings = "settings";
-            this.addschedule = 'addschedule';
+            this.addschedule = "addschedule";
+            class Fragment{
+              constructor(){
+                  this.today = "today";
+                  this.fullweek = "fullschedule";
+                  this.about = "about";
+              }
+            }
+            this.fragment = new Fragment()
           }
         }
         this.target = new Target();
       }
     }
     this.teacher = new Teacher();
-
-    this.adminLoginPage = "/admin/auth/login";
-    this.adminDashPage = "/admin/session";
-
-    this.homepage = "/home";
-    this.root = "/";
-    this.registrationPage = "/admin/session";
-    this.planspage = "/plans";
-    this.adminSettings = "/admin/session";
   }
 }
 const locate = new Locations();
@@ -278,7 +296,7 @@ class Posts {
         this.manage = "/admin/manage";
         this.sessionValidate = "/admin/session/validate";
         this.register = "/admin/session/registerinstitution";
-        this.schedule = '/admin/schedule';
+        this.schedule = "/admin/schedule";
       }
     }
     this.admin = new Admin();
@@ -288,7 +306,7 @@ class Posts {
         this.login = "/teacher/auth/login";
         this.logout = "/teacher/auth/logout";
         this.sessionValidate = "/teacher/session/validate";
-        this.schedule = '/teacher/schedule';
+        this.schedule = "/teacher/schedule";
       }
     }
     this.teacher = new Teacher();
@@ -408,7 +426,7 @@ class TextInput {
     });
   }
   onTextInput(action = (_) => {}) {
-    if(this.input){
+    if (this.input) {
       this.input.oninput = () => {
         action();
       };
@@ -1398,14 +1416,16 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
           {
             clog(result.user);
             saveUserLocally(result.user);
-            relocate(locate.admin.session,{target:locate.admin.target.register});
+            relocate(locate.admin.session, {
+              target: locate.admin.target.register,
+            });
           }
           break;
         case code.auth.USER_EXIST:
           {
             dialog.inputField[1].showError("Account already exists.");
             snackBar("Try signing in?", "Login", true, (_) => {
-              refer(locate.adminLoginPage, { email: email, uiid: uiid });
+              refer(locate.admin.login, { email: email, uiid: uiid });
             });
           }
           break;
@@ -1470,9 +1490,9 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
             loadingBox(true, "Checking", "This may take a few seconds");
             setTimeout(() => {
               localStorage.setItem("verified", true);
-              relocate(locate.registrationPage, {
+              relocate(locate.admin.session, {
                 u: data.uid,
-                target: "registration",
+                target: locate.admin.target.register,
               });
             }, 4 * 1000);
           },
@@ -1480,7 +1500,7 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
             verify.loader();
             let t = localStorage.getItem("theme");
             localStorage.clear();
-            localStorage.setItem("theme",t);
+            localStorage.setItem("theme", t);
             verify.hide();
           }
         )
@@ -1512,7 +1532,7 @@ let accountVerificationDialog = (isShowing = true, emailSent = false) => {
             verify.loader();
             let t = localStorage.getItem("theme");
             localStorage.clear();
-            localStorage.setItem("theme",t);
+            localStorage.setItem("theme", t);
             verify.hide();
           }
         )
@@ -1623,57 +1643,88 @@ let checkSessionValidation = (
 ) => {
   clog(validAction);
   switch (clientType) {
-    case client.admin: {
-      postData(post.admin.sessionValidate)
-        .then((result) => {
-          if (result.event == code.auth.SESSION_INVALID) {
-            invalidAction();
-          } else {
-            clog("ad sess");
-            if(validAction == null){
-              clog("isnull");
-              validAction =_=>{relocate(locate.admin.session,{target:locate.admin.target.dashboard})};
+    case client.admin:
+      {
+        postData(post.admin.sessionValidate)
+          .then((result) => {
+            if (result.event == code.auth.SESSION_INVALID) {
+              invalidAction();
+            } else {
+              clog("ad sess");
+              if (validAction == null) {
+                clog("isnull");
+                validAction = (_) => {
+                  relocate(locate.admin.session, {
+                    target: locate.admin.target.dashboard,
+                  });
+                };
+              }
+              validAction();
             }
-            validAction();
-          }
-        })
-        .catch((error) => {
-          clog("error in admin validation");
-          snackBar(getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),"Report");
-        });
-    }break;
-    case client.teacher:{
-      postData(post.teacher.sessionValidate)
-        .then((result) => {
-          if (result.event == code.auth.SESSION_INVALID) {
-            invalidAction();
-          } else {
-            if(validAction == null){
-              validAction =_=>{relocate(locate.teacher.session,{target:locate.teacher.target.today})}
+          })
+          .catch((error) => {
+            clog("error in admin validation");
+            snackBar(
+              getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+              "Report"
+            );
+          });
+      }
+      break;
+    case client.teacher:
+      {
+        postData(post.teacher.sessionValidate)
+          .then((result) => {
+            if (result.event == code.auth.SESSION_INVALID) {
+              invalidAction();
+            } else {
+              if (validAction == null) {
+                validAction = (_) => {
+                  relocate(locate.teacher.session, {
+                    target: locate.teacher.target.dash,
+                  });
+                };
+              }
+              validAction();
             }
-            validAction();
-          }
-        })
-        .catch((error) => {
-          clog("error in teacher validation");
-          snackBar(
-            getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
-            "Report",
-            false
-          );
-        });
-    }break;
-    default:{
+          })
+          .catch((error) => {
+            clog("error in teacher validation");
+            snackBar(
+              getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+              "Report",
+              false
+            );
+          });
+      }
+      break;
+    default: {
       clog("in target default");
-      if(validAction == null){
+      if (validAction == null) {
         switch (clientType) {
-          case client.admin: {validAction =_=>{relocate(locate.admin.session,{target:locate.admin.target.dashboard})}}break;
-          case client.teacher:{validAction =_=>{relocate(locate.teacher.session,{target:locate.teacher.target.today})}}break;
+          case client.admin:
+            {
+              validAction = (_) => {
+                relocate(locate.admin.session, {
+                  target: locate.admin.target.dashboard,
+                });
+              };
+            }
+            break;
+          case client.teacher:
+            {
+              validAction = (_) => {
+                relocate(locate.teacher.session, {
+                  target: locate.teacher.target.dash,
+                });
+              };
+            }
+            break;
         }
       }
-      checkSessionValidation(client.admin,null,_=>{
-        checkSessionValidation(client.teacher,null,_=>{
-          invalidAction()
+      checkSessionValidation(client.admin, null, (_) => {
+        checkSessionValidation(client.teacher, null, (_) => {
+          invalidAction();
         });
       });
     }
@@ -1828,12 +1879,12 @@ const finishSession = (
   afterfinish = () => {
     relocate(locate.root);
   }
-) => {  
+) => {
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       const t = localStorage.getItem("theme");
       localStorage.clear();
-      localStorage.setItem("theme",t);
+      localStorage.setItem("theme", t);
       sessionStorage.clear();
       afterfinish();
     } else {
@@ -2007,19 +2058,19 @@ const postData = async (url = String, data = {}) => {
   return await res.result;
 };
 
-const postJsonData = async(url = String,data = {}) =>{
+const postJsonData = async (url = String, data = {}) => {
   const response = await fetch(url, {
     method: constant.post,
     mode: "same-origin",
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      Accept: "application/json",
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
   const content = await response.json();
   return await content.result;
-}
+};
 
 let refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;

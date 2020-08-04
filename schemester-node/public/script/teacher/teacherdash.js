@@ -1,25 +1,24 @@
+//For teacher session view with bottom navigation tabs.
+
 class TeacherDash{
     constructor(){
         this.frame = getElement("frame");
         this.viewload = getElement('viewload');
+
         this.today = getElement("todaytab");
         this.fullweek = getElement("fulltab");
+        this.about = getElement("abouttab");
+        this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.today});
         this.today.onclick = _=>{
-            this.frame.src = '/teacher/today';
+            this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.today})
         }
         this.fullweek.onclick =_=>{
-            this.frame.src = '/home';
+            this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.fullweek})
         }
-        
-        // this.logout.onclick =_=>{
-        //     showLoader();
-        //     finishSession(_=>{
-        //         relocate(locate.teacher.login);
-        //     });
-        // }
-    }
-    load(){
-        this.viewload
+        this.about.onclick =_=>{
+            this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.about})
+        }
     }
 }
+
 window.onload=_=>window.app = new TeacherDash();

@@ -1,6 +1,5 @@
 class View{
     constructor(){
-
         this.homepage = 'home.ejs';
         this.loader = 'loader.ejs';
         this.plans = 'plans.ejs';
@@ -11,12 +10,13 @@ class View{
 
         this.userinvitaion = 'invitation.ejs';
         this.verification = 'verification.ejs';
-        this.admin = new AdminViews();
-        this.teacher = new TeacherViews();
+
+        this.admin = new AdminView();
+        this.teacher = new TeacherView();
     }
 }
 
-class AdminViews{
+class AdminView{
     constructor(){
         this.login = 'admin/admin_login.ejs';
         this.dash = 'admin/admin_dash.ejs';
@@ -34,7 +34,7 @@ class AdminViews{
             }
         }
         this.target = new Target();
-        class SettingSections{
+        class Section{
             constructor(){
                 this.account = 'setting/account';
                 this.institute = 'setting/institute';
@@ -44,48 +44,61 @@ class AdminViews{
                 this.about = 'setting/about';
             }
         }
-        this.section = new SettingSections();
+        this.section = new Section();
     }
     getViewByTarget(target = this.target.dashboard){
-        console.log(target);
         switch(target){
             case this.target.manage:return this.settings;
             case this.target.addteacher:return this.addTeacher;
             case this.target.dashboard:return this.dash;
             case this.target.register:return this.registration;
             case this.target.viewschedule:return this.scheduleview;
-            default:throw "viewnotfound";
+            default:return this.getViewByTarget();
         }
     }
 }
 
-class TeacherViews{
+class TeacherView{
     constructor(){
         this.login = 'teacher/teacher_login.ejs';
         this.dash = 'teacher/teacher_dash.ejs';
         this.settings = 'teacher/teacher_settings.ejs';
         this.addschedule = 'admin/teacher_filler.ejs';
-        this.fullschedule = 'teacher/full_schedule.ejs';
-        this.today = 'teacher/today.ejs';
-
+        class FragmentView{
+            constructor(){
+                this.fullschedule = 'teacher/fragments/fullweek.ejs';
+                this.today = 'teacher/fragments/today.ejs';
+                this.about = 'teacher/fragments/about.ejs';
+            }
+        }
+        this.fragment = new FragmentView();
         class Target {
             constructor() {
-              this.dash = "today";
-              this.fullweek = "fullschedule";
-              this.settings = "settings";
+              this.dash = "dashboard";
               this.addschedule = 'addschedule';
+              this.settings = 'settings';
+              class Fragment{
+                constructor(){
+                    this.today = "today";
+                    this.fullweek = "fullschedule";
+                    this.about = "about";
+                }
+              }
+              this.fragment = new Fragment()
             }
-          }
-          this.target = new Target();
+        }
+        this.target = new Target();
     }
     getViewByTarget(target = this.target.dash){
-        console.log(target);
         switch(target){
             case this.target.dash:return this.dash;
             case this.target.settings:return this.settings;
             case this.target.fullweek:return this.fullschedule;
             case this.target.addschedule:return this.addschedule;
-            default:throw "viewnotfound";
+            case this.target.fragment.today:return this.fragment.today;
+            case this.target.fragment.fullweek:return this.fragment.fullschedule;
+            case this.target.fragment.about:return this.fragment.about;
+            default:return this.getViewByTarget();
         }
     }
 }

@@ -29,13 +29,10 @@ router.get("/auth/login*", (req, res) => {
     .verify(req, sessionsecret)
     .then((response) => {
       clog(response);
-      if (!session.valid(response)) {
-        return res.render(view.admin.login, { autofill: req.query });
-      } else {
-        let data = req.query;
-        delete data["u"];
-        return res.redirect(toSession(response.user.id, data));
-      }
+      if (!session.valid(response))return res.render(view.admin.login, { autofill: req.query });
+      let data = req.query;
+      delete data["u"];
+      return res.redirect(toSession(response.user.id, data));
     })
     .catch((error) => {
       res.render(view.servererror, { error });
@@ -137,7 +134,6 @@ router.get("/session*", (req, res) => {
                     });
                   }
                   if (!teacherInst && teacherScheduleInst) {
-                    clog("here");
                     return res.render(view.admin.scheduleview, {
                       group: { teacher: false },
                       schedule: teacherScheduleInst.schedule.teachers[0],

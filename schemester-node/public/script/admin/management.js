@@ -3,7 +3,7 @@
 class Management {
   constructor() {
     this.sectionreq = getElement("section").innerHTML;
-    switch(this.sectionreq){
+    switch(this.sectionreq){//for section to be displayed
         case locate.admin.section.institute:this.displayIndex = 1;break;
         case locate.admin.section.schedule:this.displayIndex = 2;break;
         case locate.admin.section.users:this.displayIndex = 3;break;
@@ -96,9 +96,9 @@ class Management {
   };
   undoAndReturn = (_) => {
     showLoader();
-    relocate(locate.adminDashPage, {
+    relocate(locate.admin.session, {
       u: localStorage.getItem(constant.sessionUID),
-      target: "dashboard",
+      target: locate.admin.target.dashboard,
     });
   };
 
