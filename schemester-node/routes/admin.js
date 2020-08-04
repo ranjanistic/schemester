@@ -43,8 +43,7 @@ router.get("/session*", (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
-  session
-    .verify(req, sessionsecret)
+  session.verify(req, sessionsecret)
     .catch((e) => {
       clog("session catch");
       clog(e);
@@ -54,7 +53,6 @@ router.get("/session*", (req, res) => {
       if (!session.valid(response)) return res.redirect(toLogin(data));
       try {
         if (data.u != response.user.id) return res.redirect(toLogin(data));
-
         const admin = await Admin.findOne({ _id: ObjectId(response.user.id) });
         if (!admin)
           return session.finish(res).then((response) => {
@@ -844,26 +842,11 @@ router.get("/external*", async (req, res) => {
     case verify.type:
       {
         //verification link
-        if (!query.u) return res.render(view.notfound);
-        try {
-          const admin = await Admin.findOne({ _id: ObjectId(query.u) });
-          if (!admin || !admin.vlinkexp) return res.render(view.notfound);
-          if (!verify.isValidTime(admin.vlinkexp))
-            return res.render(view.verification, { user: { expired: true } });
-
-          const doc = await Admin.findOneAndUpdate(
-            { _id: ObjectId(query.u) },
-            { $set: { verified: true }, $unset: { vlinkexp: null } },
-            { returnOriginal: false }
-          );
-          if (!doc) return res.render(view.notfound);
-          return res.render(view.verification, {
-            user: getAdminShareData(doc.value),
-          });
-        } catch (e) {
-          clog(e);
-          return res.render(view.notfound);
-        }
+        verify.handleVerification(query,verify.target.admin).then(resp=>{
+          if(!resp) return res.render(view.notfound);
+          return res.render(view.verification,{user:resp.user});
+        })
+        
       }
       break;
     default:

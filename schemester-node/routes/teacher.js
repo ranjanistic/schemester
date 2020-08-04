@@ -26,7 +26,8 @@ router.get("/auth/login*", (req, res) => {
       return res.render(view.servererror, { error });
     })
     .then((response) => {
-      if (!session.valid(response)) return res.render(view.teacher.login, { autofill: req.query });
+      if (!session.valid(response))
+        return res.render(view.teacher.login, { autofill: req.query });
       let data = req.query;
       delete data["u"];
       return res.redirect(toSession(response.user.id, req.query));
@@ -125,7 +126,7 @@ router.get("/session*", async (req, res) => {
     if (!scheduleinst) {
       //no schedule for this user teacher
       clog("no schedule");
-      return res.render(view.teacher.target.addschedule, {
+      return res.render(view.teacher.addschedule, {
         user: teacher,
         inst,
       });
@@ -165,64 +166,88 @@ router.get("/session*", async (req, res) => {
   });
 });
 
-router.get("/fragment*",(req,res)=>{//for teacher session fragments.
-  session.verify(req,sessionsecret).catch(e=>{
-    clog(e);
-    return code.eventmsg(code.auth.AUTH_REQ_FAILED,e);
-  }).then(async response=>{
-    const query = req.query;
-    switch(query.fragment){
-      case view.teacher.target.fragment.today:{
-        clog("today");
-        getSchedule(response,new Date().getDay()).then(resp=>{
-          return res.render(view.teacher.getViewByTarget(query.fragment), {today:resp.schedule.period});
-        }).catch(e=>{
-          clog(e);
-        });
-        return;
+router.get("/fragment*", (req, res) => {
+  //for teacher session fragments.
+  session
+    .verify(req, sessionsecret)
+    .catch((e) => {
+      clog(e);
+      return code.eventmsg(code.auth.AUTH_REQ_FAILED, e);
+    })
+    .then(async (response) => {
+      const query = req.query;
+      switch (query.fragment) {
+        case view.teacher.target.fragment.today: {
+          clog("today");
+          getSchedule(response, new Date().getDay())
+            .then((resp) => {
+              return res.render(view.teacher.getViewByTarget(query.fragment), {
+                today: resp.schedule.period,
+              });
+            })
+            .catch((e) => {
+              clog(e);
+            });
+          return;
+        }
+        case view.teacher.target.fragment.fullweek: {
+          clog("full week");
+          getSchedule(response)
+            .then((resp) => {
+              return res.render(view.teacher.getViewByTarget(query.fragment), {
+                schedule: resp.schedule,
+              });
+            })
+            .catch((e) => {
+              clog(e);
+            });
+          return;
+        }
+        case view.teacher.target.fragment.about: {
+          res.render(view.teacher.getViewByTarget(query.fragment));
+        }
       }
-      case view.teacher.target.fragment.fullweek:{
-        clog("full week");
-        getSchedule(response).then(resp=>{
-          return res.render(view.teacher.getViewByTarget(query.fragment), {schedule:resp.schedule});
-        }).catch(e=>{
-          clog(e);
-        })
-        return;
-      }
-      case view.teacher.target.fragment.about:{
-        res.render(view.teacher.getViewByTarget(query.fragment));
-      }
-    }
-  });
+    });
+});
 
-})
-
-
-const getSchedule = async (response,dayIndex = null)=>{
-  const teacheruser = await Institute.findOne({uiid:response.user.uiid, "users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}},
-  {projection:{_id:0,"users.teachers.$":1}})
-  if(!teacheruser) return session.finish(res).then(response=>{if(response) res.redirect(toLogin())});
-  const teacher = teacheruser.users.teachers[0];
-  const teacherschedule = await Institute.findOne({uiid:response.user.uiid, "schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
-    {projection:{
-      "default":1,
-      "schedule.teachers.$":1
-    }}
+const getSchedule = async (response, dayIndex = null) => {
+  const teacheruser = await Institute.findOne(
+    {
+      uiid: response.user.uiid,
+      "users.teachers": { $elemMatch: { _id: ObjectId(response.user.id) } },
+    },
+    { projection: { _id: 0, "users.teachers.$": 1 } }
   );
-  if(!teacherschedule) return res.redirect(toLogin(req.query));
+  if (!teacheruser)
+    return session.finish(res).then((response) => {
+      if (response) res.redirect(toLogin());
+    });
+  const teacher = teacheruser.users.teachers[0];
+  const teacherschedule = await Institute.findOne(
+    {
+      uiid: response.user.uiid,
+      "schedule.teachers": { $elemMatch: { teacherID: teacher.teacherID } },
+    },
+    {
+      projection: {
+        default: 1,
+        "schedule.teachers.$": 1,
+      },
+    }
+  );
+  if (!teacherschedule) return res.redirect(toLogin(req.query));
   const schedule = teacherschedule.schedule.teachers[0].days;
-  if(!dayIndex) return {schedule:schedule};
+  if (!dayIndex) return { schedule: schedule };
   let today = teacherschedule.schedule.teachers[0].days[0];
-  const found = schedule.some((day,index)=>{
-    if(day.dayIndex == dayIndex){
+  const found = schedule.some((day, index) => {
+    if (day.dayIndex == dayIndex) {
       today = day;
       return true;
     }
   });
-  if(!found) return {schedule:false}
-  return {schedule:today}
-}
+  if (!found) return { schedule: false };
+  return { schedule: today };
+};
 
 router.post("/schedule", async (req, res) => {
   session
@@ -331,11 +356,15 @@ router.post("/schedule", async (req, res) => {
 let result = {};
 
 router.post("/session/validate", async (req, res) => {
-  session.verify(req, sessionsecret)
+  session
+    .verify(req, sessionsecret)
     .then((response) => {
-      return res.json({ result:response });
-    }).catch((error) => {
-      return res.json({result:code.eventmsg(code.auth.AUTH_REQ_FAILED, error)});
+      return res.json({ result: response });
+    })
+    .catch((error) => {
+      return res.json({
+        result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error),
+      });
     });
 });
 
@@ -346,133 +375,66 @@ router.get("/external*", async (req, res) => {
       {
         try {
           const inst = await Institute.findOne({ _id: ObjectId(query.in) });
-          if (inst) {
-            clog("inst true");
-            const admin = await Admin.findOne({ _id: ObjectId(query.ad) });
-            if (inst.invite.teacher.active) {
-              if (admin) {
-                if (admin.uiid == inst.uiid) {
-                  const creation = inst.invite.teacher.createdAt;
-                  const expires = inst.invite.teacher.expiresAt;
-                  const response = invite.checkTimingValidity(
-                    creation,
-                    expires,
-                    query.t
-                  );
-                  clog(response);
-                  if (invite.isActive(response)) {
-                    const invite = {
-                      valid: true,
-                      uiid: inst.uiid,
-                      adminemail: admin.email,
-                      adminName: admin.username,
-                      instname: inst.default.institute.instituteName,
-                      expireAt: expires,
-                      target: "teacher",
-                    };
-                    clog(invite);
-                    res.render(view.userinvitaion, { invite });
-                  } else if (invite.isExpired(response)) {
-                    const invite = {
-                      valid: false,
-                      uiid: inst.uiid,
-                      adminemail: admin.email,
-                      adminName: admin.username,
-                      instname: inst.default.institute.instituteName,
-                      expireAt: expires,
-                      target: "teacher",
-                    };
-                    clog(invite);
-                    return res.render(view.userinvitaion, { invite });
-                  } else {
-                    throw Error("Invalid link");
-                  }
-                } else {
-                  throw Error("uiidmismatch");
-                }
-              } else {
-                throw Error("admin null");
-              }
-            } else {
-              let expires = inst.invite.teacher.expiresAt;
-              const invite = {
+          if (!inst) return res.render(view.notfound);
+          const admin = await Admin.findOne({ _id: ObjectId(query.ad) });
+          if (!admin) return res.render(view.notfound);
+          if (admin.uiid != inst.uiid) return res.render(view.notfound);
+          if (!inst.invite.teacher.active)
+            return res.render(view.userinvitaion, {
+              invite: {
                 valid: false,
                 uiid: inst.uiid,
                 adminemail: admin.email,
                 adminName: admin.username,
-                expireAt: expires,
+                expireAt: inst.invite.teacher.expiresAt,
                 instname: inst.default.institute.instituteName,
-                target: "teacher",
-              };
-              clog(invite);
-              return res.render(view.userinvitaion, { invite });
-            }
-          } else {
-            throw Error("institution null");
-          }
+                target: invite.target.teacher,
+              },
+            });
+
+          const expires = inst.invite.teacher.expiresAt;
+          const validity = invite.checkTimingValidity(
+            inst.invite.teacher.createdAt,
+            expires,
+            query.t
+          );
+          if (invite.isInvalid(validity)) return res.render(view.notfound);
+          return res.render(view.userinvitaion, {
+            invite: {
+              valid: invite.isActive(validity),
+              uiid: inst.uiid,
+              adminemail: admin.email,
+              adminName: admin.username,
+              instname: inst.default.institute.instituteName,
+              expireAt: expires,
+              target: invite.target.teacher,
+            },
+          });
         } catch (e) {
           clog(e);
           return res.render(view.notfound);
         }
       }
       break;
-    case verify.type: {
-      //verification link
-      if (!(query.u && query.in)) return res.render(view.notfound);
-      try {
-        let teacherinst = await Institute.findOne(
-          {
-            _id: ObjectId(query.in),
-            "users.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
-          },
-          {
-            projection: {
-              "users.teachers.$": 1,
-            },
-          }
-        );
-        let teacher = teacherinst.users.teachers[0];
-        if (!teacher || !teacher.vlinkexp) return res.render(view.notfound);
-        if (!verify.isValidTime(teacher.vlinkexp))
-          return res.render(view.verification, { user: { expired: true } });
-        const doc = await Institute.findOneAndUpdate(
-          {
-            _id: ObjectId(query.in),
-            "users.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
-          },
-          {
-            $set: {
-              "users.teachers.$.verified": true,
-            },
-            $unset: {
-              "users.teachers.$.vlinkexp": null,
-            },
-          }
-        );
-        if (!doc) return res.render(view.notfound);
-        teacherinst = await Institute.findOne(
-          {
-            _id: ObjectId(query.in),
-            "users.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
-          },
-          {
-            projection: {
-              "users.teachers.$": 1,
-            },
-          }
-        );
-        teacher = getTeacherShareData(teacherinst.users.teachers[0]);
-        if (!teacher) return res.render(view.notfound);
-        return res.render(view.verification, { user: teacher });
-      } catch (e) {
-        clog(e);
-        return res.render(view.notfound);
-      }
+    case verify.type: { //verification link
+      clog("verify type");
+      verify.handleVerification(query,verify.target.teacher).then((resp) => {
+        clog("resp");
+          clog(resp);
+          if (!resp) return res.render(view.notfound);
+          return res.render(view.verification,{user:resp.user});
+        })
+        .catch((e) => {
+          clog(e);
+          return res.render(view.servererror, { error: e });
+        });
+      return;
     }
     default:
       res.render(view.servererror);
   }
 });
+
 
 router.post("/manage", async (req, res) => {
   session
@@ -559,8 +521,6 @@ router.post("/find", async (req, res) => {
     uiid: uiid,
     "users.teachers": { $elemMatch: { teacherID: email } },
   });
-  clog("findings:");
-  clog(inst);
   result = inst
     ? code.event(code.auth.USER_EXIST)
     : code.event(code.auth.USER_NOT_EXIST);

@@ -5,207 +5,17 @@ if (localStorage.getItem("theme")) {
   );
 }
 
-const click = "click",
-  change = "change",
-  input = "input";
-class Client {
-  constructor() {
-    this.admin = "admin";
-    this.teacher = "teacher";
-    this.student = "student";
-  }
-}
-const client = new Client();
 const code = new Codes();
-
-console.log(code.OK);
-class Constant {
-  constructor() {
-    this.appName = "Schemester";
-    this.hide = "none";
-    this.show = "block";
-    this.nothing = "";
-    this.space = " ";
-    this.tab = "  ";
-    this.post = "post";
-    this.get = "get";
-    this.put = "put";
-    this.backbluecovered = false;
-    this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
-    this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
-    this.sessionID = "id";
-    this.sessionUID = "uid";
-    this.weekdays = Array(
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday"
-    );
-    this.months = Array(
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    );
-  }
-}
+const client = new Client();
 const value = new Constant();
 const constant = new Constant();
-
-class Locations {
-  constructor() {
-    this.homepage = "/home";
-    this.root = "/";
-    this.planspage = "/plans";
-
-    class Admin {
-      constructor() {
-        this.session = "/admin/session";
-        this.login = "/admin/auth/login";
-
-        class Target {
-          constructor() {
-            this.dashboard = "dashboard";
-            this.settings = "manage";
-            this.manage = "manage";
-            this.addteacher = "addteacher";
-            this.register = "registration";
-          }
-        }
-        this.target = new Target();
-
-        class SettingSections {
-          constructor() {
-            this.account = "setting/account";
-            this.institute = "setting/institute";
-            this.schedule = "setting/schedule";
-            this.users = "setting/users";
-            this.security = "settting/security";
-            this.about = "setting/about";
-          }
-        }
-        this.section = new SettingSections();
-      }
-    }
-    this.admin = new Admin();
-
-    class Teacher {
-      constructor() {
-        this.session = "/teacher/session";
-        this.login = "/teacher/auth/login";
-        this.fragment = "/teacher/fragment";
-        class Target {
-          constructor() {
-            this.dash = "dash";
-            this.settings = "settings";
-            this.addschedule = "addschedule";
-            class Fragment{
-              constructor(){
-                  this.today = "today";
-                  this.fullweek = "fullschedule";
-                  this.about = "about";
-              }
-            }
-            this.fragment = new Fragment()
-          }
-        }
-        this.target = new Target();
-      }
-    }
-    this.teacher = new Teacher();
-  }
-}
 const locate = new Locations();
-
-class Posts {
-  constructor() {
-    class Admin {
-      constructor() {
-        this.login = "/admin/auth/login";
-        this.logout = "/admin/auth/logout";
-        this.signup = "/admin/auth/signup";
-        this.manage = "/admin/manage";
-        this.sessionValidate = "/admin/session/validate";
-        this.register = "/admin/session/registerinstitution";
-        this.schedule = "/admin/schedule";
-      }
-    }
-    this.admin = new Admin();
-
-    class Teacher {
-      constructor() {
-        this.login = "/teacher/auth/login";
-        this.logout = "/teacher/auth/logout";
-        this.sessionValidate = "/teacher/session/validate";
-        this.schedule = "/teacher/schedule";
-      }
-    }
-    this.teacher = new Teacher();
-
-    this.sessionValidate = "/admin/session/validate";
-    this.authlogin = "/admin/auth/login";
-    this.authlogout = "/admin/auth/logout";
-    this.authsignup = "/admin/auth/signup";
-  }
-}
+const theme = new Theme();
 const post = new Posts();
-class Colors {
-  constructor() {
-    this.base = "#216bf3";
-    this.positive = this.base;
-    this.error = "#c40c0c";
-    this.active = "green";
-    this.white = "#ffffff";
-    this.black = "#000000";
-    this.transparent = "#00000056";
-  }
-  getColorByType(type) {
-    switch (type) {
-      case actionType.positive:
-        return this.positive;
-      case actionType.negative:
-        return this.error;
-      case actionType.neutral:
-        return this.white;
-      case actionType.active:
-        return this.active;
-      case actionType.nothing: {
-        return this.transparent;
-      }
-      default: {
-        return type == false
-          ? this.getColorByType(actionType.negative)
-          : this.getColorByType(actionType.positive);
-      }
-    }
-  }
-}
-var colors = new Colors();
-
-class InputType {
-  constructor() {
-    this.name = "name";
-    this.email = "email";
-    this.password = "password";
-    this.nonempty = "nonempty";
-    this.match = "matching";
-    this.username = "username";
-    this.phone = "phone";
-  }
-}
-let validType = new InputType();
+const colors = new Colors();
+const validType = new InputType();
+const actionType = new ViewType();
+const bodyType = new ViewType();
 
 class TextInput {
   constructor(
@@ -281,7 +91,7 @@ class TextInput {
     };
   }
   showValid() {
-    setClassName(this.fieldset, actionType.getFieldStyle(bodyType.active));
+    setClassNames(this.fieldset, actionType.getFieldStyle(bodyType.active));
   }
   showError(errorMsg = null, inputfocus = true) {
     setFieldSetof(this.fieldset, errorMsg == null, this.error, errorMsg);
@@ -383,7 +193,7 @@ class Snackbar {
   }
   displayType(type) {
     if (!value.backbluecovered) {
-      setClassName(
+      setClassNames(
         this.bar,
         bodyType.getSnackStyle(bodyType.positive),
         bodyType.getSnackStyle(bodyType.negative),
@@ -391,7 +201,7 @@ class Snackbar {
         bodyType.getSnackStyle(bodyType.warning),
         bodyType.getSnackStyle(bodyType.active)
       );
-      setClassName(
+      setClassNames(
         this.button,
         actionType.getButtonStyle(actionType.neutral),
         actionType.getButtonStyle(actionType.neutral),
@@ -400,7 +210,7 @@ class Snackbar {
         actionType.getButtonStyle(actionType.neutral)
       );
     } else {
-      setClassName(
+      setClassNames(
         this.bar,
         bodyType.getSnackStyle(bodyType.neutral),
         bodyType.getSnackStyle(bodyType.negative),
@@ -408,7 +218,7 @@ class Snackbar {
         bodyType.getSnackStyle(bodyType.warning),
         bodyType.getSnackStyle(bodyType.active)
       );
-      setClassName(
+      setClassNames(
         this.button,
         actionType.getButtonStyle(actionType.positive),
         actionType.getButtonStyle(actionType.neutral),
@@ -453,7 +263,7 @@ class Snackbar {
   }
 }
 
-var snackBar = (
+const snackBar = (
   text = String(),
   actionText = String(),
   isNormal = actionType.positive,
@@ -553,82 +363,6 @@ class DialogID {
   }
 }
 
-class ViewType {
-  constructor() {
-    this.neutral = "neutral";
-    this.positive = "positive";
-    this.negative = "negative";
-    this.warning = "warning";
-    this.active = "active";
-    this.nothing = "nothing";
-  }
-  getCheckStyle(type = new ViewType()) {
-    switch (type) {
-      case this.neutral:
-        return "tickmark-positive";
-      case this.positive:
-        return "tickmark-positive";
-      case this.negative:
-        return "tickmark-negative";
-      case this.warning:
-        return "tickmark-warning";
-      case this.active:
-        return "tickmark-active";
-      default:
-        return "tickmark-positive";
-    }
-  }
-  getButtonStyle(type) {
-    switch (type) {
-      case this.neutral:
-        return "neutral-button";
-      case this.positive:
-        return "positive-button";
-      case this.negative:
-        return "negative-button";
-      case this.warning:
-        return "warning-button";
-      case this.active:
-        return "active-button";
-      default:
-        return "positive-button";
-    }
-  }
-  getFieldStyle(type) {
-    switch (type) {
-      case this.neutral:
-        return "text-field";
-      case this.positive:
-        return "text-field";
-      case this.negative:
-        return "text-field-error";
-      case this.warning:
-        return "text-field-warn";
-      case this.active:
-        return "text-field-active";
-      default:
-        return "text-field";
-    }
-  }
-  getSnackStyle(type) {
-    switch (type) {
-      case this.neutral:
-        return "snack-neutral";
-      case this.positive:
-        return "snack-positive";
-      case this.negative:
-        return "snack-negative";
-      case this.warning:
-        return "snack-warn";
-      case this.active:
-        return "snack-active";
-      default:
-        return "snack-positive";
-    }
-  }
-}
-const actionType = new ViewType();
-const bodyType = new ViewType();
 
 class Dialog extends DialogID {
   constructor() {
@@ -875,7 +609,7 @@ let sendPassResetLink = () => {
 };
 
 //todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
-let adminloginDialog = (isShowing = true, sensitive = true) => {
+const adminloginDialog = (isShowing = true, sensitive = true) => {
   var loginDialog = new Dialog();
   if (isShowing) {
     loginDialog.setDisplay(
@@ -941,7 +675,7 @@ let adminloginDialog = (isShowing = true, sensitive = true) => {
   loginDialog.existence(isShowing);
 };
 
-let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
+const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   var resetDialog = new Dialog();
 
   resetDialog.setDisplay(
@@ -985,7 +719,7 @@ let resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   resetDialog.existence(isShowing);
 };
 
-let changeEmailBox = (isShowing = true) => {
+const changeEmailBox = (isShowing = true) => {
   var mailChange = new Dialog();
   mailChange.setDisplay(
     "Change Email Address",
@@ -1057,7 +791,7 @@ let changeEmailBox = (isShowing = true) => {
   mailChange.existence(isShowing);
 };
 
-let registrationDialog = (isShowing = true, email = null, uiid = null) => {
+const registrationDialog = (isShowing = true, email = null, uiid = null) => {
   loadingBox();
   receiveSessionData(
     (_) => {
@@ -1180,7 +914,7 @@ let registrationDialog = (isShowing = true, email = null, uiid = null) => {
   );
 };
 
-let saveUserLocally = (data = {}) => {
+const saveDataLocally = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
       localStorage.setItem(key, data[key]);
@@ -1188,7 +922,7 @@ let saveUserLocally = (data = {}) => {
   }
 };
 
-let hasAnyKeyNull = (data = {}) => {
+const hasAnyKeyNull = (data = {}) => {
   if (data == null) {
     return true;
   }
@@ -1205,7 +939,7 @@ let hasAnyKeyNull = (data = {}) => {
   return false;
 };
 
-let getUserLocally = async () => {
+const getUserLocally = async () => {
   let data = {
     [constant.sessionID]: localStorage.getItem(constant.sessionID),
     [constant.sessionUID]: localStorage.getItem(constant.sessionUID),
@@ -1233,7 +967,7 @@ let getUserLocally = async () => {
           });
         } else {
           data = response;
-          saveUserLocally(data);
+          saveDataLocally(data);
         }
         data;
       })
@@ -1243,7 +977,7 @@ let getUserLocally = async () => {
   }
 };
 
-let createAccount = (dialog, adminname, email, password, uiid) => {
+const createAccount = (dialog, adminname, email, password, uiid) => {
   postData(post.admin.signup, {
     username: adminname,
     email: email,
@@ -1251,141 +985,56 @@ let createAccount = (dialog, adminname, email, password, uiid) => {
     uiid: uiid,
   })
     .then((result) => {
-      //let result = res.result;
       dialog.loader(false);
-      clog(result.event);
       switch (result.event) {
-        case code.auth.ACCOUNT_CREATED:
-          {
+        case code.auth.ACCOUNT_CREATED:{
             clog(result.user);
-            saveUserLocally(result.user);
+            saveDataLocally(result.user);
             relocate(locate.admin.session, {
               target: locate.admin.target.register,
             });
           }
           break;
-        case code.auth.USER_EXIST:
-          {
+        case code.auth.USER_EXIST:{
             dialog.inputField[1].showError("Account already exists.");
             snackBar("Try signing in?", "Login", true, (_) => {
               refer(locate.admin.login, { email: email, uiid: uiid });
             });
           }
           break;
-        case code.server.UIID_TAKEN:
-          {
+        case code.server.UIID_TAKEN:{
             dialog.inputField[3].showError(
               "This UIID is not available. Try something different."
             );
           }
           break;
-        case code.auth.EMAIL_INVALID:
-          {
+        case code.auth.EMAIL_INVALID:{
             dialog.inputField[1].showError("Invalid email address.");
-          }
-          break;
-        case code.auth.PASSWORD_INVALID:
-          {
+        } break;
+        case code.auth.PASSWORD_INVALID:{
             //todo: check invalidity and show suggesstions
             dialog.inputField[2].showError(
-              "Invalid password, try something better."
+              "Weak password, try something better."
             );
           }
           break;
-        case code.auth.NAME_INVALID:
-          {
+        case code.auth.NAME_INVALID:{
             dialog.inputField[0].showError("This doesn't seem like a name.");
-          }
-          break;
+        }break;
         default: {
           clog("in default");
           dialog.hide();
-          snackBar(`${result.event}:${result.msg}`, "Report", false);
+          snackBar(`${result.event}:${result.msg}`, "Report");
         }
       }
     })
     .catch((error) => {
       clog(error);
-      snackBar(error, "Report", false);
+      snackBar(error, "Report");
     });
 };
 
-let accountVerificationDialog = (isShowing = true, emailSent = false) => {
-  loadingBox();
-  var verify = new Dialog();
-  getUserLocally().then((data) => {
-    if (emailSent) {
-      verify.setDisplay(
-        "Waiting for verification",
-        `A link has been sent. Check your email box at 
-        <b>${data.id}</b>, verify your account there, and then click continue here.`
-      );
-      verify.createActions(
-        Array("Verified, now continue", "Abort"),
-        Array(actionType.positive, actionType.negative)
-      );
-
-      verify.onButtonClick(
-        Array(
-          () => {
-            verify.loader();
-            verify.hide();
-            loadingBox(true, "Checking", "This may take a few seconds");
-            setTimeout(() => {
-              localStorage.setItem("verified", true);
-              relocate(locate.admin.session, {
-                u: data.uid,
-                target: locate.admin.target.register,
-              });
-            }, 4 * 1000);
-          },
-          () => {
-            verify.loader();
-            let t = localStorage.getItem("theme");
-            localStorage.clear();
-            localStorage.setItem("theme", t);
-            verify.hide();
-          }
-        )
-      );
-    } else {
-      verify.setDisplay(
-        "Verification Required",
-        `We need to verify you. A link will be sent at <b>${data.id}</b>, you need to verify your account there. Confirm to send link?`
-      );
-      verify.createActions(
-        Array("Send link", "Cancel"),
-        Array(actionType.positive, actionType.negative)
-      );
-      verify.onButtonClick(
-        Array(
-          () => {
-            verify.loader();
-            loadingBox(
-              true,
-              "Sending",
-              `A link is being prepared for ${data.id}.`
-            );
-            //replace with email sender
-            setTimeout(() => {
-              accountVerificationDialog(true, true);
-            }, 3 * 1000);
-          },
-          () => {
-            verify.loader();
-            let t = localStorage.getItem("theme");
-            localStorage.clear();
-            localStorage.setItem("theme", t);
-            verify.hide();
-          }
-        )
-      );
-    }
-    verify.existence(isShowing);
-  });
-};
-
-let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
+const feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   var feedback = new Dialog();
   feedback.setDisplay(
     "Contact Developers",
@@ -1467,7 +1116,7 @@ let feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
   feedback.existence(isShowing);
 };
 
-let loadingBox = (
+const loadingBox = (
   visible = true,
   title = "Please wait",
   subtitle = constant.nothing,
@@ -1493,7 +1142,6 @@ let checkSessionValidation = (
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
             } else {
-              clog("ad sess");
               if (validAction == null) {
                 clog("isnull");
                 validAction = (_) => {
@@ -1574,7 +1222,7 @@ let checkSessionValidation = (
   }
 };
 
-let receiveSessionData = (
+const receiveSessionData = (
   validAction = (_) => {},
   invalidAction = (_) => {}
 ) => {
@@ -1589,7 +1237,7 @@ let receiveSessionData = (
         if (result == getUserLocally()) {
           clog("match");
         } else {
-          saveUserLocally(result);
+          saveDataLocally(result);
         }
         validAction();
       }
@@ -1633,7 +1281,7 @@ let receiveSessionData = (
     });
 };
 
-let validateTextField = (
+const validateTextField = (
   textfield = new TextInput(),
   type = validType.nonempty,
   afterValidAction = (_) => {},
@@ -1725,9 +1373,7 @@ const finishSession = (
 ) => {
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
-      const t = localStorage.getItem("theme");
-      localStorage.clear();
-      localStorage.setItem("theme", t);
+      clearLocalData();
       sessionStorage.clear();
       afterfinish();
     } else {
@@ -1737,6 +1383,16 @@ const finishSession = (
     }
   });
 };
+
+const clearLocalData =(absolute = false)=>{
+  if(absolute){
+    localStorage.clear();
+  } else{
+    const t = theme.getTheme();
+    localStorage.clear();
+    theme.setTheme(t);
+  }
+}
 
 const setFieldSetof = (
   fieldset,
@@ -1750,7 +1406,7 @@ const setFieldSetof = (
   if (isNormal && errorField != null) {
     errorField.innerHTML = constant.nothing;
   }
-  setClassName(
+  setClassNames(
     fieldset,
     bodyType.getFieldStyle(bodyType.positive),
     bodyType.getFieldStyle(bodyType.negative),
@@ -1758,10 +1414,10 @@ const setFieldSetof = (
   );
 };
 
-let setClass = (element = new HTMLElement(), classname) =>
+const setClass = (element = new HTMLElement(), classname) =>
   (element.className = classname);
 
-let setClassName = (
+const setClassNames = (
   element,
   normalClass,
   errorClass,
@@ -1800,13 +1456,13 @@ let setClassName = (
   }
 };
 
-let showElement = (elements, index) => {
+const showElement = (elements, index) => {
   for (var k = 0, j = 0; k < elements.length; k++, j++) {
     visibilityOf(elements[k], k == index);
   }
 };
 
-let elementFadeVisibility = (element, isVisible) => {
+const elementFadeVisibility = (element, isVisible) => {
   replaceClass(
     element,
     "fmt-animate-opacity-off",
@@ -1816,7 +1472,7 @@ let elementFadeVisibility = (element, isVisible) => {
   visibilityOf(element, isVisible);
 };
 
-let elementRiseVisibility = (element, isVisible) => {
+const elementRiseVisibility = (element, isVisible) => {
   replaceClass(
     element,
     "fmt-animate-bottom-off",
@@ -1826,7 +1482,7 @@ let elementRiseVisibility = (element, isVisible) => {
   visibilityOf(element, isVisible);
 };
 
-let setDefaultBackground = (element, type = actionType.positive) => {
+const setDefaultBackground = (element, type = actionType.positive) => {
   element.style.backgroundColor = colors.getColorByType(type);
   switch (type) {
     case actionType.neutral:
@@ -1837,20 +1493,20 @@ let setDefaultBackground = (element, type = actionType.positive) => {
   }
 };
 
-let replaceClass = (element, class1, class2, replaceC1 = true) =>
+const replaceClass = (element, class1, class2, replaceC1 = true) =>
   replaceC1
     ? element.classList.replace(class1, class2)
     : element.classList.replace(class2, class1);
 
-let showLoader = (_) => show(getElement("navLoader"));
-let hideLoader = (_) => hide(getElement("navLoader"));
-let opacityOf = (element, value = 1) => (element.style.opacity = String(value));
-let visibilityOf = (element, visible = true) =>
+const showLoader = (_) => show(getElement("navLoader"));
+const hideLoader = (_) => hide(getElement("navLoader"));
+const opacityOf = (element, value = 1) => (element.style.opacity = String(value));
+const visibilityOf = (element, visible = true) =>
   (element.style.display = visible ? constant.show : constant.hide);
-let hide = (element = new HTMLElement()) => visibilityOf(element, false);
-let show = (element = new HTMLElement()) => visibilityOf(element, true);
+const hide = (element = new HTMLElement()) => visibilityOf(element, false);
+const show = (element = new HTMLElement()) => visibilityOf(element, true);
 
-let stringIsValid = (
+const stringIsValid = (
   value = String,
   type = validType.nonempty,
   ifMatchValue = String
@@ -1870,13 +1526,13 @@ let stringIsValid = (
   }
 };
 
-let getDayName = (dIndex = Number) =>
+const getDayName = (dIndex = Number) =>
   dIndex < constant.weekdays.length ? constant.weekdays[dIndex] : null;
-let getMonthName = (mIndex = Number) =>
+const getMonthName = (mIndex = Number) =>
   mIndex < constant.months.length ? constant.months[mIndex] : null;
-let getElement = (id) => document.getElementById(id);
+const getElement = (id) => document.getElementById(id);
 
-let relocate = (path, data = null) => {
+const relocate = (path, data = null) => {
   if (data != null) {
     let i = 0;
     for (var key in data) {
@@ -1915,12 +1571,12 @@ const postJsonData = async (url = String, data = {}) => {
   return await content.result;
 };
 
-let refer = (href, data = null) => {
+const refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.location.href = href;
 };
 
-let getRequestBody = (data = {}, isPost = false) => {
+const getRequestBody = (data = {}, isPost = false) => {
   let i = 0;
   let body = constant.nothing;
   for (var key in data) {
@@ -1938,14 +1594,14 @@ let getRequestBody = (data = {}, isPost = false) => {
   return body;
 };
 
-let sendEmail = async (to, subject, body, cc, bcc) => {
+const sendEmail = async (to, subject, body, cc, bcc) => {
   //todo: send emails from here.
   return code.mail.MAIL_SENT;
 };
 
-let mailTo = (to) => `mailto:${to}`;
+const mailTo = (to) => `mailto:${to}`;
 
-let idbSupported = () => {
+const idbSupported = () => {
   if (!window.indexedDB) {
     clog("IDB:0");
     snackBar(
@@ -1965,28 +1621,13 @@ let idbSupported = () => {
 const addNumberSuffixHTML = (number = Number) => {
   var str = String(number);
   switch (number) {
-    case 1:
-      return number + "<sup>st</sup>";
-    case 2:
-      return number + "<sup>nd</sup>";
-    case 3:
-      return number + "<sup>rd</sup>";
+    case 1: return number + "<sup>st</sup>";
+    case 2: return number + "<sup>nd</sup>";
+    case 3: return number + "<sup>rd</sup>";
     default: {
       if (number > 9) {
-        if (str.charAt(str.length - 2) == "1") {
-          return number + "<sup>th</sup>";
-        } else {
-          switch (str.charAt(str.length - 1)) {
-            case "1":
-              return number + "<sup>st</sup>";
-            case "2":
-              return number + "<sup>nd</sup>";
-            case "3":
-              return number + "<sup>rd</sup>";
-            default:
-              return number + "<sup>th</sup>";
-          }
-        }
+        if (str.charAt(str.length - 2) == "1") return number + "<sup>th</sup>";
+        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)))
       } else {
         return number + "<sup>th</sup>";
       }
@@ -1994,7 +1635,7 @@ const addNumberSuffixHTML = (number = Number) => {
   }
 };
 
-let setTimeGreeting = (element = new HTMLElement()) => {
+const setTimeGreeting = (element = new HTMLElement()) => {
   var today = new Date();
   if (today.getHours() < 4) {
     element.innerHTML = "Good night!";
@@ -2009,7 +1650,12 @@ let setTimeGreeting = (element = new HTMLElement()) => {
   }
 };
 
-let getProperDate = (dateTillMillis = String()) => {
+/**
+ * Returns phrase readable form of date from standard Schemester form of date.
+ * @param {Number} dateTillMillis The full date in Schemester standard form: YYYYMMDDHHmmSSmmm
+ * @return {String} Readable sentence like date.
+ */
+const getProperDate = (dateTillMillis = String()) => {
   let year = dateTillMillis.substring(0, 4);
   let month = dateTillMillis.substring(4, 6);
   let date = dateTillMillis.substring(6, 8);
@@ -2023,19 +1669,19 @@ let getProperDate = (dateTillMillis = String()) => {
   )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
 };
 
-let getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
+const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
-let getRadioChip = (labelID, label, radioID) =>
+const getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
-let getCheckBox = (labelID, label, checkboxID) =>
+const getCheckBox = (labelID, label, checkboxID) =>
   `<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
-let getInputField = (fieldID, captionID, inputID, errorID) =>
+const getInputField = (fieldID, captionID, inputID, errorID) =>
   `<fieldset class="fmt-row text-field" id="${fieldID}"> 
   <legend class="field-caption" id="${captionID}"></legend> 
   <input class="text-input" id="${inputID}">
   <span class="fmt-right error-caption" id="${errorID}"></span></fieldset>`;
-let getDialogButton = (buttonClass, buttonID, label) =>
+const getDialogButton = (buttonClass, buttonID, label) =>
   `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
-let getDialogLoaderSmall = (loaderID) =>
+const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
-let jstr = (obj) => JSON.stringify(obj);
+const jstr = (obj) => JSON.stringify(obj);

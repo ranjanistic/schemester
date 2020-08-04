@@ -47,10 +47,10 @@
     <body>
         <div id="topBar">
             <% if (user.isAdmin) { %>
-                <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromTeacherFiller" onclick="refer(locate.adminDashPage)">
+                <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back">
                 <span id="greeting">Add Teacher</span>
             <% } else { %>
-                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="back">
                 <span id="greeting">Create schedule</span>
             <% } %>
             <span class="fmt-dropdown-hover fmt-right">

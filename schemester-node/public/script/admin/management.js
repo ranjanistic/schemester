@@ -20,7 +20,7 @@ class Management {
       getElement("securityTab"),
       getElement("aboutTab")
     );
-    setClassName(this.tabs[this.displayIndex], "leftTabButtonSelected");
+    setClassNames(this.tabs[this.displayIndex], "leftTabButtonSelected");
     this.chips = Array(
       getElement("madminTab"),
       getElement("minstitutionTab"),
@@ -90,7 +90,7 @@ class Management {
       var condition = e == clickables[k];
       visibilityOf(showables[k], condition);
       if (showClass != null && hideClass != null) {
-        setClassName(clickables[k], showClass, hideClass, condition);
+        setClassNames(clickables[k], showClass, hideClass, condition);
       }
     }
   };

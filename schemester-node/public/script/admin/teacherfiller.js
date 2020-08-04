@@ -4,6 +4,13 @@ class TeacherFiller {
       sessionStorage.clear();
       this.data = new ReceiveData();
       this.view = getElement("workbox");
+      this.back = getElement("back");
+      if(this.data.isAdmin){
+        this.back.onclick =_=>{window.history.back()}
+      }else {
+        this.back.onclick =_=>{relocate(locate.root)}
+      }
+
       this.logout = getElement("logout");
       this.next = getElement("nextSchedule");
       this.nloader = getElement("nextLoader");
@@ -53,7 +60,13 @@ class TeacherFiller {
         });
       }
       this.logout.onclick =_=>{
-        finishSession();
+        finishSession(_=>{
+          if(this.data.isAdmin){
+            relocate(locate.admin.login,{target:locate.admin.target.addteacher})
+          }else if(this.data.isTeacher){
+            relocate(locate.teacher.login,{target:locate.teacher.target.addschedule})
+          }
+        });
       }
       this.next.onclick =_=>{
         new Snackbar().hide();

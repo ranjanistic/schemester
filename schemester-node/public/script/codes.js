@@ -158,6 +158,308 @@ class Codes{
         };
     }
 }
+class Client {
+    constructor() {
+      this.admin = "admin";
+      this.teacher = "teacher";
+      this.student = "student";
+    }
+  }
+class Constant {
+    constructor() {
+      this.appName = "Schemester";
+      this.hide = "none";
+      this.show = "block";
+      this.nothing = "";
+      this.space = " ";
+      this.tab = "  ";
+      this.post = "post";
+      this.get = "get";
+      this.put = "put";
+      this.backbluecovered = false;
+      this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
+      this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
+      this.sessionID = "id";
+      this.sessionUID = "uid";
+      this.weekdays = Array(
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      );
+      this.months = Array(
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      );
+    }
+}
+
+class Locations {
+    constructor() {
+      this.homepage = "/home";
+      this.root = "/";
+      this.planspage = "/plans";
+  
+      class Admin {
+        constructor() {
+          this.session = "/admin/session";
+          this.login = "/admin/auth/login";
+  
+          class Target {
+            constructor() {
+              this.dashboard = "dashboard";
+              this.settings = "manage";
+              this.manage = "manage";
+              this.addteacher = "addteacher";
+              this.register = "registration";
+            }
+          }
+          this.target = new Target();
+  
+          class SettingSections {
+            constructor() {
+              this.account = "setting/account";
+              this.institute = "setting/institute";
+              this.schedule = "setting/schedule";
+              this.users = "setting/users";
+              this.security = "settting/security";
+              this.about = "setting/about";
+            }
+          }
+          this.section = new SettingSections();
+        }
+      }
+      this.admin = new Admin();
+  
+      class Teacher {
+        constructor() {
+          this.session = "/teacher/session";
+          this.login = "/teacher/auth/login";
+          this.fragment = "/teacher/fragment";
+          class Target {
+            constructor() {
+              this.dash = "dash";
+              this.settings = "settings";
+              this.addschedule = "addschedule";
+              class Fragment{
+                constructor(){
+                    this.today = "today";
+                    this.fullweek = "fullschedule";
+                    this.about = "about";
+                }
+              }
+              this.fragment = new Fragment()
+            }
+          }
+          this.target = new Target();
+        }
+      }
+      this.teacher = new Teacher();
+    }
+  }
+  class Posts {
+    constructor() {
+      class Admin {
+        constructor() {
+          this.login = "/admin/auth/login";
+          this.logout = "/admin/auth/logout";
+          this.signup = "/admin/auth/signup";
+          this.manage = "/admin/manage";
+          this.sessionValidate = "/admin/session/validate";
+          this.register = "/admin/session/registerinstitution";
+          this.schedule = "/admin/schedule";
+        }
+      }
+      this.admin = new Admin();
+  
+      class Teacher {
+        constructor() {
+          this.login = "/teacher/auth/login";
+          this.logout = "/teacher/auth/logout";
+          this.sessionValidate = "/teacher/session/validate";
+          this.schedule = "/teacher/schedule";
+        }
+      }
+      this.teacher = new Teacher();
+  
+      this.sessionValidate = "/admin/session/validate";
+      this.authlogin = "/admin/auth/login";
+      this.authlogout = "/admin/auth/logout";
+      this.authsignup = "/admin/auth/signup";
+    }
+  }
+  class Theme{
+    constructor(){
+      this.dark = 'dark';
+      this.light = 'light';
+      this.key = 'theme';
+    }
+    setDark(){
+      this.setTheme(this.dark);
+    }
+    setLight(){
+      this.setTheme(this.light);
+    }
+    switch(){
+      this.isLight()?this.setDark():this.setLight();
+    }
+    isLight(){
+      return this.getTheme() == this.light;
+    }
+    isDark(){
+      return this.getTheme() == this.dark;
+    }
+    
+    getTheme(){
+      return localStorage.getItem(this.key);
+    }
+    setTheme(theme = new Theme().light){
+      localStorage.setItem(this.key,theme);
+    }
+  }
+
+  class Colors {
+    constructor() {
+      if(theme.isLight()){
+        this.positive = "#216bf3";
+        this.negative = "#c40c0c";
+        this.active = "#00893E";
+        this.warning = "#d66a04";
+      } else {
+        this.positive = "#739dec";
+        this.negative = "#ec6565";
+        this.active = "#48cc84";
+        this.warning = "#df9d5f";
+      }
+      this.white = "#ffffff";
+      this.black = "#000000";
+      this.transparent = "#00000056";
+      this.base = this.positive;
+    }
+    getColorByType(type) {
+      switch (type) {
+        case actionType.positive:
+          return this.positive;
+        case actionType.negative:
+          return this.negative;
+        case actionType.neutral:
+          return this.white;
+        case actionType.active:
+          return this.active;
+        case actionType.nothing: {
+          return this.transparent;
+        }
+        default: {
+          return type == false
+            ? this.getColorByType(actionType.negative)
+            : this.getColorByType(actionType.positive);
+        }
+      }
+    }
+  }
+  class InputType {
+    constructor() {
+      this.name = "name";
+      this.email = "email";
+      this.password = "password";
+      this.nonempty = "nonempty";
+      this.match = "matching";
+      this.username = "username";
+      this.phone = "phone";
+    }
+  }
+  class ViewType {
+    constructor() {
+      this.neutral = "neutral";
+      this.positive = "positive";
+      this.negative = "negative";
+      this.warning = "warning";
+      this.active = "active";
+      this.nothing = "nothing";
+    }
+    getCheckStyle(type = new ViewType()) {
+      switch (type) {
+        case this.neutral:
+          return "tickmark-positive";
+        case this.positive:
+          return "tickmark-positive";
+        case this.negative:
+          return "tickmark-negative";
+        case this.warning:
+          return "tickmark-warning";
+        case this.active:
+          return "tickmark-active";
+        default:
+          return "tickmark-positive";
+      }
+    }
+    getButtonStyle(type) {
+      switch (type) {
+        case this.neutral:
+          return "neutral-button";
+        case this.positive:
+          return "positive-button";
+        case this.negative:
+          return "negative-button";
+        case this.warning:
+          return "warning-button";
+        case this.active:
+          return "active-button";
+        default:
+          return "positive-button";
+      }
+    }
+    getFieldStyle(type) {
+      switch (type) {
+        case this.neutral:
+          return "text-field";
+        case this.positive:
+          return "text-field";
+        case this.negative:
+          return "text-field-error";
+        case this.warning:
+          return "text-field-warn";
+        case this.active:
+          return "text-field-active";
+        default:
+          return "text-field";
+      }
+    }
+    getSnackStyle(type) {
+      switch (type) {
+        case this.neutral:
+          return "snack-neutral";
+        case this.positive:
+          return "snack-positive";
+        case this.negative:
+          return "snack-negative";
+        case this.warning:
+          return "snack-warn";
+        case this.active:
+          return "snack-active";
+        default:
+          return "snack-positive";
+      }
+    }
+  }
+  const click = "click",
+  change = "change",
+  input = "input";
+
 try{
     module.exports = new Codes();
 }catch{}

@@ -227,7 +227,7 @@ class Password{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{
         showLoader();
-        saveUserLocally(result.user);
+        saveDataLocally(result.user);
         relocate(locate.teacher.session,{
           u:result.user.uid,
           target:result.target
