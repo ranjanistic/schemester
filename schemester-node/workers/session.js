@@ -1,6 +1,6 @@
 const { ObjectId } = require("mongodb");
 
-const code = require("../hardcodes/events.js"),
+const code = require("../public/script/codes"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
   Admin = require("../collections/Admins"),

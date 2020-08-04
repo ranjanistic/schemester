@@ -1,4 +1,4 @@
-const code = require("../hardcodes/events");
+const code = require("../public/script/codes");
 /**
  * For user account verification purposes, including and limited to:
  * Administrator: in a seperate collection, individual documents.

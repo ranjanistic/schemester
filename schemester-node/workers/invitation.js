@@ -1,4 +1,4 @@
-const code = require("../hardcodes/events");
+const code = require("../public/script/codes");
 class Invitation{
     constructor(){
         this.type = 'invitation';

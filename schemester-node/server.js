@@ -1,9 +1,9 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
     view = require('./hardcodes/views'),
-    code = require('./hardcodes/events'),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
+    code = require('./public/script/codes'),
     app = express();
 
 app.set('view engine', 'ejs');
@@ -14,12 +14,14 @@ app.use(express.static('public'));
 app.use('/admin', admin);
 app.use('/teacher',teacher);
 
+
 app.get('/', (req,res)=>{
     const client = req.query.client?req.query.client:null;
     const data = {client:client}
     clog(data);
     res.render(view.loader,{data});
 });
+
 app.get('/home', (_req,res)=>{
     res.render(view.homepage);
 });
