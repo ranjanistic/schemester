@@ -181,8 +181,14 @@ router.get("/fragment*", (req, res) => {
           clog("today");
           getSchedule(response, new Date().getDay())
             .then((resp) => {
+              if(!resp.schedule)
+                return res.render(view.teacher.getViewByTarget(query.fragment), {
+                  today: false,
+                  timings:resp.timings
+                });
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 today: resp.schedule.period,
+                timings:resp.timings
               });
             })
             .catch((e) => {
@@ -196,6 +202,7 @@ router.get("/fragment*", (req, res) => {
             .then((resp) => {
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 schedule: resp.schedule,
+                timings:resp.timings
               });
             })
             .catch((e) => {
@@ -204,7 +211,10 @@ router.get("/fragment*", (req, res) => {
           return;
         }
         case view.teacher.target.fragment.about: {
-          res.render(view.teacher.getViewByTarget(query.fragment));
+          clog("about");
+          const teacheruser = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}});
+          if(!teacheruser) return null;
+          res.render(view.teacher.getViewByTarget(query.fragment),{teacher:getTeacherShareData(teacheruser.users.teachers[0])});
         }
       }
     });
@@ -230,6 +240,7 @@ const getSchedule = async (response, dayIndex = null) => {
     },
     {
       projection: {
+        _id:0,
         default: 1,
         "schedule.teachers.$": 1,
       },
@@ -237,7 +248,8 @@ const getSchedule = async (response, dayIndex = null) => {
   );
   if (!teacherschedule) return res.redirect(toLogin(req.query));
   const schedule = teacherschedule.schedule.teachers[0].days;
-  if (!dayIndex) return { schedule: schedule };
+  const timings = teacherschedule.default.timings;
+  if (!dayIndex) return { schedule: schedule, timings:timings};
   let today = teacherschedule.schedule.teachers[0].days[0];
   const found = schedule.some((day, index) => {
     if (day.dayIndex == dayIndex) {
@@ -245,8 +257,8 @@ const getSchedule = async (response, dayIndex = null) => {
       return true;
     }
   });
-  if (!found) return { schedule: false };
-  return { schedule: today };
+  if (!found) return { schedule: false, timings:timings};
+  return { schedule: today, timings:timings};
 };
 
 router.post("/schedule", async (req, res) => {

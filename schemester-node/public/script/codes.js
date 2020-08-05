@@ -191,6 +191,15 @@ class Constant {
         "Friday",
         "Saturday"
       );
+      this.shortDays = Array(
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+      );
       this.months = Array(
         "January",
         "February",
@@ -204,6 +213,20 @@ class Constant {
         "October",
         "November",
         "December"
+      );
+      this.shortMonths = Array(
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "June",
+        "July",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
       );
     }
 }

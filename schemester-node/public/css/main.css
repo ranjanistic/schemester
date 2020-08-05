@@ -243,15 +243,18 @@ img{vertical-align:middle}
     color:var(--active)
 }
 .b-positive{
+    color:var(--secondary);
     background-color: var(--positive);
 }
 .b-negative{
+    color:var(--secondary);
     background-color:var(--negative);
 }
 .b-neutral{
     background-color:var(--secondary);
 }
 .b-active{
+    color:var(--secondary);
     background-color:var(--active);
 }
 .show{
@@ -260,17 +263,34 @@ img{vertical-align:middle}
 .hide{
     display:none
 }
-.noshadow{
-    box-shadow:0px
+.wide{
+    width:100%;
 }
-
+.three-fourth{
+    width:75%;
+}
+.two-third{
+    width:66.666%;
+}
+.half{
+    width:50%;
+}
+.third{
+    width:33.333%;
+}
+.fourth{
+    width:25%;
+}
+.fifth{
+    width:20%;
+}
+.sixth{
+    width:16.666%;
+}
 .tab-container{
-    color: inherit;
-    background-color: inherit;
     border-radius: 12px;
-    font-size:inherit;
     padding:8px 12px;
-    margin:4px 0;
+    margin:6px 0;
     box-shadow: 1px 5px 10px #00000011;
     transition: 0.3s ease;
 }
@@ -345,24 +365,25 @@ img{vertical-align:middle}
     background-color: var(--secondary);
     border-radius:4px 4px 0 0;
     box-shadow: -5px -5px 10px #00000011;
+    font-family:'Questrial','sans-serif';
+    font-weight:bold;
     transition: 0.3s ease;
     position:fixed;
-    width:100%;z-index:1
+    width:100%;
+    z-index:1
 }
 .bottom-tab-section{
     color:#343434;
     background:var(--secondary);
-    font-size:16px;
     border-radius:4px 4px 0 0;
     transition:0.3s ease;
     padding:4px 8px;
-
+    font-size:14px;
     outline:none;
     border:0;
     cursor:pointer;
-
 }
-.bottom-tab-section:focus{
+.bottom-tab-section:active{
     color:var(--positive);
     background:#eee;
 }
@@ -373,9 +394,15 @@ img{vertical-align:middle}
 } */
 .bottom-tab-section-selected{
     color:var(--positive);
-    background:var(--secondary);
+    background:var(--base);
     font-size:16px;
+    border-radius:4px 4px 0 0;
     transition:0.3s ease;
+    padding:4px 8px;
+    font-size:14px;
+    outline:none;
+    border:0;
+    cursor:pointer;
 }
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
@@ -613,6 +640,7 @@ img{vertical-align:middle}
     outline:none;
     background-color: var(--base);
 }
+
 .snack-neutral{
     z-index:3;
     display:none;

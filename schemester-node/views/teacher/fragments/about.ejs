@@ -10,18 +10,45 @@
         <script src="/script/teacher/fragment/about.js"></script>
     </head>
     <body>
-        <div class="fmt-col fmt-padding fmt-animate-top">
+        <div class="fmt-col fmt-padding fmt-animate-right">
             <div class="fmt-row">
                 <div class="fmt-col" style="width: 60%;">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">About</div>
-                    <div class="questrial" style="margin-top: 0;padding-top: 0;">Wannabe settings</div>
+                    <div class="questrial" style="margin-top: 0;padding-top: 0;">Schemester</div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
                     <button class="fmt-right circle-button">
-                        <img class="fmt-spin-fast" width="30" src="/graphic/blueLoader.svg"/><br/>
+                        <img class="b-positive" width="30" src="/graphic/menudotsvertical.svg"/><br/>
                     </button>
                 </div>
             </div>
+            <% if (teacher) { %>
+                <div  class="fmt-col">
+                    <br/>
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Logged in as</div>
+                        <div class="positive group-text"><%= teacher.username %></div>
+                        <div class="active questrial caption"><%= teacher.id %></div>
+                        <button class="negative-button fmt-center wide" id="logout">Logout</button>
+                    </div>
+                    
+                    <div class="fmt-row  tab-container b-neutral">
+                        Logged in as<br/>
+                        <span class="positive"><%= teacher.id %></span>
+                    </div>
+                </div>
+
+             <% } else { %>
+              
+            <% } %>
         </div>
-    </body> 
+        <span hidden>
+            <span id="teacherUID"><%= teacher.uid %></span>
+            <span id="teacherID"><%= teacher.id %></span>
+            <span id="teachername"><%= teacher.username %></span>
+            <span id="createdAt"><%= teacher.createdAt %></span>
+            <span id="vacations"><%= teacher.vacations %></span>
+            <span id="prefs"><%= teacher.prefs %></span>
+        </span>
+    </body>
 </html>

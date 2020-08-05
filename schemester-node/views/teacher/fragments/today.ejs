@@ -9,12 +9,35 @@
         <script src="/script/main.js"></script>
         <script src="/script/teacher/fragment/today.js"></script>
     </head>
+    <%
+    addNumberSuffixHTML = function(number = Number){
+        var str = String(number)
+         switch (number) {
+          case 1: 
+          return number + "st"
+          case 2: 
+          return number + "nd"
+          case 3:
+          return number + "rd"
+          default:
+            if (number > 9) {
+                if (Number(str.charAt(str.length - 2)) == 1) {
+                    return number + "th";
+                } else {
+                    return (str.substring(0,str.length-1) +addNumberSuffixHTML(Number(str.charAt(str.length - 1))))
+                }
+            } else {
+                return number + "th";
+            }
+        }
+    }
+     %> 
     <body>
-        <div class="fmt-col fmt-padding fmt-animate-top">
+        <div class="fmt-col fmt-padding fmt-animate-left">
             <div class="fmt-row">
                 <div class="fmt-col" style="width: 60%;">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Today</div>
-                    <div class="questrial" style="margin-top: 0;padding-top: 0;">Monday, 31 Jan</div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="simpledate"></div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
                     <button class="fmt-right circle-button">
@@ -23,32 +46,56 @@
                 </div>
             </div>
             <br/>
-            <div class="fmt-row">
-                <div class="fmt-row fit-container fmt-center">
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        Chemistry
+            <% if (today) { %>
+                <div class="fmt-row">
+                    <% for( let i = 0; i < today.length; i++ ) { %>
+                        <div class="fmt-row tab-container b-neutral" id="periodview<%= i %>">
+                            <div class="fmt-col three-fourth " style="font-size:24px">
+                                <%= addNumberSuffixHTML(i+1) %>
+                            </div>
+                            <div class="fmt-col fourth">
+                                <span class="fmt-right" id="dayexpander">^</span>
+                            </div>
+                            <div class="fmt-row">
+                                <div class="fmt-col half">
+                                    <%= today[i].classname %>
+                                </div>
+                                <div class="fmt-col half">
+                                    <%= today[i].subject %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            <% } else { %>
+                <div class="fmt-row">
+                    <div class="fmt-col fmt-quarter fmt-padding">
                     </div>
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        8B
+                    <div class="fmt-col fmt-half fmt-center container">
+                        <div class="group-heading positive">No schedule assigned</div>
+                        <br/>
+                        <div class="questrial">
+                            No schedule was found for you today.
+                        </div>
+                    </div>
+                    <div class="fmt-col fmt-quarter fmt-padding">
+                    </div>
+                    <div class="fmt-center">
+                        <button class="positive-button" id="weekschedule">See weekly</button>
                     </div>
                 </div>
-                <div class="fmt-row fit-container fmt-center">
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        Chemistry
-                    </div>
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        8B
-                    </div>
-                </div>
-                <div class="fmt-row fit-container fmt-center">
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        Chemistry
-                    </div>
-                    <div class="fmt-col  fmt-padding" style="width:50%;">
-                        8B
-                    </div>
-                </div>
-            </div>
+            <% } %>
         </div>
+
+        <span hidden>
+            <span id="today"><%= today %></span>
+            <span id="startTime"><%= timings.startTime %></span>
+            <span id="endTime"><%= timings.endTime %></span>
+            <span id="breakTime"><%= timings.breakStartTime %></span>
+            <span id="periodDuration"><%= timings.periodMinutes %></span>
+            <span id="breakDuration"><%= timings.breakMinutes %></span>
+            <span id="periodsInDay"><%= timings.periodsInDay %></span>
+            <span id="daysInWeek"><%= timings.daysInWeek %></span>
+        </span>
     </body>
 </html>

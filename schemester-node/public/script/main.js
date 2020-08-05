@@ -1373,9 +1373,9 @@ const finishSession = (
 ) => {
   postData(post.admin.logout).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
-      clearLocalData();
       sessionStorage.clear();
       afterfinish();
+      clearLocalData();
     } else {
       snackBar("Failed to logout", "Try again", false, (_) => {
         finishSession();
@@ -1545,6 +1545,21 @@ const relocate = (path, data = null) => {
   }
   window.location.replace(path);
 };
+
+const relocateParent=(path, data = null)=>{
+  if (data != null) {
+    let i = 0;
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        path =
+          i > 0 ? `${path}&${key}=${data[key]}` : `${path}?${key}=${data[key]}`;
+        i++;
+      }
+    }
+  }
+  window.parent.location.replace(path);
+}
+
 
 const postData = async (url = String, data = {}) => {
   const response = await fetch(url, {

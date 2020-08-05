@@ -1,11 +1,9 @@
 class TeacherAbout{
     constructor(){
-        return;
         this.logout = getElement("logout");
         this.logout.onclick =_=>{
-            showLoader();
             finishSession(_=>{
-                relocate(locate.teacher.login);
+                relocateParent(locate.teacher.login,{email:localStorage.getItem('id')});
             });
         }
     }

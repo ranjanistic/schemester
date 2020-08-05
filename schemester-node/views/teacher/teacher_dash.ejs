@@ -22,19 +22,23 @@
             <iframe style="width:100%;border:0;height:800px" id="frame">
             </iframe>
         </div>
-        <div class="fmt-row bottom-tab fmt-center">
-            <button class="fmt-col bottom-tab-section" style="width:33.333%" id="todaytab">
-                <img width="40" src="/graphic/blueLoader.svg"/><br/>
+        <div class="fmt-row bottom-tab fmt-center fmt-animate-bottom">
+            <button class="fmt-col bottom-tab-section-selected" style="width:33.333%" id="todaytab">
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 Today
             </button>
             <button class="fmt-col bottom-tab-section" style="width:33.33%" id="fulltab">
-                <img width="40" src="/graphic/blueLoader.svg"/><br/>
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 Week
             </button>
             <button class="fmt-col bottom-tab-section" style="width:33.333%" id="abouttab">
-                <img width="40" src="/graphic/blueLoader.svg"/><br/>
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 About
             </button>
+        </div>
+        <div id="snackBar" class=" fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
     </body>
 </html>

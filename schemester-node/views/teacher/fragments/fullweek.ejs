@@ -9,6 +9,36 @@
         <script src="/script/main.js"></script>
         <script src="/script/teacher/fragment/fullweek.js"></script>
     </head>
+    <% 
+    let getDayName=(index = Number)=>{
+        const weekdays = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday')
+        return weekdays[index];
+    }
+    let todayIndex=()=>{
+        return new Date().getDay();
+    }
+    addNumberSuffixHTML = function(number = Number){
+        var str = String(number)
+         switch (number) {
+          case 1: 
+          return number + "st"
+          case 2: 
+          return number + "nd"
+          case 3:
+          return number + "rd"
+          default:
+            if (number > 9) {
+                if (Number(str.charAt(str.length - 2)) == 1) {
+                    return number + "th";
+                } else {
+                    return (str.substring(0,str.length-1) +addNumberSuffixHTML(Number(str.charAt(str.length - 1))))
+                }
+            } else {
+                return number + "th";
+            }
+        }
+    }
+     %> 
     <body>
         <div class="fmt-col fmt-padding fmt-animate-top">
             <div class="fmt-row">
@@ -22,6 +52,53 @@
                     </button>
                 </div>
             </div>
+            <br/>
+            <div>
+            <% if (schedule) { %>
+                <% for( let i = 0; i < schedule.length; i++ ) { %>
+                    <div class="fmt-row tab-container b-neutral"
+                    <% if (schedule[i].dayIndex == todayIndex()) { %>
+                        style="border:4px solid var(--active);">
+                    <% } else { %>
+                        >
+                    <% } %>
+                        <div class="fmt-col three-fourth " style="font-size:28px">
+                        <%= getDayName(schedule[i].dayIndex) %>
+                        </div>
+                        <div class="fmt-col fourth">
+                            <span class="fmt-right" id="dayexpander">^</span>
+                        </div>
+                        <% for( let j = 0; j < schedule[i].period.length; j++ ) { %>
+                        <div class="fmt-row">
+                            <div class="fmt-row active caption">
+                                <div class="fmt-col half"><%= addNumberSuffixHTML(j+1) %> period</div>
+                            </div>
+                            <div class="fmt-row fmt-center fmt-padding-small positive group-text">
+                                <div class="fmt-col half">
+                                    <%= schedule[i].period[j].classname %>
+                                </div>
+                                <div class="fmt-col half">
+                                    <%= schedule[i].period[j].subject %>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <% } %>
+                    </div>
+                <% } %>
+             <% } else { %>
+              
+            <% } %>
+            </div>
         </div>
+        <span hidden>
+            <span id="startTime"><%= timings.startTime %></span>
+            <span id="endTime"><%= timings.endTime %></span>
+            <span id="breakTime"><%= timings.breakStartTime %></span>
+            <span id="periodDuration"><%= timings.periodMinutes %></span>
+            <span id="breakDuration"><%= timings.breakMinutes %></span>
+            <span id="periodsInDay"><%= timings.periodsInDay %></span>
+            <span id="daysInWeek"><%= timings.daysInWeek %></span>
+        </span>
     </body>
 </html>
