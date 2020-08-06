@@ -8,6 +8,7 @@
     --secondary:#ffffff;
     --secondary-text:#121212;
     --tertiary-text:#00000093;
+    --dead-text:#343434;
 }
 
 [data-theme="dark"] {
@@ -20,6 +21,7 @@
     --secondary:#000000;
     --secondary-text:#dedede;
     --tertiary-text:#ffffff6c;
+    --dead-text:#dedede;
 }
 
 html{
@@ -272,8 +274,14 @@ img{vertical-align:middle}
 .two-third{
     width:66.666%;
 }
+.three-fifth{
+    width:60%;
+}
 .half{
     width:50%;
+}
+.two-fifth{
+    width:40%;
 }
 .third{
     width:33.333%;
@@ -373,7 +381,7 @@ img{vertical-align:middle}
     z-index:1
 }
 .bottom-tab-section{
-    color:#343434;
+    color:var(--dead-text);
     background:var(--secondary);
     border-radius:4px 4px 0 0;
     transition:0.3s ease;
@@ -385,7 +393,7 @@ img{vertical-align:middle}
 }
 .bottom-tab-section:active{
     color:var(--positive);
-    background:#eee;
+    background:var(--base);
 }
 /* .bottom-tab-section:focus{
     color:var(--positive);
@@ -394,7 +402,7 @@ img{vertical-align:middle}
 } */
 .bottom-tab-section-selected{
     color:var(--positive);
-    background:var(--base);
+    background:#216bf333;
     font-size:16px;
     border-radius:4px 4px 0 0;
     transition:0.3s ease;
@@ -403,6 +411,10 @@ img{vertical-align:middle}
     outline:none;
     border:0;
     cursor:pointer;
+}
+.bottom-tab-section-selected:active{
+    color:var(--positive);
+    background:var(--base);
 }
 .leftTabButtonSelected{
     margin:4px 0px 4px 0px;
@@ -832,6 +844,9 @@ img{vertical-align:middle}
   }
   
   .radio-container:hover{
+    background-color: var(--secondary);
+  }
+  .radio-container:active{
     background-color: var(--positive);
     color:var(--secondary);
   }
@@ -912,8 +927,8 @@ img{vertical-align:middle}
   
   /* On mouse-over, add a grey background color */
   .radio-box-container:hover input ~ .radio-box-mark {
-    background-color: var(--positive)33;
-    border: 2px solid var(--positive)33;
+    background-color: var(--positive);
+    border: 2px solid var(--positive);
     color:var(--secondary);
     transition:0.3s ease;
     box-shadow:0 3px 8px 0 #00000023;

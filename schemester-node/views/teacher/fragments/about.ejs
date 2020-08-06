@@ -13,11 +13,11 @@
         <div class="fmt-col fmt-padding fmt-animate-right">
             <div class="fmt-row">
                 <div class="fmt-col" style="width: 60%;">
-                    <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">About</div>
-                    <div class="questrial" style="margin-top: 0;padding-top: 0;">Schemester</div>
+                    <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Details</div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;">Schemester</div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
-                    <button class="fmt-right circle-button">
+                    <button class="fmt-right circle-button" id="moreSettings">
                         <img class="b-positive" width="30" src="/graphic/menudotsvertical.svg"/><br/>
                     </button>
                 </div>
@@ -32,9 +32,17 @@
                         <button class="negative-button fmt-center wide" id="logout">Logout</button>
                     </div>
                     
-                    <div class="fmt-row  tab-container b-neutral">
-                        Logged in as<br/>
-                        <span class="positive"><%= teacher.id %></span>
+                    <div class="fmt-row tab-container b-neutral">
+                            <span class="group-text positive">Set Theme</span>
+                            <span class="fmt-right">
+                            <label class="radio-container ">🔆<input type="radio" name="theme" id="light">
+                                <span class="checkmark"></span>
+                            </label>    
+                            <label class="radio-container">🌒
+                                <input type="radio" name="theme" id="dark">
+                                <span class="checkmark"></span>
+                            </label>
+                            </span>
                     </div>
                 </div>
 

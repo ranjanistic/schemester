@@ -1456,11 +1456,35 @@ const setClassNames = (
   }
 };
 
-const showElement = (elements, index) => {
-  for (var k = 0, j = 0; k < elements.length; k++, j++) {
-    visibilityOf(elements[k], k == index);
+/**
+ * Shows single or all HTML elements in given array.
+ * @param {Array} elements The array of html elements to be acted upon.
+ * @param {Number} index The index of element in given array to be shown. If not provided, defaults to null, and all elements will be shown.
+ */
+const showElement = (elements = Array, index = null) => {
+  for (let k = 0; k < elements.length; k++) {
+    if(index){
+      visibilityOf(elements[k], k == index);
+    } else {
+      hide(elements[k])
+    }
   }
 };
+
+/**
+ * Hides single or all HTML elements in given array.
+ * @param {Array} elements The array of html elements to be acted upon.
+ * @param {Number} index The index of element in given array to be hidden. If not provided, defaults to null, and all elements will be hidden.
+ */
+const hideElement = (elements = Array,index = null)=>{
+  for (let k = 0; k < elements.length; k++) {
+    if(index){
+      visibilityOf(elements[k], k != index);
+    } else {
+      hide(elements[k])
+    }
+  }
+}
 
 const elementFadeVisibility = (element, isVisible) => {
   replaceClass(
@@ -1493,19 +1517,49 @@ const setDefaultBackground = (element, type = actionType.positive) => {
   }
 };
 
-const replaceClass = (element, class1, class2, replaceC1 = true) =>
-  replaceC1
-    ? element.classList.replace(class1, class2)
-    : element.classList.replace(class2, class1);
+/**
+ * Replaces the class of given HTML element, with condition.
+ * @param {HTMLElement} element The element whose given class will be replaced by the provided class.
+ * @param {String} toBeReplaced The existing class of given element to be replaced.
+ * @param {String} replacement The class which will replace given class of given element.
+ * @param {Boolean} opposite This condition ensures the reversibility of the intended action. If set to false, the toBeReplaced and replacement class params will be exchanged.
+ * If unset, defaults to true, means classes will be replaced normally as they were intended to. Can be used if classes are to be replaced on some boolean condition.
+ */
+const replaceClass = (element, toBeReplaced, replacement, opposite = true) =>
+  opposite
+    ? element.classList.replace(toBeReplaced, replacement)
+    : element.classList.replace(replacement, toBeReplaced);
+
 
 const showLoader = (_) => show(getElement("navLoader"));
 const hideLoader = (_) => hide(getElement("navLoader"));
-const opacityOf = (element, value = 1) => (element.style.opacity = String(value));
-const visibilityOf = (element, visible = true) =>
-  (element.style.display = visible ? constant.show : constant.hide);
-const hide = (element = new HTMLElement()) => visibilityOf(element, false);
-const show = (element = new HTMLElement()) => visibilityOf(element, true);
+/**
+ * Sets the opacity of given HTML element.
+ * @param {HTMLElement} element The element whose opacity is to be set.
+ * @param {Number} value The numeric value of opacity of the given element to set. Defaults to 1. Must be >=0 & <=1.
+ */
+const opacityOf = (element = new HTMLElement, value = 1) => (element.style.opacity = String(value));
 
+/**
+ * Controls visiblity of the given HTML element, as per the condition.
+ * @param {HTMLElement} element The element whose visibility is to be toggled.
+ * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
+ */
+const visibilityOf = (element = new HTMLElement, visible = true) =>
+  (element.style.display = visible ? constant.show : constant.hide);
+
+
+const hide = (element = new HTMLElement) => visibilityOf(element, false);
+const show = (element = new HTMLElement) => visibilityOf(element, true);
+
+/**
+ * Checks if given string is valid, according to its type given as second parameter.
+ * @param {String} value The string value to be checked for validity.
+ * @param {String} type The type of string according to which it will be verified. E.g. email, password, nonempty. Defaults to nonempty.
+ * @param {String} ifMatchValue This optional parameter becomes neccessary, when the given value is to be checked for equality. This parameter works as the second string, against which
+ * the given value will be checked. In this case, the type parameter should be 'matching'.
+ * @note The type parameter can be passed using the InputType class object available in Schemester.
+ */
 const stringIsValid = (
   value = String,
   type = validType.nonempty,
@@ -1527,12 +1581,18 @@ const stringIsValid = (
 };
 
 const getDayName = (dIndex = Number) =>
-  dIndex < constant.weekdays.length ? constant.weekdays[dIndex] : null;
+  dIndex < constant.weekdays.length && dIndex >=0 ? constant.weekdays[dIndex] : null;
 const getMonthName = (mIndex = Number) =>
-  mIndex < constant.months.length ? constant.months[mIndex] : null;
+  mIndex < constant.months.length && mIndex >=0? constant.months[mIndex] : null;
+
 const getElement = (id) => document.getElementById(id);
 
-const relocate = (path, data = null) => {
+/**
+ * This function extends the ability of window.location.replace(), by allowing you to provide additional link data passed as query along with the link.
+ * @param {String} path The path or link to be passed in replace() function of window.location
+ * @param data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
+ */
+const relocate = (path = String, data = null) => {
   if (data != null) {
     let i = 0;
     for (var key in data) {
@@ -1591,6 +1651,17 @@ const refer = (href, data = null) => {
   window.location.href = href;
 };
 
+const referParent = (href, data = null) => {
+  href += data != null ? getRequestBody(data) : constant.nothing;
+  window.parent.location.href = href;
+}
+
+/**
+ * Creates a string of queries to be passed along with any form action type link, from given JSON type data.
+ * @param data The given key:value pairs of data to be converted into url query.
+ * @param {Boolean} isPost The optional parameter, if data is to be converted to send with a post request of content-type: x-www-form-urlencoded, set true. Defaults to false.
+ * @return {String} The query in string from, ready to be concatenated with some action URL of form kind.
+ */
 const getRequestBody = (data = {}, isPost = false) => {
   let i = 0;
   let body = constant.nothing;
@@ -1667,17 +1738,16 @@ const setTimeGreeting = (element = new HTMLElement()) => {
 
 /**
  * Returns phrase readable form of date from standard Schemester form of date.
- * @param {Number} dateTillMillis The full date in Schemester standard form: YYYYMMDDHHmmSSmmm
+ * @param {String} dateTillMillis The full date in Schemester standard form: YYYYMMDDHHmmSSmmm
  * @return {String} Readable sentence like date.
  */
-const getProperDate = (dateTillMillis = String()) => {
-  let year = dateTillMillis.substring(0, 4);
-  let month = dateTillMillis.substring(4, 6);
-  let date = dateTillMillis.substring(6, 8);
-  let hour = dateTillMillis.substring(8, 10);
-  let min = dateTillMillis.substring(10, 12);
-  let sec = dateTillMillis.substring(12, 14);
-
+const getProperDate = (dateTillMillis = String) => {
+  const year = dateTillMillis.substring(0, 4);
+  const month = dateTillMillis.substring(4, 6);
+  const date = dateTillMillis.substring(6, 8);
+  const hour = dateTillMillis.substring(8, 10);
+  const min = dateTillMillis.substring(10, 12);
+  const sec = dateTillMillis.substring(12, 14);
   clog(dateTillMillis.substring(6, 8));
   return `${getMonthName(
     month - 1

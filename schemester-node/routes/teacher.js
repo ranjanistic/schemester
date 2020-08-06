@@ -70,6 +70,7 @@ router.post("/auth/signup", async (req, res) => {
 router.get("/session*", async (req, res) => {
   session.verify(req, sessionsecret).then(async (response) => {
     let data = req.query;
+    clog(data);
     if (!session.valid(response)) return res.redirect(toLogin(data));
     if (data.u != response.user.id) return res.redirect(toLogin(data));
     const userinst = await Institute.findOne(
@@ -155,9 +156,13 @@ router.get("/session*", async (req, res) => {
     }
     try {
       clog("in session try");
+      clog(data);
       return res.render(view.teacher.getViewByTarget(data.target), {
         teacher,
         inst,
+        target:{
+          fragment:data.fragment
+        }
       });
     } catch (e) {
       clog(e);
@@ -179,7 +184,7 @@ router.get("/fragment*", (req, res) => {
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           clog("today");
-          getSchedule(response, new Date().getDay())
+          getSchedule(response, 1)
             .then((resp) => {
               if(!resp.schedule)
                 return res.render(view.teacher.getViewByTarget(query.fragment), {
@@ -212,9 +217,11 @@ router.get("/fragment*", (req, res) => {
         }
         case view.teacher.target.fragment.about: {
           clog("about");
-          const teacheruser = await Institute.findOne({uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}});
+          const teacheruser = await Institute.findOne({
+            uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
+          },{projection:{"users.teachers.$":1}});
           if(!teacheruser) return null;
-          res.render(view.teacher.getViewByTarget(query.fragment),{teacher:getTeacherShareData(teacheruser.users.teachers[0])});
+          return res.render(view.teacher.getViewByTarget(query.fragment),{teacher:getTeacherShareData(teacheruser.users.teachers[0])});
         }
       }
     });

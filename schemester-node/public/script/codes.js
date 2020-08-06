@@ -352,6 +352,8 @@ class Locations {
     }
     setTheme(theme = new Theme().light){
       localStorage.setItem(this.key,theme);
+      document.documentElement.setAttribute('data-theme', theme);
+      window.parent.document.documentElement.setAttribute('data-theme', theme);
     }
   }
 
@@ -482,7 +484,8 @@ class Locations {
   const click = "click",
   change = "change",
   input = "input";
-
 try{
     module.exports = new Codes();
-}catch{}
+}catch{
+  
+}

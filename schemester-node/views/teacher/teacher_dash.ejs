@@ -23,15 +23,15 @@
             </iframe>
         </div>
         <div class="fmt-row bottom-tab fmt-center fmt-animate-bottom">
-            <button class="fmt-col bottom-tab-section-selected" style="width:33.333%" id="todaytab">
+            <button class="fmt-col bottom-tab-section third" id="todaytab">
                 <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 Today
             </button>
-            <button class="fmt-col bottom-tab-section" style="width:33.33%" id="fulltab">
+            <button class="fmt-col bottom-tab-section third" id="fulltab">
                 <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 Week
             </button>
-            <button class="fmt-col bottom-tab-section" style="width:33.333%" id="abouttab">
+            <button class="fmt-col bottom-tab-section third" id="abouttab">
                 <img width="30" src="/graphic/blueLoader.svg"/><br/>
                 About
             </button>
@@ -40,5 +40,8 @@
             <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
+        <span hidden>
+            <span id="frag"><%= target.fragment %></span>
+        </span>
     </body>
 </html>

@@ -35,13 +35,13 @@
     <body>
         <div class="fmt-col fmt-padding fmt-animate-left">
             <div class="fmt-row">
-                <div class="fmt-col" style="width: 60%;">
+                <div class="fmt-col three-fifth">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Today</div>
                     <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="simpledate"></div>
                 </div>
-                <div class="fmt-col" style="width:40%;margin-top: 12px;">
-                    <button class="fmt-right circle-button">
-                        <img class="fmt-spin-fast" width="30" src="/graphic/blueLoader.svg"/><br/>
+                <div class="fmt-col two-fifth" style="margin: 12px 0;">
+                    <button class="fmt-right circle-button" id="todayOptions">
+                        <img width="30" src="/graphic/blueLoader.svg"/>
                     </button>
                 </div>
             </div>
@@ -49,20 +49,26 @@
             <% if (today) { %>
                 <div class="fmt-row">
                     <% for( let i = 0; i < today.length; i++ ) { %>
-                        <div class="fmt-row tab-container b-neutral" id="periodview<%= i %>">
+                        <div class="fmt-row tab-container b-neutral" id="periodview<%= i %>" style="color:var(--secondary-text)">
                             <div class="fmt-col three-fourth " style="font-size:24px">
                                 <%= addNumberSuffixHTML(i+1) %>
+                                <span id="durationdisplay"></span>
                             </div>
                             <div class="fmt-col fourth">
-                                <span class="fmt-right" id="dayexpander">^</span>
+                                <span class="fmt-right" id="showactions<%= i %>">✒️</span>
                             </div>
                             <div class="fmt-row">
-                                <div class="fmt-col half">
-                                    <%= today[i].classname %>
+                                <div class="fmt-col third fmt-padding fmt-center" style="margin:12px 0" id="timing<%= i %>">
                                 </div>
-                                <div class="fmt-col half">
-                                    <%= today[i].subject %>
+                                <div class="fmt-col two-third fmt-center">
+                                    <div class="fmt-row" id="classname<%= i %>"><%= today[i].classname %></div>
+                                    <div class="fmt-row" id="subject<%= i %>"><%= today[i].subject %></div>
                                 </div>
+                            </div>
+                            <div class="fmt-row fmt-right" id="action<%= i %>">
+                                <br/>
+                                <button class="positive-button" id="present<%= i %>">Present</button>
+                                <button class="negative-button" id="absent<%= i %>">Absent</button>
                             </div>
                         </div>
                     <% } %>
@@ -87,6 +93,17 @@
             <% } %>
         </div>
 
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+                
+            </div>
+            <br/>
+            <div class="fmt-center fmt-row fmt-padding">
+                <span class="neutral-button">Save</span>
+                <span class="negative-button" id="discard">Discard</span>
+            </div>
+        </div>
+        
         <span hidden>
             <span id="today"><%= today %></span>
             <span id="startTime"><%= timings.startTime %></span>
@@ -96,6 +113,11 @@
             <span id="breakDuration"><%= timings.breakMinutes %></span>
             <span id="periodsInDay"><%= timings.periodsInDay %></span>
             <span id="daysInWeek"><%= timings.daysInWeek %></span>
+            <% if(today){ %>
+                <% for( let i = 0; i < today.length; i++ ) { %>
+                    <span id="hold<%= i %>"><%= today[i].hold %></span>
+                <% } %>
+            <% } %>
         </span>
     </body>
 </html>
