@@ -129,7 +129,8 @@ class Active {
     getElement("continueinvite").onclick = (_) => {
       getElement(
         "inputview"
-      ).innerHTML = `    <fieldset class="text-field fmt-row" id="usernamefield">
+      ).innerHTML = `<div class="caption fmt-center questrial positive">Provide your details before accepting.</div>
+      <fieldset class="text-field fmt-row" id="usernamefield">
             <legend class="field-caption" >Your name</legend>
             <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at ${data.instName}" type="text" id="username" name="username">
             <span class="fmt-right error-caption" id="usernameerror"></span>

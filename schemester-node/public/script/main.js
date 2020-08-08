@@ -482,12 +482,15 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  validate(inputFieldIndex, validateAction = (_) => {}) {
+  isValid(inputFieldIndex = Number){
+    return stringIsValid(this.getInputValue(inputFieldIndex),this.getInputType(inputFieldIndex))
+  }
+  validate(inputFieldIndex = Number, validateAction = (_) => {}) {
     this.inputField[inputFieldIndex].validate((_) => {
       validateAction();
     });
   }
-  validateNow(inputFieldIndex, validateAction = (_) => {}) {
+  validateNow(inputFieldIndex = Number, validateAction = (_) => {}) {
     this.inputField[inputFieldIndex].validateNow((_) => {
       validateAction();
     });
@@ -542,6 +545,9 @@ class Dialog extends DialogID {
   getInputValue(index) {
     return this.inputField[index].getInput();
   }
+  getInputType(index){
+    return this.inputField[index].type;
+  }
   getDialogChip(index) {
     return this.optionsRadio[index];
   }
@@ -558,6 +564,11 @@ class Dialog extends DialogID {
   onButtonClick(functions = Array) {
     this.dialogButtons.forEach((button, index) => {
       button.onclick = () => {
+        if(this.inputField){
+          this.inputField.forEach((field,_)=>{
+            field.normalize();
+          })
+        }
         functions[index]();
       };
     });
@@ -876,6 +887,7 @@ const registrationDialog = (isShowing = true, email = null, uiid = null) => {
           () => {
             if (
               !(
+                
                 stringIsValid(regDial.getInputValue(0), validType.name) &&
                 stringIsValid(regDial.getInputValue(1), validType.email) &&
                 stringIsValid(regDial.getInputValue(2), validType.password) &&
@@ -913,6 +925,116 @@ const registrationDialog = (isShowing = true, email = null, uiid = null) => {
     }
   );
 };
+
+const showStudentRegistration = (visible = true,email = null, uiid = null) => {
+  let studialog = new Dialog();
+  studialog.setDisplay("Registration","Provide your details, including the unique ID of your institute (UIID).");
+  studialog.createInputs(Array('UIID','Your class\'s name','Your email address','Your name','Create password'),
+    Array('Your institution\'s unique ID','8B,12A, like this.','youremail@example.domain','Sunaina Kapoor, or something','A strong password.'),
+    Array("text","text","email","text","password"),
+    Array(validType.nonempty,validType.nonempty,validType.email,validType.name,validType.password),
+    Array(uiid,null,email,null,null)
+  );
+  
+  studialog.validate(0, (_) => {
+    studialog.getInput(1).focus();
+  });
+  studialog.validate(1, (_) => {
+    studialog.getInput(2).focus();
+  });
+  studialog.validate(2, (_) => {
+    studialog.getInput(3).focus();
+  });
+  studialog.validate(3);
+
+  studialog.createActions(Array('Create account','Abort'),Array(bodyType.positive,bodyType.neutral));
+  studialog.onButtonClick(Array(
+    _=>{
+      clog("clickinng")
+      if(!(
+        studialog.isValid(0)&&studialog.isValid(1)&&studialog.isValid(2)&&studialog.isValid(3)&&studialog.isValid(4)
+      )) {
+        clog("invalid")
+        studialog.validateNow(0, (_) => {
+          studialog.getInput(1).focus();
+        });
+        studialog.validateNow(1, (_) => {
+          studialog.getInput(2).focus();
+        });
+        studialog.validateNow(2, (_) => {
+          studialog.getInput(3).focus();
+        });
+        studialog.validateNow(3, (_) => {
+          studialog.getInput(4).focus();
+        });
+        studialog.validateNow(4);
+      } else {
+        studialog.loader();
+        clog("posting");
+        postJsonData(post.student.signup,{
+          uiid:studialog.getInputValue(0),
+          classname:studialog.getInputValue(1),
+          email:studialog.getInputValue(2),
+          username:studialog.getInputValue(3),
+          password:studialog.getInputValue(4)
+        }).then(response=>{
+          clog(response);
+          switch (response.event) {
+            case code.auth.ACCOUNT_CREATED:{
+                clog(response.user);
+                saveDataLocally(response.user);
+                relocate(locate.student.session);
+            }break;
+            case code.auth.USER_EXIST:{
+                studialog.inputField[2].showError("Account already exists.");
+                snackBar("Try signing in?", "Login", true, (_) => {
+                  refer(locate.student.login, { email: studialog.getInputValue(2), uiid: studialog.getInputValue(0) });
+                });
+              }
+              break;
+            case code.inst.INSTITUTION_NOT_EXISTS:{
+                studialog.inputField[0].showError(
+                  "No institution with this UIID found."
+                );
+              }
+              break;
+            case code.schedule.BATCH_NOT_FOUND:{
+              studialog.inputField[1].showError(
+                "No such class. Don't use any special charecters."
+              );
+            }break;
+            case code.auth.EMAIL_INVALID:{
+                studialog.inputField[2].showError("Invalid email address.");
+            } break;
+            case code.auth.PASSWORD_INVALID:{
+                //todo: check invalidity and show suggesstions
+                studialog.inputField[4].showError(
+                  "Weak password, try something better."
+                );
+              }
+              break;
+            case code.auth.NAME_INVALID:{
+                studialog.inputField[3].showError("This doesn't seem like a name.");
+            }break;
+            default: {
+              clog("in default");
+              studialog.hide();
+              snackBar(`${response.event}:${response.msg}`, "Report");
+            }
+          }
+          studialog.loader(false);
+        }).catch(e=>{
+          snackBar(e,"Report");
+          studialog.hide();
+        });
+      }
+    },
+    _=>{
+      studialog.hide();
+    }
+  ));
+  studialog.existence(visible);
+}
 
 const saveDataLocally = (data = {}) => {
   for (var key in data) {
@@ -1463,7 +1585,7 @@ const setClassNames = (
  */
 const showElement = (elements = Array, index = null) => {
   for (let k = 0; k < elements.length; k++) {
-    if(index){
+    if(index!=null){
       visibilityOf(elements[k], k == index);
     } else {
       hide(elements[k])

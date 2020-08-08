@@ -134,6 +134,9 @@ class Codes{
                 this.SCHEDULE_NOT_EXIST = 'schedule/schedule-not-available';
                 this.SCHEDULE_NOT_CREATED = 'schedule/creation-failed';
                 this.SCHEDULE_UPDATED = 'schedule/update-sucess';
+                this.BATCH_EXISTS = 'schedule/batch-or-class-exists';
+                this.BATCH_NOT_FOUND = 'schedule/batch-or-class-not-exist';
+                this.SCHEDULE_CLASHED = 'schedule/conflicting-schedule';
             }
         }
         this.auth = new Authcodes();
@@ -292,6 +295,29 @@ class Locations {
         }
       }
       this.teacher = new Teacher();
+
+      class Student {
+        constructor() {
+          this.session = "/student/session";
+          this.login = "/student/auth/login";
+          this.fragment = "/student/fragment";
+          class Target {
+            constructor() {
+              this.dash = "dash";
+              class Fragment{
+                constructor(){
+                    this.today = "today";
+                    this.fullweek = "fullschedule";
+                    this.settings = "settings";
+                }
+              }
+              this.fragment = new Fragment()
+            }
+          }
+          this.target = new Target();
+        }
+      }
+      this.student = new Student();
     }
   }
   class Posts {
@@ -318,6 +344,17 @@ class Locations {
         }
       }
       this.teacher = new Teacher();
+
+      class Student {
+        constructor() {
+          this.login = "/student/auth/login";
+          this.logout = "/student/auth/logout";
+          this.signup = "/student/auth/signup"
+          this.sessionValidate = "/student/session/validate";
+          this.schedule = "/student/schedule";
+        }
+      }
+      this.student = new Student();
   
       this.sessionValidate = "/admin/session/validate";
       this.authlogin = "/admin/auth/login";

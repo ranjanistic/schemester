@@ -57,11 +57,18 @@ class Dashboard {
   };
 }
 
+
+//for if scheduling hasn't started yet.
 class NoDataView{
   constructor(){
+    this.data = new ReceiveData();
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
-
+    
+    //TODO:
+    if(this.data.hasTeacherSchedule){
+      this.startSchedule = getElement("startScheduling");
+    }
     this.addTeacher.addEventListener(click,_=>{relocate(locate.admin.session,{target:'addteacher'})});
     this.inviteTeacher.addEventListener(click,_=>{this.linkGenerator('teacher')});
   }
@@ -193,6 +200,13 @@ class BaseView{
     setTimeGreeting(this.greeting);
     var today = new Date();
     this.dateTime.textContent = `${getDayName(today.getDay())}, ${getMonthName(today.getMonth())} ${today.getDate()}, ${today.getFullYear()}, ${today.getHours()}:${today.getMinutes()}`;;
+  }
+}
+
+class ReceiveData{
+  constructor(){
+    this.hasTeachers = true?false:getElement("hasTeachers").innerHTML == 'true'?true:false;
+    this.hasTeacherSchedule = true?false:getElement("hasTeacherSchedule").innerHTML == 'true'?true:false;
   }
 }
 

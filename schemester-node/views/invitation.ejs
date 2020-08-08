@@ -27,7 +27,7 @@
             <div class="container" id="userinvitationactive">
                 <div class="heading fmt-row fmt-center">Invitation</div>
                 <div class="questrial fmt-row">
-                    <b><%= invite.adminName %></b> has invited you to join <b><%= invite.instname %></b> as a <%= invite.target %>, on <a href="/tour">Schemester</a>.
+                    <b><%= invite.adminName %></b> has invited you to join <b><%= invite.instname %></b> as a <%= invite.target %>, on <a target="_blank" rel="noreferrer" href="/">Schemester</a>.
                     Fill up your details, create a password, and join, if you are a
                     <%= invite.target %> at <%= invite.instname %> (code name: <b><%= invite.uiid %></b>).<br/><br/>
                     <center><span class="error-caption">This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</span></center>
@@ -67,7 +67,7 @@
             <div class="container" id="userinvitationexpired">
                 <div class="heading fmt-center">Expired</div>
                 <div class="questrial fmt-row">
-                    The link that brought you here is no longer accepting invitations.
+                    The link that brought you here is no longer accepting invitations on <a target="_blank" rel="noreferrer" href="/">Schemester</a>.
                     <% if (invite.expireAt!=0) { %>(<b>expired on<span id="expireat"><%= invite.expireAt %></span></b>).<% } %>
                     If you think this was a mistake, then request adminsitrator of <%= invite.instname %>, a new invitation on <a href="/tour">Schemester</a>, by filling the details below.
                 </div>

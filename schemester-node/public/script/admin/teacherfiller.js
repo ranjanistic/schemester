@@ -6,7 +6,7 @@ class TeacherFiller {
       this.view = getElement("workbox");
       this.back = getElement("back");
       if(this.data.isAdmin){
-        this.back.onclick =_=>{window.history.back()}
+        this.back.onclick =_=>{relocate(locate.admin.session)}
       }else {
         this.back.onclick =_=>{relocate(locate.root)}
       }
@@ -232,6 +232,9 @@ class TeacherFiller {
               refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users});
             });
           }
+        }break;
+        case code.schedule.SCHEDULE_CLASHED:{
+          this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.teacherID}.`);
         }break;
         default:{
           if(!navigator.onLine){

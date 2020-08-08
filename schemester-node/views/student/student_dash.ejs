@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Today · Schemester</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script src="/script/codes.js"></script>
+        <script src="/script/main.js"></script>
+        <script src="/script/teacher/teacherdash.js"></script>
+    </head>
+    <body>
+        <div class="fmt-row " style="padding:0">
+            <iframe style="width:100%;border:0;height:800px" id="frame">
+            </iframe>
+        </div>
+        <div class="fmt-row bottom-tab fmt-center fmt-animate-bottom">
+            <button class="fmt-col bottom-tab-section third" id="todaytab">
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                Today
+            </button>
+            <button class="fmt-col bottom-tab-section third" id="fulltab">
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                Week
+            </button>
+            <button class="fmt-col bottom-tab-section third" id="abouttab">
+                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                About
+            </button>
+        </div>
+        <div id="snackBar" class=" fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+        <span hidden>
+            <span id="frag"><%= target.fragment %></span>
+        </span>
+    </body>
+</html>

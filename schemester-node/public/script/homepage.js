@@ -2,6 +2,7 @@ class Homepage{
     constructor(){
         this.adminLogin = getElement('adminLogin');
         this.teacherLogin = getElement('teacherLogin');
+        this.studentLogin = getElement('studentLogin');
         this.adminSignup = getElement('registerInstitution');
         this.plans = getElement('plansPricing');
         this.getstarted = getElement('getStarted');
@@ -11,13 +12,14 @@ class Homepage{
         this.getstarted.addEventListener(click,_=>registrationDialog());
         this.adminLogin.addEventListener(click,_=>refer(locate.admin.login));
         this.teacherLogin.addEventListener(click,_=>refer(locate.teacher.login));
+        this.studentLogin.addEventListener(click,_=>refer(locate.student.login));
         this.theme = new Checkbox(null,null,"themeswitch",null);
-        this.theme.checked(localStorage.getItem("theme") == 'dark');
+        this.theme.checked(theme.isDark());
         this.theme.onCheckChange(_=>{theme.setDark();},_=>{theme.setLight();});
     }    
 }
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in window.navigator) {
     // window.addEventListener('load', _=> {
     //     navigator.serviceWorker.register('./sw.js')
     //         .then((registration)=> {

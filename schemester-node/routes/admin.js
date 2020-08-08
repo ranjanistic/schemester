@@ -1,9 +1,9 @@
-const bodyParser = require("body-parser");
-const { ObjectId } = require("mongodb");
+
 
 const express = require("express"),
-  router = express.Router(),
+  admin = express.Router(),
   cookieParser = require("cookie-parser"),
+  { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
   code = require("../public/script/codes"),
   view = require("../hardcodes/views"),
@@ -14,16 +14,13 @@ const express = require("express"),
   Institute = require("../collections/Institutions");
 
 const sessionsecret = session.adminsessionsecret;
-const sessionID = "id";
-const sessionUID = "uid";
+admin.use(cookieParser(sessionsecret));
 
-router.use(cookieParser(sessionsecret));
-
-router.get("/", function (req, res) {
+admin.get("/", function (req, res) {
   res.redirect(toLogin());
 });
 
-router.get("/auth/login*", (req, res) => {
+admin.get("/auth/login*", (req, res) => {
   clog("admin login get");
   session
     .verify(req, sessionsecret)
@@ -39,7 +36,7 @@ router.get("/auth/login*", (req, res) => {
     });
 });
 
-router.get("/session*", (req, res) => {
+admin.get("/session*", (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
@@ -182,7 +179,7 @@ router.get("/session*", (req, res) => {
 });
 
 //for account settings
-router.post("/account/action", (req, res) => {
+admin.post("/account/action", (req, res) => {
   session.verify(req, sessionsecret).then((response) => {
     if (!session.valid(response)) {
       res.redirect(`/admin/auth/login?target=manage`);
@@ -207,7 +204,7 @@ router.post("/account/action", (req, res) => {
   });
 });
 
-router.post("/session/validate", (req, res) => {
+admin.post("/session/validate", (req, res) => {
   let result;
   const { getuser } = req.body;
   clog("getuser=");
@@ -244,7 +241,7 @@ router.post("/session/validate", (req, res) => {
   }
 });
 
-router.post(
+admin.post(
   "/auth/signup",
   [
     check("username", code.auth.NAME_INVALID).not().isEmpty(),
@@ -279,14 +276,14 @@ router.post(
   }
 );
 
-router.post("/auth/logout", (_, res) => {
+admin.post("/auth/logout", (_, res) => {
   session.finish(res).then((response) => {
     let result = response;
     return res.json({ result });
   });
 });
 
-router.post(
+admin.post(
   "/auth/login",
   [
     check("email", code.auth.EMAIL_INVALID).isEmail(),
@@ -318,7 +315,7 @@ router.post(
   }
 );
 
-router.post(
+admin.post(
   "/session/registerinstitution",
   // [
   //   check("adminName",code.inst.INVALID_ADMIN_NAME).notEmpty(),
@@ -416,7 +413,7 @@ router.post(
   }
 );
 
-router.post("/session/receiveinstitution", async (req, res) => {
+admin.post("/session/receiveinstitution", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .then(async (response) => {
@@ -458,7 +455,7 @@ router.post("/session/receiveinstitution", async (req, res) => {
     });
 });
 
-router.post("/schedule", (req, res) => {
+admin.post("/schedule", (req, res) => {
   let result;
   session
     .verify(req, sessionsecret)
@@ -610,7 +607,7 @@ router.post("/schedule", (req, res) => {
     });
 });
 
-router.post("/manage", async (req, res) => {
+admin.post("/manage", async (req, res) => {
   clog("in post manage");
   session
     .verify(req, sessionsecret)
@@ -836,7 +833,7 @@ router.post("/manage", async (req, res) => {
     });
 });
 
-router.get("/external*", async (req, res) => {
+admin.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case verify.type:
@@ -882,9 +879,9 @@ const toLogin = (query = { target: view.admin.target.dashboard }) => {
 const getAdminShareData = (data = {}) => {
   return {
     isAdmin: true,
-    [sessionUID]: data._id,
+    [session.sessionUID]: data._id,
     username: data.username,
-    [sessionID]: data.email,
+    [session.sessionID]: data.email,
     uiid: data.uiid,
     createdAt: data.createdAt,
     verified: data.verified,
@@ -896,4 +893,4 @@ let clog = (msg) => console.log(msg);
 
 let jstr = (obj) => JSON.stringify(obj);
 
-module.exports = router;
+module.exports = admin;

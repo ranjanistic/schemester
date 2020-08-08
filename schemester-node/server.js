@@ -3,6 +3,7 @@ const express = require('express'),
     view = require('./hardcodes/views'),
     admin = require('./routes/admin'),
     teacher = require('./routes/teacher'),
+    student = require('./routes/student'),
     code = require('./public/script/codes'),
     app = express();
 
@@ -13,6 +14,7 @@ app.use(express.static('public'));
 
 app.use('/admin', admin);
 app.use('/teacher',teacher);
+app.use('/student',student);
 
 
 app.get('/', (req,res)=>{

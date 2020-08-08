@@ -1,5 +1,6 @@
-class TeacherLogin{
+class StudentLogin{
   constructor(){
+    value.backBlueCovered = false;
     this.back = getElement("backFromLogin");
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     hide(getElement("previous"));
@@ -64,7 +65,7 @@ class UIID{
     };
   }
    uiidProcedure(uiid){
-    postData(post.teacher.login,{type:'uiid',uiid:uiid}).then(response=>{
+    postData(post.student.login,{type:'uiid',uiid:uiid}).then(response=>{
       clog("response");
       clog(response);
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
@@ -125,7 +126,7 @@ class Email{
   }
   
   emailIDProcedure(emailid){
-    postData(post.teacher.login,{
+    postData(post.student.login,{
       type:'email',
       email:emailid,
       uiid:this.getUIID()
@@ -136,6 +137,9 @@ class Email{
         case code.auth.USER_NOT_EXIST:{
           this.emailField.showError("Account not found.");
           this.proceed.textContent = "Retry";
+          snackBar("Try registering yourself?","Signup",true,_=>{
+            showStudentRegistration(true,emailid,this.getUIID())
+          });
         };break;
         case code.auth.USER_EXIST:{
           clog("yaaaaaaaaaaaas");
@@ -174,7 +178,7 @@ class Password{
     this.subtext = getElement("subtext");
     this.subtext.innerHTML = `Provide your account password to continue with your schedule.`;
     this.target = String(getElement('target').innerHTML);
-    this.target = stringIsValid(this.target,validType.nonempty)?this.target:locate.teacher.target.today
+    this.target = stringIsValid(this.target,validType.nonempty)?this.target:locate.student.target.today
     this.passField = new TextInput("userpasswordfield","userpassword","userpassworderror",validType.nonempty,"userpasswordcaption");
     this.passField.show();
     this.passField.enableInput();
@@ -196,7 +200,7 @@ class Password{
     };
   }
   passwordProcedure(password){
-    postData(post.teacher.login,{
+    postData(post.student.login,{
       type:'password',
       email:this.getEmail(),
       uiid:this.getUIID(),
@@ -228,7 +232,7 @@ class Password{
       case code.auth.AUTH_SUCCESS:{
         showLoader();
         saveDataLocally(result.user);
-        relocate(locate.teacher.session,{
+        relocate(locate.student.session,{
           u:result.user.uid,
           target:result.target
         });
@@ -269,5 +273,5 @@ class Password{
 
 }
 
-window.onload =_=> window.app = new TeacherLogin();
+window.onload =_=> window.app = new StudentLogin();
 

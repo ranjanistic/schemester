@@ -94,10 +94,44 @@ class Session {
             }
           }
         }
-      }break;
+      }
       case this.studentsessionsecret:{
-          //todo:student login
-          return;
+        const inst = await Institute.findOne({uiid:body.uiid});
+        switch (body.type) {
+          case "uiid": {
+            return inst
+              ? code.event(code.inst.INSTITUTION_EXISTS)
+              : code.event(code.inst.INSTITUTION_NOT_EXISTS);
+          }
+          default:{
+            if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+            const userInst = await Institute.findOne({uiid:body.uiid,"users.students":{$elemMatch:{"studentID":body.email}}},
+              {projection:{"_id":0,"users.students.$":1}}
+            );
+            switch(body.type){
+              case "email":
+                return userInst?code.event(code.auth.USER_EXIST):code.event(code.auth.USER_NOT_EXIST);
+              case "password": {
+                const { password, uiid, target } = body;
+                if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
+                const student = userInst.users.students[0];
+                const isMatch = await bcrypt.compare(password, student.password);
+                if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+                const payload = {user: {id: student._id,uiid: uiid}};
+                const token = jwt.sign(payload, secret, {
+                  expiresIn: this.expiresIn,
+                });
+                response.cookie(this.sessionKey, token, { signed: true });
+                return {
+                  event: code.auth.AUTH_SUCCESS,
+                  user: getStudentShareData(student),
+                  target: target,
+                };
+              }
+              default:return code.event(code.auth.AUTH_REQ_FAILED);
+            }
+          }
+        }
       }
       default:
         return code.event(code.auth.AUTH_REQ_FAILED);
@@ -149,7 +183,6 @@ class Session {
           const userinst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}});
           if(userinst) return code.event(code.auth.USER_EXIST);
           clog("checks cleared");
-          let result;
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
           const doc = await Institute.findOneAndUpdate(
@@ -192,6 +225,55 @@ class Session {
             user: getTeacherShareData(teacher),
           };
       }break;
+      case this.studentsessionsecret:{
+        const { username, email, password, uiid, classname} = request.body;
+          const inst = await Institute.findOne({ uiid: uiid });
+          if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+          const userinst = await Institute.findOne({uiid:uiid, "users.students":{$elemMatch:{"studentID":email}}});
+          if(userinst) return code.event(code.auth.USER_EXIST);
+          const studschedule = await Institute.findOne({uiid:uiid, "schedule.students":{$elemMatch:{classname:classname}}});
+          if(!studschedule) return code.event(code.schedule.BATCH_NOT_FOUND);
+          clog("checks cleared");
+          const salt = await bcrypt.genSalt(10);
+          const epassword = await bcrypt.hash(password, salt);
+          const doc = await Institute.findOneAndUpdate(
+            { uiid: uiid },
+            {
+              $push: {
+                "users.students": {
+                  _id: new ObjectId(),
+                  username: username,
+                  studentID: email,
+                  password: epassword,
+                  className:classname,
+                  createdAt: Date.now(),
+                  verified:false,
+                  prefs:{}
+                },
+              },
+            }
+          );
+          clog(doc);
+          if(!doc) return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
+          clog("created?");
+          const userInst = await Institute.findOne({uiid:uiid, "users.students":{$elemMatch:{"studentID":email}}},{
+            projection:{"_id":0,"users.students.$":1}
+          });
+          if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
+          const student = userInst.users.students[0];
+          const payload = {
+            user: {
+              id: student._id,
+              uiid: uiid
+            },
+          };
+          const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
+          response.cookie(this.sessionKey, token, { signed: true });
+          return {
+            event: code.auth.ACCOUNT_CREATED,
+            user: getStudentShareData(student),
+          };
+      }
       default: return code.event(code.server.DATABASE_ERROR);
     }
   };
@@ -222,11 +304,24 @@ class Session {
           });
           return userinst?getTeacherShareData(userinst.users.teachers[0]):code.event(code.auth.USER_NOT_EXIST);
         }
+        case this.studentsessionsecret:{
+          const userinst = await Institute.findOne({
+            uiid:response.user.uiid,
+            "users.students":{
+              $elemMatch:{"_id":response.user.id}
+            }
+          },{
+            $projection:{
+              "_id":0,
+              "users.students.$":1
+            }
+          });
+          return userinst?getStudentShareData(userinst.users.students[0]):code.event(code.auth.USER_NOT_EXIST);
+        }
         default: return code.event(code.auth.AUTH_REQ_FAILED);
       }
     });
   };
-
   valid = (response) => response.event != code.auth.SESSION_INVALID;
 }
 
@@ -257,5 +352,18 @@ const getTeacherShareData = (data = {}) => {
     prefs:data.prefs
   };
 };
+
+const getStudentShareData = (data = {}) => {
+  return {
+    isStudent:true,
+    [sessionUID]: data._id,
+    username: data.username,
+    [sessionID]: data.teacherID,
+    createdAt: data.createdAt,
+    verified: data.verified,
+    prefs:data.prefs
+  };
+};
+
 
 let clog = (msg) => console.log(msg);

@@ -11,6 +11,7 @@ class Management {
         case locate.admin.section.about:this.displayIndex = 5;break;
       default:this.displayIndex = 0;break;
     }
+    clog(this.displayIndex);
     
     this.tabs = Array(
       getElement("adminTab"),

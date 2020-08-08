@@ -1,7 +1,7 @@
 const { ObjectId } = require("mongodb");
 
 const express = require("express"),
-  router = express.Router(),
+  teacher = express.Router(),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
   code = require("../public/script/codes"),
@@ -13,13 +13,13 @@ const express = require("express"),
   Admin = require("../collections/Admins");
 
 const sessionsecret = session.teachersessionsecret;
-router.use(cookieParser(sessionsecret));
+teacher.use(cookieParser(sessionsecret));
 
-router.get("/", (req, res) => {
+teacher.get("/", (req, res) => {
   res.redirect(toLogin());
 });
 
-router.get("/auth/login*", (req, res) => {
+teacher.get("/auth/login*", (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((error) => {
@@ -34,7 +34,7 @@ router.get("/auth/login*", (req, res) => {
     });
 });
 
-router.post("/auth/login", async (req, res) => {
+teacher.post("/auth/login", async (req, res) => {
   session
     .login(req, res, sessionsecret)
     .then((response) => {
@@ -46,13 +46,13 @@ router.post("/auth/login", async (req, res) => {
     });
 });
 
-router.post("/auth/logout", (_, res) => {
+teacher.post("/auth/logout", (_, res) => {
   session.finish(res).then((response) => {
     return res.json({ result: response });
   });
 });
 
-router.post("/auth/signup", async (req, res) => {
+teacher.post("/auth/signup", async (req, res) => {
   clog(req.body);
   session
     .signup(req, res, sessionsecret)
@@ -67,10 +67,17 @@ router.post("/auth/signup", async (req, res) => {
     });
 });
 
-router.get("/session*", async (req, res) => {
-  session.verify(req, sessionsecret).then(async (response) => {
-    let data = req.query;
-    clog(data);
+
+teacher.get("/session*", async (req, res) => {
+  let data = req.query;
+  clog(data);
+  session.verify(req, sessionsecret)
+  .catch((e) => {
+    clog("session catch");
+    clog(e);
+    return res.redirect(toLogin(data));
+  })
+  .then(async (response) => {
     if (!session.valid(response)) return res.redirect(toLogin(data));
     if (data.u != response.user.id) return res.redirect(toLogin(data));
     const userinst = await Institute.findOne(
@@ -171,7 +178,7 @@ router.get("/session*", async (req, res) => {
   });
 });
 
-router.get("/fragment*", (req, res) => {
+teacher.get("/fragment*", (req, res) => {
   //for teacher session fragments.
   session
     .verify(req, sessionsecret)
@@ -268,7 +275,7 @@ const getSchedule = async (response, dayIndex = null) => {
   return { schedule: today, timings:timings};
 };
 
-router.post("/schedule", async (req, res) => {
+teacher.post("/schedule", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .then(async (response) => {
@@ -316,6 +323,48 @@ router.post("/schedule", async (req, res) => {
                 }
               );
               found = false; //add as a new teacher schedule
+            }
+            clog("bodydata");
+            clog(body.data);
+            let clashClass,clashPeriod,clashTeacher;
+            let clashed = inst.schedule.teachers.some((teacher,_)=>{
+              clog("eachteacher");
+              clog(teacher);
+              let clashed = teacher.days.some((day,_)=>{
+                clog("eachday")
+                clog(day);
+                if(day.dayIndex == body.data.dayIndex){
+                  let clashed = day.period.some((period,pindex)=>{
+                    clog("eachperiod");
+                    clog(period);
+                    if(period.classname == body.data.period[pindex].classname){
+                      mathcclass = period.classname;
+                      clashPeriod = pindex;
+                      return true;
+                    }
+                  })
+                  clog(clashed);
+                  if(clashed){
+                    return true
+                  }
+                }
+              })
+              clog(clashed)
+              if(clashed){
+                clashTeacher = teacher.teacherID;
+                return true
+              }
+            });
+            clog(clashed);
+            if(clashed){  //if schedule clashed.
+              return res.json({result:{
+                event:code.schedule.SCHEDULE_CLASHED,
+                clash:{
+                  classname:clashClass,
+                  period:clashPeriod,
+                  teacherID:clashTeacher
+                }
+              }});
             }
             if (found) {
               //existing teacher schedule, incomplete (new day index)
@@ -374,7 +423,7 @@ router.post("/schedule", async (req, res) => {
 
 let result = {};
 
-router.post("/session/validate", async (req, res) => {
+teacher.post("/session/validate", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .then((response) => {
@@ -387,7 +436,7 @@ router.post("/session/validate", async (req, res) => {
     });
 });
 
-router.get("/external*", async (req, res) => {
+teacher.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:
@@ -455,7 +504,7 @@ router.get("/external*", async (req, res) => {
 });
 
 
-router.post("/manage", async (req, res) => {
+teacher.post("/manage", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
@@ -534,7 +583,7 @@ router.post("/manage", async (req, res) => {
     });
 });
 
-router.post("/find", async (req, res) => {
+teacher.post("/find", async (req, res) => {
   const { email, uiid } = req.body;
   const inst = await Institute.findOne({
     uiid: uiid,
@@ -579,5 +628,5 @@ const getTeacherShareData = (data = {}) => {
   };
 };
 
-module.exports = router;
+module.exports = teacher;
 let clog = (msg) => console.log(msg);

@@ -13,6 +13,7 @@ class View{
 
         this.admin = new AdminView();
         this.teacher = new TeacherView();
+        this.student = new StudentView();
     }
 }
 
@@ -98,6 +99,44 @@ class TeacherView{
             case this.target.fragment.today:return this.fragment.today;
             case this.target.fragment.fullweek:return this.fragment.fullschedule;
             case this.target.fragment.about:return this.fragment.about;
+            default:return this.getViewByTarget();
+        }
+    }
+}
+
+class StudentView{
+    constructor(){
+        this.login = 'student/student_login.ejs';
+        this.dash = 'student/student_dash.ejs';
+        class FragmentView{
+            constructor(){
+                this.fullschedule = 'student/fragments/fullweek.ejs';
+                this.today = 'student/fragments/today.ejs';
+                this.settings = 'student/fragments/settings.ejs';
+            }
+        }
+        this.fragment = new FragmentView();
+        class Target {
+            constructor() {
+              this.dash = "dashboard";
+              class Fragment{
+                constructor(){
+                    this.today = "today";
+                    this.fullweek = "fullschedule";
+                    this.settings = "settings";
+                }
+              }
+              this.fragment = new Fragment()
+            }
+        }
+        this.target = new Target();
+    }
+    getViewByTarget(target = this.target.dash){
+        switch(target){
+            case this.target.dash:return this.dash;
+            case this.target.fragment.today:return this.fragment.today;
+            case this.target.fragment.fullweek:return this.fragment.fullschedule;
+            case this.target.fragment.settings:return this.fragment.settings;
             default:return this.getViewByTarget();
         }
     }
