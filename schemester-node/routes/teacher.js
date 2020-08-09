@@ -324,8 +324,6 @@ teacher.post("/schedule", async (req, res) => {
               );
               found = false; //add as a new teacher schedule
             }
-            clog("bodydata");
-            clog(body.data);
             let clashClass,clashPeriod,clashTeacher;
             let clashed = inst.schedule.teachers.some((teacher,_)=>{
               clog("eachteacher");

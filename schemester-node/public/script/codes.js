@@ -252,6 +252,7 @@ class Locations {
               this.manage = "manage";
               this.addteacher = "addteacher";
               this.register = "registration";
+              this.viewschedule = 'viewschedule';
             }
           }
           this.target = new Target();

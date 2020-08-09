@@ -78,7 +78,7 @@ class TeacherToday{
         element.style.border = "4px solid var(--positive)";
     }
     setActive(element = new HTMLElement){
-        element.style.backgroundColor ="24f36b21";
+        element.style.backgroundColor ="24f36b34";
         element.style.border = "4px solid var(--active)";
     }
     setNegative(element = new HTMLElement){

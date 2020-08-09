@@ -246,7 +246,7 @@ class Users {
                   getElement(`view${teacher.teacherID}`).onclick=_=>{
                     clog(teacher.teacherID);
                     refer(locate.admin.session,{
-                      target:'viewschedule',
+                      target:locate.admin.target.viewschedule,
                       client:client.teacher,
                       teacherID:teacher.teacherID
                     });

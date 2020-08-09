@@ -1,5 +1,3 @@
-
-
 const express = require("express"),
   admin = express.Router(),
   cookieParser = require("cookie-parser"),
@@ -26,7 +24,8 @@ admin.get("/auth/login*", (req, res) => {
     .verify(req, sessionsecret)
     .then((response) => {
       clog(response);
-      if (!session.valid(response))return res.render(view.admin.login, { autofill: req.query });
+      if (!session.valid(response))
+        return res.render(view.admin.login, { autofill: req.query });
       let data = req.query;
       delete data["u"];
       return res.redirect(toSession(response.user.id, data));
@@ -40,7 +39,8 @@ admin.get("/session*", (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
-  session.verify(req, sessionsecret)
+  session
+    .verify(req, sessionsecret)
     .catch((e) => {
       clog("session catch");
       clog(e);
@@ -56,7 +56,8 @@ admin.get("/session*", (req, res) => {
             if (response) res.redirect(toLogin(data));
           });
         let adata = getAdminShareData(admin);
-        if (!adata.verified) return res.render(view.verification, { user: adata });
+        if (!adata.verified)
+          return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
         if (!inst) {
           data.target = view.admin.target.register;
@@ -90,29 +91,38 @@ admin.get("/session*", (req, res) => {
                 section: data.section,
               });
             }
-            case view.admin.target.viewschedule: {
+            case view.admin.target.viewschedule:
+              {
                 clog(data);
                 if (data.client == "teacher") {
-                  const teacherScheduleInst = await Institute.findOne({
-                    uiid: response.user.uiid,
+                  const teacherScheduleInst = await Institute.findOne(
+                    {
+                      uiid: response.user.uiid,
                       "schedule.teachers": {
                         $elemMatch: { teacherID: data.teacherID },
-                      }
-                  }, {
-                    projection: {
-                      _id: 0, "schedule.teachers.$": 1 
-                    } 
-                  });
-                  const teacherInst = await Institute.findOne({
-                    uiid: response.user.uiid,
-                    "users.teachers": {
-                      $elemMatch: { teacherID: data.teacherID },
+                      },
                     },
-                  },{
-                    projection: {
-                       _id: 0, "users.teachers.$": 1 
-                    } 
-                  });
+                    {
+                      projection: {
+                        _id: 0,
+                        "schedule.teachers.$": 1,
+                      },
+                    }
+                  );
+                  const teacherInst = await Institute.findOne(
+                    {
+                      uiid: response.user.uiid,
+                      "users.teachers": {
+                        $elemMatch: { teacherID: data.teacherID },
+                      },
+                    },
+                    {
+                      projection: {
+                        _id: 0,
+                        "users.teachers.$": 1,
+                      },
+                    }
+                  );
                   if (teacherInst && teacherScheduleInst) {
                     return res.render(view.admin.scheduleview, {
                       group: { teacher: true },
@@ -143,28 +153,37 @@ admin.get("/session*", (req, res) => {
                     });
                   }
                 } else if (data.client == "student") {
-                  const scheduleInst = await Institute.findOne({
-                    uiid: response.user.uiid,
-                    "schedule.students": {
-                      $elemMatch: { classname: data.classname },
+                  const scheduleInst = await Institute.findOne(
+                    {
+                      uiid: response.user.uiid,
+                      "schedule.students": {
+                        $elemMatch: { classname: data.classname },
+                      },
                     },
-                  },{
-                    projection: {
-                      "_id":0,
-                      "schedule.students.$": 1,
-                    },
-                  });
-                  if (!scheduleInst) res.render(view.admin.scheduleview, { schedule: false });
+                    {
+                      projection: {
+                        _id: 0,
+                        "schedule.students.$": 1,
+                      },
+                    }
+                  );
+                  if (!scheduleInst)
+                    res.render(view.admin.scheduleview, { schedule: false });
                   return res.render(view.admin.scheduleview, {
                     group: { Class: true },
-                    schedule:scheduleInst.schedule.students[0],
+                    schedule: scheduleInst.schedule.students[0],
                     inst,
                   });
                 } else {
                   return res.render(view.notfound);
                 }
-            } break;
-            default: return res.render(view.admin.getViewByTarget(data.target), {adata,inst,});
+              }
+              break;
+            default:
+              return res.render(view.admin.getViewByTarget(data.target), {
+                adata,
+                inst,
+              });
           }
         } catch (e) {
           clog(e);
@@ -380,7 +399,7 @@ admin.post(
           },
           schedule: {
             teachers: [],
-            students: [],
+            classes: [],
           },
           invite: {
             teacher: {
@@ -516,6 +535,52 @@ admin.post("/schedule", (req, res) => {
                     );
                     found = false; //add as a new teacher schedule
                   }
+                  let clashClass, clashPeriod, clashTeacher;
+                  let clashed = inst.schedule.teachers.some((teacher, _) => {
+                    clog("eachteacher");
+                    clog(teacher);
+                    let clashed = teacher.days.some((day, _) => {
+                      clog("eachday");
+                      clog(day);
+                      if (day.dayIndex == body.data.dayIndex) {
+                        let clashed = day.period.some((period, pindex) => {
+                          clog("eachperiod");
+                          clog(period);
+                          if (
+                            period.classname ==
+                            body.data.period[pindex].classname
+                          ) {
+                            mathcclass = period.classname;
+                            clashPeriod = pindex;
+                            return true;
+                          }
+                        });
+                        clog(clashed);
+                        if (clashed) {
+                          return true;
+                        }
+                      }
+                    });
+                    clog(clashed);
+                    if (clashed) {
+                      clashTeacher = teacher.teacherID;
+                      return true;
+                    }
+                  });
+                  clog(clashed);
+                  if (clashed) {
+                    //if schedule clashed.
+                    return res.json({
+                      result: {
+                        event: code.schedule.SCHEDULE_CLASHED,
+                        clash: {
+                          classname: clashClass,
+                          period: clashPeriod,
+                          teacherID: clashTeacher,
+                        },
+                      },
+                    });
+                  }
                   if (found) {
                     //existing teacher schedule, incomplete (new day index)
                     const filter = {
@@ -565,11 +630,12 @@ admin.post("/schedule", (req, res) => {
                 break;
               case "receive":
                 {
-                  const teacherInst = await Institute.findOne({
+                  const teacherInst = await Institute.findOne(
+                    {
                       uiid: response.user.uiid,
                       "schedule.teachers": {
                         $elemMatch: {
-                          "teacherID": body.teacherID,
+                          teacherID: body.teacherID,
                         },
                       },
                     },
@@ -600,6 +666,65 @@ admin.post("/schedule", (req, res) => {
                 break;
               default:
                 throw Error("invalid teacher schedule action");
+            }
+          }
+          break;
+        case "student":{
+            switch (body.action) {
+              case "createclasses":{
+                  let existingclasses = Array();
+                  //getting existing classes
+                  inst.schedule.classes.forEach((Class, _) => {
+                    existingclasses.push(Class.classname);
+                  });
+                  clog(existingclasses);
+                  let newClasses = Array();
+                  inst.schedule.teachers.forEach((teacher, tindex) => {
+                    teacher.days.forEach((day, _) => {
+                      day.period.forEach((period, _) => {
+                        if (!existingclasses.includes(period.classname)) {
+                          newClasses.push(period.classname);
+                        }
+                      });
+                    });
+                  });
+                  clog(newClasses);
+                  if (!body.confirmed) {
+                    return res.json({
+                      result: {
+                        event: code.OK,
+                        classes: newClasses,
+                      },
+                    });
+                  } else {
+                    let classSchedule = [];
+                    newClasses.forEach((Class,_)=>{
+                      inst.schedule.teachers.forEach((teacher,_)=>{
+                        teacher.days.forEach((day,_)=>{
+                          day.period.forEach((period,_)=>{
+                            if(period.classname == Class){
+                              classSchedule.push({
+                                classname:Class,
+                                days:[{
+                                  dayIndex:day.dayIndex,
+                                  periods:[{
+                                    subject:period.subject,
+                                    hold:period.hold,
+                                    teacherID:teacher.teacherID
+                                  }]
+                                }]
+                              })
+                            }
+                          })  
+                        })
+                      })
+                    });
+                    clog(classSchedule);
+                    clog("hold");
+                    return;
+                  }
+                }
+                break;
             }
           }
           break;
@@ -796,23 +921,20 @@ admin.post("/manage", async (req, res) => {
                 }
               });
               inst.schedule.teachers.forEach((teacher, index) => {
-                clog(teacher.teacherID);
-                let nope = teachers.filter((t) => {
-                  clog(t);
-                  return t.teacherID != teacher.teacherID;
-                });
-                clog(nope);
-                if (nope) {
-                  if (
-                    String(teacher.teacherID).includes(
-                      String(data.q).toLowerCase()
-                    )
-                  ) {
-                    teachers.push({
-                      username: "Not set",
-                      teacherID: teacher.teacherID,
-                    });
+                let id;
+                let found = teachers.some((t, i) => {
+                  if (teacher.teacherID == t.teacherID) {
+                    return true;
+                  } else {
+                    id = teacher.teacherID;
+                    return false;
                   }
+                });
+                if (!found) {
+                  teachers.push({
+                    username: "Not Set",
+                    teacherID: id,
+                  });
                 }
               });
               clog(teachers);
@@ -839,11 +961,10 @@ admin.get("/external*", async (req, res) => {
     case verify.type:
       {
         //verification link
-        verify.handleVerification(query,verify.target.admin).then(resp=>{
-          if(!resp) return res.render(view.notfound);
-          return res.render(view.verification,{user:resp.user});
-        })
-        
+        verify.handleVerification(query, verify.target.admin).then((resp) => {
+          if (!resp) return res.render(view.notfound);
+          return res.render(view.verification, { user: resp.user });
+        });
       }
       break;
     default:

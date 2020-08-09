@@ -32,23 +32,26 @@
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
             <span id="greeting">Dashboard</span>
-            <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;border:4px solid #216bf3">
-                    <div class="fmt-center">
-                        Logged in as<br/>
-                        <%= adata.id %>
+            <span class="fmt-right">
+                <input type="text" class="searcher" name="search"/>
+                <button class="neutral-button" id="refresh">Refresh</button>
+                <span class="fmt-dropdown-hover">
+                    <img src="/graphic/menudotsvertical.svg" id="menuButton">
+                    <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;border:4px solid #216bf3">
+                        <div class="fmt-center">
+                            Logged in as<br/>
+                            <%= adata.id %>
+                        </div>
+                        <button class="neutral-button" id="settingsAdminButton">
+                            Settings
+                        </button>
+                        <button class="negative-button" id="logoutAdminButton">
+                            Logout
+                        </button>
                     </div>
-                    <button class="neutral-button" id="settingsAdminButton">
-                        Settings
-                    </button>
-                    <button class="negative-button" id="logoutAdminButton">
-                        Logout
-                    </button>
-                </div>
+                </span>
+                <img class="fmt-spin-fast fmt-circle" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             </span>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
             <% if (inst.active) { %>
@@ -187,7 +190,7 @@
                                 <br/>Would you like to start scheduling now?
                             </div>
                             <br/>
-                            <button class="positive-button" id="startschedule">Start Scheduling</button>
+                            <button class="positive-button" id="startScheduling">Start Scheduling</button>
                             <br/><br/>
                         </div>
                     </div>
@@ -251,13 +254,18 @@
             <span class="fmt-left fmt-padding" id="snackText"></span>
             <button class="fmt-right neutral-button" id="snackButton"></button>
         </div>
+        <span hidden>
+            <span id="hasTeacherSchedule"><%= !isEmptyObject(inst.users.teachers) %></span>
+            <span id="hasTeachers"><%= !isEmptyObject(inst.schedule.teachers) %></span>
+        </span>
     </body>
-    <noscript id="noscript" class="dialog fmt-red" style="display:block">
-        <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
-            <div class="heading">Javascript required</div><br/>
-            <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
-                <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+        
+        <noscript id="noscript" class="dialog fmt-red" style="display:block">
+            <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <div class="heading">Javascript required</div><br/>
+                <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+                    <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+                </div>
             </div>
-        </div>
-    </noscript>
+        </noscript>
 </html>

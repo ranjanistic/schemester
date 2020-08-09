@@ -229,7 +229,11 @@ class TeacherFiller {
         case code.schedule.SCHEDULE_EXISTS:{
           if(this.data.isAdmin){
             snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.warning,_=>{
-              refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users});
+              refer(locate.admin.session,{
+                target:locate.admin.target.viewschedule,
+                client:client.teacher,
+                teacherID:sessionStorage.getItem('teacherID')
+              });
             });
           }
         }break;

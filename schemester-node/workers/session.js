@@ -229,41 +229,60 @@ class Session {
         const { username, email, password, uiid, classname} = request.body;
           const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-          const userinst = await Institute.findOne({uiid:uiid, "users.students":{$elemMatch:{"studentID":email}}});
-          if(userinst) return code.event(code.auth.USER_EXIST);
-          const studschedule = await Institute.findOne({uiid:uiid, "schedule.students":{$elemMatch:{classname:classname}}});
-          if(!studschedule) return code.event(code.schedule.BATCH_NOT_FOUND);
+          let classInst = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{classname:classname}}},
+          {projection:{"_id":0,"users.classes.$":1}});
+          if(!classInst) return code.event(code.schedule.BATCH_NOT_FOUND);
+          const theclass = classInst.users.classes[0];
+          let found = theclass.students.some((student,_)=>{
+            return student.studentID == email;
+          });
+          if(found) return code.event(code.auth.USER_EXIST);
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
+          const filter = {
+            uiid: uiid,
+            "users.classes": {
+              $elemMatch: { classname: classname },
+            }, //existing classname
+          };
+          const newdocument = {
+            $push: { "users.classes.$[outer].students":{
+              _id: new ObjectId(),
+              username: username,
+              studentID: email,
+              password: epassword,
+              className:classname,
+              createdAt: Date.now(),
+              verified:false,
+              prefs:{}
+            }}, //new student push
+          };
+          const options = {
+            arrayFilters: [{ "outer.classname": classname }],
+          };
           const doc = await Institute.findOneAndUpdate(
-            { uiid: uiid },
-            {
-              $push: {
-                "users.students": {
-                  _id: new ObjectId(),
-                  username: username,
-                  studentID: email,
-                  password: epassword,
-                  className:classname,
-                  createdAt: Date.now(),
-                  verified:false,
-                  prefs:{}
-                },
-              },
-            }
+            filter,
+            newdocument,
+            options
           );
-          clog(doc);
           if(!doc) return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
-          clog("created?");
-          const userInst = await Institute.findOne({uiid:uiid, "users.students":{$elemMatch:{"studentID":email}}},{
-            projection:{"_id":0,"users.students.$":1}
+          clog("new student appended?");
+          classInst = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{"classname":classname}}},{
+            projection:{"_id":0,"users.classes.$":1}
           });
-          if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
-          const student = userInst.users.students[0];
+          if(!classInst) return code.event(code.schedule.BATCH_NOT_FOUND);
+          let newstudent;
+          const newfound = classInst.users.classes[0].students.some((student,_)=>{
+            if(student.studentID == email){
+              newstudent = student;
+              return true;
+            }
+          });
+          if(!newfound) return code.event(code.auth.USER_NOT_EXIST);
           const payload = {
             user: {
-              id: student._id,
+              id: newstudent._id,
               uiid: uiid
             },
           };
@@ -271,7 +290,7 @@ class Session {
           response.cookie(this.sessionKey, token, { signed: true });
           return {
             event: code.auth.ACCOUNT_CREATED,
-            user: getStudentShareData(student),
+            user: getStudentShareData(newstudent),
           };
       }
       default: return code.event(code.server.DATABASE_ERROR);

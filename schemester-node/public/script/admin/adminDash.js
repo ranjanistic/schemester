@@ -64,10 +64,43 @@ class NoDataView{
     this.data = new ReceiveData();
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
-    
     //TODO:
+    clog("yeah");
+    clog(this.data.hasTeacherSchedule)
     if(this.data.hasTeacherSchedule){
+      clog("yea")
       this.startSchedule = getElement("startScheduling");
+      this.startSchedule.onclick=_=>{
+        clog("whooo");
+        loadingBox(true,"Extracting classes","Finding unique classes among schedule of teachers...");
+        postJsonData(post.admin.schedule,{
+          target:client.student,
+          action:'createclasses'
+        }).then(response=>{
+          let bodyview = `<center>${response.classes.length} unique classes found</center><ul>`;
+          response.classes.forEach((Class,_)=>{
+            bodyview += `<li>${Class}</li>`;
+          })
+          bodyview += `</ul>`
+          let classesDialog = new Dialog()
+          classesDialog.setDisplay('Confirm Classes',bodyview);
+          classesDialog.createActions(Array('Start schedule','Abort'),Array(actionType.positive,actionType.neutral));
+          classesDialog.onButtonClick(Array(
+            _=>{
+              loadingBox(true,'Initializing');
+              postJsonData(post.admin.schedule,{
+                target:client.student,
+                action:'createclasses',
+                confirmed:true
+              }).then(response=>{
+                clog(response);
+              })
+            },
+            _=>{classesDialog.hide()}
+          ))
+          classesDialog.show();
+        })
+      }
     }
     this.addTeacher.addEventListener(click,_=>{relocate(locate.admin.session,{target:'addteacher'})});
     this.inviteTeacher.addEventListener(click,_=>{this.linkGenerator('teacher')});
@@ -170,6 +203,10 @@ class BaseView{
     this.navicon.onclick=_=>{
       relocate(locate.root,{client:client.admin});
     }
+    this.reload = getElement("refresh");
+    this.reload.onclick=_=>{
+      location.reload();
+    }
     this.greeting = getElement("greeting");
     this.logOut = getElement("logoutAdminButton");
     this.dateTime = getElement("todayDateTime");
@@ -205,8 +242,8 @@ class BaseView{
 
 class ReceiveData{
   constructor(){
-    this.hasTeachers = true?false:getElement("hasTeachers").innerHTML == 'true'?true:false;
-    this.hasTeacherSchedule = true?false:getElement("hasTeacherSchedule").innerHTML == 'true'?true:false;
+    this.hasTeachers = getElement("hasTeachers").innerHTML == 'true'?true:false;
+    this.hasTeacherSchedule = getElement("hasTeacherSchedule").innerHTML == 'true'?true:false;
   }
 }
 
