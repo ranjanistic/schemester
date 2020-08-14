@@ -669,62 +669,104 @@ admin.post("/schedule", (req, res) => {
             }
           }
           break;
-        case "student":{
+        case "student":
+          {
             switch (body.action) {
-              case "createclasses":{
-                  let existingclasses = Array();
-                  //getting existing classes
-                  inst.schedule.classes.forEach((Class, _) => {
-                    existingclasses.push(Class.classname);
+              case "createclasses": {
+                let existingclasses = Array();
+                //getting existing classes
+                inst.schedule.classes.forEach((Class, _) => {
+                  existingclasses.push(Class.classname);
+                });
+                clog(existingclasses);
+                let newClasses = Array();
+                inst.schedule.teachers.forEach((teacher, tindex) => {
+                  teacher.days.forEach((day, _) => {
+                    day.period.forEach((period, _) => {
+                      if (
+                        !existingclasses.includes(period.classname) &&
+                        !newClasses.includes(period.classname)
+                      ) {
+                        newClasses.push(period.classname);
+                      }
+                    });
                   });
-                  clog(existingclasses);
-                  let newClasses = Array();
-                  inst.schedule.teachers.forEach((teacher, tindex) => {
-                    teacher.days.forEach((day, _) => {
-                      day.period.forEach((period, _) => {
-                        if (!existingclasses.includes(period.classname)) {
-                          newClasses.push(period.classname);
-                        }
+                });
+                clog(newClasses);
+                if (!body.confirmed) {
+                  return res.json({
+                    result: {
+                      event: code.OK,
+                      classes: newClasses,
+                    },
+                  });
+                } else {
+                  let classSchedule = [];
+                  newClasses.forEach((Class, cindex) => {
+                    inst.schedule.teachers.forEach((teacher, _) => {
+                      teacher.days.forEach((day, _) => {
+                        day.period.forEach((period, _) => {
+                          if (period.classname == Class) {
+                            classSchedule.push({
+                              classname: Class,
+                              days: [
+                                {
+                                  dayIndex: day.dayIndex,
+                                  periods: [
+                                    {
+                                      subject: period.subject,
+                                      hold: period.hold,
+                                      teacherID: teacher.teacherID,
+                                    },
+                                  ],
+                                },
+                              ],
+                            });
+                          }
+                        });
                       });
                     });
                   });
-                  clog(newClasses);
-                  if (!body.confirmed) {
-                    return res.json({
-                      result: {
-                        event: code.OK,
-                        classes: newClasses,
-                      },
-                    });
-                  } else {
-                    let classSchedule = [];
-                    newClasses.forEach((Class,_)=>{
-                      inst.schedule.teachers.forEach((teacher,_)=>{
-                        teacher.days.forEach((day,_)=>{
-                          day.period.forEach((period,_)=>{
-                            if(period.classname == Class){
-                              classSchedule.push({
-                                classname:Class,
-                                days:[{
-                                  dayIndex:day.dayIndex,
-                                  periods:[{
-                                    subject:period.subject,
-                                    hold:period.hold,
-                                    teacherID:teacher.teacherID
-                                  }]
-                                }]
-                              })
-                            }
-                          })  
-                        })
-                      })
-                    });
-                    clog(classSchedule);
-                    clog("hold");
-                    return;
-                  }
+                  clog(classSchedule);
+                  
+                  return;
                 }
-                break;
+              }
+              case "updateclasses": {
+                try {
+                  let done = false;
+                  inst.schedule.teachers.forEach((teacher, tindex) => {
+                    teacher.days.forEach((day, dindex) => {
+                      day.period.forEach((__, _) => {
+                        body.data.forEach(async (c, _) => {
+                          const setter = `schedule.teachers.${tindex}.days.${dindex}.period.$[outer].classname`;
+                          const filter = {
+                            uiid: response.user.uiid,
+                          };
+                          const newdocument = {
+                            $set: { [setter]: c.renamed },
+                          };
+                          const options = {
+                            arrayFilters: [{ "outer.classname": c.classname }],
+                          };
+                          const doc = await Institute.findOneAndUpdate(
+                            filter,
+                            newdocument,
+                            options
+                          );
+                          done = doc ? true : false;
+                        });
+                      });
+                    });
+                  });
+                  clog(done);
+                  if (done) {
+                    return res.json({ result: code.event(code.OK) });
+                  }
+                } catch (e) {
+                  return res.json({ result: code.eventmsg(code.NO, e) });
+                }
+              }
             }
           }
           break;

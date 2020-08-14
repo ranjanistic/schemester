@@ -85,10 +85,16 @@ class TextInput {
       };
     }
   }
+  getOnTextInput(){
+    return this.input.oninput;
+  }
   onTextDefocus(action) {
     this.input.onchange = () => {
       action();
     };
+  }
+  getOnTextDefocus(){
+    return this.input.onchange;
   }
   showValid() {
     setClassNames(this.fieldset, actionType.getFieldStyle(bodyType.active));
@@ -1582,14 +1588,19 @@ const setClassNames = (
  * Shows single or all HTML elements in given array.
  * @param {Array} elements The array of html elements to be acted upon.
  * @param {Number} index The index of element in given array to be shown. If not provided, defaults to null, and all elements will be shown.
+ * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (hides the rest).
  */
-const showElement = (elements = Array, index = null) => {
-  for (let k = 0; k < elements.length; k++) {
-    if(index!=null){
-      visibilityOf(elements[k], k == index);
-    } else {
-      hide(elements[k])
+const showElement = (elements = Array, index = null, hideRest = true) => {
+  if(hideRest){
+    for (let k = 0; k < elements.length; k++) {
+      if(index!=null){
+        visibilityOf(elements[k], k == index);
+      } else {
+        show(elements[k]);
+      }
     }
+  } else {
+    index!=null?show(elements[index]):showElement(elements);
   }
 };
 
@@ -1597,14 +1608,19 @@ const showElement = (elements = Array, index = null) => {
  * Hides single or all HTML elements in given array.
  * @param {Array} elements The array of html elements to be acted upon.
  * @param {Number} index The index of element in given array to be hidden. If not provided, defaults to null, and all elements will be hidden.
+ * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (shows the rest).
  */
-const hideElement = (elements = Array,index = null)=>{
-  for (let k = 0; k < elements.length; k++) {
-    if(index){
-      visibilityOf(elements[k], k != index);
-    } else {
-      hide(elements[k])
+const hideElement = (elements = Array,index = null, showRest = true)=>{
+  if(showRest){
+    for (let k = 0; k < elements.length; k++) {
+      if(index!=null){
+        visibilityOf(elements[k], k != index);
+      } else {
+        hide(elements[k]);
+      }
     }
+  } else {
+    index!=null?hide(elements[index]):hideElement(elements);
   }
 }
 
@@ -1647,11 +1663,12 @@ const setDefaultBackground = (element, type = actionType.positive) => {
  * @param {Boolean} opposite This condition ensures the reversibility of the intended action. If set to false, the toBeReplaced and replacement class params will be exchanged.
  * If unset, defaults to true, means classes will be replaced normally as they were intended to. Can be used if classes are to be replaced on some boolean condition.
  */
-const replaceClass = (element, toBeReplaced, replacement, opposite = true) =>
+const replaceClass = (element = new HTMLElement, toBeReplaced, replacement, opposite = true) =>
   opposite
     ? element.classList.replace(toBeReplaced, replacement)
     : element.classList.replace(replacement, toBeReplaced);
 
+const appendClass = (element = new HTMLElement,appendingClass)=> element.classList.add(appendingClass)
 
 const showLoader = (_) => show(getElement("navLoader"));
 const hideLoader = (_) => hide(getElement("navLoader"));
@@ -1669,11 +1686,12 @@ const opacityOf = (element = new HTMLElement, value = 1) => (element.style.opaci
  */
 const visibilityOf = (element = new HTMLElement, visible = true) =>
   (element.style.display = visible ? constant.show : constant.hide);
-
-
+const visibilityOfAll = (elements = Array(),visible = true, index = null) => 
+  index!=null?visibilityOf(elements[index],visible):elements.forEach((element,_)=>{visibilityOf(element,visible)});
 const hide = (element = new HTMLElement) => visibilityOf(element, false);
 const show = (element = new HTMLElement) => visibilityOf(element, true);
-
+const isVisible = (element = new HTMLElement) => (element.style.display == constant.show);
+const areVisible = (elements = Array(), index = null) => index!=null?elements[index].style.display == constant.show:elements.some((element,_)=>{return element.style.display == constant.show})
 /**
  * Checks if given string is valid, according to its type given as second parameter.
  * @param {String} value The string value to be checked for validity.

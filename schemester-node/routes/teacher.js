@@ -191,7 +191,7 @@ teacher.get("/fragment*", (req, res) => {
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           clog("today");
-          getSchedule(response, 1)
+          getSchedule(response, new Date().getDay())
             .then((resp) => {
               if(!resp.schedule)
                 return res.render(view.teacher.getViewByTarget(query.fragment), {
