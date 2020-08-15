@@ -47,12 +47,14 @@ class Teacher{
         postJsonData(post.admin.schedule,{
             target:client.teacher,
             action:'receive',
+            specific:'single',
             teacherID:this.data.teacherID,
             dayIndex:dayIndex
         }).then(response=>{
-            if(response.event == 'OK'){
+            clog(response);
+            if(response.event == code.OK){
                 clog("OK");
-                this.schedule = response.schedule;           
+                this.schedule = response.schedule;
                 let theday;
                 clog(this.schedule);
                 let found = this.schedule.days.some((day,index)=>{

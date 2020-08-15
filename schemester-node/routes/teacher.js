@@ -6,9 +6,11 @@ const express = require("express"),
   { check, validationResult } = require("express-validator"),
   code = require("../public/script/codes"),
   view = require("../hardcodes/views"),
-  session = require("../workers/session"),
-  invite = require("../workers/invitation"),
-  verify = require("../workers/verification"),
+  session = require("../workers/common/session"),
+  invite = require("../workers/common/invitation"),
+  verify = require("../workers/common/verification"),
+  mailer = require("../workers/common/mailer"),
+  worker = require("../workers/teacherworker"),
   Institute = require("../collections/Institutions"),
   Admin = require("../collections/Admins");
 
@@ -263,7 +265,7 @@ const getSchedule = async (response, dayIndex = null) => {
   if (!teacherschedule) return res.redirect(toLogin(req.query));
   const schedule = teacherschedule.schedule.teachers[0].days;
   const timings = teacherschedule.default.timings;
-  if (!dayIndex) return { schedule: schedule, timings:timings};
+  if (dayIndex==null) return { schedule: schedule, timings:timings};
   let today = teacherschedule.schedule.teachers[0].days[0];
   const found = schedule.some((day, index) => {
     if (day.dayIndex == dayIndex) {

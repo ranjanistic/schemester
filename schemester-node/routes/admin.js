@@ -5,17 +5,18 @@ const express = require("express"),
   { check, validationResult } = require("express-validator"),
   code = require("../public/script/codes"),
   view = require("../hardcodes/views"),
-  session = require("../workers/session"),
-  invite = require("../workers/invitation"),
-  verify = require("../workers/verification"),
+  session = require("../workers/common/session"),
+  invite = require("../workers/common/invitation"),
+  verify = require("../workers/common/verification"),
+  worker = require("../workers/adminworker"),
   Admin = require("../collections/Admins"),
   Institute = require("../collections/Institutions");
 
 const sessionsecret = session.adminsessionsecret;
 admin.use(cookieParser(sessionsecret));
 
-admin.get("/", function (req, res) {
-  res.redirect(toLogin());
+admin.get("/", function (_, res) {
+  res.redirect(worker.toLogin());
 });
 
 admin.get("/auth/login*", (req, res) => {
@@ -28,7 +29,7 @@ admin.get("/auth/login*", (req, res) => {
         return res.render(view.admin.login, { autofill: req.query });
       let data = req.query;
       delete data["u"];
-      return res.redirect(toSession(response.user.id, data));
+      return res.redirect(worker.toSession(response.user.id, data));
     })
     .catch((error) => {
       res.render(view.servererror, { error });
@@ -44,16 +45,16 @@ admin.get("/session*", (req, res) => {
     .catch((e) => {
       clog("session catch");
       clog(e);
-      return res.redirect(toLogin(data));
+      return res.redirect(worker.toLogin(data));
     })
     .then(async (response) => {
-      if (!session.valid(response)) return res.redirect(toLogin(data));
+      if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       try {
-        if (data.u != response.user.id) return res.redirect(toLogin(data));
+        if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
         const admin = await Admin.findOne({ _id: ObjectId(response.user.id) });
         if (!admin)
           return session.finish(res).then((response) => {
-            if (response) res.redirect(toLogin(data));
+            if (response) res.redirect(worker.toLogin(data));
           });
         let adata = getAdminShareData(admin);
         if (!adata.verified)
@@ -67,7 +68,7 @@ admin.get("/session*", (req, res) => {
             data.target == undefined
           ) {
             return res.redirect(
-              toSession(adata.uid, { target: view.admin.target.dashboard })
+              worker.toSession(adata.uid, { target: view.admin.target.dashboard })
             );
           }
         }
@@ -188,7 +189,7 @@ admin.get("/session*", (req, res) => {
         } catch (e) {
           clog(e);
           data.target = view.admin.target.dashboard;
-          return res.redirect(toLogin(data));
+          return res.redirect(worker.toLogin(data));
         }
       } catch (e) {
         clog(e);
@@ -272,33 +273,28 @@ admin.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    let result;
     if (!errors.isEmpty()) {
-      result = { event: errors.array()[0].msg };
-      res.json({ result });
+      res.json({ result:{ event: errors.array()[0].msg }});
       return;
     }
-    session
-      .signup(req, res, sessionsecret)
-      .then((response) => {
-        clog("Response");
-        clog(response);
-        result = response;
-        return res.json({ result });
-      })
-      .catch((error) => {
-        clog("error");
-        clog(error);
-        result = { event: code.auth.ACCOUNT_CREATION_FAILED, msg: error };
-        return res.status(500).json({ result });
-      });
+    session.signup(req, res, sessionsecret)
+    .then((response) => {
+      clog(response);
+      return res.json({ result:response });
+    })
+    .catch((error) => {
+      clog(error);
+      return res.json({ result:{ event: code.auth.ACCOUNT_CREATION_FAILED, msg: error } });
+    });
   }
 );
 
+/**
+ * Logout admin.
+ */
 admin.post("/auth/logout", (_, res) => {
   session.finish(res).then((response) => {
-    let result = response;
-    return res.json({ result });
+    return res.json({ result:response });
   });
 });
 
@@ -367,6 +363,7 @@ admin.post(
       }
       clog(response);
       let inst = await Institute.findOne({ uiid: response.user.uiid });
+      if(inst) return res.json({result:code.event(code.inst.INSTITUTION_EXISTS)});
       if (!inst) {
         clog("creating inst");
         const registerdoc = {
@@ -395,7 +392,7 @@ admin.post(
           },
           users: {
             teachers: [],
-            students: [],
+            classes: [],
           },
           schedule: {
             teachers: [],
@@ -419,14 +416,9 @@ admin.post(
           prefs: {},
         };
         const done = await Institute.insertOne(registerdoc);
-        if (done.insertedCount == 1) {
-          clog("institute created");
-          result = code.event(code.inst.INSTITUTION_CREATED);
-          return res.json({ result });
-        } else {
-          result = code.event(code.inst.INSTITUTION_CREATION_FAILED);
-          return res.json({ result });
-        }
+        return done.insertedCount == 1
+          ?res.json({ result:code.event(code.inst.INSTITUTION_CREATED)})
+          :res.json({ result:code.event(code.inst.INSTITUTION_CREATION_FAILED)});
       }
     });
   }
@@ -474,307 +466,50 @@ admin.post("/session/receiveinstitution", async (req, res) => {
     });
 });
 
-admin.post("/schedule", (req, res) => {
-  let result;
+
+/**
+ * For actions related to users subdocument.
+ */
+admin.post("/users",async (req,res)=>{
   session
     .verify(req, sessionsecret)
     .catch((error) => {
       clog(error);
       return res.json({
-        result: code.eventmsg(code.inst.SCHEDULE_UPLOAD_FAILED, error),
+        result: code.eventmsg(code.auth.AUTH_FAILED, error),
       });
     })
     .then(async (response) => {
-      if (!session.valid(response))
-        return res.json({ result: code.event(code.auth.SESSION_INVALID) });
-      const inst = await Institute.findOne({ uiid: response.user.uiid });
-      if (!inst)
-        return res.json({
-          result: code.event(code.inst.INSTITUTION_NOT_EXISTS),
-        });
-      const body = req.body;
-      switch (body.target) {
-        case "teacher":
-          {
-            switch (req.body.action) {
-              case "upload":
-                {
-                  let overwriting = false; //if existing teacher schedule being overwritten after completion.
-                  let incomplete = false; //if existing teacher schedule being rewritten without completion.
-                  let found = inst.schedule.teachers.some((teacher, index) => {
-                    if (teacher.teacherID == body.teacherID) {
-                      if (
-                        teacher.days.length ==
-                        inst.default.timings.daysInWeek.length
-                      ) {
-                        overwriting = true;
-                      } else {
-                        incomplete = teacher.days.some((day, index) => {
-                          if (body.data.dayIndex <= day.dayIndex) {
-                            return true;
-                          }
-                        });
-                      }
-                      return true;
-                    }
-                  });
-                  if (overwriting) {
-                    //completed schedule, must be edited from schedule view.
-                    result = code.event(code.schedule.SCHEDULE_EXISTS);
-                    return res.json({ result });
-                  }
-                  if (incomplete) {
-                    //remove teacher schedule
-                    Institute.findOneAndUpdate(
-                      { uiid: response.user.uiid },
-                      {
-                        $pull: {
-                          "schedule.teachers": { teacherID: body.teacherID },
-                        },
-                      }
-                    );
-                    found = false; //add as a new teacher schedule
-                  }
-                  let clashClass, clashPeriod, clashTeacher;
-                  let clashed = inst.schedule.teachers.some((teacher, _) => {
-                    clog("eachteacher");
-                    clog(teacher);
-                    let clashed = teacher.days.some((day, _) => {
-                      clog("eachday");
-                      clog(day);
-                      if (day.dayIndex == body.data.dayIndex) {
-                        let clashed = day.period.some((period, pindex) => {
-                          clog("eachperiod");
-                          clog(period);
-                          if (
-                            period.classname ==
-                            body.data.period[pindex].classname
-                          ) {
-                            mathcclass = period.classname;
-                            clashPeriod = pindex;
-                            return true;
-                          }
-                        });
-                        clog(clashed);
-                        if (clashed) {
-                          return true;
-                        }
-                      }
-                    });
-                    clog(clashed);
-                    if (clashed) {
-                      clashTeacher = teacher.teacherID;
-                      return true;
-                    }
-                  });
-                  clog(clashed);
-                  if (clashed) {
-                    //if schedule clashed.
-                    return res.json({
-                      result: {
-                        event: code.schedule.SCHEDULE_CLASHED,
-                        clash: {
-                          classname: clashClass,
-                          period: clashPeriod,
-                          teacherID: clashTeacher,
-                        },
-                      },
-                    });
-                  }
-                  if (found) {
-                    //existing teacher schedule, incomplete (new day index)
-                    const filter = {
-                      uiid: response.user.uiid,
-                      "schedule.teachers": {
-                        $elemMatch: { teacherID: body.teacherID },
-                      }, //existing schedule teacherID
-                    };
-                    const newdocument = {
-                      $push: { "schedule.teachers.$[outer].days": body.data }, //new day push
-                    };
-                    const options = {
-                      arrayFilters: [{ "outer.teacherID": body.teacherID }],
-                    };
-                    const doc = await Institute.findOneAndUpdate(
-                      filter,
-                      newdocument,
-                      options
-                    );
-                    clog("schedule appended?");
-                    if (doc)
-                      return res.json({
-                        result: code.event(code.schedule.SCHEDULE_CREATED),
-                      }); //new day created.
-                  } else {
-                    //no existing schedule teacherID
-                    const filter = { uiid: response.user.uiid };
-                    const newdocument = {
-                      $push: {
-                        "schedule.teachers": {
-                          teacherID: body.teacherID,
-                          days: [body.data],
-                        },
-                      }, //new teacher schedule push
-                    };
-                    const doc = await Institute.findOneAndUpdate(
-                      filter,
-                      newdocument
-                    );
-                    clog("schedule created?");
-                    if (doc)
-                      return res.json({
-                        result: code.event(code.schedule.SCHEDULE_CREATED),
-                      }); //new teacher new day created.
-                  }
-                }
-                break;
-              case "receive":
-                {
-                  const teacherInst = await Institute.findOne(
-                    {
-                      uiid: response.user.uiid,
-                      "schedule.teachers": {
-                        $elemMatch: {
-                          teacherID: body.teacherID,
-                        },
-                      },
-                    },
-                    {
-                      projection: {
-                        _id: 0,
-                        "schedule.teachers.$": 1,
-                      },
-                    }
-                  );
-                  if (teacherInst) {
-                    return res.json({
-                      result: {
-                        event: "OK",
-                        schedule: teacherInst.schedule.teachers[0],
-                      },
-                    });
-                  } else {
-                    return res.json({
-                      result: code.event(code.schedule.SCHEDULE_NOT_EXIST),
-                    });
-                  }
-                }
-                break;
-              case "update":
-                {
-                }
-                break;
-              default:
-                throw Error("invalid teacher schedule action");
-            }
-          }
-          break;
-        case "student":
-          {
-            switch (body.action) {
-              case "createclasses": {
-                let existingclasses = Array();
-                //getting existing classes
-                inst.schedule.classes.forEach((Class, _) => {
-                  existingclasses.push(Class.classname);
-                });
-                clog(existingclasses);
-                let newClasses = Array();
-                inst.schedule.teachers.forEach((teacher, tindex) => {
-                  teacher.days.forEach((day, _) => {
-                    day.period.forEach((period, _) => {
-                      if (
-                        !existingclasses.includes(period.classname) &&
-                        !newClasses.includes(period.classname)
-                      ) {
-                        newClasses.push(period.classname);
-                      }
-                    });
-                  });
-                });
-                clog(newClasses);
-                if (!body.confirmed) {
-                  return res.json({
-                    result: {
-                      event: code.OK,
-                      classes: newClasses,
-                    },
-                  });
-                } else {
-                  let classSchedule = [];
-                  newClasses.forEach((Class, cindex) => {
-                    inst.schedule.teachers.forEach((teacher, _) => {
-                      teacher.days.forEach((day, _) => {
-                        day.period.forEach((period, _) => {
-                          if (period.classname == Class) {
-                            classSchedule.push({
-                              classname: Class,
-                              days: [
-                                {
-                                  dayIndex: day.dayIndex,
-                                  periods: [
-                                    {
-                                      subject: period.subject,
-                                      hold: period.hold,
-                                      teacherID: teacher.teacherID,
-                                    },
-                                  ],
-                                },
-                              ],
-                            });
-                          }
-                        });
-                      });
-                    });
-                  });
-                  clog(classSchedule);
-                  
-                  return;
-                }
-              }
-              case "updateclasses": {
-                try {
-                  let done = false;
-                  inst.schedule.teachers.forEach((teacher, tindex) => {
-                    teacher.days.forEach((day, dindex) => {
-                      day.period.forEach((__, _) => {
-                        body.data.forEach(async (c, _) => {
-                          const setter = `schedule.teachers.${tindex}.days.${dindex}.period.$[outer].classname`;
-                          const filter = {
-                            uiid: response.user.uiid,
-                          };
-                          const newdocument = {
-                            $set: { [setter]: c.renamed },
-                          };
-                          const options = {
-                            arrayFilters: [{ "outer.classname": c.classname }],
-                          };
-                          const doc = await Institute.findOneAndUpdate(
-                            filter,
-                            newdocument,
-                            options
-                          );
-                          done = doc ? true : false;
-                        });
-                      });
-                    });
-                  });
-                  clog(done);
-                  if (done) {
-                    return res.json({ result: code.event(code.OK) });
-                  }
-                } catch (e) {
-                  return res.json({ result: code.eventmsg(code.NO, e) });
-                }
-              }
-            }
-          }
-          break;
-      }
-    });
+      if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+      
+      
+    })
 });
 
-admin.post("/manage", async (req, res) => {
+/**
+ * For actions related to schedule subdocument.
+*/
+admin.post("/schedule", async (req, res) => {
+  session.verify(req, sessionsecret).catch((error) => {
+    clog(error);
+    return res.json({
+      result: code.eventmsg(code.auth.AUTH_FAILED, error),
+    });
+  }).then(async (response) => {
+    if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+    const inst = await Institute.findOne({ uiid: response.user.uiid });
+    if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
+    const body = req.body;
+    switch (body.target) {
+      case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(inst,body)});
+      case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(inst,body)});
+      default : return null;
+    }
+  });
+});
+
+
+admin.post("/manage", async (req, res) => { //for settings
   clog("in post manage");
   session
     .verify(req, sessionsecret)
@@ -997,48 +732,25 @@ admin.post("/manage", async (req, res) => {
     });
 });
 
+/**
+ * For external links.
+ */
 admin.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
-    case verify.type:
-      {
-        //verification link
-        verify.handleVerification(query, verify.target.admin).then((resp) => {
-          if (!resp) return res.render(view.notfound);
-          return res.render(view.verification, { user: resp.user });
-        });
-      }
-      break;
-    default:
-      res.render(view.notfound);
+    case verify.type:{
+      verify.handleVerification(query, verify.target.admin).then((resp) => {
+        if (!resp) return res.render(view.notfound);
+        return res.render(view.verification, { user: resp.user });
+      }).catch(e=>{
+        clog(e);
+        return res.render(view.servererror, {error:e});
+      });
+    }
+    default:res.render(view.notfound);
   }
 });
 
-const toSession = (u, query = { target: view.admin.target.dashboard }) => {
-  let path = `/admin/session?u=${u}`;
-  for (var key in query) {
-    if (query.hasOwnProperty(key)) {
-      path = `${path}&${key}=${query[key]}`;
-    }
-  }
-  clog("path");
-  clog(path);
-  return path;
-};
-const toLogin = (query = { target: view.admin.target.dashboard }) => {
-  let i = 0;
-  let path = "/admin/auth/login";
-  for (var key in query) {
-    if (query.hasOwnProperty(key)) {
-      path =
-        i > 0 ? `${path}&${key}=${query[key]}` : `${path}?${key}=${query[key]}`;
-      i++;
-    }
-  }
-  clog("path");
-  clog(path);
-  return path;
-};
 const getAdminShareData = (data = {}) => {
   return {
     isAdmin: true,

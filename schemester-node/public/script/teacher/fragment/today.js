@@ -5,28 +5,29 @@ class TeacherToday{
         this.dateview = getElement("simpledate");
         if(!this.data.today){
             getElement("weekschedule").onclick = window.parent.document.getElementById("fulltab").onclick;
-        }
-        this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-        this.periodview = Array();
-        this.periodExpand = Array();
-        this.periodTime = Array();
-        this.periodActions = Array();
-        this.actionYes = Array();
-        this.actionNo = Array();
-        for(let i = 0;i<this.data.totalperiods;i++){
-            this.periodview.push(getElement(`periodview${i}`));
-            this.periodExpand.push(getElement(`showactions${i}`));
-            this.periodTime.push(getElement(`timing${i}`));
-            this.periodActions.push(getElement(`action${i}`));
-            this.actionYes.push(getElement(`present${i}`));
-            this.actionNo.push(getElement(`absent${i}`));
+        } else {
+            this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
+            this.periodview = Array();
+            this.periodExpand = Array();
+            this.periodTime = Array();
+            this.periodActions = Array();
+            this.actionYes = Array();
+            this.actionNo = Array();
+            for(let i = 0;i<this.data.totalperiods;i++){
+                this.periodview.push(getElement(`periodview${i}`));
+                this.periodExpand.push(getElement(`showactions${i}`));
+                this.periodTime.push(getElement(`timing${i}`));
+                this.periodActions.push(getElement(`action${i}`));
+                this.actionYes.push(getElement(`present${i}`));
+                this.actionNo.push(getElement(`absent${i}`));
+            }
+            this.controlVisibility();
+            this.options = getElement("todayOptions");
+            this.options.onclick=_=>{
+                this.todayactions();
+            }
         }
         this.startTimers();
-        this.controlVisibility();
-        this.options = getElement("todayOptions");
-        this.options.onclick=_=>{
-            this.todayactions();
-        }
     }
     controlVisibility(){
         hideElement(this.periodActions);
@@ -139,6 +140,7 @@ class ReceiveData{
         this.breakduration = Number(getElement("breakDuration").innerHTML);
         this.totalperiods = Number(getElement("periodsInDay").innerHTML);
         this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
+        clog(this.today);
         if(this.today){
             this.classname = Array();
             this.subject = Array();

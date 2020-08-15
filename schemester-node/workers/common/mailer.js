@@ -1,5 +1,5 @@
 const nodeoutlook = require("nodejs-nodemailer-outlook"),
-    code = require("../public/script/codes"),
+    code = require("../../public/script/codes"),
     testhtml =  '<div style=\"background-color:#216bf3;text-size:44px; text-align:center;width:100%;color:white\">Hey there</div><div style=\"background-color:white;color:black\"><p>This is a test verification email to check the functioning of nodemailer.</p><br/><p>Regards<br/>Schemester Devs.</p></div>';
 
 module.exports = sendMail = (receipent,type)=>{

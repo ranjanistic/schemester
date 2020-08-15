@@ -1,8 +1,10 @@
-const code = require("../public/script/codes");
-const { ObjectId } = require("mongodb");
-const Institute = require("../collections/Institutions");
-const Admin = require("../collections/Admins");
-const session  = require("../workers/session");
+const code = require("../../public/script/codes"),
+  time = require("./timer"),
+  { ObjectId } = require("mongodb"),
+  Institute = require("../../collections/Institutions"),
+  Admin = require("../../collections/Admins"),
+  session  = require("./session");
+
 /**
  * For user account verification purposes, including and limited to:
  * Administrator: in a seperate collection, individual documents.
@@ -15,8 +17,17 @@ class Verification {
     this.domain = "http://localhost:3000";
     this.defaultValidity = 15; //min
   }
+
+  /**
+   * Generates a new verification link based on given parameters.
+   * @param {String} target The target group for which verificaiton link is to be generated, can be passed from Verification().target.
+   * @param {JSON} data The data to be attached with link, must be specific for specific targets.
+   * @param {Number} validity Number of minutes this link will be valid for. Defaults to 15.
+   * @returns {JSON} Returns expiry time according to SGT notation, and the generated link, as key value pairs
+   *  of exp,link.
+   */
   generateLink(target, data = {}, validity = this.defaultValidity) {
-    const exp = getTheMoment(validity);
+    const exp = time.getTheMomentMinute(validity);
     let link = String();
     switch (target) {
       case this.target.admin:
@@ -34,19 +45,55 @@ class Verification {
       link: link,
     };
   }
+
+  /**
+   * If given time parameter is still greater than the current time, in SGT notation.
+   * @param expiryTime The time to be checked valid in SGT notation.
+   * @returns A boolean value, if valid, true, otherwise false.
+   */
   isValidTime(expiryTime) {
     expiryTime = Number(expiryTime);
-    return getTheMoment() < expiryTime;
+    return time.getTheMomentMinute() < expiryTime;
   }
+
+  /**
+   * Checks if given response is valid for link validation.
+   * @param {JSON} response This should contain a key 'event' with some link validity code value.
+   * @returns A boolean value, if valid, true, otherwise false.
+   * @note This method does NOT check if time is valid or not. For time validation purposes, see isValidTime() method of Verification class.
+   */
   isValid(response) {
     return response.event == code.verify.LINK_VALID;
   }
+
+  /**
+   * Checks if given response is expired for link validation.
+   * @param {JSON} response This should contain a key 'event' with some link validity code value.
+   * @returns A boolean value, if expired, true, otherwise false.
+   * @note This method does NOT check if time is expired or not. For time validation purposes, see isValidTime() method of Verification class.
+   */
   isExpired(response) {
     return response.event == code.verify.LINK_EXPIRED;
   }
+
+  /**
+   * Checks if given response is invalid for link validation.
+   * @param {JSON} response This should contain a key 'event' with some link validity code value.
+   * @returns A boolean value, if invalid, true, otherwise false.
+   * @note This method does NOT check if time is invalid or not. For time validation purposes, see isValidTime() method of Verification class.
+   */
   isInvalid(response) {
     return response.event == code.verify.LINK_INVALID;
   }
+
+  /**
+   * Handles the query of given verification link, and the target client to be verified.
+   * @param {JSON} query The query of link (usually request.query of express GET method).
+   * @param {String} clientType The target client to be checked for link validation, can be derived from Verfication().target.
+   * @returns {Promise} If query and clientType are in accordance with each other, returns JSON object of user key, and if link is valid, verifies the given client,
+   *  and returns additional data of given client.
+   * @returns {false} If query and clientType are not in accordance with each other, returns false, indicating that given link is corrupted.
+   */
   handleVerification = async (query, clientType) => {
     switch (clientType) {
       case this.target.admin: {
@@ -72,11 +119,12 @@ class Verification {
         try {
           let teacherinst = await Institute.findOne(
             {
-              _id: ObjectId(query.in),
-              "users.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
+              "_id": ObjectId(query.in),
+              "users.teachers": { $elemMatch: { "_id": ObjectId(query.u) } },
             },
             {
               projection: {
+                "_id":0,
                 "users.teachers.$": 1,
               },
             }
@@ -122,11 +170,16 @@ class Verification {
           clog(e);
           return false;
         }
-      }break;
+      }
     }
   };
 }
 
+/**
+ * Returns peronal data of client type - admin, after extracting from passed admin user data from database, except confidential ones.
+ * @param {JSON} data The data of an admin from database.
+ * @returns {JSON} Filters confidential values from given data, and returns in shareable form.
+ */
 const getAdminShareData = (data = {}) => {
     return {
       isAdmin: true,
@@ -138,8 +191,13 @@ const getAdminShareData = (data = {}) => {
       verified: data.verified,
       vlinkexp: data.vlinkexp,
     };
-  };
+};
 
+/**
+ * Returns peronal data of client type - teacher, after extracting from passed teacher user data from database, except confidential ones.
+ * @param {JSON} data The data of a teacher from database.
+ * @returns {JSON} Filters confidential values from given personal data, and returns in shareable form.
+ */
 const getTeacherShareData = (data = {}) => {
     return {
       isTeacher: true,
@@ -149,59 +207,11 @@ const getTeacherShareData = (data = {}) => {
       createdAt: data.createdAt,
       verified: data.verified,
     };
-  };
-/**
- * Gets current date time in numeric format.
- * @param {Number} minuteIncrement The number of minutes incrementation in returned timing. (default=0)
- * @returns {Number} A number showing the current date in the pattern: YYYYMMDDHHMMssmmm
- */
-const getTheMoment = (minuteIncrement = 0) => {
-  let d = new Date();
-  let year = d.getFullYear();
-  let month = d.getMonth() + 1;
-  let date = d.getDate();
-  let hour = d.getHours();
-  let min = d.getMinutes();
-  let incrementMin = min + minuteIncrement;
-  if (incrementMin > 59) {
-    incrementMin = incrementMin - 60;
-    if (24 < hour + 1) {
-      //if next hour is next day
-      date++;
-      if (daysInMonth(month, year) < date) {
-        date = date - daysInMonth(month, year);
-        if (12 < month + 1) {
-          month = 13 - month;
-          year++;
-        } else {
-          month++;
-        }
-      }
-    } else {
-      hour++;
-    }
-  }
-  month = month < 10 ? `0${month}` : month;
-  date = date < 10 ? `0${date}` : date;
-  hour = hour < 10 ? `0${hour}` : hour;
-  incrementMin = incrementMin < 10 ? `0${incrementMin}` : incrementMin;
-
-  let insts = d.getSeconds();
-  let secs = insts < 10 ? `0${insts}` : insts;
-  let instm = d.getMilliseconds();
-  let milli = instm < 10 ? `00${instm}` : instm < 100 ? `0${instm}` : instm;
-  return Number(
-    String(year) +
-      String(month) +
-      String(date) +
-      String(hour) +
-      String(incrementMin) +
-      String(secs) +
-      String(milli)
-  );
 };
-const daysInMonth = (month, year) => new Date(year, month, 0).getDate();
 
+/**
+ * For target groups in different methods of verification purposes.
+ */
 class Target {
   constructor() {
     this.admin = "admin";
@@ -209,6 +219,7 @@ class Target {
     this.student = "student";
   }
 }
+
 let clog = (msg) => console.log(msg);
 
 module.exports = new Verification();

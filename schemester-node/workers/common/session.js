@@ -1,10 +1,10 @@
 const { ObjectId } = require("mongodb");
 
-const code = require("../public/script/codes"),
-  jwt = require("jsonwebtoken"),
-  bcrypt = require("bcryptjs"),
-  Admin = require("../collections/Admins"),
-  Institute = require("../collections/Institutions"),
+const code = require("../../public/script/codes"),
+  jwt = require("../../node_modules/jsonwebtoken"),
+  bcrypt = require("../../node_modules/bcryptjs"),
+  Admin = require("../../collections/Admins"),
+  Institute = require("../../collections/Institutions"),
   sessionID = "id",
   sessionUID = "uid";
 

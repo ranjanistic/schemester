@@ -5,9 +5,10 @@ const express = require("express"),
   { check, validationResult } = require("express-validator"),
   code = require("../public/script/codes"),
   view = require("../hardcodes/views"),
-  session = require("../workers/session"),
-  invite = require("../workers/invitation"),
-  verify = require("../workers/verification"),
+  session = require("../workers/common/session"),
+  invite = require("../workers/common/invitation"),
+  verify = require("../workers/common/verification"),
+  worker = require("../workers/studentworker"),
   Institute = require("../collections/Institutions"),
   Admin = require("../collections/Admins");
 

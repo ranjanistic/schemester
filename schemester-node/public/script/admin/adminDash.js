@@ -83,16 +83,15 @@ class NoDataView {
           "Finding unique classes among schedule of teachers..."
         );
         postJsonData(post.admin.schedule, {
-          target: client.student,
-          action: "createclasses",
-        })
-          .then((response) => {
-            new ConfirmClasses(response.classes);
-          })
-          .catch((e) => {
-            clog(e);
-            snackBar(e, "Report");
-          });
+          target: client.teacher,
+          action: "receive",
+          specific:"classes"
+        }).then((response) => {
+          new ConfirmClasses(response.classes);
+        }).catch((e) => {
+          clog(e);
+          snackBar(e, "Report");
+        });
       };
     }
   }
@@ -231,7 +230,7 @@ class NoDataView {
         clog(error);
         snackBar(error);
       });
-  }
+    }
 }
 
 /**
@@ -241,25 +240,175 @@ class ConfirmClasses {
   constructor(receivedclasses) {
     clog("CCS");
     sessionStorage.clear();
-    this.receivedclasses = receivedclasses;
-    let bodyview = `<center>${this.receivedclasses.length} unique classes found. 
-      Rename classes, or edit the duplicate classes and rename them as actual ones, set incharges, and start schedule.</center>
-      <br/>
-      <div class="fmt-col">`;
-    this.receivedclasses.forEach((Class, cindex) => {
-      //each class row
-      bodyview += `<div class="fmt-row fmt-padding" id="classrow${cindex}">
+    class InchargeDialog {
+      constructor(receivedclasses) {
+        this.receivedclasses = receivedclasses;
+        let bodyview = `<center>${this.receivedclasses.length} unique classes found. 
+          Set incharges of each, and then continue.</center>
+          <br/>
+          <div class="fmt-col">`;
+        this.receivedclasses.forEach((Class, cindex) => {
+          //each class row
+          bodyview += `<div class="fmt-row fmt-padding" id="classrow${cindex}">
         <div class="fmt-col sub-container fmt-padding active fmt-padding" id="classview${cindex}">
           <span class="fmt-padding">Class ${Class}<span>
-          <button class="fmt-right positive-button" style="font-size:16px" id="renameclass${cindex}">Rename</button>
           <button class="fmt-right positive-button" style="font-size:16px" id="addincharge${cindex}">Set incharge</button>
-        </div>
+          </div>
         <div class="fmt-col" style="padding:0 12px" id="inchargeview${cindex}">
           <fieldset class="fmt-row text-field" id="inchargefield${cindex}" style="margin:0">
           <legend class="field-caption" style="font-size:14px" id="inchargecaption${cindex}">Incharge of ${Class}</legend> 
           <input class="text-input" id="incharge${cindex}" style="font-size:18px" placeholder="Incharge ID">
           <span class="fmt-right error-caption" id="inchargeerror${cindex}"></span></fieldset>
         </div>
+        <div class="fmt-row fmt-padding fmt-center" id="actionview${cindex}">
+          <div class="fmt-col half" style="padding:0 4px">
+            <button class="wide positive-button" style="font-size:16px" id="saveclass${cindex}">Save</button>
+          </div>
+          <div class="fmt-col half" style="padding:0 4px">
+            <button class="wide negative-button" style="font-size:16px" id="undoclass${cindex}">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+        });
+        bodyview += `</div>`;
+        this.inchargeDialog = new Dialog();
+        this.inchargeDialog.setDisplay("Set Incharges", bodyview);
+        this.classview = Array();
+        this.inchargeField = Array();
+        this.inchargeView = Array();
+        this.addIncharges = Array();
+        this.actionview = Array();
+        this.saves = Array();
+        this.undos = Array();
+        this.receivedclasses.forEach((Class, cindex) => {
+          this.classview.push(getElement(`classrow${cindex}`));
+          this.inchargeView.push(getElement(`inchargeview${cindex}`));
+          this.inchargeField.push(
+            new TextInput(
+              `inchargefield${cindex}`,
+              `incharge${cindex}`,
+              `inchargeerror${cindex}`,
+              validType.nonempty
+            )
+          );
+          this.addIncharges.push(getElement(`addincharge${cindex}`));
+          this.actionview.push(getElement(`actionview${cindex}`));
+          this.saves.push(getElement(`saveclass${cindex}`));
+          this.undos.push(getElement(`undoclass${cindex}`));
+        });
+
+        this.setDefaultDialog();
+
+        this.inchargeDialog.createActions(
+          Array("Start schedule", "Abort"),
+          Array(actionType.positive, actionType.neutral)
+        );
+        this.inchargeDialog.onButtonClick(
+          Array(
+            (_) => {
+              this.inchargeDialog.loader();
+              postJsonData(post.admin.schedule, {
+                target: client.student,
+                action: "setincharges",
+                confirmed: true,
+              }).then((response) => {
+                clog(response);
+                if(response.event == code.OK){
+                  clog("class schedule created");
+                }
+              });
+            },
+            (_) => {
+              this.inchargeDialog.hide();
+            }
+          )
+        );
+        this.inchargeDialog.show();
+      }
+      setDefaultDialog() {
+        this.hideClassIncharge();
+        hideElement(this.saves);
+        this.classview.forEach((Class, cindex) => {
+          appendClass(Class, "fmt-half");
+          appendClass(this.actionview[cindex], "fmt-half");
+          this.addIncharges[cindex].onclick = (_) => {
+            clog(`clicked${cindex}`);
+            this.showClassIncharge(cindex);
+          };
+          this.undos[cindex].onclick = (_) => {
+            clog(`clicked${cindex}`);
+            hide(this.saves[cindex]);
+            this.hideClassIncharge(cindex);
+            sessionStorage.setItem(`class${cindex}incharge`,constant.nothing);
+          };
+          this.saves[cindex].onclick = (_) => {
+            this.classview.forEach((Class, cindex) => {
+              sessionStorage.setItem(
+                `class${cindex}incharge`,
+                this.inchargeField[cindex].getInput()
+              );
+            });
+            this.inchargeDialog.getDialogButton(0).innerHTML = "Reload classes";
+            this.inchargeDialog.getDialogButton(0).onclick = (_) => {
+              this.inchargeDialog.loader();
+              let data = Array();
+              this.receivedclasses.forEach((rclass, rcindex) => {
+                data.push({
+                  classname: rclass,
+                  incharge: sessionStorage.getItem(`class${rcindex}incharge`),
+                });
+              });
+              postJsonData(post.admin.schedule, {
+                target: client.student,
+                action: "updateincharges",
+                data,
+              }).then((response) => {
+                clog(response);
+                if (response.event == code.OK) {
+                  new NoDataView().startSchedule.click();
+                }
+              });
+            };
+          };
+          this.inchargeField[cindex].onTextInput((_) => {
+            visibilityOf(
+              this.saves[cindex],
+              this.inchargeField[cindex].getInput() != constant.nothing 
+            );
+          });
+        });
+      }
+      hideClassIncharge(cindex = null) {
+        hideElement(this.inchargeView, cindex, false);
+        showElement(this.addIncharges, cindex, false);
+        hideElement(this.undos, cindex, false);
+        cindex != null
+          ? this.inchargeField[cindex].setInput(constant.nothing)
+          : this.inchargeField.forEach((field, _) =>
+              field.setInput(constant.nothing)
+            );
+      }
+      showClassIncharge(cindex = null) {
+        showElement(this.inchargeView, cindex, false);
+        hideElement(this.addIncharges, cindex, false);
+        showElement(this.undos, cindex, false);
+      }
+    }
+
+    class RenameDialog {
+      constructor(receivedclasses) {
+        this.receivedclasses = receivedclasses;
+        let bodyview = `<center>${this.receivedclasses.length} unique classes found. 
+          Rename classes, or edit the duplicate classes and rename them as actual ones, then continue.</center>
+          <br/>
+          <div class="fmt-col">`;
+        this.receivedclasses.forEach((Class, cindex) => {
+          //each class row
+          bodyview += `<div class="fmt-row fmt-padding" id="classrow${cindex}">
+        <div class="fmt-col sub-container fmt-padding active fmt-padding" id="classview${cindex}">
+          <span class="fmt-padding">Class ${Class}<span>
+          <button class="fmt-right positive-button" style="font-size:16px" id="renameclass${cindex}">Rename</button>
+          </div>
         <div class="fmt-col" style="padding:0 12px" id="classrenameview${cindex}">
           <fieldset class="fmt-row text-field" id="classfield${cindex}" style="margin:0">
           <legend class="field-caption" style="font-size:14px" id="classcaption${cindex}">Rename ${Class} as</legend> 
@@ -275,173 +424,122 @@ class ConfirmClasses {
           </div>
         </div>
       </div>`;
-    });
-    bodyview += `</div>`;
-    this.classesDialog = new Dialog();
-    this.classesDialog.setDisplay("Confirm Classes", bodyview);
-    this.classview = Array();
-    this.renameField = Array();
-    this.renameView = Array();
-    this.inchargeField = Array();
-    this.inchargeView = Array();
-    this.renames = Array();
-    this.addIncharges = Array();
-    this.actionview = Array();
-    this.saves = Array();
-    this.undos = Array();
-    this.receivedclasses.forEach((Class, cindex) => {
-      this.classview.push(getElement(`classrow${cindex}`));
-      this.renameView.push(getElement(`classrenameview${cindex}`));
-      this.renameField.push(
-        new TextInput(
-          `classfield${cindex}`,
-          `class${cindex}`,
-          `classerror${cindex}`,
-          validType.nonempty
-        )
-      );
-      this.inchargeView.push(getElement(`inchargeview${cindex}`));
-      this.inchargeField.push(
-        new TextInput(
-          `inchargefield${cindex}`,
-          `incharge${cindex}`,
-          `inchargeerror${cindex}`,
-          validType.nonempty
-        )
-      );
-      this.renames.push(getElement(`renameclass${cindex}`));
-      this.addIncharges.push(getElement(`addincharge${cindex}`));
-      this.actionview.push(getElement(`actionview${cindex}`));
-      this.saves.push(getElement(`saveclass${cindex}`));
-      this.undos.push(getElement(`undoclass${cindex}`));
-    });
+        });
+        bodyview += `</div>`;
+        this.classesDialog = new Dialog();
+        this.classesDialog.setDisplay("Confirm Classes", bodyview);
+        this.classview = Array();
+        this.renameField = Array();
+        this.renameView = Array();
+        this.renames = Array();
+        this.actionview = Array();
+        this.saves = Array();
+        this.undos = Array();
+        this.receivedclasses.forEach((Class, cindex) => {
+          this.classview.push(getElement(`classrow${cindex}`));
+          this.renameView.push(getElement(`classrenameview${cindex}`));
+          this.renameField.push(
+            new TextInput(
+              `classfield${cindex}`,
+              `class${cindex}`,
+              `classerror${cindex}`,
+              validType.nonempty
+            )
+          );
+          this.renames.push(getElement(`renameclass${cindex}`));
+          this.actionview.push(getElement(`actionview${cindex}`));
+          this.saves.push(getElement(`saveclass${cindex}`));
+          this.undos.push(getElement(`undoclass${cindex}`));
+        });
 
-    this.setDefaultDialog();
+        this.setDefaultDialog();
 
-    this.classesDialog.createActions(
-      Array("Start schedule", "Abort"),
-      Array(actionType.positive, actionType.neutral)
-    );
-    this.classesDialog.onButtonClick(
-      Array(
-        (_) => {
-          loadingBox(true, "Initializing");
-          postJsonData(post.admin.schedule, {
-            target: client.student,
-            //todo:incharges, to be set inchargeOf:classname in users.teachers.$
-            action: "createclasses",
-            confirmed: true,
-          }).then((response) => {
-            clog(response);
-          });
-        },
-        (_) => {
-          this.classesDialog.hide();
-        }
-      )
-    );
-    this.classesDialog.show();
-  }
-  setDefaultDialog() {
-    this.hideClassRename();
-    this.hideClassIncharge();
-    hideElement(this.saves);
-    this.classview.forEach((Class, cindex) => {
-      appendClass(Class, "fmt-half");
-      appendClass(this.actionview[cindex], "fmt-half");
-      this.renames[cindex].onclick = (_) => {
-        clog(`clicked${cindex}`);
-        this.showClassRename(cindex);
-      };
-      this.addIncharges[cindex].onclick = (_) => {
-        clog(`clicked${cindex}`);
-        this.showClassIncharge(cindex);
-      };
-      this.undos[cindex].onclick = (_) => {
-        clog(`clicked${cindex}`);
-        hide(this.saves[cindex]);
-        this.hideClassIncharge(cindex);
-        this.hideClassRename(cindex);
-      };
-      this.saves[cindex].onclick = (_) => {
-        this.classview.forEach((Class,cindex)=>{
-          sessionStorage.setItem(`class${cindex}incharge`,this.inchargeField[cindex].getInput());
-          sessionStorage.setItem(`class${cindex}renamed`,this.renameField[cindex].getInput()?this.renameField[cindex].getInput():this.receivedclasses[cindex]);
-        })
-        this.classesDialog.getDialogButton(0).innerHTML = "Reload classes";
-        this.classesDialog.getDialogButton(0).onclick = (_) => {
-          this.classesDialog.loader();
-          let data = Array();
-          this.receivedclasses.forEach((rclass,rcindex)=>{
-            data.push({
-              classname:rclass,
-              renamed:sessionStorage.getItem(`class${rcindex}renamed`),
-              incharge:sessionStorage.getItem(`class${rcindex}incharge`)
-            })
-          })
-          postJsonData(post.admin.schedule,{
-            target:client.student,
-            action:'updateclasses',
-            data
-          }).then(response=>{
-            clog(response);
-            if(response.event == code.OK){
-              new NoDataView().startSchedule.click();
+        this.classesDialog.createActions(
+          Array("Create classes", "Abort"),
+          Array(actionType.positive, actionType.neutral)
+        );
+        this.classesDialog.onButtonClick(
+          Array(
+            (_) => {
+              this.classesDialog.loader();
+              let data = Array();
+              this.receivedclasses.forEach((rclass, rcindex) => {
+                data.push({
+                  classname: rclass,
+                  renamed: sessionStorage.getItem(`class${rcindex}renamed`),
+                });
+              });
+              postJsonData(post.admin.schedule, {
+                target: client.student,
+                action: "createclasses",
+                confirmed:true,
+                data
+              }).then((response) => {
+                clog(response);
+                if (response.event == code.OK) {
+                  return new InchargeDialog(response.classes); 
+                }
+              });
+            },
+            (_) => {
+              this.classesDialog.hide();
             }
-          })
-        };
-      };
-      this.renameField[cindex].onTextInput((_) => {
-        visibilityOf(
-          this.saves[cindex],
-          this.renameField[cindex].getInput() != constant.nothing ||
-            this.inchargeField[cindex].getInput() != constant.nothing
+          )
         );
-        hideElement(this.addIncharges);
-      });
-      this.inchargeField[cindex].onTextInput(_=>{
-        visibilityOf(
-          this.saves[cindex],
-          this.renameField[cindex].getInput() != constant.nothing ||
-            this.inchargeField[cindex].getInput() != constant.nothing
-        )
-        hideElement(this.renames);
-      });
-    });
-  }
-  hideClassRename(cindex = null) {
-    hideElement(this.renameView, cindex, false);
-    showElement(this.renames, cindex, false);
-    if (!areVisible(this.inchargeView, cindex)) {
-      hideElement(this.undos, cindex, false);
+        this.classesDialog.show();
+      }
+      setDefaultDialog() {
+        this.hideClassRename();
+        hideElement(this.saves);
+        this.classview.forEach((Class, cindex) => {
+          appendClass(Class, "fmt-half");
+          appendClass(this.actionview[cindex], "fmt-half");
+          this.renames[cindex].onclick = (_) => {
+            clog(`clicked${cindex}`);
+            this.showClassRename(cindex);
+          };
+          this.undos[cindex].onclick = (_) => {
+            clog(`clicked${cindex}`);
+            hide(this.saves[cindex]);
+            this.hideClassRename(cindex);
+            sessionStorage.setItem(`class${cindex}renamed`,constant.nothing);
+          };
+          this.saves[cindex].onclick = (_) => {
+            this.classview.forEach((Class, cindex) => {
+              sessionStorage.setItem(
+                `class${cindex}renamed`,
+                this.renameField[cindex].getInput()
+                  ? this.renameField[cindex].getInput()
+                  : this.receivedclasses[cindex]
+              );
+            });
+            hide(this.saves[cindex]);
+          };
+          this.renameField[cindex].onTextInput((_) => {
+            visibilityOf(
+              this.saves[cindex],
+              this.renameField[cindex].getInput() != constant.nothing
+            );
+          });
+        });
+      }
+      hideClassRename(cindex = null) {
+        hideElement(this.renameView, cindex, false);
+        showElement(this.renames, cindex, false);
+        hideElement(this.undos, cindex, false);
+        cindex != null
+          ? this.renameField[cindex].setInput(constant.nothing)
+          : this.renameField.forEach((field, _) =>
+              field.setInput(constant.nothing)
+            );
+      }
+      showClassRename(cindex = null) {
+        showElement(this.renameView, cindex, false);
+        hideElement(this.renames, cindex, false);
+        showElement(this.undos, cindex, false);
+      }
     }
-    cindex != null
-      ? this.renameField[cindex].setInput(constant.nothing)
-      : this.renameField.forEach((field, _) =>
-          field.setInput(constant.nothing)
-        );
-  }
-  showClassRename(cindex = null) {
-    showElement(this.renameView, cindex, false);
-    hideElement(this.renames, cindex, false);
-    showElement(this.undos, cindex, false);
-  }
-  hideClassIncharge(cindex = null) {
-    hideElement(this.inchargeView, cindex, false);
-    showElement(this.addIncharges, cindex, false);
-    if (!areVisible(this.renameView, cindex)) {
-      hideElement(this.undos, cindex, false);
-    }
-    cindex != null
-      ? this.inchargeField[cindex].setInput(constant.nothing)
-      : this.inchargeField.forEach((field, _) =>
-          field.setInput(constant.nothing)
-        );
-  }
-  showClassIncharge(cindex = null) {
-    showElement(this.inchargeView, cindex, false);
-    hideElement(this.addIncharges, cindex, false);
-    showElement(this.undos, cindex, false);
+    new RenameDialog(receivedclasses);
   }
 }
 
