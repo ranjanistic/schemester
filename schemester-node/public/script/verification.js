@@ -17,7 +17,23 @@ class Verification {
       if (this.data.client == client.admin) {
         this.deleteaccount = getElement("resetaccount");
         this.deleteaccount.onclick = (_) => {
-          registrationDialog(true, null, this.data.uiid);
+          this.load();
+          postJsonData(post.admin.self,{
+            target:"account",
+            action:code.action.ACCOUNT_DELETE,
+          }).then(response=>{
+            clog("theresponse");
+            clog(response);
+            if(response.event == code.OK){
+              finishSession(_=>{
+                this.view.innerHTML = `<div class="positive-button" onclick="relocate(locate.homepage)">Explore schemester<div>`;
+                registrationDialog(true, null, this.data.uiid);
+                this.load(false);
+              });
+            } else {
+              snackBar('Try later','Report',false);
+            }
+          })
         };
       }
       this.later.onclick = (_) => {

@@ -92,7 +92,6 @@ class Verification {
    * @param {String} clientType The target client to be checked for link validation, can be derived from Verfication().target.
    * @returns {Promise} If query and clientType are in accordance with each other, returns JSON object of user key, and if link is valid, verifies the given client,
    *  and returns additional data of given client.
-   * @returns {false} If query and clientType are not in accordance with each other, returns false, indicating that given link is corrupted.
    */
   handleVerification = async (query, clientType) => {
     switch (clientType) {
@@ -107,7 +106,8 @@ class Verification {
             { $set: { verified: true }, $unset: { vlinkexp: null } },
             { returnOriginal: false }
           );
-          if (!doc) return res.render(view.notfound);
+          clog(doc);
+          if (!doc) return false;
           return {user: getAdminShareData(doc.value)};
         } catch (e) {
           clog(e);

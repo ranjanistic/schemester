@@ -329,9 +329,18 @@ class Locations {
           this.logout = "/admin/auth/logout";
           this.signup = "/admin/auth/signup";
           this.manage = "/admin/manage";
+          this.self = "/admin/self";
+          this.default = "/admin/default";
           this.sessionValidate = "/admin/session/validate";
           this.register = "/admin/session/registerinstitution";
           this.schedule = "/admin/schedule";
+
+          class Action{
+            constructor(){
+              this.registerInstitute = "registerinstitute";
+            }
+          }
+          this.action = new Action();
         }
       }
       this.admin = new Admin();
@@ -525,5 +534,5 @@ class Locations {
 try{
     module.exports = new Codes();
 }catch{
-  
+
 }

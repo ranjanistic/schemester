@@ -280,8 +280,9 @@ class Stage2 {
       this.workingdaysField.showError("Select at least one",false);
       this.daychecks.forEach((day,i)=>{
         day.onCheckChange(_=>{this.workingdaysField.normalize()},_=>{this.workingdaysField.showError("Select at least one",false);});
-      })
+      });
     }
+    return valid;
   }
   saveInstitution() {
     this.noneChecked();
@@ -292,7 +293,8 @@ class Stage2 {
         this.breakStartField.isValid() &&
         this.eachDurationField.isValid() &&
         this.totalPeriodsField.isValid() &&
-        this.breakDurationField.isValid()
+        this.breakDurationField.isValid() &&
+        this.noneChecked()
       )
     ) {
       this.startTimeField.validateNow((_) => {
@@ -342,7 +344,7 @@ class Stage2 {
       }
       confirm.setDisplay(
         "Confirmation",
-        `<center>Proceed to create schedule for <b>${sessionStorage.getItem(
+        `<center >Proceed to create schedule for <b>${sessionStorage.getItem(
           "instname"
         )}</b>?</center>
         <br/>
@@ -364,7 +366,7 @@ class Stage2 {
         </div>`
       );
       //confirm.setBackgroundColor(colors.transparent, this.view);
-      confirm.setDialogColor(colors.white);
+      
       confirm.createActions(
         Array("Confirm & Proceed", "Edit"),
         Array(actionType.active, actionType.neutral)
@@ -386,8 +388,12 @@ class Stage2 {
           )}</b>. Always keep this in your mind.`,
           "Understood"
         );
-
-        const defdata = {
+        let wdays = Array();
+        const wdaysString = String(sessionStorage.getItem("totalDaysField")).split(",");
+        wdaysString.forEach((item,_)=>{
+          wdays.push(Number(item));
+        });
+        const data = {
           adminname: sessionStorage.getItem("adname"),
           adminemail: sessionStorage.getItem("ademail"),
           adminphone: sessionStorage.getItem("adphone"),
@@ -402,10 +408,13 @@ class Stage2 {
           periodduration: sessionStorage.getItem("eachDurationField"),
           breakduration: sessionStorage.getItem("breakDurationField"),
           totalperiods: sessionStorage.getItem("totalPeriodsField"),
-          workingdays: String(sessionStorage.getItem("totalDaysField")).split(","),
+          workingdays: wdays,
         };
-        clog(getRequestBody(defdata));
-        postData(post.admin.register, defdata).then((response) => {
+        postJsonData(post.admin.default, {
+          target:post.admin.action.registerInstitute,
+          data
+        })
+        .then((response) => {
           clog(response);
           switch (response.event) {
             case code.auth.SESSION_INVALID: {
@@ -428,7 +437,7 @@ class Stage2 {
             case code.inst.INSTITUTION_CREATED:
               {
                 loadingBox(false);
-                let finish = new Dialog();
+                const finish = new Dialog();
                 finish.setDisplay(
                   "Insitution registered",
                   "The details have been saved successfully. You may add teachers, or skip to your dashboard."
@@ -442,6 +451,7 @@ class Stage2 {
                     (_) => {
                       finish.loader();
                       relocate(locate.admin.session, {
+                        u: localStorage.getItem(constant.sessionUID),
                         target: locate.admin.target.addteacher,
                       });
                     },
@@ -535,162 +545,4 @@ window.onload = (_) => {
     );
     relocate(locate.homepage);
   };
-
-  //
-  //getUserLocally().then((data) => {
-  //
-  //  postData("/admin/session/receiveinstitution", {
-  //    uiid: data.uiid,
-  //    doc: "default",
-  //  }).then((response) => {
-  //      clog("receiver respnose inst");
-  //      clog(data.uiid);
-  //      if(response.event != code.inst.INSTITUTION_DEFAULTS_SET || response.event != code.inst.INSTITUTION_CREATED
-  //        || response.event != code.inst.INSTITUTION_EXISTS){
-  //        clog("creationfauled:"+response.event);
-  //        finishSession();
-  //      }
-  //    })
-  //    .catch((error) => {
-  //      clog("recevie inst errorrr");
-  //      snackBar(error, "Report");
-  //    });
-  //});
-  //
-  // register.saveExit.onclick = _=>{
-
-  //   showLoader();
-  //   visibilityOf(register.saveExit,false);
-  //   var data = [
-  //     {
-  //       type: kpath.admin,
-  //       email: adminEmail,
-  //       adminname: stage1.getName(),
-  //       phone: stage1.getPhone(),
-  //     },
-  //     {
-  //       type: kpath.institution,
-  //       institutename: stage1.getInstName(),
-  //       uiid: stage1.getInstID(),
-  //     },
-  //     {
-  //       type: kpath.timings,
-  //       startTime: stage2.getStartTime(),
-  //       endTime: stage2.getEndTime(),
-  //       breakStartTime: stage2.getBreakStart(),
-  //       startDay: stage2.getFirstDay(),
-  //       periodMinutes: stage2.getPeriodDuration(),
-  //       breakMinutes: stage2.getBreakDuration(),
-  //       totalDays: stage2.getTotalDays(),
-  //       totalPeriods: stage2.getTotalPeriods(),
-  //     },
-  //   ];
-  //   initiateIDB(stage1.getInstID(),_=>{
-  //     saveDefaults(data,_=>{
-  //       relocate(homepage);
-  //     });
-  //   });
-  // }
-  // stage1.save.onclick = _=> {
-  //   visibilityOf(register.stage1Loader,true);
-  //   visibilityOf(stage1.save,false);
-  //   var data1 = [
-  //     {
-  //       type: kpath.admin,
-  //       email: adminEmail,
-  //       adminname: stage1.getName(),
-  //       phone: stage1.getPhone(),
-  //     },
-  //     {
-  //       type: kpath.institution,
-  //       institutename: stage1.getInstName(),
-  //       uiid: stage1.getInstID(),
-  //     },
-  //   ];
-  //   initiateIDB(stage1.getInstID(),_=>{
-  //     saveDefaults(data1,_=>{
-  //       stage1.exist(false);
-  //       stage2.exist(true);
-  //     });
-  //   });
-  //   stage2.save.onclick = _=> {
-  //     visibilityOf(register.stage2Loader,true);
-  //     visibilityOf(stage2.save,false);
-  //     var data2 = [
-  //       {
-  //         type: kpath.timings,
-  //         startTime: stage2.getStartTime(),
-  //         endTime: stage2.getEndTime(),
-  //         breakStartTime: stage2.getBreakStart(),
-  //         startDay: stage2.getFirstDay(),
-  //         periodMinutes: stage2.getPeriodDuration(),
-  //         breakMinutes: stage2.getBreakDuration(),
-  //         totalDays: stage2.getTotalDays(),
-  //         totalPeriods: stage2.getTotalPeriods(),
-  //       },
-  //     ];
-  //     saveDefaults(data2,_=>{
-  //       stage2.exist(false);
-  //       document.getElementById("viewportTag").setAttribute("content", "initial-scale=1.0");
-  //       visibilityOf(register.finalize,true);
-  //       var teacherData = new TeacherData();
-  //       teacherData.setDefaults(stage2.getTotalPeriods()); //getDefaultPreference(def.timings, totalPeriods));
-  //       teacherData.exist(true);
-  //     });
-
-  //     var teachers = Array("1teacher@testing", "2teacher@testing");
-  //     for (var tindex = 0; tindex < teachers.length; tindex++) {
-  //       for (var dayI = 0; dayI < stage2.getTotalDays(); dayI++) {
-  //         for (var perI = 0; perI < stage2.getTotalPeriods(); perI++) {
-  //           teacherDynamo(teachers[tindex], dayI, perI, "9B", "Biology");
-  //         }
-  //       }
-  //     }
-  //     clog(teacherSchedule);
-  //   };
-  // };
-
-};
-
-var teacherSchedule = [];
-let teacherDynamo = (
-  teacherID,
-  dayIndex,
-  periodIndex,
-  classvalue,
-  subject,
-  hold = true
-) => {
-  if (teacherID in teacherSchedule) {
-    if (dayIndex in teacherSchedule[teacherID]) {
-      teacherSchedule[teacherID][dayIndex][periodIndex] = {
-        class: classvalue,
-        hold: hold,
-        subject: subject,
-      };
-    } else {
-      teacherSchedule[teacherID][dayIndex] = {};
-      teacherSchedule[teacherID][dayIndex][periodIndex] = {
-        class: classvalue,
-        hold: hold,
-        subject: subject,
-      };
-    }
-  } else {
-    teacherSchedule[teacherID] = {};
-    if (dayIndex in teacherSchedule[teacherID]) {
-      teacherSchedule[teacherID][dayIndex][periodIndex] = {
-        class: classvalue,
-        hold: hold,
-        subject: subject,
-      };
-    } else {
-      teacherSchedule[teacherID][dayIndex] = {};
-      teacherSchedule[teacherID][dayIndex][periodIndex] = {
-        class: classvalue,
-        hold: hold,
-        subject: subject,
-      };
-    }
-  }
 };

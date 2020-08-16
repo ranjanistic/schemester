@@ -296,10 +296,10 @@ class Session {
       default: return code.event(code.server.DATABASE_ERROR);
     }
   };
+
   userdata = async (request, secret) => {
     this.verify(request,secret)
     .catch(e=>{
-      clog(e);
       return code.event(code.auth.AUTH_REQ_FAILED)
     })
     .then(async response=>{
@@ -326,16 +326,16 @@ class Session {
         case this.studentsessionsecret:{
           const userinst = await Institute.findOne({
             uiid:response.user.uiid,
-            "users.students":{
-              $elemMatch:{"_id":response.user.id}
+            "users.classes":{
+              $elemMatch:{"classname":response.user.classname}
             }
           },{
             $projection:{
               "_id":0,
-              "users.students.$":1
+              "users.classes.$":1
             }
           });
-          return userinst?getStudentShareData(userinst.users.students[0]):code.event(code.auth.USER_NOT_EXIST);
+          return userinst?getStudentShareData(userinst.users.classes[0]):code.event(code.auth.USER_NOT_EXIST);
         }
         default: return code.event(code.auth.AUTH_REQ_FAILED);
       }

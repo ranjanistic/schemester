@@ -18,7 +18,7 @@ const sessionsecret = session.teachersessionsecret;
 teacher.use(cookieParser(sessionsecret));
 
 teacher.get("/", (req, res) => {
-  res.redirect(toLogin());
+  res.redirect(worker.toLogin());
 });
 
 teacher.get("/auth/login*", (req, res) => {
@@ -32,7 +32,7 @@ teacher.get("/auth/login*", (req, res) => {
         return res.render(view.teacher.login, { autofill: req.query });
       let data = req.query;
       delete data["u"];
-      return res.redirect(toSession(response.user.id, req.query));
+      return res.redirect(worker.toSession(response.user.id, req.query));
     });
 });
 
@@ -75,13 +75,12 @@ teacher.get("/session*", async (req, res) => {
   clog(data);
   session.verify(req, sessionsecret)
   .catch((e) => {
-    clog("session catch");
     clog(e);
-    return res.redirect(toLogin(data));
+    return res.redirect(worker.toLogin(data));
   })
   .then(async (response) => {
-    if (!session.valid(response)) return res.redirect(toLogin(data));
-    if (data.u != response.user.id) return res.redirect(toLogin(data));
+    if (!session.valid(response)) return res.redirect(worker.toLogin(data));
+    if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
     const userinst = await Institute.findOne(
       {
         uiid: response.user.uiid,
@@ -101,7 +100,7 @@ teacher.get("/session*", async (req, res) => {
     );
     if (!userinst)
       return session.finish(res).then((response) => {
-        if (response) res.redirect(toLogin(data));
+        if (response) res.redirect(worker.toLogin(data));
       });
 
     //user teacher exists
@@ -154,14 +153,14 @@ teacher.get("/session*", async (req, res) => {
         }
       );
       return res.redirect(
-        toSession(teacher.uid, { target: view.teacher.target.addschedule })
+        worker.toSession(teacher.uid, { target: view.teacher.target.addschedule })
       );
     } else {
       if (
         data.target == view.teacher.target.addschedule ||
         data.target == undefined
       )
-        return res.redirect(toLogin());
+        return res.redirect(worker.toLogin());
     }
     try {
       clog("in session try");
@@ -175,7 +174,7 @@ teacher.get("/session*", async (req, res) => {
       });
     } catch (e) {
       clog(e);
-      return res.redirect(toLogin());
+      return res.redirect(worker.toLogin());
     }
   });
 });
@@ -193,7 +192,7 @@ teacher.get("/fragment*", (req, res) => {
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           clog("today");
-          getSchedule(response, new Date().getDay())
+          worker.schedule.getSchedule(response.user, new Date().getDay())
             .then((resp) => {
               if(!resp.schedule)
                 return res.render(view.teacher.getViewByTarget(query.fragment), {
@@ -212,7 +211,7 @@ teacher.get("/fragment*", (req, res) => {
         }
         case view.teacher.target.fragment.fullweek: {
           clog("full week");
-          getSchedule(response)
+          worker.schedule.getSchedule(response.user)
             .then((resp) => {
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 schedule: resp.schedule,
@@ -235,47 +234,6 @@ teacher.get("/fragment*", (req, res) => {
       }
     });
 });
-
-const getSchedule = async (response, dayIndex = null) => {
-  const teacheruser = await Institute.findOne(
-    {
-      uiid: response.user.uiid,
-      "users.teachers": { $elemMatch: { _id: ObjectId(response.user.id) } },
-    },
-    { projection: { _id: 0, "users.teachers.$": 1 } }
-  );
-  if (!teacheruser)
-    return session.finish(res).then((response) => {
-      if (response) res.redirect(toLogin());
-    });
-  const teacher = teacheruser.users.teachers[0];
-  const teacherschedule = await Institute.findOne(
-    {
-      uiid: response.user.uiid,
-      "schedule.teachers": { $elemMatch: { teacherID: teacher.teacherID } },
-    },
-    {
-      projection: {
-        _id:0,
-        default: 1,
-        "schedule.teachers.$": 1,
-      },
-    }
-  );
-  if (!teacherschedule) return res.redirect(toLogin(req.query));
-  const schedule = teacherschedule.schedule.teachers[0].days;
-  const timings = teacherschedule.default.timings;
-  if (dayIndex==null) return { schedule: schedule, timings:timings};
-  let today = teacherschedule.schedule.teachers[0].days[0];
-  const found = schedule.some((day, index) => {
-    if (day.dayIndex == dayIndex) {
-      today = day;
-      return true;
-    }
-  });
-  if (!found) return { schedule: false, timings:timings};
-  return { schedule: today, timings:timings};
-};
 
 teacher.post("/schedule", async (req, res) => {
   session
@@ -594,28 +552,6 @@ teacher.post("/find", async (req, res) => {
     : code.event(code.auth.USER_NOT_EXIST);
   return res.json({ result });
 });
-
-const toSession = (u, query = { target: view.teacher.target.dash }) => {
-  let path = `/teacher/session?u=${u}`;
-  for (var key in query) {
-    if (query.hasOwnProperty(key)) {
-      path = `${path}&${key}=${query[key]}`;
-    }
-  }
-  return path;
-};
-const toLogin = (query = { target: view.teacher.target.dash }) => {
-  let i = 0;
-  let path = "/teacher/auth/login";
-  for (var key in query) {
-    if (query.hasOwnProperty(key)) {
-      path =
-        i > 0 ? `${path}&${key}=${query[key]}` : `${path}?${key}=${query[key]}`;
-      i++;
-    }
-  }
-  return path;
-};
 
 const getTeacherShareData = (data = {}) => {
   return {

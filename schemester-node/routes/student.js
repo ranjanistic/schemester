@@ -16,7 +16,7 @@ const sessionsecret = session.studentsessionsecret;
 student.use(cookieParser(sessionsecret));
 
 student.get("/", (req, res) => {
-  res.redirect(toLogin());
+  res.redirect(worker.toLogin());
 });
 
 student.get("/auth/login*", (req, res) => {
@@ -30,7 +30,7 @@ student.get("/auth/login*", (req, res) => {
         return res.render(view.student.login, { autofill: req.query });
       let data = req.query;
       delete data["u"];
-      return res.redirect(toSession(response.user.id, req.query));
+      return res.redirect(worker.toSession(response.user.id, req.query));
     });
 });
 
@@ -69,11 +69,11 @@ student.get("/session*", async (req, res) => {
     .catch((e) => {
       clog("session catch");
       clog(e);
-      return res.redirect(toLogin(data));
+      return res.redirect(worker.toLogin(data));
     })
     .then(async (response) => {
-      if (!session.valid(response)) return res.redirect(toLogin(data));
-      if (data.u != response.user.id) return res.redirect(toLogin(data));
+      if (!session.valid(response)) return res.redirect(worker.toLogin(data));
+      if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
       const userinst = await Institute.findOne(
         {
           uiid: response.user.uiid,
@@ -93,7 +93,7 @@ student.get("/session*", async (req, res) => {
       );
       if (!userinst)
         return session.finish(res).then((response) => {
-          if (response) res.redirect(toLogin(data));
+          if (response) res.redirect(worker.toLogin(data));
         });
 
       //user student exists
@@ -139,7 +139,7 @@ student.get("/session*", async (req, res) => {
         });
       } catch (e) {
         clog(e);
-        return res.redirect(toLogin());
+        return res.redirect(worker.toLogin());
       }
     });
 });
@@ -221,7 +221,7 @@ const getSchedule = async (response, dayIndex = null) => {
   );
   if (!studentuser)
     return session.finish(res).then((response) => {
-      if (response) res.redirect(toLogin());
+      if (response) res.redirect(worker.toLogin());
     });
   const student = getStudentShareData(studentuser.users.students[0]);
   const studentschedule = await Institute.findOne(
@@ -237,7 +237,7 @@ const getSchedule = async (response, dayIndex = null) => {
       },
     }
   );
-  if (!studentschedule) return res.redirect(toLogin(req.query));
+  if (!studentschedule) return res.redirect(worker.toLogin(req.query));
   const schedule = studentschedule.schedule.students[0].days;
   const timings = studentschedule.default.timings;
   if (!dayIndex) return { schedule: schedule, timings: timings };
@@ -250,28 +250,6 @@ const getSchedule = async (response, dayIndex = null) => {
   });
   if (!found) return { schedule: false, timings: timings };
   return { schedule: today, timings: timings };
-};
-
-const toSession = (u, query = { target: view.student.target.dash }) => {
-  let path = `/student/session?u=${u}`;
-  for (let key in query) {
-    if (query.hasOwnProperty(key)) {
-      path = `${path}&${key}=${query[key]}`;
-    }
-  }
-  return path;
-};
-const toLogin = (query = { target: view.student.target.dash }) => {
-  let i = 0;
-  let path = "/student/auth/login";
-  for (let key in query) {
-    if (query.hasOwnProperty(key)) {
-      path =
-        i > 0 ? `${path}&${key}=${query[key]}` : `${path}?${key}=${query[key]}`;
-      i++;
-    }
-  }
-  return path;
 };
 
 const getStudentShareData = (data = {}) => {

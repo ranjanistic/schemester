@@ -203,9 +203,42 @@ class Security {
     this.resetMail = getElement("resetMailButton");
     this.lastLogin = getElement("lastLoginTime");
     this.deleteAccount = getElement("deleteAdminAccount");
-    this.resetPass.addEventListener(click, resetPasswordDialog, false);
-    this.resetMail.addEventListener(click, changeEmailBox, false);
-    this.deleteAccount.addEventListener(click, adminloginDialog, false);
+    this.resetPass.addEventListener(click, _=>{resetPasswordDialog()}, false);
+    this.resetMail.addEventListener(click, _=>{changeEmailBox()}, false);
+    this.deleteAccount.addEventListener(click, _=>{adminloginDialog(_=>{
+      const delconf = new Dialog()
+      delconf.setDisplay('Delete?',
+      `Are you sure you want to delete your Schemester account permanently? The following consequencies will take place:<br/>
+      <div>
+      <ul>
+      <li>You will not be able to recover your account forever.</li>
+      <li>Your institution will also get deleted.</li>
+      <li>Scheduling for your institution will stop, affecting all the users, and their accounts will be deleted too.</li>
+      <li>Make sure you understand what your next step will lead to.</li>
+      </ul><br/>
+      <div class="active">If someone else is taking administration instead of you, then you can <a onclick="changeEmailBox()">transfer ownership of your institution</a> rather than deleting it.</div>
+      </div>`);
+      delconf.setBackgroundColorType(bodyType.negative);
+      delconf.createActions(Array('Delete account & Institution','No, step back'),Array(actionType.negative,actionType.positive));
+      delconf.onButtonClick(Array(
+        _=>{
+          delconf.loader();
+          postJsonData(post.admin.self,{
+            target:"account",
+            action:code.action.ACCOUNT_DELETE
+          }).then(response=>{
+            if(response.event == code.OK){
+              relocate(locate.root);
+            } else {
+              snackBar('Action Failed');
+            }
+          });
+        },
+        _=>{
+          delconf.hide();
+        }
+      ))
+    })}, false);
   }
   setButtonText(resetMail, resetPass) {
     this.resetMail.textContent = resetMail;

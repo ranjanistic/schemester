@@ -626,7 +626,7 @@ let sendPassResetLink = () => {
 };
 
 //todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
-const adminloginDialog = (isShowing = true, sensitive = true) => {
+const adminloginDialog = (afterLogin=_=>{snackBar('Success')},isShowing = true, sensitive = true) => {
   var loginDialog = new Dialog();
   if (isShowing) {
     loginDialog.setDisplay(
@@ -634,10 +634,10 @@ const adminloginDialog = (isShowing = true, sensitive = true) => {
       "You are about to perform a sensitive action. Please provide your login credentials."
     );
     loginDialog.createInputs(
-      Array("Email address", "Password"),
-      Array("youremail@example.com", "Your password"),
-      Array("email", "password"),
-      Array(validType.email, validType.password)
+      Array("Email address", "Password","UIID"),
+      Array("youremail@example.com", "Your password","UIID"),
+      Array("email", "password",null),
+      Array(validType.email, validType.password,validType.nonempty)
     );
     loginDialog.createActions(
       Array("Continue", "Cancel"),
@@ -646,40 +646,37 @@ const adminloginDialog = (isShowing = true, sensitive = true) => {
     if (sensitive) {
       loginDialog.setBackgroundColorType(bodyType.negative);
     }
-    loginDialog.input;
-    loginDialog.getInput(0).onchange = (_) => {
-      validateTextField(loginDialog.inputField[0], validType.email, (_) => {
-        loginDialog.inputField[1].input.focus();
-      });
-    };
-    loginDialog.getInput(1).onchange = (_) => {
-      validateTextField(loginDialog.inputField[1], validType.password);
-    };
+    loginDialog.validate(0);
+    loginDialog.validate(1);
+    loginDialog.validate(2);
     loginDialog.onButtonClick(
       Array(
         (_) => {
           if (
             !(
-              stringIsValid(loginDialog.getInputValue(0), validType.email) &&
-              stringIsValid(loginDialog.getInputValue(1))
+              loginDialog.isValid(0)&&
+              loginDialog.isValid(1)&&
+              loginDialog.isValid(2)
             )
           ) {
-            validateTextField(
-              loginDialog.inputField[1],
-              validType.password,
-              (_) => {
-                loginDialog.inputField[0].input.focus();
-              }
-            );
-            validateTextField(
-              loginDialog.inputField[0],
-              validType.email,
-              (_) => {
-                loginDialog.inputField[1].input.focus();
-              }
-            );
+            loginDialog.validateNow(0);
+            loginDialog.validateNow(1);
+            loginDialog.validateNow(2);
           } else {
-            snackBar("TBD");
+            loginDialog.loader();
+            postJsonData(post.admin.login,{
+              email:loginDialog.getInputValue(0),
+              password:loginDialog.getInputValue(1),
+              uiid:loginDialog.getInputValue(2)
+            }).then(response=>{
+              clog(response);
+              if(response.event == code.auth.AUTH_SUCCESS){
+                afterLogin();
+              } else {
+                snackBar('Authentication failed');
+              }
+              loginDialog.loader(false);
+            });
             //todo: authenticate
           }
         },
@@ -1085,23 +1082,22 @@ const getUserLocally = async () => {
     clog("locally esle post");
     postData(post.admin.sessionValidate, {
       getuser: true,
+    }).then((response) => {
+      clog("the response");
+      clog(response);
+      if (response.event == code.auth.SESSION_INVALID) {
+        finishSession((_) => {
+          relocate(locate.root);
+        });
+      } else {
+        data = response;
+        saveDataLocally(data);
+      }
+      return data;
     })
-      .then((response) => {
-        clog("the response");
-        clog(response);
-        if (response.event == code.auth.SESSION_INVALID) {
-          finishSession((_) => {
-            relocate(locate.root);
-          });
-        } else {
-          data = response;
-          saveDataLocally(data);
-        }
-        data;
-      })
-      .finally((data) => {
-        return data;
-      });
+    .finally((data) => {
+      return data;
+    });
   }
 };
 
@@ -1772,6 +1768,12 @@ const postData = async (url = String, data = {}) => {
   return await res.result;
 };
 
+/**
+ * Sends post request using browser fetch API, and receives response in JSON format.
+ * @param {String} url The endpoint location of post request. (same-origin)
+ * @param {JSON} data The data to be sent along with request, key value type.
+ * @returns {Promise} response object as a promise.
+ */
 const postJsonData = async (url = String, data = {}) => {
   const response = await fetch(url, {
     method: constant.post,
