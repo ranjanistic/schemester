@@ -10,6 +10,7 @@ class View{
 
         this.userinvitaion = 'invitation.ejs';
         this.verification = 'verification.ejs';
+        this.passwordreset = 'resetpassword.ejs';
 
         this.admin = new AdminView();
         this.teacher = new TeacherView();

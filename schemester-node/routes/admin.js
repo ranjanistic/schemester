@@ -8,6 +8,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
+  reset = require("../workers/common/passwordreset"),
   worker = require("../workers/adminworker"),
   Admin = require("../collections/Admins"),
   Institute = require("../collections/Institutions");
@@ -201,13 +202,19 @@ function authFail(e){
  * For self account subdoc (Admin collection).
  */
 admin.post("/self", async (req, res) => {
+  const body = req.body;
+  if(body.external){
+    switch (body.target) {
+      case "account": return res.json({ result: await worker.self.handleAccount(body.user,body)});
+    }
+    return;
+  }
   session.verify(req, sessionsecret)
   .catch(e=>{
     return authFail(e);
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-    const body = req.body;
     clog(body);
     switch (body.target) {
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
@@ -401,6 +408,7 @@ admin.post("/manage", async (req, res) => { //for settings
       switch (body.type) {
         case invite.type: return res.json({ result:await worker.invite.handleInvitation(response.user,inst,body)});
         case verify.type: return res.json({ result: await worker.self.handleVerification(response.user,body)});
+        case reset.type: return res.json({result:await worker.self.handlePassReset(response.user,body)})
         case "search": return res.json({result: await worker.users.handleUserSearch(inst,body)});
         default: res.sendStatus(500);
       }
@@ -408,7 +416,7 @@ admin.post("/manage", async (req, res) => { //for settings
 });
 
 /**
- * For external links.
+ * For external links, not requiring valid session.
  */
 admin.get("/external*", async (req, res) => {
   const query = req.query;
@@ -417,9 +425,16 @@ admin.get("/external*", async (req, res) => {
       verify.handleVerification(query, verify.target.admin).then(async(resp) => {
         if (!resp)
           return res.render(view.notfound);
-        clog("resp true");
-        clog(resp);
         return res.render(view.verification, { user: resp.user });
+      }).catch(e=>{
+        clog(e);
+        return res.render(view.servererror, {error:e});
+      });
+    }break;
+    case reset.type:{
+      reset.handlePasswordResetLink(query,reset.target.admin).then(async(resp)=>{
+        if (!resp) return res.render(view.notfound);
+        return res.render(view.passwordreset, { user: resp.user });
       }).catch(e=>{
         clog(e);
         return res.render(view.servererror, {error:e});

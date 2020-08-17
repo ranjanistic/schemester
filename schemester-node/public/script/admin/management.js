@@ -3,16 +3,30 @@
 class Management {
   constructor() {
     this.sectionreq = getElement("section").innerHTML;
-    switch(this.sectionreq){//for section to be displayed
-        case locate.admin.section.institute:this.displayIndex = 1;break;
-        case locate.admin.section.schedule:this.displayIndex = 2;break;
-        case locate.admin.section.users:this.displayIndex = 3;break;
-        case locate.admin.section.security:this.displayIndex = 4;break;
-        case locate.admin.section.about:this.displayIndex = 5;break;
-      default:this.displayIndex = 0;break;
+    switch (
+      this.sectionreq //for section to be displayed
+    ) {
+      case locate.admin.section.institute:
+        this.displayIndex = 1;
+        break;
+      case locate.admin.section.schedule:
+        this.displayIndex = 2;
+        break;
+      case locate.admin.section.users:
+        this.displayIndex = 3;
+        break;
+      case locate.admin.section.security:
+        this.displayIndex = 4;
+        break;
+      case locate.admin.section.about:
+        this.displayIndex = 5;
+        break;
+      default:
+        this.displayIndex = 0;
+        break;
     }
     clog(this.displayIndex);
-    
+
     this.tabs = Array(
       getElement("adminTab"),
       getElement("institutionTab"),
@@ -102,7 +116,6 @@ class Management {
       target: locate.admin.target.dashboard,
     });
   };
-
 }
 
 class Admin {
@@ -200,15 +213,44 @@ class Schedule {
 class Security {
   constructor() {
     this.resetPass = getElement("resetPasswordButton");
+    this.sendpasslink = getElement("sendpasswordlink");
     this.resetMail = getElement("resetMailButton");
     this.lastLogin = getElement("lastLoginTime");
     this.deleteAccount = getElement("deleteAdminAccount");
-    this.resetPass.addEventListener(click, _=>{resetPasswordDialog()}, false);
-    this.resetMail.addEventListener(click, _=>{changeEmailBox()}, false);
-    this.deleteAccount.addEventListener(click, _=>{adminloginDialog(_=>{
-      const delconf = new Dialog()
-      delconf.setDisplay('Delete?',
-      `Are you sure you want to delete your Schemester account <b>${localStorage.getItem("id")}</b> permanently? The following consequencies will take place:<br/>
+    this.resetPass.onclick = (_) => {
+      resetPasswordDialog();
+    };
+    if (Number(sessionStorage.getItem("linkin")) > 0) {
+      opacityOf(this.sendpasslink, 0.5);
+      let time = Number(sessionStorage.getItem("linkin"));
+      const timer = setInterval(() => {
+        time--;
+        sessionStorage.setItem("linkin", time);
+        this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
+        if (Number(sessionStorage.getItem("linkin")) == 0) {
+          clearInterval(timer);
+          this.sendpasslink.innerHTML = "Get password link";
+          opacityOf(this.sendpasslink, 1);
+          this.sendpasslink.onclick = (_) => {this.linkSender()};
+        }
+      }, 1000);
+    } else {
+      this.sendpasslink.onclick = (_) => {this.linkSender()};
+    }
+    this.resetMail.onclick = (_) => {
+      changeEmailBox();
+    };
+    this.deleteAccount.addEventListener(
+      click,
+      (_) => {
+        adminloginDialog(
+          (_) => {
+            const delconf = new Dialog();
+            delconf.setDisplay(
+              "Delete?",
+              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
+                "id"
+              )}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
@@ -217,29 +259,82 @@ class Security {
       <li>Make sure you understand what your next step will lead to.</li>
       </ul><br/>
       <div class="active">If someone else is taking administration instead of you, then you can <a onclick="changeEmailBox()">transfer ownership of your institution</a> rather than deleting it.</div>
-      </div>`);
-      delconf.setBackgroundColorType(bodyType.negative);
-      delconf.createActions(Array('Delete account & Institution','No, step back'),Array(actionType.negative,actionType.positive));
-      delconf.onButtonClick(Array(
-        _=>{
-          delconf.loader();
-          postJsonData(post.admin.self,{
-            target:"account",
-            action:code.action.ACCOUNT_DELETE
-          }).then(response=>{
-            if(response.event == code.OK){
-              relocate(locate.root);
-            } else {
-              snackBar('Action Failed');
-            }
-          });
-        },
-        _=>{
-          delconf.hide();
-        }
-      ))
-    },true,true)}, false);
+      </div>`
+            );
+            delconf.setBackgroundColorType(bodyType.negative);
+            delconf.createActions(
+              Array(`Delete account & Institution`, "No, step back"),
+              Array(actionType.negative, actionType.positive)
+            );
+            delconf.onButtonClick(
+              Array(
+                (_) => {
+                  delconf.loader();
+                  postJsonData(post.admin.self, {
+                    target: "account",
+                    action: code.action.ACCOUNT_DELETE,
+                  }).then((response) => {
+                    if (response.event == code.OK) {
+                      relocate(locate.root);
+                    } else {
+                      snackBar("Action Failed");
+                    }
+                  });
+                },
+                (_) => {
+                  delconf.hide();
+                }
+              )
+            );
+            let time = 60;
+            const snack = new Snackbar();
+            snack.show();
+            let timer = setInterval(() => {
+              time--;
+              snack.createSnack(`${time}s to revert.`, bodyType.negative);
+              if (time == 0) {
+                clearInterval(timer);
+                delconf.hide();
+                snack.hide();
+              }
+            }, 1000);
+          },
+          true,
+          true
+        );
+      },
+      false
+    );
   }
+
+  linkSender(){
+      postJsonData(post.admin.manage, {
+        type: "resetpassword",
+        action: "send",
+      }).then((response) => {
+        clog(response);
+        if (response.event == code.mail.MAIL_SENT) {
+          snackBar(
+            "A link for password reset has been sent to your email address."
+          );
+          opacityOf(this.sendpasslink, 0.4);
+          this.sendpasslink.onclick = (_) => {};
+          let time = 120;
+          sessionStorage.setItem("linkin", time);
+          const timer = setInterval(() => {
+            time--;
+            sessionStorage.setItem("linkin", time);
+            this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
+            if (Number(sessionStorage.getItem("linkin")) == 0) {
+              clearInterval(timer);
+              this.sendpasslink.innerHTML = "Get password link";
+              opacityOf(this.sendpasslink, 1);
+            }
+          }, 1000);
+        }
+      });
+  }
+
   setButtonText(resetMail, resetPass) {
     this.resetMail.textContent = resetMail;
     this.resetPass.textContent = resetPass;
@@ -259,40 +354,42 @@ class Users {
       false
     );
 
-    class Teacher{
-      constructor(){
+    class Teacher {
+      constructor() {
         this.listview = getElement("teacherList");
         this.search = getElement("teacherSearch");
         this.load(false);
-        this.search.oninput =_=>{
-          if(this.search.value){
+        this.search.oninput = (_) => {
+          if (this.search.value) {
             this.load();
-            postJsonData(post.admin.manage,{
-              type:'search',
-              target:client.teacher,
-              q:this.search.value
-            }).then(response=>{
-              if(response.event== 'OK'){
-                this.load(false,false);
-                response.teachers.forEach((teacher,index)=>{
-                  this.appendList(this.getSlate(teacher.username,teacher.teacherID));
-                  getElement(`view${teacher.teacherID}`).onclick=_=>{
+            postJsonData(post.admin.manage, {
+              type: "search",
+              target: client.teacher,
+              q: this.search.value,
+            }).then((response) => {
+              if (response.event == "OK") {
+                this.load(false, false);
+                response.teachers.forEach((teacher, index) => {
+                  this.appendList(
+                    this.getSlate(teacher.username, teacher.teacherID)
+                  );
+                  getElement(`view${teacher.teacherID}`).onclick = (_) => {
                     clog(teacher.teacherID);
-                    refer(locate.admin.session,{
-                      target:locate.admin.target.viewschedule,
-                      client:client.teacher,
-                      teacherID:teacher.teacherID
+                    refer(locate.admin.session, {
+                      target: locate.admin.target.viewschedule,
+                      client: client.teacher,
+                      teacherID: teacher.teacherID,
                     });
-                  }
-                })
+                  };
+                });
               }
-            })
-          }else {
-            this.load(false);  
+            });
+          } else {
+            this.load(false);
           }
-        }
+        };
       }
-      getSlate(name,email){
+      getSlate(name, email) {
         return `<div class="fmt-row container" style="margin:4px 0px">
         <div class="fmt-col fmt-twothird">
             <span class="group-text positive">${name}</span><br/>
@@ -301,72 +398,74 @@ class Users {
         <div class="fmt-col fmt-third">
             <button class="positive-button fmt-right"id="view${email}">View</button>
         </div>
-        </div>`
+        </div>`;
       }
-      load(show = true,noview = true){
-        if(show){
+      load(show = true, noview = true) {
+        if (show) {
           this.listview.innerHTML = this.getLoaderView();
         } else {
-          if(noview){
+          if (noview) {
             this.listview.innerHTML = this.getDefaultView();
           } else {
             this.listview.innerHTML = "";
           }
         }
       }
-      appendList(slate){
+      appendList(slate) {
         let last = this.listview.innerHTML;
-        if(last == this.getDefaultView()||last == this.getLoaderView()){
-          this.listview.innerHTML = slate
+        if (last == this.getDefaultView() || last == this.getLoaderView()) {
+          this.listview.innerHTML = slate;
         } else {
-          this.listview.innerHTML = last + slate
+          this.listview.innerHTML = last + slate;
         }
       }
-      getLoaderView(){
+      getLoaderView() {
         return `<div class="fmt-center" id="tlistLoader">
         <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
-      getDefaultView(){
+      getDefaultView() {
         return '<div class="fmt-center">Start Typing...<div>';
       }
-      clearList(){
+      clearList() {
         this.listview.innerHTML = "Start typing";
       }
     }
     this.teacher = new Teacher();
-    class Classes{
-      constructor(){
+    class Classes {
+      constructor() {
         this.listview = getElement("classList");
         this.search = getElement("classSearch");
         this.load(false);
-        this.search.oninput =_=>{
-          if(this.search.value){
+        this.search.oninput = (_) => {
+          if (this.search.value) {
             this.load();
-            postJsonData(post.admin.manage,{
-              type:'search',
-              q:this.search.value
-            }).then(response=>{
-              if(response.event== 'OK'){
-                this.load(false,false);
-                response.classes.forEach((Class,index)=>{
-                  this.appendList(this.getSlate(Class.classname,Class.teachercount));
-                  getElement(`view${teacher.teacherID}`).onclick=_=>{
-                    refer(locate.admin.session,{
-                      target:'viewschedule',
-                      client:client.student,
-                      classname:Class.classname
+            postJsonData(post.admin.manage, {
+              type: "search",
+              q: this.search.value,
+            }).then((response) => {
+              if (response.event == "OK") {
+                this.load(false, false);
+                response.classes.forEach((Class, index) => {
+                  this.appendList(
+                    this.getSlate(Class.classname, Class.teachercount)
+                  );
+                  getElement(`view${teacher.teacherID}`).onclick = (_) => {
+                    refer(locate.admin.session, {
+                      target: "viewschedule",
+                      client: client.student,
+                      classname: Class.classname,
                     });
-                  }
-                })
+                  };
+                });
               }
-            })
-          }else {
-            this.load(false);  
+            });
+          } else {
+            this.load(false);
           }
-        }
+        };
       }
-      getSlate(classname,teachercount){
+      getSlate(classname, teachercount) {
         return `<div class="fmt-row container" style="margin:4px 0px">
         <div class="fmt-col fmt-twothird">
             <span class="group-text positive">${classname}</span><br/>
@@ -375,34 +474,34 @@ class Users {
         <div class="fmt-col fmt-third">
             <button class="positive-button fmt-right"id="view${classname}">View</button>
         </div>
-        </div>`
+        </div>`;
       }
-      load(show = true,noview = true){
-        if(show){
+      load(show = true, noview = true) {
+        if (show) {
           this.listview.innerHTML = this.getLoaderView();
         } else {
-          if(noview){
+          if (noview) {
             this.listview.innerHTML = this.getDefaultView();
           }
         }
       }
-      appendList(slate){
+      appendList(slate) {
         let last = this.listview.innerHTML;
-        if(last == this.getDefaultView()||last == this.getLoaderView()){
-          this.listview.innerHTML = slate
+        if (last == this.getDefaultView() || last == this.getLoaderView()) {
+          this.listview.innerHTML = slate;
         } else {
-          this.listview.innerHTML = last + slate
+          this.listview.innerHTML = last + slate;
         }
       }
-      getLoaderView(){
+      getLoaderView() {
         return `<div class="fmt-center" id="clistLoader">
         <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
-      getDefaultView(){
+      getDefaultView() {
         return '<div class="fmt-center">Start Typing...<div>';
       }
-      clearList(){
+      clearList() {
         this.listview.innerHTML = "Start typing";
       }
     }
@@ -471,11 +570,13 @@ class Users {
           linkdialog.show();
         }
         switch (response.event) {
-          case code.invite.LINK_EXISTS:{
+          case code.invite.LINK_EXISTS:
+            {
               snackBar("This link already exists and can be shared.");
             }
             break;
-          case code.invite.LINK_CREATED:{
+          case code.invite.LINK_CREATED:
+            {
               snackBar("Share this with teachers of your institution.");
             }
             break;

@@ -1,11 +1,13 @@
 const Admin = require("../collections/Admins"),
   Institute = require("../collections/Institutions"),
   view = require("../hardcodes/views"),
+  bcrypt = require("bcryptjs"),
   code = require("../public/script/codes"),
   invite = require("./common/invitation"),
-  verify = require("./common/verification");
-const { ObjectId } = require("mongodb");
-const session = require("./common/session");
+  verify = require("./common/verification"),
+  reset = require("./common/passwordreset"),
+  { ObjectId } = require("mongodb"),
+  session = require("./common/session");
 
 class AdminWorker {
   constructor() {
@@ -48,7 +50,22 @@ class Self {
       constructor(){}
       //send feedback emails
       changePassword=async(user,body)=>{
-        return;
+        clog(user);
+        const admin = await Admin.findOne({'_id':ObjectId(user.id)});
+        if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+        const salt = await bcrypt.genSalt(10);
+        const epassword = await bcrypt.hash(body.newpassword, salt);
+        clog(epassword);
+        const newpassadmin = await Admin.findOneAndUpdate(
+          {_id:ObjectId(user.id)},{
+          $set:{
+            password:epassword
+          },
+          $unset:{
+            rlinkexp:null
+          }
+        });
+        return code.event(newpassadmin?code.OK:code.NO);
       }
       changeEmailID=async(user,body)=>{
         const admin = await Admin.findOne({'_id':ObjectId(user.id)});
@@ -84,6 +101,7 @@ class Self {
   }
   
   handleAccount = async(user,body)=>{
+    clog(user);
     switch(body.action){
       case code.action.CHANGE_PASSWORD:return await this.account.changePassword(user,body);
       case code.action.CHANGE_ID:return await this.account.changeEmailID(user,body);
@@ -98,21 +116,13 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
-        clog("here");
-        const linkdata = verify.generateLink(verify.target.admin, {
+        const linkdata = await verify.generateLink(verify.target.admin, {
           uid: user.id,
         });
-        clog(linkdata); //todo: send email then save.
-        const admin = await Admin.findOneAndUpdate(
-          { _id: ObjectId(user.id) },
-          {
-            $set: {
-              vlinkexp: linkdata.exp,
-            },
-          }
-        );
+        clog(linkdata);
+        //todo: send email then return.
         return code.event(
-          admin ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
+          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
         );
       }
       case "check": {
@@ -124,6 +134,20 @@ class Self {
       }
     }
   };
+  handlePassReset = async(user,body)=>{
+    switch (body.action) {
+      case "send": {
+        const linkdata = await reset.generateLink(verify.target.admin, {
+          uid: user.id,
+        });
+        clog(linkdata);
+        //todo: send email then return.
+        return code.event(
+          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
+        );
+      }break;
+    }
+  }
 }
 
 class Default {
@@ -676,7 +700,7 @@ class Invite {
           inst._id,
           body.target,
           body.daysvalid
-          );
+        );
         const path = "invite." + body.target;
         const document = await Institute.findOneAndUpdate(
           { uiid: inst.uiid },
