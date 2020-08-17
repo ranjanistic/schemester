@@ -46,11 +46,34 @@ class Self {
   constructor() {
     class Account{
       constructor(){}
+      //send feedback emails
       changePassword=async(user,body)=>{
         return;
       }
       changeEmailID=async(user,body)=>{
-        return;
+        const admin = await Admin.findOne({'_id':ObjectId(user.id)});
+        if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+        if(admin.email == body.newemail) return code.event(code.auth.SAME_EMAIL);
+        const someadmin = await Admin.findOne({'email':body.newemail});
+        if(someadmin) return code.event(code.auth.USER_EXIST);
+        const newadmin = await Admin.findOneAndUpdate(
+          {'_id':ObjectId(user.id)},
+          {$set:{
+            email:body.newemail,
+            verified:false
+          }}
+        );
+        if(newadmin){
+          const inst = await Institute.findOneAndUpdate(
+            {uiid:user.uiid},
+            {$set:{
+              "default.admin.email":body.newemail,
+              active:false
+            }}
+          );
+          return code.event(inst?code.OK:code.NO);
+        }
+        return code.event(code.NO);
       }
       deleteAccount=async(user,body)=>{
         const del = await Admin.findOneAndDelete({_id:ObjectId(user.id)})
@@ -59,6 +82,7 @@ class Self {
     }
     this.account = new Account();
   }
+  
   handleAccount = async(user,body)=>{
     switch(body.action){
       case code.action.CHANGE_PASSWORD:return await this.account.changePassword(user,body);

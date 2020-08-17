@@ -208,7 +208,7 @@ class Security {
     this.deleteAccount.addEventListener(click, _=>{adminloginDialog(_=>{
       const delconf = new Dialog()
       delconf.setDisplay('Delete?',
-      `Are you sure you want to delete your Schemester account permanently? The following consequencies will take place:<br/>
+      `Are you sure you want to delete your Schemester account <b>${localStorage.getItem("id")}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
@@ -238,7 +238,7 @@ class Security {
           delconf.hide();
         }
       ))
-    })}, false);
+    },true,true)}, false);
   }
   setButtonText(resetMail, resetPass) {
     this.resetMail.textContent = resetMail;

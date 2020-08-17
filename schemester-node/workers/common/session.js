@@ -132,12 +132,33 @@ class Session {
             }
           }
         }
-      }
+      }break;
       default:
         return code.event(code.auth.AUTH_REQ_FAILED);
     }
   };
-
+  authenticate=async(req,res,body,secret)=>{
+    let resp = await this.verify(req,secret)
+    clog(resp);
+    if(!this.valid(resp)) return code.event(code.auth.SESSION_INVALID);
+    switch(secret){
+      case this.adminsessionsecret:{
+        const admin = await Admin.findOne({'_id':ObjectId(resp.user.id)});
+        clog(admin);
+        if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+        if(body.email!= admin.email) return code.event(code.auth.EMAIL_INVALID);
+        const isMatch = await bcrypt.compare(body.password, admin.password);
+        if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+        const payload = {user: {id: admin._id,uiid: admin.uiid}};
+        const token = jwt.sign(payload, secret, {
+          expiresIn: this.expiresIn,
+        });
+        clog(true);
+        res.cookie(this.sessionKey, token, { signed: true });
+        return code.event(code.auth.AUTH_SUCCESS);
+      }break;
+    }
+  }
   signup = async (request, response, secret) => {
     switch (secret) {
       case this.adminsessionsecret:{

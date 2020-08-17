@@ -85,7 +85,7 @@ class TextInput {
       };
     }
   }
-  getOnTextInput(){
+  getOnTextInput() {
     return this.input.oninput;
   }
   onTextDefocus(action) {
@@ -93,7 +93,7 @@ class TextInput {
       action();
     };
   }
-  getOnTextDefocus(){
+  getOnTextDefocus() {
     return this.input.onchange;
   }
   showValid() {
@@ -369,7 +369,6 @@ class DialogID {
   }
 }
 
-
 class Dialog extends DialogID {
   constructor() {
     super(DialogID);
@@ -488,8 +487,11 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  isValid(inputFieldIndex = Number){
-    return stringIsValid(this.getInputValue(inputFieldIndex),this.getInputType(inputFieldIndex))
+  isValid(inputFieldIndex = Number) {
+    return stringIsValid(
+      this.getInputValue(inputFieldIndex),
+      this.getInputType(inputFieldIndex)
+    );
   }
   validate(inputFieldIndex = Number, validateAction = (_) => {}) {
     this.inputField[inputFieldIndex].validate((_) => {
@@ -521,14 +523,14 @@ class Dialog extends DialogID {
 
   loader(show = true) {
     visibilityOf(this.loading, show);
+    opacityOf(this.box,show?0.5:1);
     for (var k = 0; k < this.dialogButtons.length; k++) {
       visibilityOf(this.dialogButtons[k], !show);
     }
-    if (show) {
-      opacityOf(this.box, 0.5);
-    } else {
-      opacityOf(this.box, 1);
-    }
+    if(this.inputField)
+      this.inputField.forEach((field,_)=>{
+        show?field.disableInput():field.enableInput();
+      });
   }
 
   largeTextArea(caption, hint) {
@@ -551,7 +553,7 @@ class Dialog extends DialogID {
   getInputValue(index) {
     return this.inputField[index].getInput();
   }
-  getInputType(index){
+  getInputType(index) {
     return this.inputField[index].type;
   }
   getDialogChip(index) {
@@ -570,10 +572,10 @@ class Dialog extends DialogID {
   onButtonClick(functions = Array) {
     this.dialogButtons.forEach((button, index) => {
       button.onclick = () => {
-        if(this.inputField){
-          this.inputField.forEach((field,_)=>{
+        if (this.inputField) {
+          this.inputField.forEach((field, _) => {
             field.normalize();
-          })
+          });
         }
         functions[index]();
       };
@@ -626,7 +628,13 @@ let sendPassResetLink = () => {
 };
 
 //todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
-const adminloginDialog = (afterLogin=_=>{snackBar('Success')},isShowing = true, sensitive = true) => {
+const adminloginDialog = (
+  afterLogin = (_) => {
+    snackBar("Success");
+  },
+  isShowing = true,
+  sensitive = false
+) => {
   var loginDialog = new Dialog();
   if (isShowing) {
     loginDialog.setDisplay(
@@ -634,10 +642,10 @@ const adminloginDialog = (afterLogin=_=>{snackBar('Success')},isShowing = true, 
       "You are about to perform a sensitive action. Please provide your login credentials."
     );
     loginDialog.createInputs(
-      Array("Email address", "Password","UIID"),
-      Array("youremail@example.com", "Your password","UIID"),
-      Array("email", "password",null),
-      Array(validType.email, validType.password,validType.nonempty)
+      Array("Email address", "Password"),
+      Array("youremail@example.com", "Your password"),
+      Array("email", "password"),
+      Array(validType.email, validType.password)
     );
     loginDialog.createActions(
       Array("Continue", "Cancel"),
@@ -648,34 +656,36 @@ const adminloginDialog = (afterLogin=_=>{snackBar('Success')},isShowing = true, 
     }
     loginDialog.validate(0);
     loginDialog.validate(1);
-    loginDialog.validate(2);
     loginDialog.onButtonClick(
       Array(
         (_) => {
-          if (
-            !(
-              loginDialog.isValid(0)&&
-              loginDialog.isValid(1)&&
-              loginDialog.isValid(2)
-            )
-          ) {
+          if (!(loginDialog.isValid(0) && loginDialog.isValid(1))) {
             loginDialog.validateNow(0);
             loginDialog.validateNow(1);
-            loginDialog.validateNow(2);
           } else {
             loginDialog.loader();
-            postJsonData(post.admin.login,{
-              email:loginDialog.getInputValue(0),
-              password:loginDialog.getInputValue(1),
-              uiid:loginDialog.getInputValue(2)
-            }).then(response=>{
+            postJsonData(post.admin.self, {
+              target: "authenticate",
+              email: loginDialog.getInputValue(0),
+              password: loginDialog.getInputValue(1),
+            }).then((response) => {
               clog(response);
-              if(response.event == code.auth.AUTH_SUCCESS){
+              if (response.event == code.auth.AUTH_SUCCESS) {
                 afterLogin();
               } else {
-                snackBar('Authentication failed');
+                loginDialog.loader(false);
+                switch (response.event) {
+                  case code.auth.EMAIL_INVALID: {
+                    return loginDialog
+                      .inputField[0]
+                      .showError("Wrong email address");
+                  }
+                  case code.auth.WRONG_PASSWORD: {
+                    return loginDialog.inputField[1].showError("Wrong password");
+                  }
+                }
+                snackBar("Authentication failed");
               }
-              loginDialog.loader(false);
             });
             //todo: authenticate
           }
@@ -690,8 +700,7 @@ const adminloginDialog = (afterLogin=_=>{snackBar('Success')},isShowing = true, 
 };
 
 const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
-  var resetDialog = new Dialog();
-
+  const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
     "Provide us your email address and we'll help you to reset your password via an email.",
@@ -734,75 +743,62 @@ const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
 };
 
 const changeEmailBox = (isShowing = true) => {
-  var mailChange = new Dialog();
-  mailChange.setDisplay(
-    "Change Email Address",
-    "You need to verify yourself, and then provide your new email address. You'll be logged out after successful change.",
-    "/graphic/icons/schemester512.png"
-  );
-  mailChange.createInputs(
-    Array(
-      "Existing Account password",
-      "Existing email address",
-      "New email address"
-    ),
-    Array(
-      "Current password",
-      "youremail@example.domain",
-      "someone@example.com"
-    ),
-    Array("password", "email", "email"),
-    Array(validType.nonempty, validType.email, validType.email)
-  );
-  mailChange.createActions(
-    Array("Change Email ID", "Abort"),
-    Array(actionType.negative, actionType.positive)
-  );
-
-  mailChange.validate(0, (_) => {
-    mailChange.getInput(1).focus();
-  });
-  mailChange.validate(1, (_) => {
-    mailChange.getInput(2).focus();
-  });
-  mailChange.validate(2);
-
-  mailChange.onButtonClick(
-    Array(
-      () => {
-        if (
-          !(
-            stringIsValid(mailChange.getInputValue(0)) &&
-            stringIsValid(mailChange.getInputValue(1), validType.email) &&
-            stringIsValid(mailChange.getInputValue(2), validType.email)
-          )
-        ) {
-          mailChange.validateNow(0, (_) => {
-            mailChange.getInput(1).focus();
+  adminloginDialog((_) => {
+    var mailChange = new Dialog();
+    mailChange.setDisplay(
+      "Change Email Address",
+      "Provide your the new email address. You'll be logged out after successful change, for verification purposes."
+    );
+    mailChange.createInputs(
+      Array("New email address"),
+      Array("newemail@example.com"),
+      Array("email"),
+      Array(validType.email)
+    );
+    mailChange.createActions(
+      Array("Change Email ID", "Abort"),
+      Array(actionType.negative, actionType.neutral)
+    );
+    mailChange.validate(0);
+    mailChange.onButtonClick(
+      Array(
+        () => {
+          if (!mailChange.isValid(0)) return mailChange.validateNow(0);
+          mailChange.loader();
+          postJsonData(post.admin.self, {
+            target: "account",
+            action: code.action.CHANGE_ID,
+            newemail: mailChange.getInputValue(0),
+          }).then((response) => {
+            if (response.event == code.OK) {
+              return location.reload();
+            }
+            mailChange.loader(false);
+            switch (response.event) {
+              case code.auth.SAME_EMAIL:
+                return mailChange
+                  .inputField[0]
+                  .showError("Already the same.");
+              case code.auth.USER_EXIST:
+                return mailChange
+                  .inputField[0]
+                  .showError("Account already exists.");
+              case code.auth.EMAIL_INVALID:
+                return mailChange
+                  .inputField[0]
+                  .showError("Invalid email address.");
+              default:snackBar('Action Failed');
+            }
           });
-          mailChange.validateNow(1, (_) => {
-            mailChange.getInput(2).focus();
-          });
-          mailChange.validateNow(2);
-          return;
+        },
+        () => {
+          mailChange.hide();
         }
-        //todo: changeadmniemail
-        mailChange.hide();
-        snackBar(
-          "Your email id has been changed to " + mailChange.getInputValue(2),
-          "Okay",
-          () => {
-            snackBar("You need to login again");
-          }
-        );
-      },
-      () => {
-        mailChange.hide();
-      }
-    )
-  );
+      )
+    );
 
-  mailChange.existence(isShowing);
+    mailChange.existence(isShowing);
+  });
 };
 
 const registrationDialog = (isShowing = true, email = null, uiid = null) => {
@@ -890,7 +886,6 @@ const registrationDialog = (isShowing = true, email = null, uiid = null) => {
           () => {
             if (
               !(
-                
                 stringIsValid(regDial.getInputValue(0), validType.name) &&
                 stringIsValid(regDial.getInputValue(1), validType.email) &&
                 stringIsValid(regDial.getInputValue(2), validType.password) &&
@@ -929,16 +924,38 @@ const registrationDialog = (isShowing = true, email = null, uiid = null) => {
   );
 };
 
-const showStudentRegistration = (visible = true,email = null, uiid = null) => {
+const showStudentRegistration = (visible = true, email = null, uiid = null) => {
   let studialog = new Dialog();
-  studialog.setDisplay("Registration","Provide your details, including the unique ID of your institute (UIID).");
-  studialog.createInputs(Array('UIID','Your class\'s name','Your email address','Your name','Create password'),
-    Array('Your institution\'s unique ID','8B,12A, like this.','youremail@example.domain','Sunaina Kapoor, or something','A strong password.'),
-    Array("text","text","email","text","password"),
-    Array(validType.nonempty,validType.nonempty,validType.email,validType.name,validType.password),
-    Array(uiid,null,email,null,null)
+  studialog.setDisplay(
+    "Registration",
+    "Provide your details, including the unique ID of your institute (UIID)."
   );
-  
+  studialog.createInputs(
+    Array(
+      "UIID",
+      "Your class's name",
+      "Your email address",
+      "Your name",
+      "Create password"
+    ),
+    Array(
+      "Your institution's unique ID",
+      "8B,12A, like this.",
+      "youremail@example.domain",
+      "Sunaina Kapoor, or something",
+      "A strong password."
+    ),
+    Array("text", "text", "email", "text", "password"),
+    Array(
+      validType.nonempty,
+      validType.nonempty,
+      validType.email,
+      validType.name,
+      validType.password
+    ),
+    Array(uiid, null, email, null, null)
+  );
+
   studialog.validate(0, (_) => {
     studialog.getInput(1).focus();
   });
@@ -950,94 +967,125 @@ const showStudentRegistration = (visible = true,email = null, uiid = null) => {
   });
   studialog.validate(3);
 
-  studialog.createActions(Array('Create account','Abort'),Array(bodyType.positive,bodyType.neutral));
-  studialog.onButtonClick(Array(
-    _=>{
-      clog("clickinng")
-      if(!(
-        studialog.isValid(0)&&studialog.isValid(1)&&studialog.isValid(2)&&studialog.isValid(3)&&studialog.isValid(4)
-      )) {
-        clog("invalid")
-        studialog.validateNow(0, (_) => {
-          studialog.getInput(1).focus();
-        });
-        studialog.validateNow(1, (_) => {
-          studialog.getInput(2).focus();
-        });
-        studialog.validateNow(2, (_) => {
-          studialog.getInput(3).focus();
-        });
-        studialog.validateNow(3, (_) => {
-          studialog.getInput(4).focus();
-        });
-        studialog.validateNow(4);
-      } else {
-        studialog.loader();
-        clog("posting");
-        postJsonData(post.student.signup,{
-          uiid:studialog.getInputValue(0),
-          classname:studialog.getInputValue(1),
-          email:studialog.getInputValue(2),
-          username:studialog.getInputValue(3),
-          password:studialog.getInputValue(4)
-        }).then(response=>{
-          clog(response);
-          switch (response.event) {
-            case code.auth.ACCOUNT_CREATED:{
-                clog(response.user);
-                saveDataLocally(response.user);
-                relocate(locate.student.session);
-            }break;
-            case code.auth.USER_EXIST:{
-                studialog.inputField[2].showError("Account already exists.");
-                snackBar("Try signing in?", "Login", true, (_) => {
-                  refer(locate.student.login, { email: studialog.getInputValue(2), uiid: studialog.getInputValue(0) });
-                });
+  studialog.createActions(
+    Array("Create account", "Abort"),
+    Array(bodyType.positive, bodyType.neutral)
+  );
+  studialog.onButtonClick(
+    Array(
+      (_) => {
+        clog("clickinng");
+        if (
+          !(
+            studialog.isValid(0) &&
+            studialog.isValid(1) &&
+            studialog.isValid(2) &&
+            studialog.isValid(3) &&
+            studialog.isValid(4)
+          )
+        ) {
+          clog("invalid");
+          studialog.validateNow(0, (_) => {
+            studialog.getInput(1).focus();
+          });
+          studialog.validateNow(1, (_) => {
+            studialog.getInput(2).focus();
+          });
+          studialog.validateNow(2, (_) => {
+            studialog.getInput(3).focus();
+          });
+          studialog.validateNow(3, (_) => {
+            studialog.getInput(4).focus();
+          });
+          studialog.validateNow(4);
+        } else {
+          studialog.loader();
+          clog("posting");
+          postJsonData(post.student.signup, {
+            uiid: studialog.getInputValue(0),
+            classname: studialog.getInputValue(1),
+            email: studialog.getInputValue(2),
+            username: studialog.getInputValue(3),
+            password: studialog.getInputValue(4),
+          })
+            .then((response) => {
+              clog(response);
+              switch (response.event) {
+                case code.auth.ACCOUNT_CREATED:
+                  {
+                    clog(response.user);
+                    saveDataLocally(response.user);
+                    relocate(locate.student.session);
+                  }
+                  break;
+                case code.auth.USER_EXIST:
+                  {
+                    studialog.inputField[2].showError(
+                      "Account already exists."
+                    );
+                    snackBar("Try signing in?", "Login", true, (_) => {
+                      refer(locate.student.login, {
+                        email: studialog.getInputValue(2),
+                        uiid: studialog.getInputValue(0),
+                      });
+                    });
+                  }
+                  break;
+                case code.inst.INSTITUTION_NOT_EXISTS:
+                  {
+                    studialog.inputField[0].showError(
+                      "No institution with this UIID found."
+                    );
+                  }
+                  break;
+                case code.schedule.BATCH_NOT_FOUND:
+                  {
+                    studialog.inputField[1].showError(
+                      "No such class. Don't use any special charecters."
+                    );
+                  }
+                  break;
+                case code.auth.EMAIL_INVALID:
+                  {
+                    studialog.inputField[2].showError("Invalid email address.");
+                  }
+                  break;
+                case code.auth.PASSWORD_INVALID:
+                  {
+                    //todo: check invalidity and show suggesstions
+                    studialog.inputField[4].showError(
+                      "Weak password, try something better."
+                    );
+                  }
+                  break;
+                case code.auth.NAME_INVALID:
+                  {
+                    studialog.inputField[3].showError(
+                      "This doesn't seem like a name."
+                    );
+                  }
+                  break;
+                default: {
+                  clog("in default");
+                  studialog.hide();
+                  snackBar(`${response.event}:${response.msg}`, "Report");
+                }
               }
-              break;
-            case code.inst.INSTITUTION_NOT_EXISTS:{
-                studialog.inputField[0].showError(
-                  "No institution with this UIID found."
-                );
-              }
-              break;
-            case code.schedule.BATCH_NOT_FOUND:{
-              studialog.inputField[1].showError(
-                "No such class. Don't use any special charecters."
-              );
-            }break;
-            case code.auth.EMAIL_INVALID:{
-                studialog.inputField[2].showError("Invalid email address.");
-            } break;
-            case code.auth.PASSWORD_INVALID:{
-                //todo: check invalidity and show suggesstions
-                studialog.inputField[4].showError(
-                  "Weak password, try something better."
-                );
-              }
-              break;
-            case code.auth.NAME_INVALID:{
-                studialog.inputField[3].showError("This doesn't seem like a name.");
-            }break;
-            default: {
-              clog("in default");
+              studialog.loader(false);
+            })
+            .catch((e) => {
+              snackBar(e, "Report");
               studialog.hide();
-              snackBar(`${response.event}:${response.msg}`, "Report");
-            }
-          }
-          studialog.loader(false);
-        }).catch(e=>{
-          snackBar(e,"Report");
-          studialog.hide();
-        });
+            });
+        }
+      },
+      (_) => {
+        studialog.hide();
       }
-    },
-    _=>{
-      studialog.hide();
-    }
-  ));
+    )
+  );
   studialog.existence(visible);
-}
+};
 
 const saveDataLocally = (data = {}) => {
   for (var key in data) {
@@ -1082,22 +1130,23 @@ const getUserLocally = async () => {
     clog("locally esle post");
     postData(post.admin.sessionValidate, {
       getuser: true,
-    }).then((response) => {
-      clog("the response");
-      clog(response);
-      if (response.event == code.auth.SESSION_INVALID) {
-        finishSession((_) => {
-          relocate(locate.root);
-        });
-      } else {
-        data = response;
-        saveDataLocally(data);
-      }
-      return data;
     })
-    .finally((data) => {
-      return data;
-    });
+      .then((response) => {
+        clog("the response");
+        clog(response);
+        if (response.event == code.auth.SESSION_INVALID) {
+          finishSession((_) => {
+            relocate(locate.root);
+          });
+        } else {
+          data = response;
+          saveDataLocally(data);
+        }
+        return data;
+      })
+      .finally((data) => {
+        return data;
+      });
   }
 };
 
@@ -1111,7 +1160,8 @@ const createAccount = (dialog, adminname, email, password, uiid) => {
     .then((result) => {
       dialog.loader(false);
       switch (result.event) {
-        case code.auth.ACCOUNT_CREATED:{
+        case code.auth.ACCOUNT_CREATED:
+          {
             clog(result.user);
             saveDataLocally(result.user);
             relocate(locate.admin.session, {
@@ -1119,32 +1169,39 @@ const createAccount = (dialog, adminname, email, password, uiid) => {
             });
           }
           break;
-        case code.auth.USER_EXIST:{
+        case code.auth.USER_EXIST:
+          {
             dialog.inputField[1].showError("Account already exists.");
             snackBar("Try signing in?", "Login", true, (_) => {
               refer(locate.admin.login, { email: email, uiid: uiid });
             });
           }
           break;
-        case code.server.UIID_TAKEN:{
+        case code.server.UIID_TAKEN:
+          {
             dialog.inputField[3].showError(
               "This UIID is not available. Try something different."
             );
           }
           break;
-        case code.auth.EMAIL_INVALID:{
+        case code.auth.EMAIL_INVALID:
+          {
             dialog.inputField[1].showError("Invalid email address.");
-        } break;
-        case code.auth.PASSWORD_INVALID:{
+          }
+          break;
+        case code.auth.PASSWORD_INVALID:
+          {
             //todo: check invalidity and show suggesstions
             dialog.inputField[2].showError(
               "Weak password, try something better."
             );
           }
           break;
-        case code.auth.NAME_INVALID:{
+        case code.auth.NAME_INVALID:
+          {
             dialog.inputField[0].showError("This doesn't seem like a name.");
-        }break;
+          }
+          break;
         default: {
           clog("in default");
           dialog.hide();
@@ -1158,7 +1215,11 @@ const createAccount = (dialog, adminname, email, password, uiid) => {
     });
 };
 
-const feedBackBox = (isShowing = true, defaultText = String(), error = false) => {
+const feedBackBox = (
+  isShowing = true,
+  defaultText = String(),
+  error = false
+) => {
   var feedback = new Dialog();
   feedback.setDisplay(
     "Contact Developers",
@@ -1508,15 +1569,15 @@ const finishSession = (
   });
 };
 
-const clearLocalData =(absolute = false)=>{
-  if(absolute){
+const clearLocalData = (absolute = false) => {
+  if (absolute) {
     localStorage.clear();
-  } else{
+  } else {
     const t = theme.getTheme();
     localStorage.clear();
     theme.setTheme(t);
   }
-}
+};
 
 const setFieldSetof = (
   fieldset,
@@ -1587,16 +1648,16 @@ const setClassNames = (
  * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (hides the rest).
  */
 const showElement = (elements = Array, index = null, hideRest = true) => {
-  if(hideRest){
+  if (hideRest) {
     for (let k = 0; k < elements.length; k++) {
-      if(index!=null){
+      if (index != null) {
         visibilityOf(elements[k], k == index);
       } else {
         show(elements[k]);
       }
     }
   } else {
-    index!=null?show(elements[index]):showElement(elements);
+    index != null ? show(elements[index]) : showElement(elements);
   }
 };
 
@@ -1606,19 +1667,19 @@ const showElement = (elements = Array, index = null, hideRest = true) => {
  * @param {Number} index The index of element in given array to be hidden. If not provided, defaults to null, and all elements will be hidden.
  * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (shows the rest).
  */
-const hideElement = (elements = Array,index = null, showRest = true)=>{
-  if(showRest){
+const hideElement = (elements = Array, index = null, showRest = true) => {
+  if (showRest) {
     for (let k = 0; k < elements.length; k++) {
-      if(index!=null){
+      if (index != null) {
         visibilityOf(elements[k], k != index);
       } else {
         hide(elements[k]);
       }
     }
   } else {
-    index!=null?hide(elements[index]):hideElement(elements);
+    index != null ? hide(elements[index]) : hideElement(elements);
   }
-}
+};
 
 const elementFadeVisibility = (element, isVisible) => {
   replaceClass(
@@ -1659,12 +1720,18 @@ const setDefaultBackground = (element, type = actionType.positive) => {
  * @param {Boolean} opposite This condition ensures the reversibility of the intended action. If set to false, the toBeReplaced and replacement class params will be exchanged.
  * If unset, defaults to true, means classes will be replaced normally as they were intended to. Can be used if classes are to be replaced on some boolean condition.
  */
-const replaceClass = (element = new HTMLElement, toBeReplaced, replacement, opposite = true) =>
+const replaceClass = (
+  element = new HTMLElement(),
+  toBeReplaced,
+  replacement,
+  opposite = true
+) =>
   opposite
     ? element.classList.replace(toBeReplaced, replacement)
     : element.classList.replace(replacement, toBeReplaced);
 
-const appendClass = (element = new HTMLElement,appendingClass)=> element.classList.add(appendingClass)
+const appendClass = (element = new HTMLElement(), appendingClass) =>
+  element.classList.add(appendingClass);
 
 const showLoader = (_) => show(getElement("navLoader"));
 const hideLoader = (_) => hide(getElement("navLoader"));
@@ -1673,21 +1740,32 @@ const hideLoader = (_) => hide(getElement("navLoader"));
  * @param {HTMLElement} element The element whose opacity is to be set.
  * @param {Number} value The numeric value of opacity of the given element to set. Defaults to 1. Must be >=0 & <=1.
  */
-const opacityOf = (element = new HTMLElement, value = 1) => (element.style.opacity = String(value));
+const opacityOf = (element = new HTMLElement(), value = 1) =>
+  (element.style.opacity = String(value));
 
 /**
  * Controls visiblity of the given HTML element, as per the condition.
  * @param {HTMLElement} element The element whose visibility is to be toggled.
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
  */
-const visibilityOf = (element = new HTMLElement, visible = true) =>
+const visibilityOf = (element = new HTMLElement(), visible = true) =>
   (element.style.display = visible ? constant.show : constant.hide);
-const visibilityOfAll = (elements = Array(),visible = true, index = null) => 
-  index!=null?visibilityOf(elements[index],visible):elements.forEach((element,_)=>{visibilityOf(element,visible)});
-const hide = (element = new HTMLElement) => visibilityOf(element, false);
-const show = (element = new HTMLElement) => visibilityOf(element, true);
-const isVisible = (element = new HTMLElement) => (element.style.display == constant.show);
-const areVisible = (elements = Array(), index = null) => index!=null?elements[index].style.display == constant.show:elements.some((element,_)=>{return element.style.display == constant.show})
+const visibilityOfAll = (elements = Array(), visible = true, index = null) =>
+  index != null
+    ? visibilityOf(elements[index], visible)
+    : elements.forEach((element, _) => {
+        visibilityOf(element, visible);
+      });
+const hide = (element = new HTMLElement()) => visibilityOf(element, false);
+const show = (element = new HTMLElement()) => visibilityOf(element, true);
+const isVisible = (element = new HTMLElement()) =>
+  element.style.display == constant.show;
+const areVisible = (elements = Array(), index = null) =>
+  index != null
+    ? elements[index].style.display == constant.show
+    : elements.some((element, _) => {
+        return element.style.display == constant.show;
+      });
 /**
  * Checks if given string is valid, according to its type given as second parameter.
  * @param {String} value The string value to be checked for validity.
@@ -1717,9 +1795,13 @@ const stringIsValid = (
 };
 
 const getDayName = (dIndex = Number) =>
-  dIndex < constant.weekdays.length && dIndex >=0 ? constant.weekdays[dIndex] : null;
+  dIndex < constant.weekdays.length && dIndex >= 0
+    ? constant.weekdays[dIndex]
+    : null;
 const getMonthName = (mIndex = Number) =>
-  mIndex < constant.months.length && mIndex >=0? constant.months[mIndex] : null;
+  mIndex < constant.months.length && mIndex >= 0
+    ? constant.months[mIndex]
+    : null;
 
 const getElement = (id) => document.getElementById(id);
 
@@ -1742,7 +1824,7 @@ const relocate = (path = String, data = null) => {
   window.location.replace(path);
 };
 
-const relocateParent=(path, data = null)=>{
+const relocateParent = (path, data = null) => {
   if (data != null) {
     let i = 0;
     for (var key in data) {
@@ -1754,8 +1836,7 @@ const relocateParent=(path, data = null)=>{
     }
   }
   window.parent.location.replace(path);
-}
-
+};
 
 const postData = async (url = String, data = {}) => {
   const response = await fetch(url, {
@@ -1796,7 +1877,7 @@ const refer = (href, data = null) => {
 const referParent = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.parent.location.href = href;
-}
+};
 
 /**
  * Creates a string of queries to be passed along with any form action type link, from given JSON type data.
@@ -1849,13 +1930,16 @@ const idbSupported = () => {
 const addNumberSuffixHTML = (number = Number) => {
   var str = String(number);
   switch (number) {
-    case 1: return number + "<sup>st</sup>";
-    case 2: return number + "<sup>nd</sup>";
-    case 3: return number + "<sup>rd</sup>";
+    case 1:
+      return number + "<sup>st</sup>";
+    case 2:
+      return number + "<sup>nd</sup>";
+    case 3:
+      return number + "<sup>rd</sup>";
     default: {
       if (number > 9) {
         if (str.charAt(str.length - 2) == "1") return number + "<sup>th</sup>";
-        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)))
+        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)));
       } else {
         return number + "<sup>th</sup>";
       }

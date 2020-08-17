@@ -29,6 +29,7 @@ class Codes{
                 this.SESSION_INVALID = 'auth/user-not-logged-in';
                 this.EMAIL_INVALID = 'auth/invalid-email';
                 this.PASSWORD_INVALID = 'auth/invalid-password';
+                this.SAME_EMAIL = 'auth/same-email-address';
                 this.LOGGED_OUT = 'auth/logged-out';
                 this.ACCOUNT_CREATED = 'auth/account-created';
                 this.NAME_INVALID = 'auth/invalid-name';
@@ -263,7 +264,7 @@ class Locations {
               this.institute = "setting/institute";
               this.schedule = "setting/schedule";
               this.users = "setting/users";
-              this.security = "settting/security";
+              this.security = "setting/security";
               this.about = "setting/about";
             }
           }
@@ -406,17 +407,10 @@ class Locations {
 
   class Colors {
     constructor() {
-      if(theme.isLight()){
-        this.positive = "#216bf3";
-        this.negative = "#c40c0c";
-        this.active = "#00893E";
-        this.warning = "#d66a04";
-      } else {
-        this.positive = "#739dec";
-        this.negative = "#ec6565";
-        this.active = "#48cc84";
-        this.warning = "#df9d5f";
-      }
+      this.positive = "var(--positive)";
+      this.negative = "var(--negative)";
+      this.active = "var(--active)";
+      this.warning = "var(--warning)";
       this.white = "#ffffff";
       this.black = "#000000";
       this.transparent = "#00000056";

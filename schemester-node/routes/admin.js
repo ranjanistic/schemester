@@ -208,7 +208,9 @@ admin.post("/self", async (req, res) => {
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
     const body = req.body;
+    clog(body);
     switch (body.target) {
+      case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
       case "settings": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
@@ -295,6 +297,19 @@ admin.post( "/auth/login",
       .then((response) => { return res.json({ result:response }) });
   }
 );
+
+/**
+ * For current session account related requests.
+ */
+admin.post('/session',(req,res)=>{
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return res.json({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.json({ result:code.event(code.auth.SESSION_INVALID)});
+  })
+});
 
 /**
  * For post requests in default subdoc.
