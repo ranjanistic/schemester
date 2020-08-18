@@ -216,9 +216,11 @@ admin.post("/self", async (req, res) => {
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
     clog(body);
+    const admin = await Admin.findOne({'_id':ObjectId(response.user.id)});
+    if(!admin) return code.event(code.auth.USER_NOT_EXIST);
     switch (body.target) {
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
-      case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
+      case "account": return res.json({ result: await worker.self.handleAccount(response.user,admin,body)});
       case "settings": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
   });

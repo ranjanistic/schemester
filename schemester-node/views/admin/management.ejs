@@ -102,16 +102,36 @@
                         <!--account settings box-->
                         <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <span class="sub-heading">Admin</span>
-                            <button class="fmt-right positive-button" id="editAdminSection">Edit</button>
                             <div>
-                                <span class="caption">Admin name</span><br/>
-                                <span class="editable" id="adminName"><%= adata.username %></span><br/>
-                                <span class="caption">Email address</span><br/>
-                                <span class="editable" id="adminEmailAddress"><%= adata.id %></span><br/>
-                                <span class="caption">Contact Number</span><br/>
-                                <span class="editable" id="adminPhoneNumber"><%= inst.default.admin.phone %></span><br/>
-                                <span class="caption">Account created at</span><br/>
-                                <span id="adminCreationTime"><%= adata.createdAt %></span><br/>
+                                <div class="caption">Admin name</div>
+                                <div class="editable" id="adminName">
+                                    <%= adata.username %>
+                                    <button class="neutral-button caption" id="editadminname">✒️</button>
+                                </div>
+                                <div id="adminnameeditor">
+                                    <fieldset class="text-field questrial" id="adminnamefield">
+                                        <legend class="field-caption">Your name</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= adata.username %>" placeholder="Visible to everyone at <%= inst.default.institute.instituteName %>" type="text" id="adminnameinput" name="adminname" >
+                                        <span class="fmt-right error-caption"  id="adminnameerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveadminname">Save</button>
+                                    <button class="negative-button caption" id="canceladminname">Cancel</button>
+                                </div>
+                                <div class="caption">Email address</div>
+                                <div class="active" id="adminEmailAddress"><%= adata.id %></div>
+                                <div class="caption">Contact Number</div>
+                                <div class="editable" id="adminPhoneNumber"><%= inst.default.admin.phone %><button class="neutral-button caption" id="editadminphone">✒️</button></div>
+                                <div id="adminphoneeditor">
+                                    <fieldset class="text-field questrial" id="adminphonefield">
+                                        <legend class="field-caption">Your phone</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.admin.phone %>" placeholder="Available to teachers of <%= inst.default.institute.instituteName %>" type="text" id="adminphoneinput" name="adminname" >
+                                        <span class="fmt-right error-caption"  id="adminphoneerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveadminphone">Save</button>
+                                    <button class="negative-button caption" id="canceladminphone">Cancel</button>
+                                </div>
+                                <div class="caption">Account created at</div>
+                                <div id="adminCreationTime"><%= adata.createdAt %></div>
                             </div>
                         </div>
                         <!--institution settings box-->

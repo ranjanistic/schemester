@@ -120,7 +120,9 @@ class TextInput {
     }
   }
   getInput() {
-    return this.input.value;
+    return this.type == validType.name||this.type == validType.phone
+      ?this.input.value.trim()
+      :this.input.value;
   }
   setInput(value) {
     this.input.value = value;
@@ -703,19 +705,17 @@ const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
-    "Provide us your email address and we'll help you to reset your password via an email.",
-    "/graphic/icons/schemester512.png"
+    "Create a new password for your account."
   );
   resetDialog.createInputs(
-    Array("Your email address"),
-    Array("you@example.domain"),
-    Array("email"),
-    Array(validType.email),
-    Array(inputvalue)
+    Array("Create new password"),
+    Array("A strong password"),
+    Array("password"),
+    Array(validType.password),
   );
   resetDialog.createActions(
-    Array("Send Link", "Cancel"),
-    Array(actionType.positive, actionType.negative)
+    Array("Update password", "Cancel"),
+    Array(actionType.positive, actionType.neutral)
   );
 
   resetDialog.validate(0);
@@ -723,16 +723,24 @@ const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   resetDialog.onButtonClick(
     Array(
       () => {
-        if (!stringIsValid(resetDialog.getInputValue(0), validType.email)) {
-          validateTextField(resetDialog.inputField[0], validType.email);
-          return;
-        }
-        sendPassResetLink(); //todo
-        resetDialog.hide();
-        snackBar(
-          "You'll receive a link if your email address was correct. Reset your password from there.",
-          "Got it"
-        );
+        resetDialog.validateNow(0);
+        if (!resetDialog.isValid(0)) return;
+        resetDialog.loader();
+        postJsonData(post.admin.self,{
+          target:"account",
+          action:code.action.CHANGE_PASSWORD,
+          newpassword:resetDialog.getInputValue(0)
+        }).then(response=>{
+          if(response.event == code.OK){
+            resetDialog.hide();
+            return snackBar(
+              "Your password was changed.",
+              "Done"
+            );
+          }
+          resetDialog.loader(false);
+          snackBar(response.event,'Report');
+        })
       },
       () => {
         resetDialog.hide();
@@ -1485,6 +1493,9 @@ const validateTextField = (
         error = "Invalid email address.";
       }
       break;
+    case validType.phone:{
+      error = "Not a valid number"
+    }break;
     case validType.match:
       {
         error = "This one is different.";
@@ -1784,6 +1795,8 @@ const stringIsValid = (
       return stringIsValid(String(value).trim());
     case validType.email:
       return constant.emailRegex.test(String(value).toLowerCase());
+    case validType.phone:
+      return !isNaN(value);
     //todo: case inputType.password: return constant.passRegex.test(String(passValue));
     case validType.username:
       return stringIsValid(String(value).trim());

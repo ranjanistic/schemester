@@ -100,6 +100,8 @@ class Codes {
         this.ACCOUNT_DELETE = "action/delete-account";
         this.CHANGE_PASSWORD = "action/change-password";
         this.CHANGE_ID = "action/change-id-email";
+        this.CHANGE_PHONE = "action/change-phone-number";
+        this.CHANGE_NAME = "action/change-name";
         this.SEND_INVITE = "action/send-invitation";
         this.ACCOUNT_VERIFY = "action/verify-account";
       }

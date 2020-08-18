@@ -175,7 +175,7 @@ class Session {
             email:email,
             password:epassword,
             uiid:uiid,
-            createAt:Date.now(),
+            createdAt:Date.now(),
             verified:false,
             prefs:{}
           }

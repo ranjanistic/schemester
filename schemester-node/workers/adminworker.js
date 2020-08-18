@@ -49,10 +49,21 @@ class Self {
     class Account{
       constructor(){}
       //send feedback emails
+      changeName = async(user,body)=>{
+        const newadmin = await Admin.findOneAndUpdate({'_id':ObjectId(user.id)},
+        {$set:{username:body.newname}});
+        if(newadmin){
+          const inst = await Institute.findOneAndUpdate(
+            {uiid:user.uiid},
+            {$set:{
+              "default.admin.username":body.newname,
+            }}
+          );
+          return code.event(inst?code.OK:code.NO);
+        }
+        return code.event(code.NO);
+      }
       changePassword=async(user,body)=>{
-        clog(user);
-        const admin = await Admin.findOne({'_id':ObjectId(user.id)});
-        if(!admin) return code.event(code.auth.USER_NOT_EXIST);
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
         clog(epassword);
@@ -67,9 +78,7 @@ class Self {
         });
         return code.event(newpassadmin?code.OK:code.NO);
       }
-      changeEmailID=async(user,body)=>{
-        const admin = await Admin.findOne({'_id':ObjectId(user.id)});
-        if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+      changeEmailID=async(user,admin,body)=>{
         if(admin.email == body.newemail) return code.event(code.auth.SAME_EMAIL);
         const someadmin = await Admin.findOne({'email':body.newemail});
         if(someadmin) return code.event(code.auth.USER_EXIST);
@@ -92,7 +101,14 @@ class Self {
         }
         return code.event(code.NO);
       }
-      deleteAccount=async(user,body)=>{
+      changePhone=async(user,body)=>{
+        const inst = Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{"default.admin.phone":body.newphone}}
+        );
+        return code.event(inst?code.OK:code.NO);
+      }
+      deleteAccount=async(user)=>{
         const del = await Admin.findOneAndDelete({_id:ObjectId(user.id)})
         return code.event(del?code.OK:code.NO);
       }
@@ -100,11 +116,12 @@ class Self {
     this.account = new Account();
   }
   
-  handleAccount = async(user,body)=>{
-    clog(user);
+  handleAccount = async(user,admin,body)=>{
     switch(body.action){
+      case code.action.CHANGE_NAME:return await this.account.changeName(user,body);
       case code.action.CHANGE_PASSWORD:return await this.account.changePassword(user,body);
-      case code.action.CHANGE_ID:return await this.account.changeEmailID(user,body);
+      case code.action.CHANGE_ID:return await this.account.changeEmailID(user,admin,body);
+      case code.action.CHANGE_PHONE:return await this.account.changePhone(user,body);
       case code.action.ACCOUNT_DELETE:return await this.account.deleteAccount(user);
     }
   }

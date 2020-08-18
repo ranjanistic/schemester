@@ -121,27 +121,92 @@ class Management {
 class Admin {
   constructor() {
     this.name = getElement("adminName");
+    this.nameeditor = getElement("adminnameeditor")
+    this.nameedit = getElement("editadminname")
+    hide(this.nameeditor);
     this.email = getElement("adminEmailAddress");
     this.phone = getElement("adminPhoneNumber");
+    this.phoneeditor = getElement("adminphoneeditor")
+    this.phoneedit = getElement("editadminphone")
+    hide(this.phoneeditor);
     this.creationTime = getElement("adminCreationTime");
+    this.nameedit.onclick=_=>{
+      this.handleNameEditor();
+    }
+    this.phoneedit.onclick=_=>{
+      this.handlePhoneEditor();
+    }
   }
-  setDetails(name, email, phone, creationTime) {
-    this.name.textContent = name;
-    this.email.textContent = email;
-    this.phone.textContent = phone;
-    this.creationTime.textContent = creationTime;
+  handleNameEditor(){
+    hide(this.name);
+    show(this.nameeditor);
+    const nameField = new TextInput("adminnamefield","adminnameinput","adminnameerror",validType.name);
+    nameField.setInput(localStorage.getItem('username'));
+    const namesave = getElement("saveadminname");
+    const namecancel = getElement("canceladminname");
+    nameField.validate();
+    nameField.enableInput();
+    namecancel.onclick=_=>{
+      show(this.name);
+      hide(this.nameeditor);
+    }
+    namesave.onclick=_=>{
+      nameField.validateNow();
+      if(!nameField.isValid()) return;
+      nameField.disableInput();
+      clog(nameField.getInput() == localStorage.getItem('username'))
+      if(nameField.getInput() == localStorage.getItem('username')){
+        return namecancel.click();
+      }
+      showLoader();
+      postJsonData(post.admin.self,{
+        target:"account",
+        action:code.action.CHANGE_NAME,
+        newname:nameField.getInput()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.name.innerHTML = nameField.getInput();
+          localStorage.setItem('username',nameField.getInput());
+          show(this.name);
+          hide(this.nameeditor);
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    }
   }
-  getName() {
-    return this.name.textContent;
-  }
-  getEmail() {
-    return this.email.textContent;
-  }
-  getPhone() {
-    return this.phone.textContent;
-  }
-  getCreationTime() {
-    return this.creationTime.textContent;
+  handlePhoneEditor(){
+    hide(this.phone);
+    show(this.phoneeditor);
+    const phoneField = new TextInput("adminphonefield","adminphoneinput","adminphoneerror",validType.phone);
+    const phonesave = getElement("saveadminphone");
+    const phonecancel = getElement("canceladminphone");
+    phonecancel.onclick=_=>{
+      show(this.phone);
+      hide(this.phoneeditor);
+    }
+    phoneField.validate();
+    phonesave.onclick=_=>{
+      phoneField.validateNow();
+      if(!phoneField.isValid()) return;
+      phoneField.disableInput();
+      showLoader();
+      postJsonData(post.admin.self,{
+        target:"account",
+        action:code.action.CHANGE_PHONE,
+        newphone:phoneField.getInput()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.phone.innerHTML = phoneField.getInput();
+          show(this.phone);
+          hide(this.phoneeditor);
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    }
   }
 }
 
@@ -218,7 +283,9 @@ class Security {
     this.lastLogin = getElement("lastLoginTime");
     this.deleteAccount = getElement("deleteAdminAccount");
     this.resetPass.onclick = (_) => {
-      resetPasswordDialog();
+      adminloginDialog((_) => {
+        resetPasswordDialog();
+      });
     };
     if (Number(sessionStorage.getItem("linkin")) > 0) {
       opacityOf(this.sendpasslink, 0.5);
