@@ -102,9 +102,8 @@
                         <!--account settings box-->
                         <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <span class="sub-heading">Admin</span>
-                            <div>
-                                <div class="caption">Admin name</div>
                                 <div class="editable" id="adminName">
+                                    <span class="caption">Admin name</span><br/>
                                     <span id="adminnameview"><%= adata.username %></span>
                                     <button class="neutral-button caption" id="editadminname">✒️</button>
                                 </div>
@@ -120,8 +119,9 @@
 
                                 <div class="caption">Email address</div>
                                 <div class="active" id="adminEmailAddress"><%= adata.id %></div>
-                                <div class="caption">Contact Number</div>
+
                                 <div class="editable" id="adminPhoneNumber">
+                                    <span class="caption">Contact Number</span><br/>
                                     <span id="adminphoneview"><%= inst.default.admin.phone %></span>
                                     <button class="neutral-button caption" id="editadminphone">✒️</button>
                                 </div>
@@ -134,16 +134,16 @@
                                     <button class="positive-button caption" id="saveadminphone">Save</button>
                                     <button class="negative-button caption" id="canceladminphone">Cancel</button>
                                 </div>
+
                                 <div class="caption">Account created at</div>
                                 <div id="adminCreationTime"><%= adata.createdAt %></div>
-                            </div>
                         </div>
                         <!--institution settings box-->
                         <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
                             <span class="sub-heading">Basic</span>
                             <div>
-                                <span class="caption">Display name</span><br/>
                                 <div class="editable" id="instituteName">
+                                    <span class="caption">Display name</span><br/>
                                     <span id="institutenameview"><%= inst.default.institute.instituteName %></span>
                                     <button class="neutral-button caption" id="editinstitutename">✒️</button>
                                 </div>
@@ -157,14 +157,14 @@
                                     <button class="negative-button caption" id="cancelinstitutename">Cancel</button>
                                 </div>
 
-                                <span class="caption">Email address</span><br/>
                                 <div class="editable" id="instituteMail">
+                                    <span class="caption">Email address</span><br/>
                                     <span id="institutemailview"><%= inst.default.institute.email %></span>
                                     <button class="neutral-button caption" id="editinstitutemail">✒️</button>
                                 </div>
                                 <div id="institutemaileditor">
                                     <fieldset class="text-field questrial" id="institutemailfield">
-                                        <legend class="field-caption">Institute Name</legend>
+                                        <legend class="field-caption">Institute email address</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.email %>" placeholder="Visible to people of your institution" type="text" id="institutemailinput" name="institutemail" >
                                         <span class="fmt-right error-caption"  id="institutemailerror"></span>
                                     </fieldset>
@@ -172,14 +172,14 @@
                                     <button class="negative-button caption" id="cancelinstitutemail">Cancel</button>
                                 </div>
 
-                                <span class="caption">Phone number</span><br/>
                                 <div class="editable" id="institutePhone">
+                                    <span class="caption">Phone number</span><br/>
                                     <span id="institutephoneview"><%= inst.default.institute.phone %></span>
                                     <button class="neutral-button caption" id="editinstitutephone">✒️</button>
                                 </div>
                                 <div id="institutephoneeditor">
                                     <fieldset class="text-field questrial" id="institutephonefield">
-                                        <legend class="field-caption">Institute Name</legend>
+                                        <legend class="field-caption">Institute contact number</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.phone %>" placeholder="Visible to people of your institution" type="text" id="institutephoneinput" name="institutephone" >
                                         <span class="fmt-right error-caption"  id="institutephoneerror"></span>
                                     </fieldset>
@@ -198,22 +198,83 @@
                             <span class="sub-heading">Timings</span>
                             <button class="fmt-right negative-button" id="reschedule">Re-schedule</button>
                             <div>
-                                <span class="caption">Schedule starts at</span><br/>
-                                <span class="editable" id="scheduleStartTime"><%= inst.default.timings.startTime %></span><br/>
-                                <span class="caption">Schedule ends at</span><br/>
-                                <span class="editable" id="scheduleEndTime"><%= inst.default.timings.endTime %></span><br/>
-                                <span class="caption">Break starts at</span><br/>
-                                <span class="editable" id="breakStartTime"><%= inst.default.timings.breakStartTime %></span><br/>
-                                <span class="caption">Each period duration</span><br/>
-                                <span class="editable" id="periodDuration"><%= inst.default.timings.periodMinutes %></span><br/>
-                                <span class="caption">Break duration</span><br/>
-                                <span class="editable" id="breakDuration"><%= inst.default.timings.breakMinutes %></span><br/>
-                                <span class="caption">Week starts on</span><br/>
-                                <span class="editable" id="weekStartDay"><%= inst.default.timings.startDay %></span><br/>
-                                <span class="caption">Working days in a week</span><br/>
-                                <span class="editable" id="workdays"><%= inst.default.timings.daysInWeek %></span><br/>
+                                <div class="editable" id="start">
+                                    <span class="caption">Schedule starts at</span><br/>
+                                    <span id="startView"><%= inst.default.timings.startTime %></span>
+                                    <button class="neutral-button caption" id="editstart">✒️</button>
+                                </div>
+                                <div id="starteditor">
+                                    <fieldset class="text-field questrial" id="startfield">
+                                        <legend class="field-caption">Start Time</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.startTime %>" placeholder="Schedule begins at" type="time" id="startinput" name="startTime" >
+                                        <span class="fmt-right error-caption"  id="starterror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="savestart">Save</button>
+                                    <button class="negative-button caption" id="cancelstart">Cancel</button>
+                                </div>
+
+                                <div class="editable" id="breakstart">
+                                    <span class="caption">Break starts at</span><br/>
+                                    <span id="breakstartView"><%= inst.default.timings.breakStartTime %></span>
+                                    <button class="neutral-button caption" id="editbreakstart">✒️</button>
+                                </div>
+                                <div id="breakstarteditor">
+                                    <fieldset class="text-field questrial" id="breakstartfield">
+                                        <legend class="field-caption">Break starts at</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.breakStartTime %>" placeholder="Break begins at" type="time" id="breakstartinput" name="breakstartTime" >
+                                        <span class="fmt-right error-caption"  id="breakstarterror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="savebreakstart">Save</button>
+                                    <button class="negative-button caption" id="cancelbreakstart">Cancel</button>
+                                </div>
+
+                                <div class="editable" id="periodduration">
+                                    <span class="caption">Each period duration</span><br/>
+                                    <span id="perioddurationView"><%= inst.default.timings.periodMinutes %></span>
+                                    <button class="neutral-button caption" id="editperiodduration">✒️</button>
+                                </div>
+                                <div id="perioddurationeditor">
+                                    <fieldset class="text-field questrial" id="perioddurationfield">
+                                        <legend class="field-caption">Each period duration</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.periodMinutes %>" placeholder="Period minutes" type="number" id="perioddurationinput" name="perioddurationTime" >
+                                        <span class="fmt-right error-caption"  id="perioddurationerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveperiodduration">Save</button>
+                                    <button class="negative-button caption" id="cancelperiodduration">Cancel</button>
+                                </div>
+
+                                <div class="editable" id="breakduration">
+                                    <span class="caption">Break duration</span><br/>
+                                    <span id="breakdurationView"><%= inst.default.timings.breakMinutes %></span>
+                                    <button class="neutral-button caption" id="editbreakduration">✒️</button>
+                                </div>
+                                <div id="breakdurationeditor">
+                                    <fieldset class="text-field questrial" id="breakdurationfield">
+                                        <legend class="field-caption">Break duration</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.breakMinutes %>" placeholder="Break minutes" type="number" id="breakdurationinput" name="breakdurationTime" >
+                                        <span class="fmt-right error-caption"  id="breakdurationerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="savebreakduration">Save</button>
+                                    <button class="negative-button caption" id="cancelbreakduration">Cancel</button>
+                                </div>
                                 <span class="caption">Periods in a day</span><br/>
                                 <span class="editable" id="totalPeriods"><%= inst.default.timings.periodsInDay %></span><br/>
+                                <% 
+                                    function getDaysArray(indices){
+                                        const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                                        let indays = Array();
+                                        indices.forEach((index,i)=>{
+                                            if(i>0){
+                                                indays.push(` ${days[Number(index)]}`);
+                                            } else {
+                                                indays.push(days[Number(index)]);
+                                            }
+                                        });
+                                        return indays;
+                                    }
+                                 %> 
+                                <span class="caption">Working days in a week</span><br/>
+                                <span class="editable" id="workdays"><%= getDaysArray(inst.default.timings.daysInWeek) %></span><br/>
                             </div>
                         </div>
                         <!--users settings-->

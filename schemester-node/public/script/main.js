@@ -129,6 +129,72 @@ class TextInput {
   }
 }
 
+class Editable{
+  constructor(viewID,editviewID,textInput = new TextInput(),editID,viewText,saveID,cancelID){
+    this.view = getElement(viewID);
+    this.editView = getElement(editviewID);
+    this.textInput = textInput;
+    this.editButton = getElement(editID);
+    this.textView = getElement(viewText);
+    this.saveButton = getElement(saveID);
+    this.cancelButton = getElement(cancelID);
+    this.editButton.onclick=_=>{this.edit()};
+    this.display();
+    this.onCancel();
+  }
+  edit(){
+    hide(this.view);
+    show(this.editView);
+    this.enableInput();
+  }
+  display(){
+    show(this.view);
+    hide(this.editView);
+    this.disableInput();
+  }
+  existence(isViewing = Boolean){
+    visibilityOf(this.view,isViewing);
+    visibilityOf(this.editView,!isViewing);
+  }
+  onSave(action=_=>{}){
+    this.saveButton.onclick=_=>{
+      action();
+    }
+  }
+  onCancel(action=_=>{this.display()}){
+    this.cancelButton.onclick=_=>{
+      action();
+    }
+  }
+  disableInput(){
+    this.textInput.disableInput();
+  }
+  enableInput(){
+    this.textInput.enableInput();
+  }
+  validateInput(){
+    this.textInput.validate();
+  }
+  validateInputNow(){
+    this.textInput.validateNow();
+  }
+  isValidInput(){
+    return this.textInput.isValid();
+  }
+  getInputValue(){
+    return this.textInput.getInput();
+  }
+  displayText(){
+    return this.textView.innerHTML;
+  }
+  setDisplayText(text){
+    this.textView.innerHTML = text;
+  }
+  clickCancel(){
+    this.cancelButton.click();
+  }
+}
+
 class Checkbox {
   constructor(
     containerId = String,

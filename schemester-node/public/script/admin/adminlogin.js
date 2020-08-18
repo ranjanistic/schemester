@@ -27,9 +27,57 @@ class AdminLogin{
       this.passField.normalize();
       hide(this.forgotPassword);
     });
-    
-    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.emailField.getInput());}, false);
+    if (Number(sessionStorage.getItem("linkin")) > 0) {
+      opacityOf(this.forgotPassword, 0.5);
+      let time = Number(sessionStorage.getItem("linkin"));
+      const timer = setInterval(() => {
+        time--;
+        sessionStorage.setItem("linkin", time);
+        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+        if (Number(sessionStorage.getItem("linkin")) == 0) {
+          clearInterval(timer);
+          this.forgotPassword.innerHTML = "Get password link";
+          opacityOf(this.forgotPassword, 1);
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        }
+      }, 1000);
+    } else {
+      this.forgotPassword.onclick = (_) => {this.linkSender()};
+    }
     this.logInButton.addEventListener(click,_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())},false);
+    
+  }
+  linkSender(){
+    if(!this.emailField.isValid()) return this.emailField.showError('Please provide your email address to help us reset your password.');
+    snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
+      postJsonData(post.admin.manage,{
+        external:true,
+        type:"resetpassword",
+        action:"send",
+        email:this.emailField.getInput()
+      }).then((resp)=>{
+        if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
+          return snackBar('An error occurred','Report');
+        }
+        snackBar(
+          "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
+        );
+        opacityOf(this.forgotPassword, 0.4);
+        this.forgotPassword.onclick = (_) => {};
+        let time = 120;
+        sessionStorage.setItem("linkin", time);
+        const timer = setInterval(() => {
+          time--;
+          sessionStorage.setItem("linkin", time);
+          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+          if (Number(sessionStorage.getItem("linkin")) == 0) {
+            clearInterval(timer);
+            this.forgotPassword.innerHTML = "Get password link";
+            opacityOf(this.forgotPassword, 1);
+          }
+        }, 1000);
+      })
+    })
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);

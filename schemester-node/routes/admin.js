@@ -8,6 +8,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
+  share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/adminworker"),
   Admin = require("../collections/Admins"),
@@ -56,7 +57,7 @@ admin.get("/session*", (req, res) => {
           return session.finish(res).then((response) => {
             if (response) res.redirect(worker.toLogin(data));
           });
-        let adata = getAdminShareData(admin);
+        let adata = share.getAdminShareData(admin);
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
@@ -95,7 +96,7 @@ admin.get("/session*", (req, res) => {
             case view.admin.target.viewschedule:
               {
                 clog(data);
-                if (data.client == "teacher") {
+                if (data.client == verify.target.teacher) {
                   const teacherScheduleInst = await Institute.findOne(
                     {
                       uiid: response.user.uiid,
@@ -153,7 +154,7 @@ admin.get("/session*", (req, res) => {
                       inst,
                     });
                   }
-                } else if (data.client == "student") {
+                } else if (data.client == verify.target.student) {
                   const scheduleInst = await Institute.findOne(
                     {
                       uiid: response.user.uiid,
@@ -220,7 +221,7 @@ admin.post("/self", async (req, res) => {
     if(!admin) return code.event(code.auth.USER_NOT_EXIST);
     switch (body.target) {
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
-      case "account": return res.json({ result: await worker.self.handleAccount(response.user,admin,body)});
+      case "account": return res.json({ result: await worker.self.handleAccount(response.user,body,admin)});
       case "settings": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
   });
@@ -340,7 +341,7 @@ admin.post('/default',(req,res)=>{
         }
         case "admin": return res.json({result:await worker.default.handleAdmin(response.user,inst,body)});
         case "institute":return res.json({result:await worker.default.handleInstitute(response.user,body)});
-        case "timings": return res.json({result:await worker.default.handleTimings(inst,body)});
+        case "timings": return res.json({result:await worker.default.handleTimings(response.user,body)});
       }
     });
 });
@@ -393,6 +394,16 @@ admin.post("/schedule", async (req, res) => {
 
 admin.post("/manage", async (req, res) => { //for settings
   clog("in post manage");
+  const body = req.body;
+  if(body.external){
+    switch (body.type) {
+      case reset.type:{
+        const user = await Admin.findOne({'email':body.email});
+        if(!user) return {result:code.event(code.OK)};  //don't tell if user not exists, while sending reset email.
+        return res.json({result:await worker.self.handlePassReset({id:user._id},body)});
+      };
+    }
+  }
   session.verify(req, sessionsecret)
     .catch((e) => {
       clog(e);
@@ -402,7 +413,6 @@ admin.post("/manage", async (req, res) => { //for settings
       if (!session.valid(response))
         return res.json({ result: response });
       const inst = await Institute.findOne({uiid: response.user.uiid,});
-      const body = req.body;
       if (!inst && body.type!=verify.type)
         return res.json({
           result: code.event(code.inst.INSTITUTION_NOT_EXISTS),
@@ -410,8 +420,9 @@ admin.post("/manage", async (req, res) => { //for settings
       switch (body.type) {
         case invite.type: return res.json({ result:await worker.invite.handleInvitation(response.user,inst,body)});
         case verify.type: return res.json({ result: await worker.self.handleVerification(response.user,body)});
-        case reset.type: return res.json({result:await worker.self.handlePassReset(response.user,body)})
+        case reset.type: return res.json({result:await worker.self.handlePassReset(response.user,body)});
         case "search": return res.json({result: await worker.users.handleUserSearch(inst,body)});
+        case "preferences" : return res.json({result:await worker.prefs.handlePreferences(response.user,body)});
         default: res.sendStatus(500);
       }
     });

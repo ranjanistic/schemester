@@ -113,7 +113,7 @@ class Self {
           (await this.defaults.admin.setPhone(user, body)) ? code.OK : code.NO
         );
       };
-      
+
       /**
        * 
        */
@@ -125,7 +125,7 @@ class Self {
     this.account = new Account();
   }
 
-  handleAccount = async (user, admin, body) => {
+  handleAccount = async (user, body,admin) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
@@ -168,8 +168,7 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":
-        {
+      case "send":{
           const linkdata = await reset.generateLink(verify.target.admin, {
             uid: user.id,
           });
@@ -178,8 +177,7 @@ class Self {
           return code.event(
             linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
           );
-        }
-        break;
+      }break;
     }
   };
 }
@@ -262,14 +260,61 @@ class Default {
       async getInfo() {}
     }
     class Timing {
-      constructor() {}
+      constructor() {
+        this.object = "timings";
+        this.path = `${object}.${this.object}`;
+        this.startpath = `${this.path}.startTime`;
+        this.breakstartpath = `${this.path}.breakStartTime`;
+        this.periodminpath = `${this.path}.periodMinutes`;
+        this.breakminpath = `${this.path}.breakMinutes`;
+        this.totalperiodspath = `${this.path}.periodsInDay`;
+        this.daysinweekpath = `${this.path}.daysInWeek`;
+      }
+      async setStartTime(user,body) {
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.startpath]:body.start}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
+      async setBreakStartTime(user,body) {
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.breakstartpath]:body.breakstart}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
+      async setPeriodDuration(user,body) {
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.periodminpath]:Number(body.periodduration)}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
+      async setBreakDuration(user,body) {
+        clog(body);
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.breakminpath]:Number(body.breakduration)}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
+
+      async setPeriodsInDay(user,body) {
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.totalperiodspath]:Number(body.totalperiods)}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
+      async setDaysInWeek(user,body) {
+        const newinst = await Institute.findOneAndUpdate(
+          {uiid:user.uiid},
+          {$set:{[this.daysinweekpath]:body.daysinweek}}
+        )
+        return code.event(newinst ? code.OK : code.NO);
+      }
       async getInfo() {}
-      async setDaysInWeek() {}
-      async setStartTime() {}
-      async setPeriodDuration() {}
-      async setBreakStartTime() {}
-      async setBreakDuration() {}
-      async setPeriodsInDay() {}
     }
     this.admin = new Admin();
     this.institute = new Institution();
@@ -295,24 +340,17 @@ class Default {
         return await this.institute.setPhone(user, body);
     }
   };
-  handleTimings = async (inst, body) => {
+  handleTimings = async (user, body) => {
     switch (body.action) {
-      case "changedaysinweek":
-        return await this.timings.setDaysInWeek();
-      case "changestarttime":
-        return await this.timings.setStartTime();
-      case "changeperiodminutes":
-        return await this.timings.setPeriodDuration();
-      case "changebreakstarttime":
-        return await this.timings.setBreakStartTime();
-      case "changebreakminutes":
-        return await this.timings.setBreakDuration();
-      case "changeperiodsinday":
-        return await this.timings.setPeriodsInDay();
+      case code.action.CHANGE_START_TIME:return await this.timings.setStartTime(user,body);
+      case code.action.CHANGE_BREAK_START_TIME:return await this.timings.setBreakStartTime(user,body);
+      case code.action.CHANGE_PERIOD_DURATION:return await this.timings.setPeriodDuration(user,body);
+      case code.action.CHANGE_BREAK_DURATION:return await this.timings.setBreakDuration(user,body);
+      case code.action.CHANGE_TOTAL_PERIODS:return await this.timings.setDaysInWeek(user,body);
+      case code.action.CHANGE_WORKING_DAYS:return await this.timings.setPeriodsInDay(user,body);
     }
   };
   handleRegistration = async (user, body) => {
-    clog("creating inst");
     clog(body);
     //todo:validation
     const registerdoc = {
@@ -330,11 +368,10 @@ class Default {
         },
         timings: {
           startTime: body.data.starttime,
-          endTime: body.data.endtime,
           breakStartTime: body.data.breakstarttime,
-          periodMinutes: body.data.periodduration,
-          breakMinutes: body.data.breakduration,
-          periodsInDay: body.data.totalperiods,
+          periodMinutes: Number(body.data.periodduration),
+          breakMinutes: Number(body.data.breakduration),
+          periodsInDay: Number(body.data.totalperiods),
           daysInWeek: body.data.workingdays,
         },
       },
@@ -356,7 +393,7 @@ class Default {
       active: false,
       restricted: false,
       vacations: [],
-      prefs: {},
+      preferences: {},
     };
     const done = await Institute.insertOne(registerdoc);
     return code.event(
@@ -834,7 +871,36 @@ class Vacations {
 }
 
 class Preferences {
-  constructor() {}
+  constructor() {
+    const object = 'preferences'
+    this.allowTeacherAddSchedule = `${object}.allowTeacherAddSchedule`
+  }
+  async handlePreferences(user,body){
+    switch(body.action){
+      case "set":{
+        switch(body.preference){
+          case "allowTeacherAddSchedule":return await this.teacherAddSchedule(user,body);
+        }
+      }break;
+      case "get":{
+        switch(body.preference){
+          case "allowTeacherAddSchedule":return await this.canTeacherAddSchedule(user);
+        }
+      }break;
+    }
+  }
+  async canTeacherAddSchedule(user){
+    const doc = await Institute.findOne({uiid:user.uiid});
+    return code.event(doc?doc.preferences.allowTeacherAddSchedule:code.NO);
+  }
+  async teacherAddSchedule(user,body){
+    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $set:{
+        [this.allowTeacherAddSchedule]:body.allow
+      }
+    });
+    return code.event(doc?code.OK:code.NO);
+  }
 }
 
 let clog = (msg) => console.log(msg);

@@ -120,272 +120,271 @@ class Management {
 
 class Admin {
   constructor() {
-    this.name = getElement("adminName");
-    this.nameeditor = getElement("adminnameeditor")
-    this.nameedit = getElement("editadminname")
-    hide(this.nameeditor);
+
+    this.name = new Editable("adminName","adminnameeditor",
+      new TextInput("adminnamefield","adminnameinput","adminnameerror",validType.name),
+      "editadminname","adminnameview","saveadminname","canceladminname"
+    );
+    
     this.email = getElement("adminEmailAddress");
 
-    this.phone = getElement("adminPhoneNumber");
-    this.phoneeditor = getElement("adminphoneeditor")
-    this.phoneedit = getElement("editadminphone")
-    hide(this.phoneeditor);
-    this.creationTime = getElement("adminCreationTime");
-    this.nameedit.onclick=_=>{
-      this.handleNameEditor();
-    }
-    this.phoneedit.onclick=_=>{
-      this.handlePhoneEditor();
-    }
-  }
-  handleNameEditor(){
-    hide(this.name);
-    show(this.nameeditor);
-    const nameField = new TextInput("adminnamefield","adminnameinput","adminnameerror",validType.name);
-    nameField.setInput(localStorage.getItem('username'));
-    const namesave = getElement("saveadminname");
-    const namecancel = getElement("canceladminname");
-    nameField.validate();
-    nameField.enableInput();
-    namecancel.onclick=_=>{
-      show(this.name);
-      hide(this.nameeditor);
-    }
-    namesave.onclick=_=>{
-      nameField.validateNow();
-      if(!nameField.isValid()) return;
-      nameField.disableInput();
-      if(nameField.getInput() == getElement("adminnameview").innerHTML){
-        localStorage.setItem('username',nameField.getInput());
-        return namecancel.click();
+    this.phone = new Editable("adminPhoneNumber","adminphoneeditor",
+      new TextInput("adminphonefield","adminphoneinput","adminphoneerror",validType.phone),
+      "editadminphone","adminphoneview","saveadminphone","canceladminphone"
+    );
+
+    this.name.onSave(_=>{
+      this.name.validateInputNow();
+      if(!this.name.isValidInput()) return;
+      this.name.disableInput();
+      if(this.name.getInputValue() == this.name.displayText()){
+        localStorage.setItem('username',this.name.getInputValue());
+        return this.name.clickCancel();
       }
       showLoader();
       postJsonData(post.admin.self,{
         target:"account",
         action:code.action.CHANGE_NAME,
-        newname:nameField.getInput()
+        newname:this.name.getInputValue()
       }).then(resp=>{
         if(resp.event == code.OK){
-          localStorage.setItem('username',nameField.getInput());
-          getElement("adminnameview").innerHTML = nameField.getInput();
-          show(this.name);
-          hide(this.nameeditor);
+          localStorage.setItem('username',this.name.getInputValue());
+          this.name.setDisplayText(this.name.getInputValue());
+          this.name.display();
         } else {
           snackBar('Unable to save');
         }
         hideLoader();
       })
-    }
-  }
-  handlePhoneEditor(){
-    hide(this.phone);
-    show(this.phoneeditor);
-    const phoneField = new TextInput("adminphonefield","adminphoneinput","adminphoneerror",validType.phone);
-    const phonesave = getElement("saveadminphone");
-    const phonecancel = getElement("canceladminphone");
-    phoneField.enableInput();
-    phonecancel.onclick=_=>{
-      show(this.phone);
-      hide(this.phoneeditor);
-    }
-    phoneField.validate();
-    phonesave.onclick=_=>{
-      phoneField.validateNow();
-      if(!phoneField.isValid()) return;
-      phoneField.disableInput();
-      if(phoneField.getInput() == getElement("adminphoneview").innerHTML){
-        return phonecancel.click();
+    });
+
+    this.phone.onSave(_=>{
+      this.phone.validateInputNow();
+      if(!this.phone.isValidInput()) return;
+      this.phone.disableInput();
+      if(this.phone.getInputValue() == this.phone.displayText()){
+        return this.phone.clickCancel();
       }
       showLoader();
       postJsonData(post.admin.self,{
         target:"account",
         action:code.action.CHANGE_PHONE,
-        newphone:phoneField.getInput()
+        newphone:this.phone.getInputValue()
       }).then(resp=>{
         if(resp.event == code.OK){
-          getElement("adminphoneview").innerHTML = phoneField.getInput();
-          show(this.phone);
-          hide(this.phoneeditor);
+          this.phone.setDisplayText(this.phone.getInputValue());
+          this.phone.display();
         } else {
           snackBar('Unable to save');
         }
         hideLoader();
       })
-    }
+    });
+    this.creationTime = getElement("adminCreationTime"); 
   }
 }
 
 class Institution {
   constructor() {
-    this.name = getElement("instituteName");
-    this.nameview = getElement("institutenameview")
-    this.nameeditor = getElement("institutenameeditor")
-    this.nameedit = getElement("editinstitutename")
-    hide(this.nameeditor);
-    
-    this.nameedit.onclick=_=>{
-      this.handleNameEditor();
-    }
-    
-    this.phone = getElement("institutePhone");
-    this.phoneview = getElement("institutephoneview");
-    this.phoneeditor = getElement("institutephoneeditor");
-    this.phoneedit = getElement("editinstitutephone");
-    hide(this.phoneeditor);
-
-    this.phoneedit.onclick=_=>{
-      this.handlePhoneEditor();
-    }
-    
-    this.mail = getElement("instituteMail");
-    this.mailview = getElement("institutemailview");
-    this.maileditor = getElement("institutemaileditor");
-    this.mailedit = getElement("editinstitutemail");
-    hide(this.maileditor);
-    this.mailedit.onclick=_=>{
-      this.handleMailEditor();
-    }
-    this.uiid = getElement("uiid");
-    this.subscriptionTill = getElement("subscriptionTill");
-  }
-  handleNameEditor(){
-    hide(this.name);
-    show(this.nameeditor);
-    const nameField = new TextInput("institutenamefield","institutenameinput","institutenameerror",validType.name);
-    const namesave = getElement("saveinstitutename");
-    const namecancel = getElement("cancelinstitutename");
-    nameField.enableInput();
-    namecancel.onclick=_=>{
-      show(this.name);
-      hide(this.nameeditor);
-    }
-    nameField.validate();
-    namesave.onclick=_=>{
-      nameField.validateNow();
-      if(!nameField.isValid()) return;
-      nameField.disableInput();
-      if(nameField.getInput() == this.nameview.innerHTML){
-        return namecancel.click();
+    this.name = new Editable("instituteName","institutenameeditor",
+      new TextInput("institutenamefield","institutenameinput","institutenameerror",validType.name),
+      "editinstitutename","institutenameview","saveinstitutename","cancelinstitutename"
+    );
+    this.name.onSave(_=>{
+      this.name.validateInputNow();
+      if(!this.name.isValidInput()) return;
+      this.name.disableInput();
+      if(this.name.getInputValue() == this.name.displayText()){
+        return this.name.clickCancel();
       }
       showLoader();
       postJsonData(post.admin.default,{
         target:"institute",
         action:code.action.CHANGE_NAME,
-        newname:nameField.getInput()
+        newname:this.name.getInputValue()
       }).then(resp=>{
         if(resp.event == code.OK){
-          this.nameview.innerHTML = nameField.getInput();
-          show(this.name);
-          hide(this.nameeditor);
+          this.name.setDisplayText(this.name.getInputValue());
+          this.name.display();
         } else {
           snackBar('Unable to save');
         }
         hideLoader();
       })
-    }
-  }
-  handleMailEditor(){
-    hide(this.mail);
-    show(this.maileditor);
-    const mailField = new TextInput("institutemailfield","institutemailinput","institutemailerror",validType.email);
-    const mailsave = getElement("saveinstitutemail");
-    const mailcancel = getElement("cancelinstitutemail");
-    mailField.enableInput();
-    mailcancel.onclick=_=>{
-      show(this.mail);
-      hide(this.maileditor);
-    }
-    mailField.validate();
-    mailsave.onclick=_=>{
-      mailField.validateNow();
-      if(!mailField.isValid()) return;
-      mailField.disableInput();
-      if(mailField.getInput() == this.mailview.innerHTML){
-        return mailcancel.click();
-      }
-      showLoader();
-      postJsonData(post.admin.default,{
-        target:"institute",
-        action:code.action.CHANGE_ID,
-        newemail:mailField.getInput()
-      }).then(resp=>{
-        if(resp.event == code.OK){
-          this.mailview.innerHTML = mailField.getInput();
-          show(this.mail);
-          hide(this.maileditor);
-        } else {
-          snackBar('Unable to save');
-        }
-        hideLoader();
-      })
-    }
-  }
-  handlePhoneEditor(){
-    hide(this.phone);
-    show(this.phoneeditor);
-    const phoneField = new TextInput("institutephonefield","institutephoneinput","institutephoneerror",validType.phone);
-    const phonesave = getElement("saveinstitutephone");
-    const phonecancel = getElement("cancelinstitutephone");
-    phoneField.enableInput();
-    phonecancel.onclick=_=>{
-      show(this.phone);
-      hide(this.phoneeditor);
-    }
-    phoneField.validate();
-    phonesave.onclick=_=>{
-      phoneField.validateNow();
-      if(!phoneField.isValid()) return;
-      phoneField.disableInput();
-      if(phoneField.getInput() == this.phoneview.innerHTML){
-        return phonecancel.click();
+    });
+    
+    this.phone = new Editable("institutePhone","institutephoneeditor",
+      new TextInput("institutephonefield","institutephoneinput","institutephoneerror",validType.phone),
+      "editinstitutephone","institutephoneview","saveinstitutephone","cancelinstitutephone"
+    );
+    this.phone.onSave(_=>{
+      this.phone.validateInputNow();
+      if(!this.phone.isValidInput()) return;
+      this.phone.disableInput();
+      if(this.phone.getInputValue() == this.phone.displayText()){
+        return this.phone.clickCancel();
       }
       showLoader();
       postJsonData(post.admin.default,{
         target:"institute",
         action:code.action.CHANGE_PHONE,
-        newphone:phoneField.getInput()
+        newphone:this.phone.getInputValue()
       }).then(resp=>{
         if(resp.event == code.OK){
-          this.phoneview.innerHTML = phoneField.getInput();
-          show(this.phone);
-          hide(this.phoneeditor);
+          this.phone.setDisplayText(this.phone.getInputValue());
+          this.phone.display();
         } else {
           snackBar('Unable to save');
         }
         hideLoader();
       })
-    }
+    });
+    
+    this.mail = new Editable("instituteMail","institutemaileditor",
+      new TextInput("institutemailfield","institutemailinput","institutemailerror",validType.email),
+      "editinstitutemail","institutemailview","saveinstitutemail","cancelinstitutemail"
+    );
+
+    this.mail.onSave(_=>{
+      this.mail.validateInputNow();
+      if(!this.mail.isValidInput()) return;
+      this.mail.disableInput();
+      if(this.mail.getInputValue() == this.mail.displayText()){
+        return this.mail.clickCancel();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"institute",
+        action:code.action.CHANGE_ID,
+        newemail:this.mail.getInputValue()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.mail.setDisplayText(this.mail.getInputValue());
+          this.mail.display();
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    });
+
+    
+    this.uiid = getElement("uiid");
+    this.subscriptionTill = getElement("subscriptionTill");
   }
+
+  
 }
 class Schedule {
   constructor() {
-    this.periodDuration = getElement("periodDuration");
-    this.weekStartDay = getElement("weekStartDay");
-    this.scheduleStartTime = getElement("scheduleStartTime");
-    this.scheduleEndTime = getElement("scheduleEndTime");
-    this.breakStartTime = getElement("breakStartTime");
-    this.breakDuration = getElement("breakDuration");
+    this.start = new Editable("start","starteditor",
+      new TextInput("startfield","startinput","starterror",validType.nonempty),
+      "editstart","startView","savestart","cancelstart"
+    );
+    this.breakstart = new Editable("breakstart","breakstarteditor",
+      new TextInput("breakstartfield","breakstartinput","breakstarterror",validType.nonempty),
+      "editbreakstart","breakstartView","savebreakstart","cancelbreakstart"
+    );
+    this.periodduration = new Editable("periodduration","perioddurationeditor",
+      new TextInput("perioddurationfield","perioddurationinput","perioddurationerror",validType.nonempty),
+      "editperiodduration","perioddurationView","saveperiodduration","cancelperiodduration"
+    );
+    this.breakduration = new Editable("breakduration","breakdurationeditor",
+      new TextInput("breakdurationfield","breakdurationinput","breakdurationerror",validType.nonempty),
+      "editbreakduration","breakdurationView","savebreakduration","cancelbreakduration"
+    );
+
+    this.start.onSave(_=>{
+      this.start.validateInputNow();
+      if(!this.start.isValidInput()) return;
+      this.start.disableInput();
+      if(this.start.getInputValue() == this.start.displayText()){
+        return this.start.clickCancel();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"timings",
+        action:code.action.CHANGE_START_TIME,
+        start:this.start.getInputValue()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.start.setDisplayText(this.start.getInputValue());
+          this.start.display();
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    });
+    this.breakstart.onSave(_=>{
+      this.breakstart.validateInputNow();
+      if(!this.breakstart.isValidInput()) return;
+      this.breakstart.disableInput();
+      if(this.breakstart.getInputValue() == this.breakstart.displayText()){
+        return this.breakstart.clickCancel();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"timings",
+        action:code.action.CHANGE_BREAK_START_TIME,
+        breakstart:this.breakstart.getInputValue()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.breakstart.setDisplayText(this.breakstart.getInputValue());
+          this.breakstart.display();
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    });
+    this.periodduration.onSave(_=>{
+      this.periodduration.validateInputNow();
+      if(!this.periodduration.isValidInput()) return;
+      this.periodduration.disableInput();
+      if(this.periodduration.getInputValue() == this.periodduration.displayText()){
+        return this.periodduration.clickCancel();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"timings",
+        action:code.action.CHANGE_PERIOD_DURATION,
+        periodduration:this.periodduration.getInputValue()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.periodduration.setDisplayText(this.periodduration.getInputValue());
+          this.periodduration.display();
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    });
+    this.breakduration.onSave(_=>{
+      this.breakduration.validateInputNow();
+      if(!this.breakduration.isValidInput()) return;
+      this.breakduration.disableInput();
+      if(this.breakduration.getInputValue() == this.breakduration.displayText()){
+        return this.breakduration.clickCancel();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"timings",
+        action:code.action.CHANGE_BREAK_DURATION,
+        breakduration:this.breakduration.getInputValue()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.breakduration.setDisplayText(this.breakduration.getInputValue());
+          this.breakduration.display();
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    });
+
     this.workDays = getElement("workdays");
     this.totalPeriods = getElement("totalPeriods");
-  }
-  setDetails(
-    periodDuration,
-    weekStartDay,
-    scheduleStartTime,
-    scheduleEndTime,
-    breakStartTime,
-    breakDuration,
-    totalWorkDays,
-    totalPeriodsInDay
-  ) {
-    this.periodDuration.textContent = periodDuration;
-    this.weekStartDay.textContent = weekStartDay;
-    this.scheduleStartTime.textContent = scheduleStartTime;
-    this.scheduleEndTime.textContent = scheduleEndTime;
-    this.breakStartTime.textContent = breakStartTime;
-    this.breakDuration.textContent = breakDuration;
-    this.workDays.textContent = totalWorkDays;
-    this.totalPeriods.textContent = totalPeriodsInDay;
   }
 }
 

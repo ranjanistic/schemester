@@ -124,9 +124,37 @@ class NoDataView {
             `<center><a href="${response.link}">${response.link}</a>
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
-            )}</b>.
+            )}</b><br/><br/>
+            <label class="check-container">
+              Teacher can add their schedule
+              <input type="checkbox" id="teachercanaddschedule">
+              <span class="tickmark-positive"></span>
+            </label>.
           </center>`
           );
+          const teacheradschedule = getElement("teachercanaddschedule");
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"get",
+            preference:"allowTeacherAddSchedule",
+          }).then((allow)=>{
+            clog(allow);
+            if(allow.event != code.NO){
+              teacheradschedule.checked = allow.event;
+            }
+          })
+          teacheradschedule.addEventListener(change, (_) => {
+              postJsonData(post.admin.manage,{
+                type:"preferences",
+                action:"set",
+                preference:"allowTeacherAddSchedule",
+                allow:teacheradschedule.checked
+              }).then(resp=>{
+                if(resp.event != code.OK){
+                  teacheradschedule.checked = !teacheradschedule.checked;
+                }
+              });
+          });
           linkdialog.createActions(
             Array("Disable Link", "Copy", "Done"),
             Array(actionType.negative, actionType.positive, actionType.neutral)

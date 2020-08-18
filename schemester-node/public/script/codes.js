@@ -104,6 +104,14 @@ class Codes {
         this.CHANGE_NAME = "action/change-name";
         this.SEND_INVITE = "action/send-invitation";
         this.ACCOUNT_VERIFY = "action/verify-account";
+
+        this.CHANGE_START_TIME = "action/timing-change-starttime";
+        this.CHANGE_BREAK_START_TIME = "action/timing-change-break-starttime";
+        this.CHANGE_PERIOD_DURATION = "action/timing-change-period-duration";
+        this.CHANGE_BREAK_DURATION = "action/timing-change-break-duration";
+        this.CHANGE_TOTAL_PERIODS = "action/timing-change-periods";
+        this.CHANGE_WORKING_DAYS = "action/timing-change-working-days";
+
       }
     }
     class InvitationCodes {
