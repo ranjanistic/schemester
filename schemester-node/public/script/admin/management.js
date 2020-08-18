@@ -125,6 +125,7 @@ class Admin {
     this.nameedit = getElement("editadminname")
     hide(this.nameeditor);
     this.email = getElement("adminEmailAddress");
+
     this.phone = getElement("adminPhoneNumber");
     this.phoneeditor = getElement("adminphoneeditor")
     this.phoneedit = getElement("editadminphone")
@@ -154,8 +155,8 @@ class Admin {
       nameField.validateNow();
       if(!nameField.isValid()) return;
       nameField.disableInput();
-      clog(nameField.getInput() == localStorage.getItem('username'))
-      if(nameField.getInput() == localStorage.getItem('username')){
+      if(nameField.getInput() == getElement("adminnameview").innerHTML){
+        localStorage.setItem('username',nameField.getInput());
         return namecancel.click();
       }
       showLoader();
@@ -165,8 +166,8 @@ class Admin {
         newname:nameField.getInput()
       }).then(resp=>{
         if(resp.event == code.OK){
-          this.name.innerHTML = nameField.getInput();
           localStorage.setItem('username',nameField.getInput());
+          getElement("adminnameview").innerHTML = nameField.getInput();
           show(this.name);
           hide(this.nameeditor);
         } else {
@@ -182,6 +183,7 @@ class Admin {
     const phoneField = new TextInput("adminphonefield","adminphoneinput","adminphoneerror",validType.phone);
     const phonesave = getElement("saveadminphone");
     const phonecancel = getElement("canceladminphone");
+    phoneField.enableInput();
     phonecancel.onclick=_=>{
       show(this.phone);
       hide(this.phoneeditor);
@@ -191,6 +193,9 @@ class Admin {
       phoneField.validateNow();
       if(!phoneField.isValid()) return;
       phoneField.disableInput();
+      if(phoneField.getInput() == getElement("adminphoneview").innerHTML){
+        return phonecancel.click();
+      }
       showLoader();
       postJsonData(post.admin.self,{
         target:"account",
@@ -198,7 +203,7 @@ class Admin {
         newphone:phoneField.getInput()
       }).then(resp=>{
         if(resp.event == code.OK){
-          this.phone.innerHTML = phoneField.getInput();
+          getElement("adminphoneview").innerHTML = phoneField.getInput();
           show(this.phone);
           hide(this.phoneeditor);
         } else {
@@ -213,34 +218,143 @@ class Admin {
 class Institution {
   constructor() {
     this.name = getElement("instituteName");
+    this.nameview = getElement("institutenameview")
+    this.nameeditor = getElement("institutenameeditor")
+    this.nameedit = getElement("editinstitutename")
+    hide(this.nameeditor);
+    
+    this.nameedit.onclick=_=>{
+      this.handleNameEditor();
+    }
+    
+    this.phone = getElement("institutePhone");
+    this.phoneview = getElement("institutephoneview");
+    this.phoneeditor = getElement("institutephoneeditor");
+    this.phoneedit = getElement("editinstitutephone");
+    hide(this.phoneeditor);
+
+    this.phoneedit.onclick=_=>{
+      this.handlePhoneEditor();
+    }
+    
+    this.mail = getElement("instituteMail");
+    this.mailview = getElement("institutemailview");
+    this.maileditor = getElement("institutemaileditor");
+    this.mailedit = getElement("editinstitutemail");
+    hide(this.maileditor);
+    this.mailedit.onclick=_=>{
+      this.handleMailEditor();
+    }
     this.uiid = getElement("uiid");
     this.subscriptionTill = getElement("subscriptionTill");
   }
-  setDetails(
-    name = null,
-    uiid = null,
-    puiid = null,
-    type = null,
-    subscriptionTill = null
-  ) {
-    if (name != null) {
-      this.name.textContent = name;
+  handleNameEditor(){
+    hide(this.name);
+    show(this.nameeditor);
+    const nameField = new TextInput("institutenamefield","institutenameinput","institutenameerror",validType.name);
+    const namesave = getElement("saveinstitutename");
+    const namecancel = getElement("cancelinstitutename");
+    nameField.enableInput();
+    namecancel.onclick=_=>{
+      show(this.name);
+      hide(this.nameeditor);
     }
-    if (uiid != null) {
-      this.uiid.textContent = uiid;
-    }
-    if (subscriptionTill != null) {
-      this.subscriptionTill.textContent = subscriptionTill;
+    nameField.validate();
+    namesave.onclick=_=>{
+      nameField.validateNow();
+      if(!nameField.isValid()) return;
+      nameField.disableInput();
+      if(nameField.getInput() == this.nameview.innerHTML){
+        return namecancel.click();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"institute",
+        action:code.action.CHANGE_NAME,
+        newname:nameField.getInput()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.nameview.innerHTML = nameField.getInput();
+          show(this.name);
+          hide(this.nameeditor);
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
     }
   }
-  getName() {
-    return this.name.textContent;
+  handleMailEditor(){
+    hide(this.mail);
+    show(this.maileditor);
+    const mailField = new TextInput("institutemailfield","institutemailinput","institutemailerror",validType.email);
+    const mailsave = getElement("saveinstitutemail");
+    const mailcancel = getElement("cancelinstitutemail");
+    mailField.enableInput();
+    mailcancel.onclick=_=>{
+      show(this.mail);
+      hide(this.maileditor);
+    }
+    mailField.validate();
+    mailsave.onclick=_=>{
+      mailField.validateNow();
+      if(!mailField.isValid()) return;
+      mailField.disableInput();
+      if(mailField.getInput() == this.mailview.innerHTML){
+        return mailcancel.click();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"institute",
+        action:code.action.CHANGE_ID,
+        newemail:mailField.getInput()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.mailview.innerHTML = mailField.getInput();
+          show(this.mail);
+          hide(this.maileditor);
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    }
   }
-  getUIID() {
-    return this.uiid.textContent;
-  }
-  getSubsciptionTill() {
-    return this.subscriptionTill.textContent;
+  handlePhoneEditor(){
+    hide(this.phone);
+    show(this.phoneeditor);
+    const phoneField = new TextInput("institutephonefield","institutephoneinput","institutephoneerror",validType.phone);
+    const phonesave = getElement("saveinstitutephone");
+    const phonecancel = getElement("cancelinstitutephone");
+    phoneField.enableInput();
+    phonecancel.onclick=_=>{
+      show(this.phone);
+      hide(this.phoneeditor);
+    }
+    phoneField.validate();
+    phonesave.onclick=_=>{
+      phoneField.validateNow();
+      if(!phoneField.isValid()) return;
+      phoneField.disableInput();
+      if(phoneField.getInput() == this.phoneview.innerHTML){
+        return phonecancel.click();
+      }
+      showLoader();
+      postJsonData(post.admin.default,{
+        target:"institute",
+        action:code.action.CHANGE_PHONE,
+        newphone:phoneField.getInput()
+      }).then(resp=>{
+        if(resp.event == code.OK){
+          this.phoneview.innerHTML = phoneField.getInput();
+          show(this.phone);
+          hide(this.phoneeditor);
+        } else {
+          snackBar('Unable to save');
+        }
+        hideLoader();
+      })
+    }
   }
 }
 class Schedule {

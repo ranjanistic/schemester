@@ -46,90 +46,105 @@ class AdminWorker {
 
 class Self {
   constructor() {
-    class Account{
-      constructor(){}
-      //send feedback emails
-      changeName = async(user,body)=>{
-        const newadmin = await Admin.findOneAndUpdate({'_id':ObjectId(user.id)},
-        {$set:{username:body.newname}});
-        if(newadmin){
-          const inst = await Institute.findOneAndUpdate(
-            {uiid:user.uiid},
-            {$set:{
-              "default.admin.username":body.newname,
-            }}
-          );
-          return code.event(inst?code.OK:code.NO);
-        }
-        return code.event(code.NO);
+    class Account {
+      constructor() {
+        this.defaults = new Default();
       }
-      changePassword=async(user,body)=>{
+      //send feedback emails
+      /**
+       * 
+       */
+      changeName = async (user, body) => {
+        const newadmin = await Admin.findOneAndUpdate(
+          { _id: ObjectId(user.id) },
+          { $set: { username: body.newname } }
+        );
+        return newadmin?code.event(
+          (await this.defaults.admin.setName(user, body)) ? code.OK : code.NO
+        ):code.event(code.NO);
+      };
+      /**
+       * 
+       */
+      changePassword = async (user, body) => {
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
-        clog(epassword);
         const newpassadmin = await Admin.findOneAndUpdate(
-          {_id:ObjectId(user.id)},{
-          $set:{
-            password:epassword
-          },
-          $unset:{
-            rlinkexp:null
+          { _id: ObjectId(user.id) },
+          {
+            $set: {
+              password: epassword,
+            },
+            $unset: {
+              rlinkexp: null,
+            },
           }
-        });
-        return code.event(newpassadmin?code.OK:code.NO);
-      }
-      changeEmailID=async(user,admin,body)=>{
-        if(admin.email == body.newemail) return code.event(code.auth.SAME_EMAIL);
-        const someadmin = await Admin.findOne({'email':body.newemail});
-        if(someadmin) return code.event(code.auth.USER_EXIST);
+        );
+        return code.event(newpassadmin ? code.OK : code.NO);
+      };
+
+      /**
+       * 
+       */
+      changeEmailID = async (user, admin, body) => {
+        if (admin.email == body.newemail)
+          return code.event(code.auth.SAME_EMAIL);
+        const someadmin = await Admin.findOne({ email: body.newemail });
+        if (someadmin) return code.event(code.auth.USER_EXIST);
         const newadmin = await Admin.findOneAndUpdate(
-          {'_id':ObjectId(user.id)},
-          {$set:{
-            email:body.newemail,
-            verified:false
-          }}
+          { _id: ObjectId(user.id) },
+          {
+            $set: {
+              email: body.newemail,
+              verified: false,
+            },
+          }
         );
-        if(newadmin){
-          const inst = await Institute.findOneAndUpdate(
-            {uiid:user.uiid},
-            {$set:{
-              "default.admin.email":body.newemail,
-              active:false
-            }}
-          );
-          return code.event(inst?code.OK:code.NO);
-        }
-        return code.event(code.NO);
-      }
-      changePhone=async(user,body)=>{
-        const inst = Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{"default.admin.phone":body.newphone}}
+        return newadmin?code.event(
+          (await this.defaults.admin.setEmail(user, body)) ? code.OK : code.NO
+        ):code.event(code.NO);
+      };
+
+      /**
+       * 
+       */
+      changePhone = async (user, body) => {
+        return code.event(
+          (await this.defaults.admin.setPhone(user, body)) ? code.OK : code.NO
         );
-        return code.event(inst?code.OK:code.NO);
-      }
-      deleteAccount=async(user)=>{
-        const del = await Admin.findOneAndDelete({_id:ObjectId(user.id)})
-        return code.event(del?code.OK:code.NO);
-      }
+      };
+      
+      /**
+       * 
+       */
+      deleteAccount = async (user) => {
+        const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
+        return code.event(del ? code.OK : code.NO);
+      };
     }
     this.account = new Account();
   }
-  
-  handleAccount = async(user,admin,body)=>{
-    switch(body.action){
-      case code.action.CHANGE_NAME:return await this.account.changeName(user,body);
-      case code.action.CHANGE_PASSWORD:return await this.account.changePassword(user,body);
-      case code.action.CHANGE_ID:return await this.account.changeEmailID(user,admin,body);
-      case code.action.CHANGE_PHONE:return await this.account.changePhone(user,body);
-      case code.action.ACCOUNT_DELETE:return await this.account.deleteAccount(user);
+
+  handleAccount = async (user, admin, body) => {
+    switch (body.action) {
+      case code.action.CHANGE_NAME:
+        return await this.account.changeName(user, body);
+      case code.action.CHANGE_PASSWORD:
+        return await this.account.changePassword(user, body);
+      case code.action.CHANGE_ID:
+        return await this.account.changeEmailID(user, admin, body);
+      case code.action.CHANGE_PHONE:
+        return await this.account.changePhone(user, body);
+      case code.action.ACCOUNT_DELETE:
+        return await this.account.deleteAccount(user);
     }
-  }
-  handlePreferences=async(user,body)=>{
-    switch(body.preference){
-      default:return ;
+  };
+  handlePreferences = async (user, body) => {
+    switch (body.preference) {
+      default:
+        return;
     }
-  }
+  };
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
@@ -151,109 +166,151 @@ class Self {
       }
     }
   };
-  handlePassReset = async(user,body)=>{
+  handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send": {
-        const linkdata = await reset.generateLink(verify.target.admin, {
-          uid: user.id,
-        });
-        clog(linkdata);
-        //todo: send email then return.
-        return code.event(
-          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-        );
-      }break;
+      case "send":
+        {
+          const linkdata = await reset.generateLink(verify.target.admin, {
+            uid: user.id,
+          });
+          clog(linkdata);
+          //todo: send email then return.
+          return code.event(
+            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
+          );
+        }
+        break;
     }
-  }
+  };
 }
 
 class Default {
   constructor() {
-    class Admin{
-      constructor(){}
-      async setEmail(user,inst){
-
+    const object = "default";
+    class Admin {
+      constructor() {
+        this.object = "admin";
+        this.path = `${object}.${this.object}`;
+        this.namepath = `${this.path}.username`;
+        this.emailpath = `${this.path}.email`;
+        this.phonepath = `${this.path}.phone`;
       }
-      async setName(user,inst){
-
+      async setEmail(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          {
+            $set: {
+              [this.emailpath]: body.newemail,
+            },
+          }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
-      async setPhone(user,inst,body){
-
+      async setName(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          {
+            $set: {
+              [this.namepath]: body.newname,
+            },
+          }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
-      async getInfo(){
-
+      async setPhone(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          {
+            $set: {
+              [this.phonepath]: body.newphone,
+            },
+          }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
+      async getInfo() {}
     }
-    class Institute{
-      constructor(){}
-      async setName(){
-
+    class Institution {
+      constructor() {
+        this.object = "institute";
+        this.path = `${object}.${this.object}`;
+        this.namepath = `${this.path}.instituteName`;
+        this.emailpath = `${this.path}.email`;
+        this.phonepath = `${this.path}.phone`;
       }
-      async setEmail(){
-
+      async setName(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          { $set: { [this.namepath]: body.newname } }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
-      async setPhone(){
-
+      async setEmail(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          { $set: { [this.emailpath]: body.newemail } }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
-      async getInfo(){
-
+      async setPhone(user, body) {
+        const newinst = await Institute.findOneAndUpdate(
+          { uiid: user.uiid },
+          { $set: { [this.phonepath]: body.newphone } }
+        );
+        return code.event(newinst ? code.OK : code.NO);
       }
+      async getInfo() {}
     }
-    class Timing{
-      constructor(){}
-      async getInfo(){
-
-      }
-      async setDaysInWeek(){
-
-      }
-      async setStartTime(){
-
-      }
-      async setPeriodDuration(){
-
-      }
-      async setBreakStartTime(){
-
-      }
-      async setBreakDuration(){
-
-      }
-      async setPeriodsInDay(){
-
-      }
+    class Timing {
+      constructor() {}
+      async getInfo() {}
+      async setDaysInWeek() {}
+      async setStartTime() {}
+      async setPeriodDuration() {}
+      async setBreakStartTime() {}
+      async setBreakDuration() {}
+      async setPeriodsInDay() {}
     }
     this.admin = new Admin();
-    this.institute = new Institute();
+    this.institute = new Institution();
     this.timings = new Timing();
   }
-  handleAdmin=async(user,inst,body)=>{
-    switch(body.action){
-      case "getdetails":return await this.admin.getInfo()
-      case "changeemail":return await this.admin.setEmail();
-      case "changename":return await this.admin.setName();
-      case "changephone":return await this.admin.setPhone();
+  handleAdmin = async (user, inst, body) => {
+    switch (body.action) {
+      case code.action.CHANGE_NAME:
+        return await this.admin.setName();
+      case code.action.CHANGE_ID:
+        return await this.admin.setEmail();
+      case code.action.CHANGE_PHONE:
+        return await this.admin.setPhone();
     }
-  }
-  handleInstitute=async(user,inst,body)=>{
-    switch(body.action){
-      case "getdetails":return await this.institute.getInfo();
-      case "changename":return await this.institute.setName();
-      case "changeemail":return await this.institute.setEmail();
-      case "changephone":return await this.institute.setPhone();
+  };
+  handleInstitute = async (user, body) => {
+    switch (body.action) {
+      case code.action.CHANGE_NAME:
+        return await this.institute.setName(user, body);
+      case code.action.CHANGE_ID:
+        return await this.institute.setEmail(user, body);
+      case code.action.CHANGE_PHONE:
+        return await this.institute.setPhone(user, body);
     }
-  }
-  handleTimings=async(inst,body)=>{
-    switch(body.action){
-      case "getdetails":return await this.timings.getInfo();
-      case "changedaysinweek": return await this.timings.setDaysInWeek();
-      case "changestarttime":return await this.timings.setStartTime();
-      case "changeperiodminutes":return await this.timings.setPeriodDuration();
-      case "changebreakstarttime":return await this.timings.setBreakStartTime();
-      case "changebreakminutes":return await this.timings.setBreakDuration();
-      case "changeperiodsinday":return await this.timings.setPeriodsInDay();
+  };
+  handleTimings = async (inst, body) => {
+    switch (body.action) {
+      case "changedaysinweek":
+        return await this.timings.setDaysInWeek();
+      case "changestarttime":
+        return await this.timings.setStartTime();
+      case "changeperiodminutes":
+        return await this.timings.setPeriodDuration();
+      case "changebreakstarttime":
+        return await this.timings.setBreakStartTime();
+      case "changebreakminutes":
+        return await this.timings.setBreakDuration();
+      case "changeperiodsinday":
+        return await this.timings.setPeriodsInDay();
     }
-  }
+  };
   handleRegistration = async (user, body) => {
     clog("creating inst");
     clog(body);
@@ -269,7 +326,7 @@ class Default {
         institute: {
           instituteName: body.data.instname,
           email: body.data.instemail,
-          phone: body.data.instphone
+          phone: body.data.instphone,
         },
         timings: {
           startTime: body.data.starttime,
@@ -294,7 +351,7 @@ class Default {
           active: false,
           createdAt: 0,
           expiresAt: 0,
-        }
+        },
       },
       active: false,
       restricted: false,
@@ -376,16 +433,14 @@ class Users {
         return await this.classes.searchClass(inst, body);
     }
   };
-  handleTeacherAction=async(inst,body)=>{
-    switch(body.action){
-
+  handleTeacherAction = async (inst, body) => {
+    switch (body.action) {
     }
-  }
-  handleClassAction = async(inst,body)=>{
-    switch(body.action){
-
+  };
+  handleClassAction = async (inst, body) => {
+    switch (body.action) {
     }
-  }
+  };
 }
 
 /**
@@ -730,17 +785,17 @@ class Invite {
               },
             },
           }
-          );
+        );
         clog("returning");
         return document
-        ? {
+          ? {
               event: code.invite.LINK_CREATED,
               link: genlink.link,
               exp: genlink.exp,
             }
-            : code.event(code.invite.LINK_CREATION_FAILED);
+          : code.event(code.invite.LINK_CREATION_FAILED);
       };
-      
+
       inviteLinkDisable = async (inst, body) => {
         clog("post disabe link");
         const path = "invite." + body.target;
@@ -758,8 +813,8 @@ class Invite {
         );
         clog("returning");
         return doc
-        ? code.event(code.invite.LINK_DISABLED)
-        : code.event(code.invite.LINK_DISABLE_FAILED);
+          ? code.event(code.invite.LINK_DISABLED)
+          : code.event(code.invite.LINK_DISABLE_FAILED);
       };
     }
     this.teacher = new TeacherAction();

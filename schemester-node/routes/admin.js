@@ -338,9 +338,9 @@ admin.post('/default',(req,res)=>{
           if(inst) return res.json({result:code.event(code.inst.INSTITUTION_EXISTS)});
           return res.json({result:await worker.default.handleRegistration(response.user,body)})
         }
-        case "admin": return res.json({result:worker.default.handleAdmin(response.user,inst,body)});
-        case "institute":return res.json({result:worker.default.handleInstitute(response.user,inst,body)});
-        case "timings": return res.json({result:worker.default.handleTimings(inst,body)});
+        case "admin": return res.json({result:await worker.default.handleAdmin(response.user,inst,body)});
+        case "institute":return res.json({result:await worker.default.handleInstitute(response.user,body)});
+        case "timings": return res.json({result:await worker.default.handleTimings(inst,body)});
       }
     });
 });

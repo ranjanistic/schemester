@@ -1796,7 +1796,7 @@ const stringIsValid = (
     case validType.email:
       return constant.emailRegex.test(String(value).toLowerCase());
     case validType.phone:
-      return !isNaN(value);
+      return !isNaN(value) && stringIsValid(String(value).trim());
     //todo: case inputType.password: return constant.passRegex.test(String(passValue));
     case validType.username:
       return stringIsValid(String(value).trim());

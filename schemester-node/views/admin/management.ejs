@@ -105,7 +105,7 @@
                             <div>
                                 <div class="caption">Admin name</div>
                                 <div class="editable" id="adminName">
-                                    <%= adata.username %>
+                                    <span id="adminnameview"><%= adata.username %></span>
                                     <button class="neutral-button caption" id="editadminname">✒️</button>
                                 </div>
                                 <div id="adminnameeditor">
@@ -117,10 +117,14 @@
                                     <button class="positive-button caption" id="saveadminname">Save</button>
                                     <button class="negative-button caption" id="canceladminname">Cancel</button>
                                 </div>
+
                                 <div class="caption">Email address</div>
                                 <div class="active" id="adminEmailAddress"><%= adata.id %></div>
                                 <div class="caption">Contact Number</div>
-                                <div class="editable" id="adminPhoneNumber"><%= inst.default.admin.phone %><button class="neutral-button caption" id="editadminphone">✒️</button></div>
+                                <div class="editable" id="adminPhoneNumber">
+                                    <span id="adminphoneview"><%= inst.default.admin.phone %></span>
+                                    <button class="neutral-button caption" id="editadminphone">✒️</button>
+                                </div>
                                 <div id="adminphoneeditor">
                                     <fieldset class="text-field questrial" id="adminphonefield">
                                         <legend class="field-caption">Your phone</legend>
@@ -137,10 +141,52 @@
                         <!--institution settings box-->
                         <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
                             <span class="sub-heading">Basic</span>
-                            <button class="fmt-right positive-button" id="editInstSection">Edit</button>
                             <div>
                                 <span class="caption">Display name</span><br/>
-                                <span class="editable" id="instituteName"><%= inst.default.institute.instituteName %></span><br/>
+                                <div class="editable" id="instituteName">
+                                    <span id="institutenameview"><%= inst.default.institute.instituteName %></span>
+                                    <button class="neutral-button caption" id="editinstitutename">✒️</button>
+                                </div>
+                                <div id="institutenameeditor">
+                                    <fieldset class="text-field questrial" id="institutenamefield">
+                                        <legend class="field-caption">Institute Name</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.instituteName %>" placeholder="Visible to people of your institution" type="text" id="institutenameinput" name="institutename" >
+                                        <span class="fmt-right error-caption"  id="institutenameerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveinstitutename">Save</button>
+                                    <button class="negative-button caption" id="cancelinstitutename">Cancel</button>
+                                </div>
+
+                                <span class="caption">Email address</span><br/>
+                                <div class="editable" id="instituteMail">
+                                    <span id="institutemailview"><%= inst.default.institute.email %></span>
+                                    <button class="neutral-button caption" id="editinstitutemail">✒️</button>
+                                </div>
+                                <div id="institutemaileditor">
+                                    <fieldset class="text-field questrial" id="institutemailfield">
+                                        <legend class="field-caption">Institute Name</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.email %>" placeholder="Visible to people of your institution" type="text" id="institutemailinput" name="institutemail" >
+                                        <span class="fmt-right error-caption"  id="institutemailerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveinstitutemail">Save</button>
+                                    <button class="negative-button caption" id="cancelinstitutemail">Cancel</button>
+                                </div>
+
+                                <span class="caption">Phone number</span><br/>
+                                <div class="editable" id="institutePhone">
+                                    <span id="institutephoneview"><%= inst.default.institute.phone %></span>
+                                    <button class="neutral-button caption" id="editinstitutephone">✒️</button>
+                                </div>
+                                <div id="institutephoneeditor">
+                                    <fieldset class="text-field questrial" id="institutephonefield">
+                                        <legend class="field-caption">Institute Name</legend>
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.phone %>" placeholder="Visible to people of your institution" type="text" id="institutephoneinput" name="institutephone" >
+                                        <span class="fmt-right error-caption"  id="institutephoneerror"></span>
+                                    </fieldset>
+                                    <button class="positive-button caption" id="saveinstitutephone">Save</button>
+                                    <button class="negative-button caption" id="cancelinstitutephone">Cancel</button>
+                                </div>
+
                                 <span class="caption">UIID</span><br/>
                                 <span class="editable" id="uiid"><%= adata.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
