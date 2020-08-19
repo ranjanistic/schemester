@@ -485,7 +485,7 @@ class Users {
  */
 class Schedule {
   constructor() {
-    class TeacherAction {
+    class TeacherAction  {
       constructor() {}
       async scheduleUpload(inst, body) {
         let overwriting = false; //if existing teacher schedule being overwritten after completion.
@@ -658,6 +658,26 @@ class Schedule {
         }
       }
       async scheduleUpdate(inst, body) {
+        switch(body.specific){
+          case "switchweekdays":{
+            inst.schedule.teachers.forEach((teacher,tindex)=>{
+              teacher.days.forEach((d,dindex)=>{
+                body.days.forEach(async(day,_)=>{
+                  if(day.old == d.dayIndex){
+                    const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
+                    const doc = await Institute.findOneAndUpdate(
+                      {uiid:inst.uiid},{
+                        $set:{[path]:day.new}
+                      }
+                    );
+                    clog(doc);
+                  }
+                })
+              })
+            })
+            clog(body.days);
+          }break;
+        }
         return;
       }
     }

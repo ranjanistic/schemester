@@ -70,6 +70,10 @@ class TextInput {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
+  stopValidate(){
+    clog("here");
+    this.onTextDefocus((_) => {});
+  }
   isValid(matchfieldvalue = null) {
     return stringIsValid(this.getInput(), this.type, matchfieldvalue);
   }
@@ -589,7 +593,7 @@ class Dialog extends DialogID {
     );
   }
 
-  loader(show = true) {
+  loader(show = true,onloadAction=_=>{}) {
     visibilityOf(this.loading, show);
     opacityOf(this.box,show?0.5:1);
     for (var k = 0; k < this.dialogButtons.length; k++) {
@@ -599,6 +603,7 @@ class Dialog extends DialogID {
       this.inputField.forEach((field,_)=>{
         show?field.disableInput():field.enableInput();
       });
+    onloadAction();
   }
 
   largeTextArea(caption, hint) {
@@ -1568,6 +1573,10 @@ const validateTextField = (
         matcher = ifmatchField.getInput();
       }
       break;
+    case validType.weekday:{
+      error = "Invalid weekday"
+    }break;
+
     default: {
       error = "This can't be empty";
     }
@@ -1868,8 +1877,11 @@ const stringIsValid = (
       return stringIsValid(String(value).trim());
     case validType.match:
       return value === ifMatchValue;
+    case validType.weekday:
+      return constant.weekdayscasual.includes(value.toLowerCase())
     default:
       return value != null && value != constant.nothing;
+
   }
 };
 

@@ -229,7 +229,17 @@ class Constant {
       "Friday",
       "Saturday"
     );
+    this.weekdayscasual = Array(
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday"
+    );
     this.shortDays = Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
+    this.shortDaysCasual = Array("sun", "mon", "tue", "wed", "thu", "fri", "sat");
     this.months = Array(
       "January",
       "February",
@@ -472,6 +482,7 @@ class InputType {
     this.match = "matching";
     this.username = "username";
     this.phone = "phone";
+    this.weekday = "weekday";
   }
 }
 class ViewType {

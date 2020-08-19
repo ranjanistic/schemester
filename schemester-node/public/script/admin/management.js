@@ -3,28 +3,15 @@
 class Management {
   constructor() {
     this.sectionreq = getElement("section").innerHTML;
-    switch (
-      this.sectionreq //for section to be displayed
-    ) {
-      case locate.admin.section.institute:
-        this.displayIndex = 1;
-        break;
-      case locate.admin.section.schedule:
-        this.displayIndex = 2;
-        break;
-      case locate.admin.section.users:
-        this.displayIndex = 3;
-        break;
-      case locate.admin.section.security:
-        this.displayIndex = 4;
-        break;
-      case locate.admin.section.about:
-        this.displayIndex = 5;
-        break;
-      default:
-        this.displayIndex = 0;
-        break;
-    }
+    const sectionsArray = Array(
+      locate.admin.section.account,
+      locate.admin.section.institute,
+      locate.admin.section.schedule,
+      locate.admin.section.users,
+      locate.admin.section.security,
+      locate.admin.section.about
+    );
+    this.displayIndex = sectionsArray.indexOf(this.sectionreq)<0?0:sectionsArray.indexOf(this.sectionreq);
     clog(this.displayIndex);
 
     this.tabs = Array(
@@ -58,7 +45,6 @@ class Management {
     this.back = getElement("backFromSettings");
     this.contactDevs = getElement("contactDevelopers");
     this.logout = getElement("logoutAdmin");
-
     this.admin = new Admin();
     this.inst = new Institution();
     this.schedule = new Schedule();
@@ -385,6 +371,95 @@ class Schedule {
 
     this.workDays = getElement("workdays");
     this.totalPeriods = getElement("totalPeriods");
+    this.reschedule = getElement("reschedule");
+    this.scheduler = new Dialog();
+    this.reschedule.onclick=_=>{
+      this.rescheduleDefault();
+      this.scheduler.show();
+    }
+    this.reschedule.click();
+  }
+  rescheduleDefault(weekdays = false,periods = false){
+    this.scheduler.createActions(Array('Apply changes','Discard'),Array(actionType.negative,actionType.neutral));
+    visibilityOf(this.scheduler.getDialogButton(0),weekdays||periods);
+    this.scheduler.onButtonClick(Array(_=>{
+
+    },_=>{
+      sessionStorage.clear();
+      this.scheduler.hide();
+    }));
+
+    this.scheduler.setDisplay('Edit Schedule Structure',`
+    <center class="negative">These actions will change the schedule structure, proceed with caution.</center>
+    <br/>
+    <div class="fmt-center">
+      <button class="positive-button" id="editweekdays">Edit weekdays${weekdays?'*':''}</button>
+      <button class="positive-button" id="editperiods">Edit periods${periods?'*':''}</button>
+    </div>
+  `);
+    const editweek = getElement("editweekdays"), editperiods = getElement("editperiods");
+    editweek.onclick=_=>{this.rescheduleWeekEditor()};
+  }
+  rescheduleWeekEditor(){
+    const daysindices = Array();
+    const days = this.workDays.innerHTML.split(',');
+    let editcontent = constant.nothing;
+    days.forEach((day,d)=>{
+      daysindices.push(constant.weekdayscasual.indexOf(day.toLowerCase().trim()));
+      editcontent += `<div class="fmt-row">
+        Change ${day} to ${getInputField(`dayfield${d}`,`daycap${d}`,`dayinput${d}`,`dayerror${d}`)}
+      </div>`;
+    });
+    clog(daysindices);
+    this.scheduler.setDisplay('Weekdays Editor',`
+    <center class="negative">These actions will change the weekdays, proceed with caution.</center>
+    <br/>
+    <div class="fmt-row">
+      ${editcontent}
+    </div>
+  `);
+    const editDayField = Array();
+    days.forEach((_,d)=>{
+      editDayField.push(new TextInput(`dayfield${d}`,`dayinput${d}`,`dayerror${d}`,validType.weekday,`daycap${d}`));
+    });
+    editDayField.forEach((field,f)=>{
+      field.setFieldCaption('Weekday name');
+      field.setInputAttrs('Schedule will be transferred to');
+    });
+    this.scheduler.createActions(Array('Back','Move schedule'),Array(actionType.neutral,actionType.positive));
+    this.scheduler.onButtonClick(Array(_=>{this.rescheduleDefault()},
+    _=>{
+      const someinvalid = editDayField.some((f,_)=>{
+        if(f.getInput()!=constant.nothing){
+          f.validateNow();
+          return !f.isValid()
+        }
+      });
+      !someinvalid?this.scheduler.loader(true,_=>{editDayField.forEach((f,_)=>{f.disableInput()})}):_=>{};
+      if(!someinvalid){
+        const data = Array();
+        days.forEach((day,d)=>{
+          data.push({
+            old:daysindices[d],
+            new:constant.weekdayscasual.indexOf(editDayField[d].getInput().toLowerCase())
+          })
+        });
+        
+        postJsonData(post.admin.schedule,{
+          target:client.teacher,
+          action:"update",
+          specific:"switchweekdays",
+          days:data
+        }).then(response=>{
+          clog(response);
+          if(response.event == code.OK){
+            this.scheduler.loader(false);
+            this.rescheduleDefault();
+            snackBar('Days were switched successfully. Restart is required for changes to reflect.','Restart',true,_=>{relocate(locate.root)});
+          }
+        })
+      }
+    }))
   }
 }
 
@@ -430,7 +505,7 @@ class Security {
               "Delete?",
               `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
                 "id"
-              )}</b> permanently? The following consequencies will take place:<br/>
+              )}</button> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>

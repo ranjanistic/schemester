@@ -388,7 +388,7 @@ admin.post("/schedule", async (req, res) => {
       case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(inst,body)});
       case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(inst,body)});
     }
-  });
+  }); 
 });
 
 
