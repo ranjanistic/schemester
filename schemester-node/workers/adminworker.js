@@ -353,6 +353,7 @@ class Default {
   handleRegistration = async (user, body) => {
     clog(body);
     //todo:validation
+    
     const registerdoc = {
       uiid: user.uiid,
       default: {
@@ -485,6 +486,7 @@ class Users {
  */
 class Schedule {
   constructor() {
+    const defaults  = new Default();
     class TeacherAction  {
       constructor() {}
       async scheduleUpload(inst, body) {
@@ -657,28 +659,65 @@ class Schedule {
             };
         }
       }
-      async scheduleUpdate(inst, body) {
+      async scheduleUpdate(user,inst, body) {
         switch(body.specific){
           case "switchweekdays":{
+            const daysinweek = Array();
             inst.schedule.teachers.forEach((teacher,tindex)=>{
               teacher.days.forEach((d,dindex)=>{
                 body.days.forEach(async(day,_)=>{
-                  if(day.old == d.dayIndex){
-                    const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
-                    const doc = await Institute.findOneAndUpdate(
-                      {uiid:inst.uiid},{
-                        $set:{[path]:day.new}
-                      }
-                    );
-                    clog(doc);
+                  if((!(day.new < 0))&&(day.new!=null)&&(day.new!='')){
+                    if(!daysinweek.includes(day.new)) daysinweek.push(day.new);
+                    if(day.old == d.dayIndex){
+                      const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
+                      const doc = await Institute.findOneAndUpdate(
+                        {uiid:inst.uiid},{
+                          $set:{[path]:day.new}
+                        }
+                      );
+                      //todo: doc return
+                      clog(doc);
+                      return code.event(doc?code.OK:code.NO);
+                    }
                   }
-                })
-              })
-            })
+                });
+              });
+            });
             clog(body.days);
+            clog(daysinweek);
+            if(daysinweek.length>0){
+              return await defaults.timings.setDaysInWeek(user,{daysinweek})
+            } else {
+              return code.event(code.NO);
+            }
           }break;
         }
         return;
+      }
+      async scheduleRemove(user,inst,body){
+        switch(body.specific){
+          case "weekday":{
+              const promises = inst.schedule.teachers.map(async(teacher,tindex)=>{
+                if(!(body.removeday < 0)&&!isNaN(body.removeday)){
+                  const path = `schedule.teachers.${tindex}.days`;
+                  const doc = await Institute.findOneAndUpdate(
+                    {uiid:inst.uiid},
+                    {
+                      $pull:{
+                        [path]:{dayIndex:body.removeday},
+                        [defaults.timings.daysinweekpath]:body.removeday
+                      },
+                    }
+                  );
+                }
+              });
+              await Promise.all(promises);
+              return code.event(code.OK);
+          }break;
+          case "periods":{
+
+          }
+        }
       }
     }
 
@@ -733,9 +772,9 @@ class Schedule {
         } else {
           try {
             let done = false;
-            inst.schedule.teachers.forEach((teacher, tindex) => {
-              teacher.days.forEach((day, dindex) => {
-                day.period.forEach((__, _) => {
+            const promises = inst.schedule.teachers.map(async(teacher,tindex)=>{
+              teacher.days.forEach(async(day, dindex) => {
+                day.period.forEach(async(__, _) => {
                   body.data.forEach(async (c, _) => {
                     const setter = `schedule.teachers.${tindex}.days.${dindex}.period.$[outer].classname`;
                     const filter = {
@@ -757,6 +796,7 @@ class Schedule {
                 });
               });
             });
+            await Promise.all(promises);
             clog(done);
             return code.event(done ? code.OK : code.NO);
           } catch (e) {
@@ -769,14 +809,16 @@ class Schedule {
     this.teacher = new TeacherAction();
     this.classes = new ClassAction();
   }
-  handleScheduleTeachersAction = async (inst, body) => {
+  handleScheduleTeachersAction = async (user,inst, body) => {
     switch (body.action) {
       case "upload":
         return await this.teacher.scheduleUpload(inst, body);
       case "receive":
         return await this.teacher.scheduleReceive(inst, body);
       case "update":
-        return await this.teacher.scheduleUpdate(inst, body);
+        return await this.teacher.scheduleUpdate(user,inst, body);
+      case "remove":
+        return await this.teacher.scheduleRemove(user,inst,body);
       default:
         return code.event(code.server.DATABASE_ERROR);
     }

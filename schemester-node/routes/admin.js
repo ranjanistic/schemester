@@ -61,8 +61,11 @@ admin.get("/session*", (req, res) => {
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
-        if (!inst) {
+        if (!inst || !inst.default || !inst.default.daysInWeek) {
           data.target = view.admin.target.register;
+          return res.render(view.admin.getViewByTarget(data.target), {
+            adata,inst:inst?inst:false,binst:false
+          });
         } else {
           if (
             data.target == view.admin.target.register ||
@@ -75,11 +78,6 @@ admin.get("/session*", (req, res) => {
         }
         try {
           switch (data.target) {
-            case view.admin.target.register: {
-              return res.render(view.admin.getViewByTarget(data.target), {
-                adata,
-              });
-            }
             case view.admin.target.addteacher: {
               return res.render(view.admin.getViewByTarget(data.target), {
                 user: adata,
@@ -385,7 +383,7 @@ admin.post("/schedule", async (req, res) => {
     if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
     const body = req.body;
     switch (body.target) {
-      case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(inst,body)});
+      case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,inst,body)});
       case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(inst,body)});
     }
   }); 

@@ -203,20 +203,23 @@ class Stage2 {
       validType.nonempty
     );
 
-    this.startTimeField.setInput(sessionStorage.getItem("startTimeField"));
-    this.endTimeField.setInput(sessionStorage.getItem("endTimeField"));
-    this.breakStartField.setInput(sessionStorage.getItem("breakStartField"));
+    sessionStorage.getItem("startTimeField")?this.startTimeField.setInput(sessionStorage.getItem("startTimeField")):_=>{};
+    sessionStorage.getItem("endTimeField")?this.endTimeField.setInput(sessionStorage.getItem("endTimeField")):_=>{};
+    sessionStorage.getItem("breakStartField")?this.breakStartField.setInput():_=>{};
 
-    this.eachDurationField.setInput(
+    sessionStorage.getItem("eachDurationField")?this.eachDurationField.setInput(
       sessionStorage.getItem("eachDurationField")
-    );
+    ):_=>{};
     
+    sessionStorage.getItem("totalPeriodsField")?
     this.totalPeriodsField.setInput(
       sessionStorage.getItem("totalPeriodsField")
-    );
+    ):_=>{};
+    
+    sessionStorage.getItem("breakDurationField")?
     this.breakDurationField.setInput(
       sessionStorage.getItem("breakDurationField")
-    );
+    ):_=>{};
 
     this.startTimeField.validate((_) => {
       this.endTimeField.inputFocus(),
@@ -410,6 +413,7 @@ class Stage2 {
           totalperiods: sessionStorage.getItem("totalPeriodsField"),
           workingdays: wdays,
         };
+        //check other subdocs before sending
         postJsonData(post.admin.default, {
           target:post.admin.action.registerInstitute,
           data

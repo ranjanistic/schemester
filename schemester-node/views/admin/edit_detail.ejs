@@ -58,7 +58,7 @@
                     <div class="fmt-row">
                         <fieldset class="text-field fmt-right" id="adminPhoneField">
                             <legend class="field-caption">Your contact number</legend>
-                            <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails">
+                            <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails"  value="<%= inst?inst.default?inst.default.admin.phone:null:null %>">
                             <span class="fmt-right error-caption"  id="adminPhoneError"></span><!-- add break in span -->
                         </fieldset>
                     </div>
@@ -72,7 +72,7 @@
                         <div class="fmt-row">
                             <fieldset class="text-field" id="instNameField">
                                 <legend class="field-caption">Proper name of Institution</legend>
-                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails" >
+                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails" value="<%= inst?inst.default?inst.default.institute.instituteName:null:null %>">
                                 <span class="fmt-right error-caption"  id="instNameError"></span>
                             </fieldset>
                         </div>
@@ -89,14 +89,16 @@
                         <div class="fmt-row">
                             <fieldset class="text-field" id="instEmailField">
                                 <legend class="field-caption">Institution Email address</legend>
-                                <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails">
+                                <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails" value="<%= inst?inst.default?inst.default.institute.email:null:null %>">
+                                 
                                 <span class="fmt-right error-caption"  id="instEmailError"></span>
                             </fieldset>
                         </div>
                         <div class="fmt-row">
                             <fieldset class="text-field fmt-right" id="instPhoneField">
                                 <legend class="field-caption">Telephone Number</legend>
-                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails">
+                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails" value="<%= inst?inst.default?inst.default.institute.phone:null:null %>">
+                                 
                                 <span class="fmt-right error-caption"  id="instPhoneError"></span>
                             </fieldset>
                         </div>
@@ -117,19 +119,20 @@
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
                             <legend class="field-caption">Schedule starts at</legend>
-                            <input class="text-input" required type="time" id="startTime" name="timeDetail" >
+                            <input class="text-input" required type="time" id="startTime" name="timeDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.startTime:null:null:null %>">
                             <span class="fmt-right error-caption"  id="startTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakStartField">
                             <legend class="field-caption">Break starts at</legend>
-                            <input class="text-input" required type="time" id="breakStart" name="timeDetail">
+                            <input class="text-input" required type="time" id="breakStart" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakStartTime:null:null:null %>">
                             <span class="fmt-right error-caption"  id="breakStartError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="endTimeField">
                             <legend class="field-caption">Schedule Ends at</legend>
-                            <input class="text-input" required placeholder="XXX-XXX-XXXX" type="time" id="endTime" name="timeDetail">
+                            <input class="text-input" required placeholder="XXX-XXX-XXXX" type="time" id="endTime" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.endTime:null:null:null %>">
+                             
                             <span class="fmt-right error-caption"  id="endTimeError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="workingdaysfield">
@@ -145,19 +148,21 @@
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
                             <legend class="field-caption">Duration of each period</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="eachDuration" name="durationDetail">
+                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="eachDuration" name="durationDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodMinutes:null:null:null %>">
                             <span class="fmt-right error-caption"  id="eachDurationError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakDurationField">
                             <legend class="field-caption">Break Duration</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="breakDuration" name="durationDetail">
+                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="breakDuration" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakMinutes:null:null:null %>">
+                             
                             <span class="fmt-right error-caption"  id="breakDurationError"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-half fmt-row">
                         <fieldset class="text-field" id="totalPeriodsField">
                             <legend class="field-caption">Total Periods in a day</legend>
-                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail" >
+                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodsInDay:null:null:null %>">
+                            
                             <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
                         </fieldset>
                     </div>

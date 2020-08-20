@@ -377,18 +377,13 @@ class Schedule {
       this.rescheduleDefault();
       this.scheduler.show();
     }
-    this.reschedule.click();
   }
   rescheduleDefault(weekdays = false,periods = false){
-    this.scheduler.createActions(Array('Apply changes','Discard'),Array(actionType.negative,actionType.neutral));
-    visibilityOf(this.scheduler.getDialogButton(0),weekdays||periods);
+    this.scheduler.createActions(Array('Discard'),Array(actionType.neutral));
     this.scheduler.onButtonClick(Array(_=>{
-
-    },_=>{
       sessionStorage.clear();
       this.scheduler.hide();
     }));
-
     this.scheduler.setDisplay('Edit Schedule Structure',`
     <center class="negative">These actions will change the schedule structure, proceed with caution.</center>
     <br/>
@@ -400,17 +395,29 @@ class Schedule {
     const editweek = getElement("editweekdays"), editperiods = getElement("editperiods");
     editweek.onclick=_=>{this.rescheduleWeekEditor()};
   }
+  
   rescheduleWeekEditor(){
     const daysindices = Array();
     const days = this.workDays.innerHTML.split(',');
     let editcontent = constant.nothing;
     days.forEach((day,d)=>{
       daysindices.push(constant.weekdayscasual.indexOf(day.toLowerCase().trim()));
-      editcontent += `<div class="fmt-row">
-        Change ${day} to ${getInputField(`dayfield${d}`,`daycap${d}`,`dayinput${d}`,`dayerror${d}`)}
-      </div>`;
+      editcontent += 
+      `<div class="fmt-row" id="dayrow${d}">
+        <div class="fmt-row">
+          <div class="fmt-col fmt-half">
+          Shift ${day} to
+          </div>
+          <div class="fmt-col fmt-half">
+          <button class="negative-button fmt-right" id="deleteday${d}">Delete ${day}</button>
+          </div>
+        </div>
+        <div class="fmt-row">
+        ${getInputField(`dayfield${d}`,`daycap${d}`,`dayinput${d}`,`dayerror${d}`)}
+        </div>
+      </>
+      `;
     });
-    clog(daysindices);
     this.scheduler.setDisplay('Weekdays Editor',`
     <center class="negative">These actions will change the weekdays, proceed with caution.</center>
     <br/>
@@ -418,13 +425,37 @@ class Schedule {
       ${editcontent}
     </div>
   `);
+    const dayrows = Array();
     const editDayField = Array();
-    days.forEach((_,d)=>{
+    const deleteDays = Array();
+    days.forEach((day,d)=>{
+      dayrows.push(getElement(`dayrow${d}`));
       editDayField.push(new TextInput(`dayfield${d}`,`dayinput${d}`,`dayerror${d}`,validType.weekday,`daycap${d}`));
+      deleteDays.push(getElement(`deleteday${d}`));
+      deleteDays[d].onclick=_=>{
+        snackBar(`Delete ${day} from every schedule?`,'Delete',false,_=>{
+          deleteDays[d].onclick=_=>{}
+          snackBar(`Deleting ${day}...`);
+          postJsonData(post.admin.schedule,{
+            target:client.teacher,
+            action:"remove",
+            specific:"weekday",
+            removeday:daysindices[d]
+          }).then(response=>{
+            clog(response);
+            if(response.event == code.OK){
+              locatoin.reload();
+              snackBar(`${day} was removed from every schedule`,'Refresh',true);
+            } else {
+              snackBar(`Unable to remove ${day} from every schedule`,'Report');
+            }
+          });
+        });
+      }
     });
     editDayField.forEach((field,f)=>{
       field.setFieldCaption('Weekday name');
-      field.setInputAttrs('Schedule will be transferred to');
+      field.setInputAttrs(`${days[f]} schedule will be transferred to`);
     });
     this.scheduler.createActions(Array('Back','Move schedule'),Array(actionType.neutral,actionType.positive));
     this.scheduler.onButtonClick(Array(_=>{this.rescheduleDefault()},
@@ -432,10 +463,11 @@ class Schedule {
       const someinvalid = editDayField.some((f,_)=>{
         if(f.getInput()!=constant.nothing){
           f.validateNow();
-          return !f.isValid()
+        } else {
+          f.showError('Cannot be empty');
         }
+        return !f.isValid();
       });
-      !someinvalid?this.scheduler.loader(true,_=>{editDayField.forEach((f,_)=>{f.disableInput()})}):_=>{};
       if(!someinvalid){
         const data = Array();
         days.forEach((day,d)=>{
@@ -444,7 +476,15 @@ class Schedule {
             new:constant.weekdayscasual.indexOf(editDayField[d].getInput().toLowerCase())
           })
         });
-        
+        const equals = Array();
+        data.forEach((obj,o)=>{
+          equals.push(obj.old == obj.new);
+        });
+        if(!equals.includes(false)){
+          return snackBar('All days are same as their old ones.',null,bodyType.warning);
+        }
+        days.includes(constant.weekdayscasual[data.new])
+        this.scheduler.loader(true,_=>{editDayField.forEach((f,_)=>{f.disableInput()})})
         postJsonData(post.admin.schedule,{
           target:client.teacher,
           action:"update",
@@ -455,11 +495,32 @@ class Schedule {
           if(response.event == code.OK){
             this.scheduler.loader(false);
             this.rescheduleDefault();
-            snackBar('Days were switched successfully. Restart is required for changes to reflect.','Restart',true,_=>{relocate(locate.root)});
+            this.restartView();
+          } else {
+            snackBar('Could\'nt change weekdays','Report');
+            editDayField.forEach((field,f)=>{
+              field.validateNow();
+            });
           }
         })
       }
     }))
+  }
+
+  restartView(){
+    this.scheduler.createActions(Array('Restart now'),Array(actionType.positive));
+    this.scheduler.onButtonClick(Array(_=>{
+      relocate(locate.root);
+    }));
+    this.scheduler.setDisplay('Restart now',`<center class="active">Changes were applied successfully.<br/>A restart is required to resume scheduling.</center>`);
+    let i = 10;
+    setInterval(() => {
+      this.scheduler.getDialogButton(0).innerHTML = `Restart now (${i})`;
+      i-=1;
+      if(i==0){
+        this.scheduler.getDialogButton(0).click();
+      }
+    }, 1000);
   }
 }
 
