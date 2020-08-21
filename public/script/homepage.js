@@ -13,9 +13,9 @@ class Homepage{
         this.adminLogin.addEventListener(click,_=>refer(locate.admin.login));
         this.teacherLogin.addEventListener(click,_=>refer(locate.teacher.login));
         this.studentLogin.addEventListener(click,_=>refer(locate.student.login));
-        this.theme = new Checkbox(null,null,"themeswitch",null);
-        this.theme.checked(theme.isDark());
-        this.theme.onCheckChange(_=>{theme.setDark();},_=>{theme.setLight();});
+        this.darkmode = new Switch('darkmode');
+        this.darkmode.turn(theme.isDark());
+        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
     }    
 }
 

@@ -46,7 +46,7 @@
                 </div>
             </div>
             <br/>
-            <% if (today) { %>
+            <% if (today && timings) { %>
                 <div class="fmt-row">
                     <% for( let i = 0; i < today.length; i++ ) { %>
                         <div class="fmt-row tab-container b-neutral" id="periodview<%= i %>" style="color:var(--secondary-text)">
@@ -106,13 +106,16 @@
         
         <span hidden>
             <span id="today"><%= today %></span>
-            <span id="startTime"><%= timings.startTime %></span>
-            <span id="endTime"><%= timings.endTime %></span>
-            <span id="breakTime"><%= timings.breakStartTime %></span>
-            <span id="periodDuration"><%= timings.periodMinutes %></span>
-            <span id="breakDuration"><%= timings.breakMinutes %></span>
-            <span id="periodsInDay"><%= timings.periodsInDay %></span>
-            <span id="daysInWeek"><%= timings.daysInWeek %></span>
+            <span id="timings"><%= timings %></span>
+            <% if (timings) { %>
+                <span id="startTime"><%= timings.startTime %></span>
+                <span id="endTime"><%= timings.endTime %></span>
+                <span id="breakTime"><%= timings.breakStartTime %></span>
+                <span id="periodDuration"><%= timings.periodMinutes %></span>
+                <span id="breakDuration"><%= timings.breakMinutes %></span>
+                <span id="periodsInDay"><%= timings.periodsInDay %></span>
+                <span id="daysInWeek"><%= timings.daysInWeek %></span>
+            <% } %>
             <% if(today){ %>
                 <% for( let i = 0; i < today.length; i++ ) { %>
                     <span id="hold<%= i %>"><%= today[i].hold %></span>

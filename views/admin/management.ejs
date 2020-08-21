@@ -9,6 +9,7 @@
         <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -139,9 +140,9 @@
                                 <div id="adminCreationTime"><%= adata.createdAt %></div>
                         </div>
                         <!--institution settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="institutionSettingsBox">
-                            <span class="sub-heading">Basic</span>
-                            <div>
+                        <div class="sub-container fmt-row fmt-animate-opacity" id="institutionSettingsBox">
+                            <div class="fmt-col fmt-half">
+                                <span class="sub-heading">Basic</span>
                                 <div class="editable" id="instituteName">
                                     <span class="caption">Display name</span><br/>
                                     <span id="institutenameview"><%= inst.default.institute.instituteName %></span>
@@ -191,6 +192,31 @@
                                 <span class="editable" id="uiid"><%= adata.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
                                 <span  id="subscriptionTill">...</span ><br/>
+                            </div>
+                            <div class="fmt-col fmt-half">
+                                <span class="sub-heading">Settings</span>
+                                <div class="switch-view" id="teachereditschedulecontainer">
+                                    <span class="switch-text">Allow new teachers to add schedule</span>
+                                    <label class="switch-container">
+                                      <input type="checkbox" id="teachereditschedule">
+                                      <span class="switch-positive" id="teachereditscheduleview"></span>
+                                    </label>
+                                </div>
+                                <div class="switch-view">
+                                    <span class="switch-text">Dark mode</span>
+                                    <label class="switch-container">
+                                        <input type="checkbox" id="darkmode">
+                                        <span class="switch-positive"></span>
+                                    </label>
+                                </div>
+                                
+                                <div class="switch-view" id="scheduleactivecontainer">
+                                    <span class="switch-text">Scheduling is active</span>
+                                    <label class="switch-container">
+                                        <input type="checkbox" id="scheduleactive">
+                                        <span class="switch-active" id="scheduleactiveview"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         <!--schedule settings box-->

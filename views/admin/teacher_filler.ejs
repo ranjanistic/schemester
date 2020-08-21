@@ -83,23 +83,28 @@
                             </div>
                         <% } %>  
                     </div>
+                <% if(user.isTeacher || user.isAdmin) { %>
+                    <% if(inst.preferences.allowTeacherAddSchedule==true || user.isAdmin) { %>
                     <div class="fmt-col fmt-half">
-                    <div class="fmt-half">
-                        <fieldset class="text-field-active" id="teacherDayField">
-                            <legend class="field-caption" id="teacherDayCaption">Day</legend>
-                            <!-- <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail"> -->
-                            <span id="teacherDay" style="font-size:24px"><%= inst.default.timings.startDay %> </span>
-                            <span class="fmt-right error-caption"  id="teacherDayError"></span>
-                        </fieldset>
+                        <div class="fmt-half">
+                            <fieldset class="text-field-active" id="teacherDayField">
+                                <legend class="field-caption" id="teacherDayCaption">Day</legend>
+                                <!-- <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail"> -->
+                                <span id="teacherDay" style="font-size:24px"><%= inst.default.timings.startDay %> </span>
+                                <span class="fmt-right error-caption"  id="teacherDayError"></span>
+                            </fieldset>
+                        </div>
+                        <div class="fmt-right fmt-hide-small" style="padding:12px">
+                            <button class="positive-button" id="nextSchedule">Save & Next</button>
+                            <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
+                        </div>
                     </div>
-                    <div class="fmt-right fmt-hide-small" style="padding:12px">
-                        <button class="positive-button" id="nextSchedule">Save & Next</button>
-                        <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
-                    </div>
-                    </div>
+                    <% } %>
+                <% } %>
                 </div>
                 <br/>
-
+                <% if(user.isTeacher || user.isAdmin) { %>
+                    <% if(inst.preferences.allowTeacherAddSchedule==true || user.isAdmin) { %>
                 <div class="fmt-row group-heading active fmt-hide-small">
                     <div class="fmt-col fmt-quarter">
                         Period
@@ -112,8 +117,8 @@
                     </div>
                 </div>
 
+                
                 <div class="fmt-row fmt-center" style="padding:4px" id="teacherFillerBox">
-
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
                         <div class="fmt-row tab-container" style="margin-bottom:4px">
                             <div class="fmt-col fmt-quarter fmt-center active" style="padding:18px;">
@@ -137,10 +142,30 @@
                     <% } %>
                     <div class="fmt-hide-large fmt-hide-medium fmt-center">
                         <br/>
-                        <button class="fmt-row positive-button" style="width:100%" id="next2">Save & Next</button>
+                        <button class="fmt-row positive-button" style="width:100%" id="next2">Save &amp; Next</button>
                         <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="nextloader2"/>
                     </div>
                 </div>
+                <% } else { %>
+                    <div class="fmt-row">
+                        <div class="fmt-col fmt-quarter fmt-padding">
+                        </div>
+                        <div class="fmt-col fmt-half fmt-center container">
+                            <div class="group-heading positive">No schedule assigned</div>
+                            <br/>
+                            <div class="questrial">
+                                Your administrator has not allowed any teacher to add their schedule. Wait for them to add your schedule.
+                            </div>
+                        </div>
+                        <div class="fmt-col fmt-quarter fmt-padding">
+                        </div>
+                        <div class="fmt-center">
+                            <button class="positive-button" id="weekschedule">See weekly</button>
+                        </div>
+                    </div>
+                <% } %>
+            <% } %>
+
             </div>
         </div>
         <div id="snackBar" class="snack-positive fmt-animate-bottom">
@@ -158,6 +183,7 @@
                 <span id="teacheremail"><%= user.id %></span>
                 <span id="teacherverfied"><%= user.verified %></span>
                 <span id="teacherID"><%= user.uid %></span>
+                <span id="allowTeacherAddSchedule"><%= inst.preferences.allowTeacherAddSchedule %></span>
             <% } %>
         </span>
     </body>

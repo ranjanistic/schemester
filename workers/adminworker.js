@@ -351,31 +351,20 @@ class Default {
     }
   };
   handleRegistration = async (user, body) => {
-    clog(body);
     //todo:validation
-    
+    clog(body.data);
+    const existingInst = await Institute.findOne({uiid:user.uiid});
+    if(existingInst){
+      const doc = Institute.findOneAndUpdate({uiid:user.uiid},{
+        $set:{
+          default:body.data.default
+        }
+      });
+      return code.event(doc?code.inst.INSTITUTION_CREATED:code.inst.INSTITUTION_CREATION_FAILED);
+    }
     const registerdoc = {
       uiid: user.uiid,
-      default: {
-        admin: {
-          email: body.data.adminemail,
-          username: body.data.adminname,
-          phone: body.data.adminphone,
-        },
-        institute: {
-          instituteName: body.data.instname,
-          email: body.data.instemail,
-          phone: body.data.instphone,
-        },
-        timings: {
-          startTime: body.data.starttime,
-          breakStartTime: body.data.breakstarttime,
-          periodMinutes: Number(body.data.periodduration),
-          breakMinutes: Number(body.data.breakduration),
-          periodsInDay: Number(body.data.totalperiods),
-          daysInWeek: body.data.workingdays,
-        },
-      },
+      default: body.data.default,
       users: {
         teachers: [],
         classes: [],
@@ -391,7 +380,6 @@ class Default {
           expiresAt: 0,
         },
       },
-      active: false,
       restricted: false,
       vacations: [],
       preferences: {},
@@ -935,30 +923,54 @@ class Vacations {
 class Preferences {
   constructor() {
     const object = 'preferences'
-    this.allowTeacherAddSchedule = `${object}.allowTeacherAddSchedule`
+    this.allowTeacherAddSchedule = `${object}.allowTeacherAddSchedule`;
+    this.active = `${object}.active`;
   }
   async handlePreferences(user,body){
     switch(body.action){
       case "set":{
-        switch(body.preference){
-          case "allowTeacherAddSchedule":return await this.teacherAddSchedule(user,body);
+        switch(body.specific){
+          case "allowTeacherAddSchedule":return await this.teacherAddSchedule(user,body.allow);
+          case "active":return await this.scheduleActive(user,body.active);
+          default:return await this.setAllPreferences(user,body);
         }
       }break;
       case "get":{
-        switch(body.preference){
+        switch(body.specific){
           case "allowTeacherAddSchedule":return await this.canTeacherAddSchedule(user);
+          case "active":return await this.isScheduleActive(user);
+          default:return await this.allPreferences(user);
         }
       }break;
     }
   }
+  async setAllPreferences(user,body){
+  
+  }
+  async allPreferences(user){
+    const doc = await Institute.findOne({uiid:user.uiid});
+    return code.event(doc?doc.preferences:code.NO);
+  }
   async canTeacherAddSchedule(user){
     const doc = await Institute.findOne({uiid:user.uiid});
-    return code.event(doc?doc.preferences.allowTeacherAddSchedule:code.NO);
+    return doc?doc.preferences.allowTeacherAddSchedule:code.event(code.NO);
   }
-  async teacherAddSchedule(user,body){
+  async teacherAddSchedule(user,allow){
     const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
       $set:{
-        [this.allowTeacherAddSchedule]:body.allow
+        [this.allowTeacherAddSchedule]:allow
+      }
+    });
+    return code.event(doc?code.OK:code.NO);
+  }
+  async isScheduleActive(user){
+    const doc = await Institute.findOne({uiid:user.uiid});
+    return code.event(doc?doc.preferences.active:code.NO);
+  }
+  async scheduleActive(user,active){
+    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $set:{
+        [this.active]:active
       }
     });
     return code.event(doc?code.OK:code.NO);

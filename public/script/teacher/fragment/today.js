@@ -3,7 +3,7 @@ class TeacherToday{
         this.data = new ReceiveData();
         this.rawdata = new ReceiveData(true);
         this.dateview = getElement("simpledate");
-        if(!this.data.today){
+        if(!this.data.today || !this.data.timings){
             getElement("weekschedule").onclick = window.parent.document.getElementById("fulltab").onclick;
         } else {
             this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
@@ -50,7 +50,7 @@ class TeacherToday{
             const date = new Date();
             if(date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0){ // Check the time
                 clearInterval(indicator);
-                window.location.reload();
+                window.location.reload();   //reloads every night 00:00:00 hrs.
             }
             if(this.data.today){
                 const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
@@ -126,20 +126,23 @@ class TeacherToday{
 
 class ReceiveData{
     constructor(raw = false){
-        if(raw){
-            this.start = getElement("startTime").innerHTML;
-            this.end = getElement("endTime").innerHTML;
-            this.breakstart = getElement("breakTime").innerHTML;
-        }else {
-            this.start = this.getNumericTime(getElement("startTime").innerHTML);
-            this.end = this.getNumericTime(getElement("endTime").innerHTML);
-            this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
+        this.timings = getElement("timings").innerHTML?true:false;
+        if(this.timings){
+            if(raw){
+                this.start = getElement("startTime").innerHTML;
+                this.end = getElement("endTime").innerHTML;
+                this.breakstart = getElement("breakTime").innerHTML;
+            }else {
+                this.start = this.getNumericTime(getElement("startTime").innerHTML);
+                this.end = this.getNumericTime(getElement("endTime").innerHTML);
+                this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
+            }
+            this.periodduration = Number(getElement("periodDuration").innerHTML);
+            this.breakduration = Number(getElement("breakDuration").innerHTML);
+            this.totalperiods = Number(getElement("periodsInDay").innerHTML);
+            this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
         }
         this.today = getElement("today").innerHTML == 'false'?false:true;
-        this.periodduration = Number(getElement("periodDuration").innerHTML);
-        this.breakduration = Number(getElement("breakDuration").innerHTML);
-        this.totalperiods = Number(getElement("periodsInDay").innerHTML);
-        this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
         clog(this.today);
         if(this.today){
             this.classname = Array();

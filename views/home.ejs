@@ -14,7 +14,8 @@
     <link href="/font/Questrial.css" rel="stylesheet">
     <link rel = "stylesheet" href="/css/fmt.css">
     <link rel = "stylesheet" href="/css/main.css">
-    <link rel = "stylesheet" href="/css/checkbox.css">
+    <link rel = "stylesheet" href="/css/switch.css">
+    
     <link rel="manifest" href="/manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Schemester">
@@ -53,11 +54,12 @@
       <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
       <span id="navtext">Schemester</span>
       <img class="fmt-spin-fast fmt-circle fmt-right" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-      <label class="check-container fmt-right" id="rememberuiidcontainer">
-        Dark
-        <input type="checkbox" id="themeswitch">
-        <span class="tickmark-positive"></span>
-    </label>
+      <span class="fmt-right">
+        <label class="switch-container">
+            <input type="checkbox" id="darkmode">
+            <span class="switch-positive"></span>
+        </label>
+        </span>
     </div>
     <div class="fmt-row">
     <div class="fmt-col fmt-padding" style="margin-top: 82px;">

@@ -13,15 +13,15 @@
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
     </head>
-    <body style="background-color: #216bf3;padding: 38px;">
+    <body style="background-color: var(--base);padding: 38px;">
         <div class="fmt-row fmt-center" >
-            <div class="heading" style="color:white;font-size: 72px;">
+            <div class="heading" style="color:var(--base-text);font-size: 72px;">
                 404
             </div>
-            <div class="sub-heading fmt-center fmt-text-white fmt-padding">
+            <div class="sub-heading fmt-center fmt-padding">
             You've lost track.
             </div>
-            <p class="group-text fmt-text-white fmt-padding" style="font-size: 24px;" >
+            <p class="group-text fmt-padding" style="font-size: 24px;" >
                 This world used to be a big place to roam freely, but internet changed everything.
                 And because of that, everything today is just a tap away.<br/><br/>
                  However, even though this creation of human 
@@ -35,9 +35,10 @@
             <button class="sub-display-button" style="font-size:32px;font-family: 'Questrial',sans-serif;" id="returnFrom404">Return to base</button>
         </div >
         <script type="text/javascript">
+        window.onload=_=>{
             document.getElementById('returnFrom404').addEventListener('click',function(){
                 window.location.replace('/');
-            },false);
+            },false);}
         </script>
     </body>
 

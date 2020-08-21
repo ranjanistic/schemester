@@ -3,6 +3,11 @@ class AdminLogin{
   constructor(){
     value.backbluecovered = true;
     this.view = getElement("workbox");
+
+    this.darkmode = new Switch('darkmode');
+    this.darkmode.turn(theme.isDark());
+    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+    
     this.emailField = new TextInput("email_fieldset","adminemail","emailError",validType.email);
     this.passField = new TextInput("password_fieldset","adminpassword","passError",validType.nonempty);
     this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",validType.nonempty);
@@ -17,7 +22,7 @@ class AdminLogin{
     if(!stringIsValid(this.target,validType.nonempty)){
       this.target = 'dashboard';
     }
-    
+
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     this.emailField.validate(_=>{this.passField.inputFocus()});
     this.passField.validate(_=>{this.uiidField.inputFocus()});

@@ -265,8 +265,9 @@ class ReceiveData{
       this.isTeacher = getElement("isTeacher").innerHTML?true:false;
       this.teacherName = getElement("teachername").innerHTML;
       this.teacherEmail = getElement("teacheremail").innerHTML;
-      this.teacherVerified = getElement("teacherverfied").innerHTML=='true'?true:false;
+      this.teacherVerified = getElement("teacherverfied").innerHTML=='true';
       this.teacherid = getElement("teacherID").innerHTML;
+      this.isTeacherAllowed = getElement("allowTeacherAddSchedule").innerHTML=='true';
     }
   }
 }

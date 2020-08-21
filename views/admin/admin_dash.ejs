@@ -11,7 +11,8 @@
         <link rel="manifest" href="/manifest.json">
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link rel = "stylesheet" href="/css/switch.css">
+        
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -38,7 +39,7 @@
                 <button class="neutral-button" id="refresh">Refresh</button>
                 <span class="fmt-dropdown-hover">
                     <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                    <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;border:4px solid #216bf3">
+                    <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: var(--base);border:4px solid var(--positive)">
                         <div class="fmt-center">
                             Logged in as<br/>
                             <%= adata.id %>
@@ -55,7 +56,7 @@
             </span>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            <% if (inst.active) { %>
+            <% if (inst.preferences.active) { %>
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
                     <div class="fmt-row">

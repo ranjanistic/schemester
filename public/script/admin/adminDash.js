@@ -105,7 +105,7 @@ class NoDataView {
         "uiid"
       )} institute`
     );
-    postData("/admin/manage", {
+    postData(post.admin.manage, {
       type: "invitation",
       action: "create",
       target: target,
@@ -125,36 +125,43 @@ class NoDataView {
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
             )}</b><br/><br/>
-            <label class="check-container">
-              Teacher can add their schedule
-              <input type="checkbox" id="teachercanaddschedule">
-              <span class="tickmark-positive"></span>
-            </label>.
+            <div class="switch-view" id="teachereditschedulecontainer">
+              <span class="switch-text positive">Allow new teachers to add schedule?</span>
+              <label class="switch-container">
+                <input type="checkbox" id="teachereditschedule">
+                <span class="switch-positive" id="teachereditscheduleview"></span>
+              </label>
+          </div>
           </center>`
           );
-          const teacheradschedule = getElement("teachercanaddschedule");
+          this.allowteacherschedule = new Switch('teachereditschedule');
           postJsonData(post.admin.manage,{
             type:"preferences",
             action:"get",
-            preference:"allowTeacherAddSchedule",
-          }).then((allow)=>{
-            clog(allow);
-            if(allow.event != code.NO){
-              teacheradschedule.checked = allow.event;
-            }
-          })
-          teacheradschedule.addEventListener(change, (_) => {
-              postJsonData(post.admin.manage,{
-                type:"preferences",
-                action:"set",
-                preference:"allowTeacherAddSchedule",
-                allow:teacheradschedule.checked
-              }).then(resp=>{
-                if(resp.event != code.OK){
-                  teacheradschedule.checked = !teacheradschedule.checked;
-                }
-              });
+            specific:"allowTeacherAddSchedule"
+          }).then((allowTeacherAddSchedule)=>{
+            clog(allowTeacherAddSchedule);
+            this.allowteacherschedule.turn(allowTeacherAddSchedule);
           });
+          this.allowteacherschedule.onTurnChange(_=>{
+            postJsonData(post.admin.manage,{
+              type:"preferences",
+              action:"set",
+              specific:"allowTeacherAddSchedule",
+              allow:true
+            }).then(resp=>{
+              this.allowteacherschedule.turn(resp.event == code.OK);
+            });
+          },_=>{
+            postJsonData(post.admin.manage,{
+              type:"preferences",
+              action:"set",
+              specific:"allowTeacherAddSchedule",
+              allow:false
+            }).then(resp=>{
+              this.allowteacherschedule.turn(resp.event != code.OK);
+            });
+          })
           linkdialog.createActions(
             Array("Disable Link", "Copy", "Done"),
             Array(actionType.negative, actionType.positive, actionType.neutral)
@@ -179,29 +186,17 @@ class NoDataView {
                   });
               },
               (_) => {
-                linkdialog.existence(false);
+                linkdialog.hide();
               }
             )
           );
           linkdialog.show();
         }
         switch (response.event) {
-          case code.invite.LINK_EXISTS:
-            {
-              snackBar("This link already exists and can be shared.");
-            }
-            break;
-          case code.invite.LINK_CREATED:
-            {
-              snackBar("Share this with teachers of your institution.");
-            }
-            break;
-          case code.invite.LINK_CREATION_FAILED: {
-            snackBar(`Unable to generate link:${response.msg}`, "Report");
-          }
-          default: {
-            snackBar(`Error:${response.event}:${response.msg}`, "Report");
-          }
+          case code.invite.LINK_EXISTS: return snackBar("This link already exists and can be shared.");
+          case code.invite.LINK_CREATED: return snackBar("Share this with teachers of your institution.");
+          case code.invite.LINK_CREATION_FAILED: return snackBar(`Unable to generate link:${response.msg}`, "Report");
+          default: return snackBar(`Error:${response.event}:${response.msg}`, "Report");
         }
       })
       .catch((error) => {
@@ -212,14 +207,12 @@ class NoDataView {
 
   revokeLink(target) {
     clog("revoke link");
-    postData("/admin/manage", {
+    postData(post.admin.manage, {
       type: "invitation",
       action: "disable",
       target: target,
     })
       .then((response) => {
-        clog("revoke link response");
-        clog(response);
         if (response.event == code.invite.LINK_DISABLED) {
           clog("link disabled");
           snackBar("All links are inactive now.", null, false);
@@ -255,7 +248,6 @@ class NoDataView {
         }
       })
       .catch((error) => {
-        clog(error);
         snackBar(error);
       });
     }
@@ -606,6 +598,7 @@ class BaseView {
       refer(locate.admin.session, {
         u: localStorage.getItem(constant.sessionUID),
         target: locate.admin.target.settings,
+        section:locate.admin.section.account
       });
     });
     var prevScrollpos = window.pageYOffset;

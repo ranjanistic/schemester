@@ -64,6 +64,7 @@ class Schedule{
         },
       }
     );
+    clog(teacherschedule);
     if (!teacherschedule) return false;
     const schedule = teacherschedule.schedule.teachers[0].days;
     const timings = teacherschedule.default.timings;
@@ -82,4 +83,5 @@ class Schedule{
 
 }
 
+const clog = (m) =>console.log(m);
 module.exports = new TeacherWorker();

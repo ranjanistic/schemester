@@ -27,12 +27,12 @@ class PasswordReset {
             }
           );
           if(!admin) return false;
-          link = `${this.domain}/${target}/external?type=${this.type}&u=${data.uid}`;
+          link = `${this.domain}/${target}/external?type=${this.type}&u=${data.uid}&exp=${exp}`;
         }
         break;
       default: {
         //same pattern for teacher & student
-        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}`;
+        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}&exp=${exp}`;
       }
     }
     return {
@@ -50,11 +50,15 @@ class PasswordReset {
   handlePasswordResetLink = async (query, clientType) => {
     switch (clientType) {
       case this.target.admin: {
-        if (!query.u) return false;
+        if (!query.u && !query.exp) return false;
         try {
           const admin = await Admin.findOne({ '_id': ObjectId(query.u) });
           if (!admin || !admin.rlinkexp) return false;
-          if (!this.isValidTime(admin.rlinkexp)) return { user: { expired: true } };
+          if(Number(query.exp) != Number(admin.rlinkexp)) return false;
+          if (!this.isValidTime(admin.rlinkexp)){
+            const doc = await Admin.findOneAndUpdate({'_id':ObjectId(query.u)},{$unset:{rlinkexp:null}});
+            return { user: { expired: true } };
+          }
           return {user:share.getAdminShareData(admin)}
         }catch(e){
             return false;

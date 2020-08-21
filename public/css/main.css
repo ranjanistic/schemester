@@ -9,6 +9,7 @@
     --secondary-text:#121212;
     --tertiary-text:#00000093;
     --dead-text:#343434;
+    --base-radius:12px;
 }
 
 [data-theme="dark"] {

@@ -145,12 +145,7 @@ class Stage2 {
       "startTimeError",
       validType.nonempty
     );
-    this.endTimeField = new TextInput(
-      "endTimeField",
-      "endTime",
-      "endTimeError",
-      validType.nonempty
-    );
+    
     this.breakStartField = new TextInput(
       "breakStartField",
       "breakStart",
@@ -204,8 +199,8 @@ class Stage2 {
     );
 
     sessionStorage.getItem("startTimeField")?this.startTimeField.setInput(sessionStorage.getItem("startTimeField")):_=>{};
-    sessionStorage.getItem("endTimeField")?this.endTimeField.setInput(sessionStorage.getItem("endTimeField")):_=>{};
-    sessionStorage.getItem("breakStartField")?this.breakStartField.setInput():_=>{};
+    
+    sessionStorage.getItem("breakStartField")?this.breakStartField.setInput(sessionStorage.getItem("breakStartField")):_=>{};
 
     sessionStorage.getItem("eachDurationField")?this.eachDurationField.setInput(
       sessionStorage.getItem("eachDurationField")
@@ -222,15 +217,11 @@ class Stage2 {
     ):_=>{};
 
     this.startTimeField.validate((_) => {
-      this.endTimeField.inputFocus(),
+      this.breakStartField.inputFocus(),
         sessionStorage.setItem(
           "startTimeField",
           this.startTimeField.getInput()
         );
-    });
-    this.endTimeField.validate((_) => {
-      this.breakStartField.inputFocus(),
-        sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
     });
     this.breakStartField.validate((_) => {
       this.eachDurationField.inputFocus(),
@@ -269,7 +260,6 @@ class Stage2 {
       return Number(String(value).replace(':',''))
     }
     let start = getNumeric(this.startTimeField.getInput());
-    let end = getNumeric(this.endTimeField.getInput());
     let periods = Number(this.totalPeriodsField.getInput())
     let pdur = Number(this.eachDurationField.getInput());
     let bdur = Number(this.breakDurationField.getInput());
@@ -292,7 +282,6 @@ class Stage2 {
     if (
       !(
         this.startTimeField.isValid() &&
-        this.endTimeField.isValid() &&
         this.breakStartField.isValid() &&
         this.eachDurationField.isValid() &&
         this.totalPeriodsField.isValid() &&
@@ -305,9 +294,6 @@ class Stage2 {
           "startTimeField",
           this.startTimeField.getInput()
         );
-      });
-      this.endTimeField.validateNow((_) => {
-        sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
       });
       this.breakStartField.validateNow((_) => {
         this.eachDurationField.inputFocus();
@@ -359,7 +345,6 @@ class Stage2 {
           <li>Institute email address : <b>${sessionStorage.getItem("instemail")}</b></li>
           <li>Institute phone : <b>${sessionStorage.getItem("instphone")}</b></li>
           <li>Day starts at: <b>${sessionStorage.getItem("startTimeField")} hours</b></li>
-          <li>Day ends at : <b>${sessionStorage.getItem("endTimeField")} hours</b></li>
           <li>Break starts at : <b>${sessionStorage.getItem("breakStartField")} hours</b></li>
           <li>Each period duration : <b>${sessionStorage.getItem("eachDurationField")} minutes</b></li>
           <li>Break duration : <b>${sessionStorage.getItem("breakDurationField")} minutes</b></li>
@@ -391,27 +376,32 @@ class Stage2 {
           )}</b>. Always keep this in your mind.`,
           "Understood"
         );
-        let wdays = Array();
+        const wdays = Array();
         const wdaysString = String(sessionStorage.getItem("totalDaysField")).split(",");
         wdaysString.forEach((item,_)=>{
           wdays.push(Number(item));
         });
         const data = {
-          adminname: sessionStorage.getItem("adname"),
-          adminemail: sessionStorage.getItem("ademail"),
-          adminphone: sessionStorage.getItem("adphone"),
-
-          instname:  sessionStorage.getItem("instname"),
-          instemail: sessionStorage.getItem("instemail"),
-          instphone: sessionStorage.getItem("instphone"),
-
-          starttime: sessionStorage.getItem("startTimeField"),
-          endtime: sessionStorage.getItem("endTimeField"),
-          breakstarttime: sessionStorage.getItem("breakStartField"),
-          periodduration: sessionStorage.getItem("eachDurationField"),
-          breakduration: sessionStorage.getItem("breakDurationField"),
-          totalperiods: sessionStorage.getItem("totalPeriodsField"),
-          workingdays: wdays,
+          default:{
+            admin:{
+              username:sessionStorage.getItem("adname"),
+              email: sessionStorage.getItem("ademail"),
+              phone: sessionStorage.getItem("adphone"),
+            },
+            institute:{
+              instituteName:  sessionStorage.getItem("instname"),
+              email: sessionStorage.getItem("instemail"),
+              phone: sessionStorage.getItem("instphone"),
+            },
+            timings:{
+              startTime: sessionStorage.getItem("startTimeField"),
+              breakStartTime: sessionStorage.getItem("breakStartField"),
+              periodMinutes: Number(sessionStorage.getItem("eachDurationField")),
+              breakMinutes: Number(sessionStorage.getItem("breakDurationField")),
+              periodsInDay: Number(sessionStorage.getItem("totalPeriodsField")),
+              daysInWeek: wdays,
+            }
+          },
         };
         //check other subdocs before sending
         postJsonData(post.admin.default, {
@@ -488,7 +478,6 @@ class Stage2 {
     });
 
     sessionStorage.setItem("startTimeField", this.startTimeField.getInput());
-    sessionStorage.setItem("endTimeField", this.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", this.breakStartField.getInput());
 
     sessionStorage.setItem(
@@ -531,7 +520,6 @@ window.onload = (_) => {
     sessionStorage.setItem("instemail", s1.instEmailField.getInput());
     sessionStorage.setItem("instphone", s1.instPhoneField.getInput());
     sessionStorage.setItem("startTimeField", s2.startTimeField.getInput());
-    sessionStorage.setItem("endTimeField", s2.endTimeField.getInput());
     sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
     sessionStorage.setItem("day1Field", s2.day1Field.getInput());
     sessionStorage.setItem(

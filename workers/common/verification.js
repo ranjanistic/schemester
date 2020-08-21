@@ -99,6 +99,7 @@ class Verification {
         {
           if (!(query.u && query.in)) return false;
           try {
+            clog("in teacher vtry");
             let teacherinst = await Institute.findOne(
               {
                 _id: ObjectId(query.in),
@@ -112,13 +113,13 @@ class Verification {
               }
             );
             if (!teacherinst) return false;
-
+            clog("found teacher");
             let teacher = teacherinst.users.teachers[0];
             if (!teacher || !teacher.vlinkexp) return false;
-
+            clog("found vlinkexp");
             if (!this.isValidTime(teacher.vlinkexp))
               return { user: { expired: true } };
-
+              clog("valid tiime");
             const doc = await Institute.findOneAndUpdate(
               {
                 _id: ObjectId(query.in),

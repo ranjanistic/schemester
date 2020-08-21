@@ -3,7 +3,7 @@
 class Management {
   constructor() {
     this.sectionreq = getElement("section").innerHTML;
-    const sectionsArray = Array(
+    this.sectionsArray = Array(
       locate.admin.section.account,
       locate.admin.section.institute,
       locate.admin.section.schedule,
@@ -11,7 +11,7 @@ class Management {
       locate.admin.section.security,
       locate.admin.section.about
     );
-    this.displayIndex = sectionsArray.indexOf(this.sectionreq)<0?0:sectionsArray.indexOf(this.sectionreq);
+    this.displayIndex = this.sectionsArray.indexOf(this.sectionreq)<0?0:this.sectionsArray.indexOf(this.sectionreq);
     clog(this.displayIndex);
 
     this.tabs = Array(
@@ -89,6 +89,10 @@ class Management {
     var e = event.currentTarget;
     for (var k = 0; k < clickables.length; k++) {
       var condition = e == clickables[k];
+      if(condition){
+        const query = window.location.search;
+        window.history.pushState('object or string','Management',query.replace(query.substr(query.lastIndexOf('=')),`=${this.sectionsArray[k]}`));
+      }
       visibilityOf(showables[k], condition);
       if (showClass != null && hideClass != null) {
         setClassNames(clickables[k], showClass, hideClass, condition);
@@ -257,6 +261,65 @@ class Institution {
     
     this.uiid = getElement("uiid");
     this.subscriptionTill = getElement("subscriptionTill");
+
+    class Preferences{
+      constructor(){
+        this.allowteacherschedule = new Switch('teachereditschedule');
+        this.scheduleActive = new Switch('scheduleactive');
+        this.darkmode = new Switch('darkmode');
+
+        this.darkmode.turn(theme.isDark());
+        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        postJsonData(post.admin.manage,{
+          type:"preferences",
+          action:"get",
+        }).then((response)=>{
+          const preferences = response.event;
+          clog(preferences);
+          this.allowteacherschedule.turn(preferences.allowTeacherAddSchedule);
+          this.scheduleActive.turn(preferences.active);
+        });
+        this.allowteacherschedule.onTurnChange(_=>{
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"set",
+            specific:"allowTeacherAddSchedule",
+            allow:true
+          }).then(resp=>{
+            this.allowteacherschedule.turn(resp.event == code.OK);
+          });
+        },_=>{
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"set",
+            specific:"allowTeacherAddSchedule",
+            allow:false
+          }).then(resp=>{
+            this.allowteacherschedule.turn(resp.event != code.OK);
+          });
+        });
+        this.scheduleActive.onTurnChange(_=>{
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"set",
+            specific:"active",
+            active:true
+          }).then(resp=>{
+            this.scheduleActive.turn(resp.event == code.OK);
+          });
+        },_=>{
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"set",
+            specific:"active",
+            active:false
+          }).then(resp=>{
+            this.scheduleActive.turn(resp.event != code.OK);
+          });
+        })
+      }
+    }
+    new Preferences();
   }
 
   
@@ -444,7 +507,7 @@ class Schedule {
           }).then(response=>{
             clog(response);
             if(response.event == code.OK){
-              locatoin.reload();
+              location.reload();
               snackBar(`${day} was removed from every schedule`,'Refresh',true);
             } else {
               snackBar(`Unable to remove ${day} from every schedule`,'Report');
@@ -851,14 +914,49 @@ class Users {
             `<center><a href="${response.link}">${response.link}</a>
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
-            )}</b>.
+            )}</b><br/><br/>
+            <div class="switch-view" id="teachereditschedulecontainer">
+              <span class="switch-text positive">Allow new teachers to add schedule?</span>
+              <label class="switch-container">
+                <input type="checkbox" id="teachereditschedulei">
+                <span class="switch-positive" id="teachereditscheduleview"></span>
+              </label>
+          </div>
           </center>`
           );
+          this.allowteacherschedule = new Switch('teachereditschedulei');
+          postJsonData(post.admin.manage,{
+            type:"preferences",
+            action:"get",
+            specific:"allowTeacherAddSchedule"
+          }).then((allowTeacherAddSchedule)=>{
+            clog(allowTeacherAddSchedule);
+            clog("yeas")
+            this.allowteacherschedule.turn(allowTeacherAddSchedule);
+          });
+          this.allowteacherschedule.onTurnChange(_=>{
+            postJsonData(post.admin.manage,{
+              type:"preferences",
+              action:"set",
+              specific:"allowTeacherAddSchedule",
+              allow:true
+            }).then(resp=>{
+              this.allowteacherschedule.turn(resp.event == code.OK);
+            });
+          },_=>{
+            postJsonData(post.admin.manage,{
+              type:"preferences",
+              action:"set",
+              specific:"allowTeacherAddSchedule",
+              allow:false
+            }).then(resp=>{
+              this.allowteacherschedule.turn(resp.event != code.OK);
+            });
+          })
           linkdialog.createActions(
             Array("Disable Link", "Copy", "Done"),
             Array(actionType.negative, actionType.positive, actionType.neutral)
           );
-
           linkdialog.onButtonClick(
             Array(
               (_) => {
@@ -886,22 +984,10 @@ class Users {
           linkdialog.show();
         }
         switch (response.event) {
-          case code.invite.LINK_EXISTS:
-            {
-              snackBar("This link already exists and can be shared.");
-            }
-            break;
-          case code.invite.LINK_CREATED:
-            {
-              snackBar("Share this with teachers of your institution.");
-            }
-            break;
-          case code.invite.LINK_CREATION_FAILED: {
-            snackBar(`Unable to generate link:${response.msg}`, "Report");
-          }
-          default: {
-            snackBar(`Error:${response.event}:${response.msg}`, "Report");
-          }
+          case code.invite.LINK_EXISTS: return snackBar("This link already exists and can be shared.");
+          case code.invite.LINK_CREATED: return snackBar("Share this with teachers of your institution.");
+          case code.invite.LINK_CREATION_FAILED: return snackBar(`Unable to generate link:${response.msg}`, "Report");
+          default: return snackBar(`Error:${response.event}:${response.msg}`, "Report");
         }
       })
       .catch((error) => {
@@ -912,17 +998,15 @@ class Users {
 
   revokeLink(target) {
     clog("revoke link");
-    postData("/admin/manage", {
+    postData(post.admin.manage, {
       type: "invitation",
       action: "disable",
       target: target,
     })
       .then((response) => {
-        clog("revoke link response");
-        clog(response);
         if (response.event == code.invite.LINK_DISABLED) {
           clog("link disabled");
-          snackBar("All links are inactive now.");
+          snackBar("All links are inactive now.", null, false);
           let nolinkdialog = new Dialog();
           nolinkdialog.setDisplay(
             "Generate Link",
@@ -955,10 +1039,9 @@ class Users {
         }
       })
       .catch((error) => {
-        clog(error);
         snackBar(error);
       });
-  }
+    }
 }
 
 window.onload = (_) => (window.app = new Management());

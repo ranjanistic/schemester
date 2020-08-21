@@ -61,20 +61,20 @@ admin.get("/session*", (req, res) => {
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
-        if (!inst || !inst.default || !inst.default.daysInWeek) {
+        if (!inst || !inst.default || !inst.default.timings.daysInWeek.length) {
           data.target = view.admin.target.register;
           return res.render(view.admin.getViewByTarget(data.target), {
             adata,inst:inst?inst:false,binst:false
           });
-        } else {
-          if (
-            data.target == view.admin.target.register ||
-            data.target == undefined
-          ) {
-            return res.redirect(
-              worker.toSession(adata.uid, { target: view.admin.target.dashboard })
-            );
-          }
+        }
+        if (
+          data.target == view.admin.target.register ||
+          data.target == undefined ||
+          !data.target
+        ) {
+          return res.redirect(
+            worker.toSession(adata.uid, { target: view.admin.target.dashboard })
+          );
         }
         try {
           switch (data.target) {
@@ -334,7 +334,6 @@ admin.post('/default',(req,res)=>{
       if(body.target!="registerinstitute" && !inst) return res.json({result:code.event(code.inst.INSTITUTION_NOT_EXISTS)});
       switch(body.target){
         case "registerinstitute":{
-          if(inst) return res.json({result:code.event(code.inst.INSTITUTION_EXISTS)});
           return res.json({result:await worker.default.handleRegistration(response.user,body)})
         }
         case "admin": return res.json({result:await worker.default.handleAdmin(response.user,inst,body)});

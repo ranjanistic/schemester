@@ -62,27 +62,27 @@ class TextInput {
   enableInput() {
     this.input.disabled = false;
   }
-  validateNow(validAction = (_) => {}, ifmatchfield = null) {
+  validateNow(validAction = nothing(), ifmatchfield = null) {
     validateTextField(this, this.type, validAction, ifmatchfield);
   }
-  validate(validAction = (_) => {}, ifmatchfield = null) {
+  validate(validAction = nothing(), ifmatchfield = null) {
     this.onTextDefocus((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
   stopValidate(){
     clog("here");
-    this.onTextDefocus((_) => {});
+    this.onTextDefocus(nothing());
   }
   isValid(matchfieldvalue = null) {
     return stringIsValid(this.getInput(), this.type, matchfieldvalue);
   }
-  strictValidate(validAction = (_) => {}, ifmatchfield = null) {
+  strictValidate(validAction = nothing(), ifmatchfield = null) {
     this.onTextInput((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
-  onTextInput(action = (_) => {}) {
+  onTextInput(action = nothing()) {
     if (this.input) {
       this.input.oninput = () => {
         action();
@@ -219,7 +219,7 @@ class Checkbox {
   setLabel(text = String) {
     this.label.innerHTML = text;
   }
-  onCheckChange(checked = (_) => {}, unchecked = (_) => {}) {
+  onCheckChange(checked = nothing(), unchecked = nothing()) {
     this.checkbox.addEventListener(change, (_) => {
       if (this.checkbox.checked) {
         checked();
@@ -248,6 +248,53 @@ class Checkbox {
   }
   visible(isvisible = true) {
     visibilityOf(this.container, isvisible);
+  }
+}
+
+const nothing=()=>{};
+class Switch{
+  constructor(switchID,switchTextID,switchViewID,switchContainerID,viewType = bodyType.positive){
+    this.switch = getElement(switchID);
+    this.switchText = switchTextID?getElement(switchTextID):null;
+    this.switchView = switchViewID?getElement(switchViewID):null;
+    this.switchContainer = switchContainerID?getElement(switchContainerID):null;
+    this.switchView?this.setViewType(viewType):nothing();
+  }
+  setViewType(viewType){
+    setClassNames(this.switchView, actionType.getSwitchStyle(viewType));
+  }
+  setLabel(text = String) {
+    this.label.innerHTML = text;
+  }
+  onTurnChange(onAction = nothing(), offAction = nothing()) {
+    this.switch.addEventListener(change, (_) => {
+      if (this.switch.checked) {
+        onAction();
+      } else {
+        offAction();
+      }
+    });
+  }
+  isOn() {
+    return this.switch.checked;
+  }
+  turn(on = true) {
+    this.switch.checked = on;
+  }
+  on() {
+    this.switch.checked = true;
+  }
+  off() {
+    this.switch.checked = false;
+  }
+  show() {
+    show(this.switchContainer);
+  }
+  hide() {
+    hide(this.switchContainer);
+  }
+  visible(isvisible = true) {
+    visibilityOf(this.switchContainer, isvisible);
   }
 }
 
@@ -565,12 +612,12 @@ class Dialog extends DialogID {
       this.getInputType(inputFieldIndex)
     );
   }
-  validate(inputFieldIndex = Number, validateAction = (_) => {}) {
+  validate(inputFieldIndex = Number, validateAction = nothing()) {
     this.inputField[inputFieldIndex].validate((_) => {
       validateAction();
     });
   }
-  validateNow(inputFieldIndex = Number, validateAction = (_) => {}) {
+  validateNow(inputFieldIndex = Number, validateAction = nothing()) {
     this.inputField[inputFieldIndex].validateNow((_) => {
       validateAction();
     });
@@ -1487,8 +1534,8 @@ let checkSessionValidation = (
 };
 
 const receiveSessionData = (
-  validAction = (_) => {},
-  invalidAction = (_) => {}
+  validAction = nothing(),
+  invalidAction = nothing()
 ) => {
   postData(post.admin.sessionValidate, {
     getuser: true,
@@ -1548,7 +1595,7 @@ const receiveSessionData = (
 const validateTextField = (
   textfield = new TextInput(),
   type = validType.nonempty,
-  afterValidAction = (_) => {},
+  afterValidAction = _=>{},
   ifmatchField = null
 ) => {
   var error,

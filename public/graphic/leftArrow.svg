@@ -61,7 +61,7 @@
          transform="matrix(0.81803216,-0.77983627,0.66660272,0.89531915,1.7832479,-25.220211)"
          d="m -166.67969,206.76562 c -0.49829,0 -0.90039,0.4021 -0.90039,0.9004 0,0.49829 0.4021,0.89843 0.90039,0.89843 h 5.42969 c 0.49829,0 0.90039,-0.40014 0.90039,-0.89843 0,-0.4983 -0.4021,-0.9004 -0.90039,-0.9004 z"
          id="rect815-7"
-         style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#2a2aff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0;paint-order:stroke fill markers"
+         style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#216bf3;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0;paint-order:stroke fill markers"
          inkscape:original="M -166.67969 206.76562 C -167.17798 206.76562 -167.58008 207.16772 -167.58008 207.66602 C -167.58008 208.16431 -167.17798 208.56445 -166.67969 208.56445 L -161.25 208.56445 C -160.75171 208.56445 -160.34961 208.16431 -160.34961 207.66602 C -160.34961 207.16772 -160.75171 206.76562 -161.25 206.76562 L -166.67969 206.76562 z "
          inkscape:radius="0"
          sodipodi:type="inkscape:offset" />
@@ -69,7 +69,7 @@
          transform="matrix(0.81803216,0.77983627,0.66660272,-0.89531915,1.7832479,-25.220211)"
          d="m 169.71875,-206.05273 c -0.49829,0 -0.89844,0.4021 -0.89844,0.90039 0,0.49829 0.40015,0.89843 0.89844,0.89843 h 5.43164 c 0.49829,0 0.89844,-0.40014 0.89844,-0.89843 0,-0.49829 -0.40015,-0.90039 -0.89844,-0.90039 z"
          id="rect815-7-9"
-         style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#2a2aff;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0;paint-order:stroke fill markers"
+         style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#216bf3;stroke-width:0;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0;paint-order:stroke fill markers"
          inkscape:original="M 169.71875 -206.05273 C 169.22046 -206.05273 168.82031 -205.65063 168.82031 -205.15234 C 168.82031 -204.65405 169.22046 -204.25391 169.71875 -204.25391 L 175.15039 -204.25391 C 175.64868 -204.25391 176.04883 -204.65405 176.04883 -205.15234 C 176.04883 -205.65063 175.64868 -206.05273 175.15039 -206.05273 L 169.71875 -206.05273 z "
          inkscape:radius="0"
          sodipodi:type="inkscape:offset" />

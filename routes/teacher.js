@@ -129,38 +129,41 @@ teacher.get("/session*", async (req, res) => {
           default: 1,
           schedule: 1,
           "users.teachers.$": 1,
+          preferences:1
         },
       }
     );
     if (!scheduleinst) {
       //no schedule for this user teacher
-      clog("no schedule");
-      return res.render(view.teacher.addschedule, {
-        user: teacher,
-        inst,
-      });
-    }
-    //schedule exists;
-    const schedule = scheduleinst.schedule.teachers[0];
-    if (
-      Object.keys(schedule.days).length !=
-      inst.default.timings.daysInWeek.length
-    ) {
-      Institute.findOneAndUpdate(
-        { uiid: response.user.uiid },
-        {
-          $pull: { "schedule.teachers": { teacherID: teacher.id } },
-        }
-      );
-      return res.redirect(
-        worker.toSession(teacher.uid, { target: view.teacher.target.addschedule })
-      );
+      if(inst.preferences.allowTeacherAddSchedule){
+        clog("yes");
+        return res.render(view.teacher.addschedule, {
+          user: teacher,
+          inst,
+        });
+      } else {
+        data.target = view.teacher.target.dash;
+      }
     } else {
+      //schedule exists;
+      const schedule = scheduleinst.schedule.teachers[0];
       if (
-        data.target == view.teacher.target.addschedule ||
-        data.target == undefined
-      )
-        return res.redirect(worker.toLogin());
+        Object.keys(schedule.days).length !=
+        inst.default.timings.daysInWeek.length
+      ) {
+        Institute.findOneAndUpdate(
+          { uiid: response.user.uiid },
+          {
+            $pull: { "schedule.teachers": { teacherID: teacher.id } },
+          }
+        );
+      } else {
+        if (
+          data.target == view.teacher.target.addschedule ||
+          data.target == undefined
+        )
+          return res.redirect(worker.toLogin({target:view.teacher.target.dash}));
+      }
     }
     try {
       clog("in session try");
@@ -193,15 +196,21 @@ teacher.get("/fragment*", (req, res) => {
         case view.teacher.target.fragment.today: {
           clog("today");
           worker.schedule.getSchedule(response.user, new Date().getDay())
-            .then((resp) => {
-              if(!resp.schedule)
+            .then((scheduleresponse) => {
+              if(!scheduleresponse){  //no schedule
+                return res.render(view.teacher.getViewByTarget(query.fragment), {
+                  today: null,
+                  timings:null
+                });
+              }
+              if(!scheduleresponse.schedule)
                 return res.render(view.teacher.getViewByTarget(query.fragment), {
                   today: false,
-                  timings:resp.timings
+                  timings:scheduleresponse.timings
                 });
               return res.render(view.teacher.getViewByTarget(query.fragment), {
-                today: resp.schedule.period,
-                timings:resp.timings
+                today: scheduleresponse.schedule.period,
+                timings:scheduleresponse.timings
               });
             })
             .catch((e) => {
@@ -481,7 +490,7 @@ teacher.post("/manage", async (req, res) => {
                 const inst = await Institute.findOne({
                   uiid: response.user.uiid,
                 });
-                const linkdata = verify.generateLink(verify.target.teacher, {
+                const linkdata = await verify.generateLink(verify.target.teacher, {
                   instID: inst._id,
                   uid: response.user.id,
                 });

@@ -1,10 +1,11 @@
 {
   "name": "schemester",
   "version": "1.0.0",
-  "description": "Schedule Management System",
+  "description": "An autonomous schedule management system primarily target on educational niche.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "Priyanshu Ranjan",
   "license": "ISC",

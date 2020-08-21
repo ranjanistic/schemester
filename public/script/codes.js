@@ -558,6 +558,20 @@ class ViewType {
         return "snack-positive";
     }
   }
+  getSwitchStyle(type){
+    switch (type) {
+      case this.positive:
+        return "switch-positive";
+      case this.negative:
+        return "switch-negative";
+      case this.warning:
+        return "switch-warning";
+      case this.active:
+        return "switch-active";
+      default:
+        return "switch-positive";
+    }
+  }
 }
 const click = "click",
   change = "change",
