@@ -23,12 +23,16 @@ class Teacher{
         this.data.weekdays.forEach((dindex,index)=>{
             tabs += `<div class="fmt-col tab-button" style="width:${100/this.data.weekdays.length}%" id="daytab${dindex}">${constant.weekdays[dindex]}</div>`;
         });
+        this.currentdayIndex = this.data.weekdays[0];
+        clog(this.currentdayIndex);
         this.daytabsview.innerHTML = tabs;
         this.data.weekdays.forEach((dindex,index)=>{
             this.daytabs[index] = getElement(`daytab${dindex}`);
             this.daytabs[index].onclick=_=>{
                 this.daytabs.forEach((tab,i)=>{
                     if(i==index){
+                        this.currentdayIndex = dindex;
+                        clog(this.currentdayIndex);
                         setClass(this.daytabs[i],'fmt-col tab-button-selected');
                     } else {
                         setClass(this.daytabs[i],'fmt-col tab-button');
@@ -68,7 +72,7 @@ class Teacher{
                 });
                 if(found){
                     this.setPeriodsView([theday.period][0]);
-                }
+                } 
             } else {
                 this.schedule == null;
             }
@@ -77,41 +81,123 @@ class Teacher{
         });
         } else {
             clog("from memory");
-            let theday;
+            this.theday;
             let found = this.schedule.days.some((day,index)=>{
                 if(day.dayIndex == dayIndex){
                     clog(day);
                     clog("setting");
-                    theday = day;
-                    clog([theday.period][0]);
+                    this.theday = day;
+                    clog([this.theday.period][0]);
                     return true
                 }
             });
             if(found){
-                this.setPeriodsView([theday.period][0]);
+                this.setPeriodsView([this.theday.period][0]);
             }
         }
     }
     setPeriodsView(periods){
         clog("period settter");
         let rows = constant.nothing;
-        periods.forEach((period,index)=>{
-            rows += `<div class="fmt-row tab-container fmt-center fmt-padding" id="period0">
-            <div class="fmt-col fmt-quarter fmt-padding-small active">
-                ${addNumberSuffixHTML(index+1)} period
-            </div>
-            <div class="fmt-col fmt-quarter fmt-padding-small positive">
-                ${period.classname}
-            </div>
-            <div class="fmt-col fmt-quarter fmt-padding-small positive">
-                ${period.subject}
-            </div>
-            <div class="fmt-col fmt-quarter">
-                <button class="circle-button">✒️</button>
-            </div>
+        
+        periods.forEach((period,p)=>{
+            rows += `
+            <div class="fmt-row tab-container fmt-center fmt-padding" id="period${p}">
+                <div class="fmt-col fmt-quarter fmt-padding-small active">
+                    ${addNumberSuffixHTML(p+1)} period
+                </div>
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameview${p}">
+                    <span id="classname${p}">${period.classname}</span> <button class="neutral-button caption" id="editclassname${p}">✒️</button>
+                </div>
+
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameeditor${p}">
+                    <fieldset style="margin:0" class="text-field questrial"  id="classnamefield${p}">
+                        <legend class="field-caption">Replace ${period.classname}</legend>
+                        <input class="text-input" style="font-size:18px" required value="${period.classname}" placeholder="New class" type="text" id="classnameinput${p}" name="classname" >
+                        <span class="fmt-right error-caption"  id="classnameerror${p}"></span>
+                    </fieldset>
+                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="classnameloader${p}"/>
+                    <button class="positive-button caption" id="saveclassname${p}">Save</button>
+                    <button class="negative-button caption" id="cancelclassname${p}">Cancel</button>
+                </div>
+
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${p}">
+                    <span id="subject${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${p}">✒️</button>
+                </div>
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${p}">
+                    <fieldset style="margin:0" class="text-field questrial" id="subjectfield${p}">
+                        <legend class="field-caption">Replace ${period.subject}</legend>
+                        <input class="text-input" style="font-size:18px" required value="${period.subject}" placeholder="New subject" type="text" id="subjectinput${p}" name="subject" >
+                        <span class="fmt-right error-caption"  id="subjecterror${p}"></span>
+                    </fieldset>
+                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${p}"/>
+                    <button class="positive-button caption" id="savesubject${p}">Save</button>
+                    <button class="negative-button caption" id="cancelsubject${p}">Cancel</button>
+                </div>
+
+
+                <div class="fmt-col fmt-quarter fmt-padding-small positive">
+                    <button class="positive-button">Action</button>
+                </div>
             </div>`;
-        })
+        });
         this.dayscheduleView.innerHTML = rows;
+        //to handle renaming of fields
+        this.classeditable = new Array();
+        this.subjecteditable = Array();
+        periods.forEach((period,p)=>{
+            this.classeditable.push(new Editable(`classnameview${p}`,`classnameeditor${p}`,
+                new TextInput(`classnamefield${p}`,`classnameinput${p}`,`classnameerror${p}`,validType.nonempty),
+                `editclassname${p}`,`classname${p}`,`saveclassname${p}`,`cancelclassname${p}`,`classnameloader${p}`
+            ));
+            this.classeditable[p].onSave(_=>{
+                this.classeditable[p].validateInputNow();
+                if(!this.classeditable[p].isValidInput()) return;
+                this.classeditable[p].disableInput();
+                if(this.classeditable[p].getInputValue() == this.classeditable[p].displayText()){
+                    return this.classeditable[p].clickCancel();
+                }
+                this.classeditable[p].load();
+                postJsonData(post.admin.schedule,{
+                    target:client.teacher,
+                    action:"update",
+                    specific:"renameclass",
+                    teacherID:this.data.teacherID,
+                    dayIndex:Number(this.currentdayIndex),
+                    period:p,
+                    oldclassname:this.classeditable[p].displayText(),
+                    newclassname:this.classeditable[p].getInputValue()
+                }).then(response=>{
+                    this.classeditable[p].load(false);
+                    clog(response);
+                    if(response.event == code.OK){
+                        this.classeditable[p].setDisplayText(this.classeditable[p].getInputValue());
+                        this.classeditable[p].display();
+                        return;
+                    }
+                    switch(response.event){
+                        case code.schedule.SCHEDULE_CLASHED:return this.classeditable[p].textInput.showError('Clashed');
+                        default:return this.classeditable[p].textInput.showError('Error');
+                    }
+                }).catch(err=>{
+                    snackBar(err,'Report');
+                });
+                
+            })
+            this.subjecteditable.push(new Editable(`subjectview${p}`,`subjecteditor${p}`,
+                new TextInput(`subjectfield${p}`,`subjectinput${p}`,`subjecterror${p}`,validType.nonempty),
+                `editsubject${p}`,`subject${p}`,`savesubject${p}`,`cancelsubject${p}`,`subjectloader${p}`
+            ));
+            this.subjecteditable[p].onSave(_=>{
+                this.subjecteditable[p].load();
+                this.subjecteditable[p].validateInputNow();
+                if(!this.subjecteditable[p].isValidInput()) return;
+                this.subjecteditable[p].disableInput();
+                if(this.subjecteditable[p].getInputValue() == this.classeditable[p].displayText()){
+                  return this.subjecteditable[p].clickCancel();
+                }
+            })
+        })
     }
 }
 

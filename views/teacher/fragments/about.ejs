@@ -2,7 +2,7 @@
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -14,12 +14,10 @@
             <div class="fmt-row">
                 <div class="fmt-col" style="width: 60%;">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Details</div>
-                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;">Schemester</div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;"><%= defaults.institute.instituteName %></div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
-                    <button class="fmt-right circle-button" id="moreSettings">
-                        <img class="b-positive" width="30" src="/graphic/menudotsvertical.svg"/><br/>
-                    </button>
+                    <img class="fmt-right" src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="moreSettings">
                 </div>
             </div>
             <% if (teacher) { %>
@@ -27,27 +25,76 @@
                     <br/>
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="caption">Logged in as</div>
-                        <div class="positive group-text"><%= teacher.username %></div>
-                        <div class="active questrial caption"><%= teacher.id %></div>
+                        <div class="fmt-row" id="teachernameview">
+                            <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
+                            <span class="caption" style="font-size:12px" id="editteachername">✒️</span>
+                        </div>
+                        <div id="teachernameeditor">
+                            <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
+                                <legend class="field-caption questrial">Change your name</legend>
+                                <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
+                                <span class="fmt-right error-caption"  id="teachernameerror"></span>
+                            </fieldset>
+                            <button class="positive-button caption" id="saveteachername">Save</button>
+                            <button class="neutral-button caption" id="cancelteachername">Cancel</button>
+                        </div>
+                        <div class="active questrial caption">
+                            <%= teacher.id %>
+                        </div>
                         <button class="negative-button fmt-center wide" id="logout">Logout</button>
                     </div>
-                    
-                    <div class="fmt-row tab-container b-neutral">
-                            <span class="group-text positive">Set Theme</span>
-                            <span class="fmt-right">
-                            <label class="radio-container ">🔆<input type="radio" name="theme" id="light">
-                                <span class="checkmark"></span>
-                            </label>    
-                            <label class="radio-container">🌒
-                                <input type="radio" name="theme" id="dark">
-                                <span class="checkmark"></span>
+                    <div class="fmt-row tab-container b-neutral" id="themetab">
+                        <span class="group-text positive">Set Theme</span>
+                        <span class="fmt-right">
+                            <label class="switch-container">
+                                <input type="checkbox" id="darkmode">
+                                <span class="switch-positive"></span>
                             </label>
-                            </span>
+                        </span>
+                    </div>
+                    <div class="fmt-row group-heading questrial">Information</div>
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Institution</div>
+                        <div class="group-text questrial"><%= defaults.institute.instituteName %></div>
+                        <div class="group-text questrial positive" onclick="mailTo('<%= defaults.institute.email %>')"><%= defaults.institute.email %></div>
+                        <div class="group-text questrial active" onclick="callTo('<%= defaults.institute.phone %>')"><%= defaults.institute.phone %></div>
+                    </div>
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Administrator</div>
+                        <div class="group-text questrial"><%= defaults.admin.username %></div>
+                        <% if(adminemailvisible) {%>
+                            <div class="group-text questrial positive" onclick="mailTo('<%= defaults.admin.email %>')"><%= defaults.admin.email %></div>
+                        <% } %>
+                        <% if(adminphonevisible) {%>
+                        <div class="group-text questrial active" onclick="callTo('<%= defaults.admin.phone %>')"><%= defaults.admin.phone %></div>
+                        <% } %>
+                    </div>
+                    <% 
+                        function getDaysArray(indices){
+                            const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                            let indays = Array();
+                            indices.forEach((index,i)=>{
+                                if(i>0){
+                                    indays.push(` ${days[Number(index)]}`);
+                                } else {
+                                    indays.push(days[Number(index)]);
+                                }
+                            });
+                            return indays;
+                        }
+                        %> 
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Timings</div>
+                        <div class="group-text questrial">Everyday, schedule starts at <span class="active"><%= defaults.timings.startTime %></span>, 
+                            break starts at <span class="active"><%= defaults.timings.breakStartTime %></span>, 
+                        every period lasts <span class="active"><%= defaults.timings.periodMinutes %> minutes</span> and
+                        break lasts for <span class="active"><%= defaults.timings.breakMinutes %> minutes</span>.<br/>
+                        You have <span class="active"><%= defaults.timings.periodsInDay %></span> periods every working day, where
+                        <span class="active"><%= getDaysArray(defaults.timings.daysInWeek) %></span> are your working days.</div>
                     </div>
                 </div>
-
              <% } else { %>
-              
+                An error occurred
             <% } %>
         </div>
         <span hidden>

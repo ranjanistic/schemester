@@ -101,15 +101,16 @@
 
                     <div class="fmt-col fmt-threequarter tabContainerRight" id="settingsContainer">
                         <!--account settings box-->
-                        <div class="sub-container fmt-animate-opacity" id="accountSettingsBox">
-                            <span class="sub-heading">Admin</span>
+                        <div class="fmt-row sub-container fmt-animate-opacity" id="accountSettingsBox">
+                            <div class="fmt-col fmt-half">
+                                <span class="sub-heading">Admin</span>
                                 <div class="editable" id="adminName">
                                     <span class="caption">Admin name</span><br/>
                                     <span id="adminnameview"><%= adata.username %></span>
                                     <button class="neutral-button caption" id="editadminname">✒️</button>
                                 </div>
                                 <div id="adminnameeditor">
-                                    <fieldset class="text-field questrial" id="adminnamefield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="adminnamefield">
                                         <legend class="field-caption">Your name</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= adata.username %>" placeholder="Visible to everyone at <%= inst.default.institute.instituteName %>" type="text" id="adminnameinput" name="adminname" >
                                         <span class="fmt-right error-caption"  id="adminnameerror"></span>
@@ -127,7 +128,7 @@
                                     <button class="neutral-button caption" id="editadminphone">✒️</button>
                                 </div>
                                 <div id="adminphoneeditor">
-                                    <fieldset class="text-field questrial" id="adminphonefield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="adminphonefield">
                                         <legend class="field-caption">Your phone</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.admin.phone %>" placeholder="Available to teachers of <%= inst.default.institute.instituteName %>" type="text" id="adminphoneinput" name="adminname" >
                                         <span class="fmt-right error-caption"  id="adminphoneerror"></span>
@@ -135,9 +136,65 @@
                                     <button class="positive-button caption" id="saveadminphone">Save</button>
                                     <button class="negative-button caption" id="canceladminphone">Cancel</button>
                                 </div>
-
                                 <div class="caption">Account created at</div>
                                 <div id="adminCreationTime"><%= adata.createdAt %></div>
+                            </div>
+                            <div class="fmt-col fmt-half">
+                                <span class="sub-heading">Settings</span>
+                                <div class="switch-view">
+                                    <span class="switch-text">Dark mode</span>
+                                    <label class="switch-container">
+                                        <input type="checkbox" id="darkmode">
+                                        <span class="switch-positive"></span>
+                                    </label>
+                                </div>
+                                <div class="fmt-row switch-view caption" id="phonevisibilitycontainer">
+                                    Show phone number to
+                                    <div>
+                                    <span class="fmt-left switch-text active" style="padding:0 4px">Teachers</span>
+                                    <label class="fmt-left switch-container">
+                                      <input type="checkbox" id="teacherphonevcheck"
+                                        <% if(adata.prefs.showphonetoteacher){%>
+                                            checked
+                                        <% } %>
+                                      >
+                                      <span class="switch-active" id="teacherphonevcheckview"></span>
+                                    </label>                                    
+                                    <span class="fmt-left switch-text warning " style="padding:0 4px">Students</span>
+                                    <label class="fmt-left switch-container">
+                                      <input type="checkbox" id="studentphonevcheck"
+                                        <% if(adata.prefs.showphonetostudent){%>
+                                            checked
+                                        <% } %>
+                                      >
+                                      <span class="switch-warning " id="studentphonevcheckview"></span>
+                                    </label>
+                                    </div>
+                                </div>
+                                <div class="fmt-row switch-view caption" id="mailvisibilitycontainer">
+                                    Show email ID to
+                                    <div>
+                                    <span class="fmt-left switch-text active" style="padding:0 4px">Teachers</span>
+                                    <label class="fmt-left switch-container">
+                                      <input type="checkbox" id="teachermailvcheck" 
+                                        <% if(adata.prefs.showemailtoteacher){%>
+                                            checked
+                                        <% } %>
+                                        >
+                                      <span class="switch-active" id="teachermailvcheckview"></span>
+                                    </label>                                    
+                                    <span class="fmt-left switch-text warning " style="padding:0 4px">Students</span>
+                                    <label class="fmt-left switch-container">
+                                      <input type="checkbox" id="studentmailvcheck"
+                                      <% if(adata.prefs.showemailtostudent){%>
+                                        checked
+                                        <% } %>
+                                      >
+                                      <span class="switch-warning " id="studentmailvcheckview"></span>
+                                    </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <!--institution settings box-->
                         <div class="sub-container fmt-row fmt-animate-opacity" id="institutionSettingsBox">
@@ -149,7 +206,7 @@
                                     <button class="neutral-button caption" id="editinstitutename">✒️</button>
                                 </div>
                                 <div id="institutenameeditor">
-                                    <fieldset class="text-field questrial" id="institutenamefield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="institutenamefield">
                                         <legend class="field-caption">Institute Name</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.instituteName %>" placeholder="Visible to people of your institution" type="text" id="institutenameinput" name="institutename" >
                                         <span class="fmt-right error-caption"  id="institutenameerror"></span>
@@ -164,7 +221,7 @@
                                     <button class="neutral-button caption" id="editinstitutemail">✒️</button>
                                 </div>
                                 <div id="institutemaileditor">
-                                    <fieldset class="text-field questrial" id="institutemailfield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="institutemailfield">
                                         <legend class="field-caption">Institute email address</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.email %>" placeholder="Visible to people of your institution" type="text" id="institutemailinput" name="institutemail" >
                                         <span class="fmt-right error-caption"  id="institutemailerror"></span>
@@ -179,7 +236,7 @@
                                     <button class="neutral-button caption" id="editinstitutephone">✒️</button>
                                 </div>
                                 <div id="institutephoneeditor">
-                                    <fieldset class="text-field questrial" id="institutephonefield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="institutephonefield">
                                         <legend class="field-caption">Institute contact number</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.institute.phone %>" placeholder="Visible to people of your institution" type="text" id="institutephoneinput" name="institutephone" >
                                         <span class="fmt-right error-caption"  id="institutephoneerror"></span>
@@ -198,22 +255,23 @@
                                 <div class="switch-view" id="teachereditschedulecontainer">
                                     <span class="switch-text">Allow new teachers to add schedule</span>
                                     <label class="switch-container">
-                                      <input type="checkbox" id="teachereditschedule">
+                                      <input type="checkbox" id="teachereditschedule"
+                                      <% if(inst.preferences.allowTeacherAddSchedule){%>
+                                        checked
+                                        <% } %>
+                                      >
                                       <span class="switch-positive" id="teachereditscheduleview"></span>
-                                    </label>
-                                </div>
-                                <div class="switch-view">
-                                    <span class="switch-text">Dark mode</span>
-                                    <label class="switch-container">
-                                        <input type="checkbox" id="darkmode">
-                                        <span class="switch-positive"></span>
                                     </label>
                                 </div>
                                 
                                 <div class="switch-view" id="scheduleactivecontainer">
                                     <span class="switch-text">Scheduling is active</span>
                                     <label class="switch-container">
-                                        <input type="checkbox" id="scheduleactive">
+                                        <input type="checkbox" id="scheduleactive"
+                                        <% if(inst.preferences.active){%>
+                                            checked
+                                            <% } %>
+                                        >
                                         <span class="switch-active" id="scheduleactiveview"></span>
                                     </label>
                                 </div>
@@ -230,7 +288,7 @@
                                     <button class="neutral-button caption" id="editstart">✒️</button>
                                 </div>
                                 <div id="starteditor">
-                                    <fieldset class="text-field questrial" id="startfield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="startfield">
                                         <legend class="field-caption">Start Time</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.startTime %>" placeholder="Schedule begins at" type="time" id="startinput" name="startTime" >
                                         <span class="fmt-right error-caption"  id="starterror"></span>
@@ -245,7 +303,7 @@
                                     <button class="neutral-button caption" id="editbreakstart">✒️</button>
                                 </div>
                                 <div id="breakstarteditor">
-                                    <fieldset class="text-field questrial" id="breakstartfield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="breakstartfield">
                                         <legend class="field-caption">Break starts at</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.breakStartTime %>" placeholder="Break begins at" type="time" id="breakstartinput" name="breakstartTime" >
                                         <span class="fmt-right error-caption"  id="breakstarterror"></span>
@@ -260,7 +318,7 @@
                                     <button class="neutral-button caption" id="editperiodduration">✒️</button>
                                 </div>
                                 <div id="perioddurationeditor">
-                                    <fieldset class="text-field questrial" id="perioddurationfield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="perioddurationfield">
                                         <legend class="field-caption">Each period duration</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.periodMinutes %>" placeholder="Period minutes" type="number" id="perioddurationinput" name="perioddurationTime" >
                                         <span class="fmt-right error-caption"  id="perioddurationerror"></span>
@@ -275,7 +333,7 @@
                                     <button class="neutral-button caption" id="editbreakduration">✒️</button>
                                 </div>
                                 <div id="breakdurationeditor">
-                                    <fieldset class="text-field questrial" id="breakdurationfield">
+                                    <fieldset style="margin:0" class="text-field questrial" id="breakdurationfield">
                                         <legend class="field-caption">Break duration</legend>
                                         <input class="text-input" style="font-size:18px" required value="<%= inst.default.timings.breakMinutes %>" placeholder="Break minutes" type="number" id="breakdurationinput" name="breakdurationTime" >
                                         <span class="fmt-right error-caption"  id="breakdurationerror"></span>
@@ -285,7 +343,7 @@
                                 </div>
                                 <span class="caption">Periods in a day</span><br/>
                                 <span class="editable" id="totalPeriods"><%= inst.default.timings.periodsInDay %></span><br/>
-                                <% 
+                                <%
                                     function getDaysArray(indices){
                                         const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
                                         let indays = Array();

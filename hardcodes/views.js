@@ -71,6 +71,7 @@ class TeacherView{
                 this.fullschedule = 'teacher/fragments/fullweek.ejs';
                 this.today = 'teacher/fragments/today.ejs';
                 this.about = 'teacher/fragments/about.ejs';
+                this.classroom = 'teacher/fragments/classroom.ejs';
             }
         }
         this.fragment = new FragmentView();
@@ -83,6 +84,7 @@ class TeacherView{
                 constructor(){
                     this.today = "today";
                     this.fullweek = "fullschedule";
+                    this.classroom =  "classroom";
                     this.about = "about";
                 }
               }
@@ -99,6 +101,7 @@ class TeacherView{
             case this.target.addschedule:return this.addschedule;
             case this.target.fragment.today:return this.fragment.today;
             case this.target.fragment.fullweek:return this.fragment.fullschedule;
+            case this.target.fragment.classroom:return this.fragment.classroom;
             case this.target.fragment.about:return this.fragment.about;
             default:return this.getViewByTarget();
         }

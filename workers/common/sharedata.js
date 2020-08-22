@@ -1,8 +1,8 @@
-const session = require('./session'),
-    code = require('../../public/script/codes');
-
 class ShareData {
-  constructor() {}
+  constructor() {
+    this.uid = 'uid';
+    this.id = 'id';
+  }
 
   /**
    * Returns peronal data of client type - admin, after extracting from passed admin user data from database, except confidential ones.
@@ -12,13 +12,14 @@ class ShareData {
   getAdminShareData(data = {}) {
     return {
       isAdmin: true,
-      [session.sessionUID]: data._id,
+      [this.uid]: data._id,
       username: data.username,
-      [session.sessionID]: data.email,
+      [this.id]: data.email,
       uiid: data.uiid,
       createdAt: data.createdAt,
       verified: data.verified,
       vlinkexp: data.vlinkexp,
+      prefs:data.prefs
     };
   }
 
@@ -30,9 +31,9 @@ class ShareData {
   getTeacherShareData(data = {}) {
     return {
       isTeacher: true,
-      [session.sessionUID]: data._id,
+      [this.uid]: data._id,
       username: data.username,
-      [session.sessionID]: data.teacherID,
+      [this.id]: data.teacherID,
       createdAt: data.createdAt,
       verified: data.verified,
     };
@@ -46,9 +47,9 @@ class ShareData {
   getStudentShareData(data = {}) {
     return {
       isStudent: true,
-      [session.sessionUID]: data._id,
+      [this.uid]: data._id,
       username: data.username,
-      [session.sessionID]: data.studentID,
+      [this.id]: data.studentID,
       createdAt: data.createdAt,
       verified: data.verified,
     };

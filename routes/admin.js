@@ -57,7 +57,9 @@ admin.get("/session*", (req, res) => {
           return session.finish(res).then((response) => {
             if (response) res.redirect(worker.toLogin(data));
           });
+        clog(admin);
         let adata = share.getAdminShareData(admin);
+        clog(adata);
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
@@ -220,7 +222,7 @@ admin.post("/self", async (req, res) => {
     switch (body.target) {
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body,admin)});
-      case "settings": return res.json({result: await worker.self.handlePreferences(response.user,body)});
+      case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
   });
 });

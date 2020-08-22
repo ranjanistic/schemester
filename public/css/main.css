@@ -245,6 +245,9 @@ img{vertical-align:middle}
 .active{
     color:var(--active)
 }
+.warning{
+    color:var(--warning)
+}
 .b-positive{
     color:var(--secondary);
     background-color: var(--positive);

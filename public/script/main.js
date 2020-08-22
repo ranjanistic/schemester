@@ -134,7 +134,7 @@ class TextInput {
 }
 
 class Editable{
-  constructor(viewID,editviewID,textInput = new TextInput(),editID,viewText,saveID,cancelID){
+  constructor(viewID,editviewID,textInput = new TextInput(),editID,viewText,saveID,cancelID,loaderID = null){
     this.view = getElement(viewID);
     this.editView = getElement(editviewID);
     this.textInput = textInput;
@@ -143,6 +143,7 @@ class Editable{
     this.saveButton = getElement(saveID);
     this.cancelButton = getElement(cancelID);
     this.editButton.onclick=_=>{this.edit()};
+    loaderID?this.loader = getElement(loaderID):_=>{};
     this.display();
     this.onCancel();
   }
@@ -150,6 +151,14 @@ class Editable{
     hide(this.view);
     show(this.editView);
     this.enableInput();
+  }
+  load(show=true){
+    if(this.loader){
+      visibilityOf(this.loader,show);
+      visibilityOf(this.saveButton,!show);
+      visibilityOf(this.cancelButton,!show);
+      show?this.disableInput():this.enableInput();
+    }
   }
   display(){
     show(this.view);
@@ -277,6 +286,9 @@ class Switch{
   }
   isOn() {
     return this.switch.checked;
+  }
+  change(){
+    this.turn(!this.isOn());
   }
   turn(on = true) {
     this.switch.checked = on;
@@ -1408,10 +1420,7 @@ const feedBackBox = (
             feedback.largeTextField.inputFocus();
           });
         } else {
-          refer(mailTo("schemester@outlook.in"), {
-            subject: `From ${feedback.getInputValue(0)}`,
-            body: feedback.largeTextField.getInput(),
-          });
+          mailTo("schemester@outlook.in",`From ${feedback.getInputValue(0)}`,feedback.largeTextField.getInput());
           feedback.hide();
           snackBar(
             "Thanks for the interaction. We'll look forward to that.",
@@ -2046,7 +2055,14 @@ const sendEmail = async (to, subject, body, cc, bcc) => {
   return code.mail.MAIL_SENT;
 };
 
-const mailTo = (to) => `mailto:${to}`;
+const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constant.nothing,bcc=constant.nothing) => refer(`mailto:${to}`,{
+  subject: subject,
+  body: body,
+  cc:cc,
+  bcc:bcc,
+});
+
+const callTo = (to) => refer(`tel:${to}`); 
 
 const idbSupported = () => {
   if (!window.indexedDB) {

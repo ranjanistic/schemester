@@ -40,6 +40,8 @@ class Codes {
         this.REQ_LIMIT_EXCEEDED = "auth/too-many-requests";
         this.UIID_INVALID = "auth/invalid-uiid";
         this.WRONG_UIID = "auth/wrong-uiid";
+        this.CLASS_EXISTS = "auth/classroom-found";
+        this.CLASS_NOT_EXIST = "auth/classroom-not-found";
       }
     }
 
@@ -323,6 +325,7 @@ class Locations {
               constructor() {
                 this.today = "today";
                 this.fullweek = "fullschedule";
+                this.classroom = "classroom";
                 this.about = "about";
               }
             }

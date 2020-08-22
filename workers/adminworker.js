@@ -8,6 +8,7 @@ const Admin = require("../collections/Admins"),
   reset = require("./common/passwordreset"),
   { ObjectId } = require("mongodb"),
   session = require("./common/session");
+const { findOneAndUpdate } = require("../collections/Admins");
 
 class AdminWorker {
   constructor() {
@@ -49,15 +50,29 @@ class Self {
     class Account {
       constructor() {
         this.defaults = new Default();
+        this.username = 'username';
+        this.email = 'email';
+        this.password = 'password';
+        this.uiid = 'uiid';
+        this.createdAt = 'createdAt';
+        this.verified = 'verified';
+        this.vlinkexp = 'vlinkexp';
+        this.rlinkexp = 'rlinkexp';
       }
       //send feedback emails
+
+      async createAccount(newadmin){
+        const result = await Admin.insertOne(newadmin);
+        return result.insertedCount==0?result.ops[0]:code.event(code.NO)
+      }
+
       /**
        * 
        */
       changeName = async (user, body) => {
         const newadmin = await Admin.findOneAndUpdate(
           { _id: ObjectId(user.id) },
-          { $set: { username: body.newname } }
+          { $set: { [this.username]: body.newname } }
         );
         return newadmin?code.event(
           (await this.defaults.admin.setName(user, body)) ? code.OK : code.NO
@@ -73,7 +88,7 @@ class Self {
           { _id: ObjectId(user.id) },
           {
             $set: {
-              password: epassword,
+              [this.password]: epassword,
             },
             $unset: {
               rlinkexp: null,
@@ -95,7 +110,7 @@ class Self {
           { _id: ObjectId(user.id) },
           {
             $set: {
-              email: body.newemail,
+              [this.email]: body.newemail,
               verified: false,
             },
           }
@@ -122,7 +137,52 @@ class Self {
         return code.event(del ? code.OK : code.NO);
       };
     }
+    class Preferences{
+      constructor(){
+        this.object = `prefs`;
+        this.showemailtoteacher = 'showemailtoteacher';
+        this.showphonetoteacher = 'showphonetoteacher';
+        this.showemailtostudent = 'showemailtostudent';
+        this.showphonetostudent = 'showphonetostudent';
+      }
+      getSpecificPath(specific){
+        return `${this.object}.${specific}`;
+      }
+      async setPreference(user,body){
+        let value;
+        switch(body.specific){
+          case this.showemailtoteacher:{value = body.show}break;
+          case this.showphonetoteacher:{value = body.show}break;
+          case this.showemailtostudent:{value = body.show}break;
+          case this.showphonetostudent:{value = body.show}break;
+          default:return null;
+        }
+        const adoc = await Admin.findOneAndUpdate({"_id":ObjectId(user.id)},{
+          $set:{
+            [this.getSpecificPath(body.specific)]:value
+          }
+        });
+        return code.event(adoc?code.OK:code.NO);
+      }
+      async getPreference(user,body){
+        switch(body.specific){
+          case this.showemailtoteacher:break;
+          case this.showphonetoteacher:break;
+          case this.showemailtostudent:break;
+          case this.showphonetostudent:break;
+          default:{
+            const adoc = await Admin.findOne({"_id":ObjectId(user.id)});
+            return code.event(adoc?adoc.prefs:code.NO);
+          }
+        }
+        const adoc = await Admin.findOne({"_id":ObjectId(user.id)});
+        clog(adoc[this.getSpecificPath(body.specific)]);
+        return code.event(adoc?adoc[this.getSpecificPath(body.specific)]:code.NO);
+      }
+      
+    }
     this.account = new Account();
+    this.prefs = new Preferences();
   }
 
   handleAccount = async (user, body,admin) => {
@@ -140,9 +200,9 @@ class Self {
     }
   };
   handlePreferences = async (user, body) => {
-    switch (body.preference) {
-      default:
-        return;
+    switch (body.action) {
+      case "set": return await this.prefs.setPreference(user,body);
+      case "get": return await this.prefs.getPreference(user,body)
     }
   };
   handleVerification = async (user, body) => {
@@ -649,6 +709,33 @@ class Schedule {
       }
       async scheduleUpdate(user,inst, body) {
         switch(body.specific){
+          case "renameclass":{
+            clog(body);
+            if(body.teacherID){ //only change in class shift of a teacher
+              const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.classname`;
+              //check clash with other teachers
+              const clash = inst.schedule.teachers.some((teacher,t)=>{
+                if(teacher.teacherID != body.teacherID){
+                  const clash = teacher.days.some((day,d)=>{
+                    if(day.dayIndex == body.dayIndex){
+                      return day.period[body.period].classname == body.newclassname;
+                    }
+                  })
+                  return clash;
+                }
+              });
+              if(clash) return code.event(code.schedule.SCHEDULE_CLASHED);  //clashed
+              const instdoc = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":body.teacherID}}},{
+                $set:{
+                  [path]:body.newclassname
+                }
+              },{
+                arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.dayIndex},]
+              })
+              clog(instdoc);
+              return code.event(instdoc?code.OK:code.NO);
+            } else {} //change in classname of all teachers (correction type)
+          }break;
           case "switchweekdays":{
             const daysinweek = Array();
             inst.schedule.teachers.forEach((teacher,tindex)=>{

@@ -171,6 +171,93 @@ class Admin {
       })
     });
     this.creationTime = getElement("adminCreationTime"); 
+
+    class Preferences{
+      constructor(){
+        this.showphoneteacher = new Switch('teacherphonevcheck');
+        this.showphonestudent = new Switch('studentphonevcheck');
+        this.showmailteacher = new Switch('teachermailvcheck');
+        this.showmailstudent = new Switch('studentmailvcheck');
+
+        this.showphoneteacher.onTurnChange(_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showphonetoteacher",
+            show:true,
+          }).then(response=>{
+            this.showphoneteacher.turn(response.event == code.OK)
+          })
+        },_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showphonetoteacher",
+            show:false
+          }).then(response=>{
+            this.showphoneteacher.turn(response.event != code.OK)
+          })
+        })
+        this.showphonestudent.onTurnChange(_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showphonetostudent",
+            show:true,
+          }).then(response=>{
+            this.showphonestudent.turn(response.event == code.OK)
+          })
+        },_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showphonetostudent",
+            show:false
+          }).then(response=>{
+            this.showphonestudent.turn(response.event != code.OK)
+          })
+        })
+        this.showmailteacher.onTurnChange(_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showemailtoteacher",
+            show:true,
+          }).then(response=>{
+            this.showmailteacher.turn(response.event == code.OK)
+          })
+        },_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showemailtoteacher",
+            show:false
+          }).then(response=>{
+            this.showmailteacher.turn(response.event != code.OK)
+          })
+        })
+        this.showmailstudent.onTurnChange(_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showemailtostudent",
+            show:true,
+          }).then(response=>{
+            this.showmailstudent.turn(response.event == code.OK)
+          })
+        },_=>{
+          postJsonData(post.admin.self,{
+            target:"preferences",
+            action:"set",
+            specific:"showemailtostudent",
+            show:false
+          }).then(response=>{
+            this.showmailstudent.turn(response.event != code.OK)
+          })
+        })   
+      }
+    }
+    new Preferences();
   }
 }
 
@@ -270,15 +357,7 @@ class Institution {
 
         this.darkmode.turn(theme.isDark());
         this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
-        postJsonData(post.admin.manage,{
-          type:"preferences",
-          action:"get",
-        }).then((response)=>{
-          const preferences = response.event;
-          clog(preferences);
-          this.allowteacherschedule.turn(preferences.allowTeacherAddSchedule);
-          this.scheduleActive.turn(preferences.active);
-        });
+
         this.allowteacherschedule.onTurnChange(_=>{
           postJsonData(post.admin.manage,{
             type:"preferences",
@@ -629,7 +708,7 @@ class Security {
               "Delete?",
               `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
                 "id"
-              )}</button> permanently? The following consequencies will take place:<br/>
+              )}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>

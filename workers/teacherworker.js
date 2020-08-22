@@ -6,6 +6,7 @@ class TeacherWorker {
   constructor() {
     this.self = new Self();
     this.schedule = new Schedule();
+    this.classroom = new Classroom();
   }
   toSession = (u, query = { target: view.teacher.target.dash }) => {
     let path = `/teacher/session?u=${u}`;
@@ -81,6 +82,19 @@ class Schedule{
   };
   
 
+}
+
+class Classroom{
+  constructor(){
+
+  }
+  async getClassroom(user,classname){
+    const classdoc = await Institute.findOne({
+      uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classname}}
+    },{projection:{"users.classes.$":1}});
+    if(!classdoc) return {teacher:teacher,classroom:false}
+    return {classroom :classdoc.users.classes[0]}
+  }
 }
 
 const clog = (m) =>console.log(m);

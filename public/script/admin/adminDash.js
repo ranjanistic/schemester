@@ -422,28 +422,25 @@ class ConfirmClasses {
           Rename classes, or edit the duplicate classes and rename them as actual ones, then continue.</center>
           <br/>
           <div class="fmt-col">`;
-        this.receivedclasses.forEach((Class, cindex) => {
+        this.receivedclasses.forEach((Class, c) => {
           //each class row
-          bodyview += `<div class="fmt-row fmt-padding" id="classrow${cindex}">
-        <div class="fmt-col sub-container fmt-padding active fmt-padding" id="classview${cindex}">
-          <span class="fmt-padding">Class ${Class}<span>
-          <button class="fmt-right positive-button" style="font-size:16px" id="renameclass${cindex}">Rename</button>
+          bodyview += `
+        <div class="fmt-row fmt-padding" id="classrow${c}">
+          <div id="classview${c}">
+              <span id="classname${c}">${Class}</span>
+              <button class="neutral-button caption" id="editclass${c}">✒️</button>
           </div>
-        <div class="fmt-col" style="padding:0 12px" id="classrenameview${cindex}">
-          <fieldset class="fmt-row text-field" id="classfield${cindex}" style="margin:0">
-          <legend class="field-caption" style="font-size:14px" id="classcaption${cindex}">Rename ${Class} as</legend> 
-          <input class="text-input" id="class${cindex}" style="font-size:18px" placeholder="Actual class name">
-          <span class="fmt-right error-caption" id="classerror${cindex}"></span></fieldset>
-        </div>
-        <div class="fmt-row fmt-padding fmt-center" id="actionview${cindex}">
-          <div class="fmt-col half" style="padding:0 4px">
-            <button class="wide positive-button" style="font-size:16px" id="saveclass${cindex}">Save</button>
+          <div id="classeditor${c}">
+              <fieldset class="fmt-row text-field" style="margin:0" id="classfield${c}" style="margin:0">
+              <legend class="field-caption" style="font-size:16px" id="classcaption${c}">Rename ${Class} as</legend> 
+              <input class="text-input" id="class${c}" style="font-size:20px" placeholder="Actual class name">
+              <span class="fmt-right error-caption" id="classerror${c}"></span>
+              </fieldset>
+              <img class="fmt-spin-fast" style="display:none" width="20" src="/graphic/blueLoader.svg" id="loader${c}"/>
+              <button class="positive-button caption" id="saveclass${c}">Save</button>
+              <button class="negative-button caption" id="undoclass${c}">Cancel</button>
           </div>
-          <div class="fmt-col half" style="padding:0 4px">
-            <button class="wide negative-button" style="font-size:16px" id="undoclass${cindex}">Cancel</button>
-          </div>
-        </div>
-      </div>`;
+        </div>`;
         });
         bodyview += `</div>`;
         this.classesDialog = new Dialog();
@@ -455,27 +452,45 @@ class ConfirmClasses {
         this.actionview = Array();
         this.saves = Array();
         this.undos = Array();
-        this.receivedclasses.forEach((Class, cindex) => {
-          this.classview.push(getElement(`classrow${cindex}`));
-          this.renameView.push(getElement(`classrenameview${cindex}`));
-          this.renameField.push(
+        this.classeditables = Array();
+        this.receivedclasses.forEach((Class, c) => {
+          this.classeditables.push(new Editable(`classview${c}`,`classeditor${c}`,
             new TextInput(
-              `classfield${cindex}`,
-              `class${cindex}`,
-              `classerror${cindex}`,
+              `classfield${c}`,
+              `class${c}`,
+              `classerror${c}`,
               validType.nonempty
-            )
-          );
-          this.renames.push(getElement(`renameclass${cindex}`));
-          this.actionview.push(getElement(`actionview${cindex}`));
-          this.saves.push(getElement(`saveclass${cindex}`));
-          this.undos.push(getElement(`undoclass${cindex}`));
+            ),
+            `editclass${c}`,`classname${c}`,`saveclass${c}`,`undoclass${c}`,`loader${c}`
+          ));
+          this.classeditables[c].onSave(_=>{
+            this.classeditables[c].load();
+            this.classeditables[c].validateInputNow();
+            if(!this.classeditables[c].isValidInput()) return;
+            this.classeditables[c].disableInput();
+            if(this.classeditables[c].getInputValue() == this.classeditables[c].displayText()){
+              return this.classeditables[c].clickCancel();
+            }
+            postJsonData(post.admin.schedule,{
+              target:client.teacher,
+              action:"update",
+              specific:"",
+              
+            }).then(resp=>{
+              if(resp.event == code.OK){
+                this.classeditables[c].setDisplayText(this.classeditables[c].getInputValue());
+                this.classeditables[c].display();
+              } else {
+                snackBar('Unable to save');
+              }
+              hideLoader();
+            })
+          });
         });
-
         this.setDefaultDialog();
 
         this.classesDialog.createActions(
-          Array("Create classes", "Abort"),
+          Array("Continue", "Abort"),
           Array(actionType.positive, actionType.neutral)
         );
         this.classesDialog.onButtonClick(
