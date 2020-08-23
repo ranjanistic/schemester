@@ -119,7 +119,7 @@ teacher.get("/session*", async (req, res) => {
         clog("yes");
         return res.render(view.teacher.addschedule, {
           user: teacher,
-          userinst,
+          inst:userinst,
         });
       } else {
         data.target = view.teacher.target.dash;
@@ -252,6 +252,30 @@ teacher.get("/fragment*", (req, res) => {
         }
       }
     });
+});
+
+teacher.post("/self", async (req, res) => {
+  const body = req.body;
+  clog(body);
+  if(body.external){
+    switch (body.target) {
+      case "account": return res.json({ result: await worker.self.handleAccount(body.user,body)});
+    }
+    return;
+  }
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return;
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
+    clog(body);
+    switch (body.target) {
+      case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
+      case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
+      case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
+    }
+  });
 });
 
 teacher.post("/schedule", async (req, res) => {

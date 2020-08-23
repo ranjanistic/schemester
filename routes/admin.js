@@ -93,89 +93,162 @@ admin.get("/session*", (req, res) => {
                 section: data.section,
               });
             }
-            case view.admin.target.viewschedule:
-              {
+            case view.admin.target.viewschedule:{
                 clog(data);
-                if (data.client == verify.target.teacher) {
-                  const teacherScheduleInst = await Institute.findOne(
-                    {
-                      uiid: response.user.uiid,
-                      "schedule.teachers": {
-                        $elemMatch: { teacherID: data.teacherID },
-                      },
-                    },
-                    {
-                      projection: {
-                        _id: 0,
-                        "schedule.teachers.$": 1,
-                      },
-                    }
-                  );
-                  const teacherInst = await Institute.findOne(
-                    {
+                if (data.type == "teacher") {
+                  if(data.t){ //if teacher _id is provided, means required teacher account considered exists.
+                    const teacherInst = await Institute.findOne({
                       uiid: response.user.uiid,
                       "users.teachers": {
-                        $elemMatch: { teacherID: data.teacherID },
+                        $elemMatch: { "_id": ObjectId(data.t) },
                       },
-                    },
-                    {
+                    },{
                       projection: {
                         _id: 0,
                         "users.teachers.$": 1,
                       },
+                    });
+                    if(!teacherInst) return res.render(view.notfound);  //no account for data.t (_id).
+                    const teacher = teacherInst.users.teachers[0];
+                    const teacherScheduleInst = await Institute.findOne({
+                      uiid: response.user.uiid,
+                      "schedule.teachers": {
+                        $elemMatch: { "teacherID": teacher.teacherID },
+                      },
+                    },{
+                      projection: {
+                        _id: 0,
+                        "schedule.teachers.$": 1,
+                      },
+                    });
+                    if(!teacherScheduleInst){ //teacher account:true, schedule:false
+                      return res.render(view.admin.scheduleview, {
+                        group: { teacher: true },
+                        teacher,
+                        schedule: false,
+                        inst,
+                      });
                     }
-                  );
-                  if (teacherInst && teacherScheduleInst) {
-                    return res.render(view.admin.scheduleview, {
+                    return res.render(view.admin.scheduleview, { //both account and schedule
                       group: { teacher: true },
-                      teacher: teacherInst.users.teachers[0],
+                      teacher: teacher,
+                      schedule: teacherScheduleInst.schedule.teachers[0],
+                      inst,
+                    });
+                  } else {  //user account considered not exists.
+                    if(!data.teacherID) return res.render(view.notfound); //so teacher ID must be provided for schedule.
+                    const teacherInst = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
+                      uiid: response.user.uiid,
+                      "users.teachers": {
+                        $elemMatch: { "teacherID": data.teacherID },
+                      },
+                    },{
+                      projection: {
+                        _id: 0,
+                        "users.teachers.$": 1,
+                      },
+                    });
+                    if(teacherInst){  //then providing teacher _id to session, for previous condition.
+                      data['t'] = teacherInst.users.teachers[0]._id;
+                      return res.redirect(worker.toSession(data.u,data))
+                    }
+                    const teacherScheduleInst = await Institute.findOne({ //finding schedule with teacherID
+                      uiid: response.user.uiid,
+                      "schedule.teachers": {
+                        $elemMatch: { "teacherID": data.teacherID},
+                      },
+                    },{
+                      projection: {
+                      _id: 0,
+                      "schedule.teachers.$": 1,
+                      },
+                    });
+                    if(!teacherScheduleInst)//no schedule found, so 404, as only schedule was requested.
+                      return res.render(view.notfound);
+
+                    return res.render(view.admin.scheduleview, {  //account not found, so only schedule.
+                      group: { teacher: false },
                       schedule: teacherScheduleInst.schedule.teachers[0],
                       inst,
                     });
                   }
-                  if (!teacherInst && !teacherScheduleInst) {
-                    return res.render(view.admin.scheduleview, {
-                      group: { teacher: false },
-                      schedule: false,
-                      inst,
+                } else if (data.client == "student") {  //class schedule
+                  if(data.c){ //if class _id is provided, means required class considered exists.
+                    const classInst = await Institute.findOne({
+                      uiid: response.user.uiid,
+                      "users.classes": {
+                        $elemMatch: { "_id": ObjectId(data.c) },
+                      },
+                    },{
+                      projection: {
+                        _id: 0,
+                        "users.classes.$": 1,
+                      },
                     });
-                  }
-                  if (!teacherInst && teacherScheduleInst) {
-                    return res.render(view.admin.scheduleview, {
-                      group: { teacher: false },
-                      schedule: teacherScheduleInst.schedule.teachers[0],
-                      inst,
-                    });
-                  } else {
-                    return res.render(view.admin.scheduleview, {
-                      group: { teacher: true },
-                      teacher: teacherInst.users.teachers[0],
-                      schedule: false,
-                      inst,
-                    });
-                  }
-                } else if (data.client == verify.target.student) {
-                  const scheduleInst = await Institute.findOne(
-                    {
+                    if(!classInst) return res.render(view.notfound);  //no class for data.c (_id).
+                    const Class = classInst.users.classes[0];
+                    const classScheduleInst = await Institute.findOne({
                       uiid: response.user.uiid,
                       "schedule.classes": {
-                        $elemMatch: { classname: data.classname },
+                        $elemMatch: { "classname": Class.classname },
                       },
-                    },
-                    {
+                    },{
                       projection: {
                         _id: 0,
                         "schedule.classes.$": 1,
                       },
+                    });
+                    if(!classScheduleInst){ //class exists:true, schedule:false
+                      return res.render(view.admin.scheduleview, {
+                        group: { Class: true },
+                        Class: Class,
+                        schedule: false,
+                        inst,
+                      });
                     }
-                  );
-                  if (!scheduleInst)
-                    res.render(view.admin.scheduleview, { schedule: false });
-                  return res.render(view.admin.scheduleview, {
-                    group: { Class: true },
-                    schedule: scheduleInst.schedule.students[0],
-                    inst,
-                  });
+                    return res.render(view.admin.scheduleview, { //both account and schedule
+                      group: { Class: true },
+                      Class: Class,
+                      schedule: classScheduleInst.schedule.classes[0],
+                      inst,
+                    });
+                  } else {  //class considered not exists.
+                    if(!data.classname) return res.render(view.notfound); //so classname must be provided for schedule.
+                    const classInst = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
+                      uiid: response.user.uiid,
+                      "users.classes": {
+                        $elemMatch: { "classname": data.classname },
+                      },
+                    },{
+                      projection: {
+                        _id: 0,
+                        "users.classes.$": 1,
+                      },
+                    });
+                    if(classInst){  //then providing class _id to session, for previous condition.
+                      data['c'] = classInst.users.classes[0]._id;
+                      return res.redirect(worker.toSession(data.u,data))
+                    }
+                    const classScheduleInst = await Institute.findOne({ //finding schedule with classname
+                      uiid: response.user.uiid,
+                      "schedule.classes": {
+                        $elemMatch: { "classname": data.classname},
+                      },
+                    },{
+                      projection: {
+                      _id: 0,
+                      "schedule.classes.$": 1,
+                      },
+                    });
+                    if(!classScheduleInst)//no schedule found, so 404, as only schedule was requested.
+                      return res.render(view.notfound);
+
+                    return res.render(view.admin.scheduleview, {  //class not found, so only schedule.
+                      group: { Class: false },
+                      schedule: classScheduleInst.schedule.classes[0],
+                      inst,
+                    });
+                  }
                 }
                 return res.render(view.notfound);
               }

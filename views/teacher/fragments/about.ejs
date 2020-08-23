@@ -17,13 +17,13 @@
                     <div class="questrial caption" style="margin-top: 0;padding-top: 0;"><%= defaults.institute.instituteName %></div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
-                    <img class="fmt-right" src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="moreSettings">
+                    <img class="fmt-right" src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="relocateParent(locate.root)">
                 </div>
             </div>
             <% if (teacher) { %>
                 <div  class="fmt-col">
-                    <br/>
                     <div class="fmt-row  tab-container b-neutral">
+                        <div class="fmt-row group-heading questrial">Account</div>
                         <div class="caption">Logged in as</div>
                         <div class="fmt-row" id="teachernameview">
                             <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
@@ -52,21 +52,32 @@
                             </label>
                         </span>
                     </div>
-                    <div class="fmt-row group-heading questrial">Information</div>
+                    <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
+                        Change email address <span class="fmt-right">✒️</span>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral">
+                        Change password <span class="fmt-right pointer" id="resetpass">✒️</span>
+                        <button class="fmt-row wide tab-container warning-button" id="forgotpass">Forgot password</button>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral">
+                        <button class="fmt-row fmt-right negative-button questrial" id="deleteaccount">DELETE ACCOUNT</button>
+                    </div>
+                    <br/>
                     <div class="fmt-row  tab-container b-neutral">
+                        <div class="fmt-row group-heading questrial">Information</div>
                         <div class="caption">Institution</div>
                         <div class="group-text questrial"><%= defaults.institute.instituteName %></div>
-                        <div class="group-text questrial positive" onclick="mailTo('<%= defaults.institute.email %>')"><%= defaults.institute.email %></div>
-                        <div class="group-text questrial active" onclick="callTo('<%= defaults.institute.phone %>')"><%= defaults.institute.phone %></div>
+                        <span class="group-text questrial positive pointer" onclick="mailTo('<%= defaults.institute.email %>')"><%= defaults.institute.email %></span>
+                        <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.institute.phone %>')"><%= defaults.institute.phone %></span>
                     </div>
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="caption">Administrator</div>
                         <div class="group-text questrial"><%= defaults.admin.username %></div>
                         <% if(adminemailvisible) {%>
-                            <div class="group-text questrial positive" onclick="mailTo('<%= defaults.admin.email %>')"><%= defaults.admin.email %></div>
+                            <span class="group-text questrial positive pointer" onclick="mailTo('<%= defaults.admin.email %>')"><%= defaults.admin.email %></span>
                         <% } %>
                         <% if(adminphonevisible) {%>
-                        <div class="group-text questrial active" onclick="callTo('<%= defaults.admin.phone %>')"><%= defaults.admin.phone %></div>
+                        <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.admin.phone %>')"><%= defaults.admin.phone %></span>
                         <% } %>
                     </div>
                     <% 
@@ -97,6 +108,16 @@
                 An error occurred
             <% } %>
         </div>
+
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+
         <span hidden>
             <span id="teacherUID"><%= teacher.uid %></span>
             <span id="teacherID"><%= teacher.id %></span>

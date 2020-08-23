@@ -462,36 +462,15 @@ class Users {
       constructor() {}
       searchTeacher = async (inst, body) => {
         let teachers = Array();
-        inst.users.teachers.forEach((teacher, tindex) => {
+        inst.users.teachers.forEach((teacher, t) => {
           if (
-            String(teacher.username).toLowerCase() ==
-              String(body.q).toLowerCase() ||
-            String(teacher.username)
-              .toLowerCase()
-              .includes(String(body.q).toLowerCase()) ||
-            String(teacher.teacherID) == String(body.q).toLowerCase() ||
-            String(teacher.teacherID).includes(String(body.q).toLowerCase())
+            String(teacher.username).toLowerCase().includes(String(body.q).toLowerCase()) ||
+            String(teacher.teacherID).toLowerCase().includes(String(body.q).toLowerCase())
           ) {
             teachers.push({
               username: teacher.username,
               teacherID: teacher.teacherID,
-            });
-          }
-        });
-        inst.schedule.teachers.forEach((teacher, index) => {
-          let id;
-          let found = teachers.some((t, i) => {
-            if (teacher.teacherID == t.teacherID) {
-              return true;
-            } else {
-              id = teacher.teacherID;
-              return false;
-            }
-          });
-          if (!found) {
-            teachers.push({
-              username: "Not Set",
-              teacherID: id,
+              teacherUID:teacher._id
             });
           }
         });
@@ -504,8 +483,25 @@ class Users {
     }
     class ClassAction {
       constructor() {}
-      searchClass = async () => {
-        return {};
+      searchClass = async (inst,body) => {
+        let classes = Array();
+        inst.users.classes.forEach((Class, t) => {
+          if (
+            String(Class.classname).toLowerCase().includes(String(body.q).toLowerCase()) ||
+            String(Class.inchargeID).toLowerCase().includes(String(body.q).toLowerCase())
+          ) {
+            classes.push({
+              classname: Class.classname,
+              inchargeID: Class.inchargeID,
+              classUID:Class._id
+            });
+          }
+        });
+        clog(classes);
+        return {
+          event: code.OK,
+          classes: classes,
+        };
       };
     }
     this.teachers = new TeacherAction();
@@ -515,7 +511,7 @@ class Users {
     switch (body.target) {
       case "teacher":
         return await this.teachers.searchTeacher(inst, body);
-      case "class":
+      case "student":
         return await this.classes.searchClass(inst, body);
     }
   };

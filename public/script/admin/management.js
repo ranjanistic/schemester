@@ -49,7 +49,7 @@ class Management {
     this.inst = new Institution();
     this.schedule = new Schedule();
     this.security = new Security();
-    this.users = new Users();
+    this.users = new Users(this.sectionsArray);
     for (var i = 0; i < this.tabs.length; i++) {
       this.tabs[i].addEventListener(
         click,
@@ -674,8 +674,8 @@ class Security {
     this.lastLogin = getElement("lastLoginTime");
     this.deleteAccount = getElement("deleteAdminAccount");
     this.resetPass.onclick = (_) => {
-      adminloginDialog((_) => {
-        resetPasswordDialog();
+      authenticateDialog(client.admin,(_) => {
+        resetPasswordDialog(client.admin,true);
       });
     };
     if (Number(sessionStorage.getItem("linkin")) > 0) {
@@ -696,19 +696,18 @@ class Security {
       this.sendpasslink.onclick = (_) => {this.linkSender()};
     }
     this.resetMail.onclick = (_) => {
-      changeEmailBox();
+        changeEmailBox(client.admin);
     };
     this.deleteAccount.addEventListener(
       click,
       (_) => {
-        adminloginDialog(
+        authenticateDialog(
+          client.admin,
           (_) => {
             const delconf = new Dialog();
             delconf.setDisplay(
               "Delete?",
-              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
-                "id"
-              )}</b> permanently? The following consequencies will take place:<br/>
+              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem("id")}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
@@ -716,7 +715,7 @@ class Security {
       <li>Scheduling for your institution will stop, affecting all the users, and their accounts will be deleted too.</li>
       <li>Make sure you understand what your next step will lead to.</li>
       </ul><br/>
-      <div class="active">If someone else is taking administration instead of you, then you can <a onclick="changeEmailBox()">transfer ownership of your institution</a> rather than deleting it.</div>
+      <div class="active">If someone else is taking administration instead of you, then you can <a onclick="changeEmailBox(client.admin)">transfer ownership of your institution</a> rather than deleting it.</div>
       </div>`
             );
             delconf.setBackgroundColorType(bodyType.negative);
@@ -749,7 +748,7 @@ class Security {
             snack.show();
             let timer = setInterval(() => {
               time--;
-              snack.createSnack(`${time}s to revert.`, bodyType.negative);
+              delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
               if (time == 0) {
                 clearInterval(timer);
                 delconf.hide();
@@ -802,7 +801,7 @@ class Security {
   }
 }
 class Users {
-  constructor() {
+  constructor(sectionsArray) {
     this.invite = getElement("inviteUsers");
     this.invite.addEventListener(
       click,
@@ -818,149 +817,131 @@ class Users {
         this.search = getElement("teacherSearch");
         this.load(false);
         this.search.oninput = (_) => {
-          if (this.search.value) {
+          if (this.search.value && this.search.value.trim()!='@' && this.search.value.trim()!='.' && this.search.value.trim() != constant.nothing) {
             this.load();
             postJsonData(post.admin.manage, {
-              type: "search",
               target: client.teacher,
-              q: this.search.value,
-            }).then((response) => {
-              if (response.event == "OK") {
-                this.load(false, false);
-                response.teachers.forEach((teacher, index) => {
-                  this.appendList(
-                    this.getSlate(teacher.username, teacher.teacherID)
-                  );
-                  getElement(`view${teacher.teacherID}`).onclick = (_) => {
-                    clog(teacher.teacherID);
+              type: "search",
+              q: this.search.value.trim(),
+            }).then((resp) => {
+              if (resp.event == code.OK) {
+                if(resp.teachers.length<1){
+                  return this.nouserfound();
+                }
+                let listitems = constant.nothing;
+                resp.teachers.forEach((teacher,t)=>{
+                    listitems+= this.getSlate(teacher.username,teacher.teacherID,t)
+                });
+                this.listview.innerHTML = listitems;
+                const slates = Array();
+                resp.teachers.forEach((teacher,t)=>{
+                  slates.push(getElement(`teacherslate${t}`));
+                  slates[t].onclick=_=>{
                     refer(locate.admin.session, {
                       target: locate.admin.target.viewschedule,
-                      client: client.teacher,
-                      teacherID: teacher.teacherID,
+                      type: client.teacher,
+                      t: teacher.teacherUID,
                     });
-                  };
+                  }
                 });
+                return;
               }
             });
           } else {
             this.load(false);
           }
+          this.getDefaultView();
         };
       }
-      getSlate(name, email) {
-        return `<div class="fmt-row container" style="margin:4px 0px">
-        <div class="fmt-col fmt-twothird">
-            <span class="group-text positive">${name}</span><br/>
-            <span class="group-text questrial">${email}</span>
+      getSlate(name, email,index) {
+        return `<button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="teacherslate${index}">
+        <div class="fmt-col fmt-twothird group-text">
+          <span class="positive" id="teachername${index}">${name}</span><br/>
+          <span class="questrial" id="teachermail${index}">${email}</span>
         </div>
-        <div class="fmt-col fmt-third">
-            <button class="positive-button fmt-right"id="view${email}">View</button>
-        </div>
-        </div>`;
+        </button>`;
       }
-      load(show = true, noview = true) {
-        if (show) {
-          this.listview.innerHTML = this.getLoaderView();
-        } else {
-          if (noview) {
-            this.listview.innerHTML = this.getDefaultView();
-          } else {
-            this.listview.innerHTML = "";
-          }
-        }
-      }
-      appendList(slate) {
-        let last = this.listview.innerHTML;
-        if (last == this.getDefaultView() || last == this.getLoaderView()) {
-          this.listview.innerHTML = slate;
-        } else {
-          this.listview.innerHTML = last + slate;
-        }
+      load(show = true) {
+        show?this.getLoaderView():this.getDefaultView();
       }
       getLoaderView() {
-        return `<div class="fmt-center" id="tlistLoader">
-        <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
+        this.listview.innerHTML =  `<div class="fmt-center" id="tlistLoader">
+          <img class="fmt-spin" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
       getDefaultView() {
-        return '<div class="fmt-center">Start Typing...<div>';
+        this.listview.innerHTML = '<div class="fmt-center group-text">Type to search.</div>';
       }
-      clearList() {
-        this.listview.innerHTML = "Start typing";
+      nouserfound(){
+        const query = window.location.search;
+        this.listview.innerHTML = `<div class="fmt-center group-text">No user found. <a href="${query.replace(query.substr(query.lastIndexOf('=')),`=${sectionsArray[2]}`)}">Try in schedule</a>?</div>`;
       }
     }
     this.teacher = new Teacher();
+    
     class Classes {
       constructor() {
         this.listview = getElement("classList");
         this.search = getElement("classSearch");
         this.load(false);
         this.search.oninput = (_) => {
-          if (this.search.value) {
+          if (this.search.value && this.search.value.trim()!='@' && this.search.value.trim()!='.' && this.search.value.trim() != constant.nothing) {
             this.load();
             postJsonData(post.admin.manage, {
               type: "search",
-              q: this.search.value,
-            }).then((response) => {
-              if (response.event == "OK") {
-                this.load(false, false);
-                response.classes.forEach((Class, index) => {
-                  this.appendList(
-                    this.getSlate(Class.classname, Class.teachercount)
-                  );
-                  getElement(`view${teacher.teacherID}`).onclick = (_) => {
-                    refer(locate.admin.session, {
-                      target: "viewschedule",
-                      client: client.student,
-                      classname: Class.classname,
-                    });
-                  };
+              target: client.student,
+              q: this.search.value.trim(),
+            }).then((resp) => {
+              if (resp.event == code.OK) {
+                if(resp.classes.length<1){
+                  return this.noclassfound();
+                }
+                let listitems = constant.nothing;
+                resp.classes.forEach((Class,t)=>{
+                    listitems+= this.getSlate(Class.classname,Class.inchargeID,t)
                 });
+                this.listview.innerHTML = listitems;
+                const slates = Array();
+                resp.classes.forEach((Class,t)=>{
+                  slates.push(getElement(`classslate${t}`));
+                  slates[t].onclick=_=>{
+                    refer(locate.admin.session, {
+                      target: locate.admin.target.viewschedule,
+                      type: client.student,
+                      c: Class.classUID,
+                    });
+                  }
+                });
+                return;
               }
             });
           } else {
             this.load(false);
           }
+          this.setDefaultView();
         };
       }
-      getSlate(classname, teachercount) {
-        return `<div class="fmt-row container" style="margin:4px 0px">
-        <div class="fmt-col fmt-twothird">
-            <span class="group-text positive">${classname}</span><br/>
-            <span class="group-text questrial">Taken by ${teachercount} teachers</span>
+      getSlate(name, email,index) {
+        return `<button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="classslate${index}">
+        <div class="fmt-col fmt-twothird group-text">
+          <span class="positive" id="classname${index}">${name}</span><br/>
+          <span class="questrial" id="classincharge${index}">${email}</span>
         </div>
-        <div class="fmt-col fmt-third">
-            <button class="positive-button fmt-right"id="view${classname}">View</button>
-        </div>
-        </div>`;
+        </button>`;
       }
-      load(show = true, noview = true) {
-        if (show) {
-          this.listview.innerHTML = this.getLoaderView();
-        } else {
-          if (noview) {
-            this.listview.innerHTML = this.getDefaultView();
-          }
-        }
-      }
-      appendList(slate) {
-        let last = this.listview.innerHTML;
-        if (last == this.getDefaultView() || last == this.getLoaderView()) {
-          this.listview.innerHTML = slate;
-        } else {
-          this.listview.innerHTML = last + slate;
-        }
+      load(show = true) {
+        show?this.getLoaderView():this.setDefaultView();
       }
       getLoaderView() {
-        return `<div class="fmt-center" id="clistLoader">
-        <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg"/>
+        this.listview.innerHTML =  `<div class="fmt-center" id="tlistLoader">
+          <img class="fmt-spin" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
-      getDefaultView() {
-        return '<div class="fmt-center">Start Typing...<div>';
+      setDefaultView() {
+        this.listview.innerHTML = '<div class="fmt-center group-text">Type to search.</div>';
       }
-      clearList() {
-        this.listview.innerHTML = "Start typing";
+      noclassfound(){
+        this.listview.innerHTML = '<div class="fmt-center group-text">No class found.</div>';
       }
     }
     this.classes = new Classes();

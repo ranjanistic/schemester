@@ -15,8 +15,8 @@
 [data-theme="dark"] {
     --positive: #739dec;
     --negative: #ec6565;
-     --warning: #df9d5f;
-      --active: #48cc84;
+    --warning: #df9d5f;
+    --active: #48cc84;
     --base: #101010;
     --base-text: #ffffff;
     --secondary:#131313;
@@ -39,6 +39,7 @@ html{
 body{
     font-size:18px;
     font-family: 'Jost',sans-serif;
+    color: var(--base-text);
     background-color: var(--base);
     margin:0;
 }
@@ -298,6 +299,10 @@ img{vertical-align:middle}
 }
 .sixth{
     width:16.666%;
+}
+
+.pointer{
+    cursor:pointer;
 }
 .tab-container{
     border-radius: 12px;

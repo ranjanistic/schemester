@@ -391,6 +391,7 @@ class Posts {
         this.logout = "/teacher/auth/logout";
         this.sessionValidate = "/teacher/session/validate";
         this.schedule = "/teacher/schedule";
+        this.self = '/teacher/self';
       }
     }
     this.teacher = new Teacher();

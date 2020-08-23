@@ -132,20 +132,50 @@ class Session {
   };
 
   authenticate=async(req,res,body,secret)=>{
-    let resp = await this.verify(req,secret)
+    const resp = await this.verify(req,secret)
     clog(resp);
     if(!this.valid(resp)) return code.event(code.auth.SESSION_INVALID);
     switch(secret){
       case this.adminsessionsecret:{
         const admin = await Admin.findOne({'_id':ObjectId(resp.user.id)});
-        clog(admin);
         if(!admin) return code.event(code.auth.USER_NOT_EXIST);
         if(body.email!= admin.email) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res,admin._id,admin.uiid,this.adminsessionsecret);
+        this.createSession(res,admin._id,admin.uiid,secret);
         return code.event(code.auth.AUTH_SUCCESS);
       };
+      case this.teachersessionsecret:{
+        clog(body);
+        clog(resp);
+        const teacherinst = await Institute.findOne({uiid:resp.user.uiid,"users.teachers":{$elemMatch:{'_id':ObjectId(resp.user.id)}}},
+          {projection:{"_id":0,"users.teachers.$":1}}
+        );
+        if(!teacherinst) return code.event(code.auth.USER_NOT_EXIST);
+        const teacher = teacherinst.users.teachers[0];
+        if(body.email!= teacher.teacherID) return code.event(code.auth.EMAIL_INVALID);
+        const isMatch = await bcrypt.compare(body.password, teacher.password);
+        if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+        this.createSession(res,teacher._id,resp.user.uiid,secret);
+        return code.event(code.auth.AUTH_SUCCESS);
+      }
+      case this.studentsessionsecret:{
+        const classinst = await Institute.findOne({uiid:resp.user.uiid,"users.classes":{$elemMatch:{"classname":resp.user.classname}}},
+          {projection:{"_id":0,"users.classes.$":1}}
+        );
+        if(!classinst) return code.event(code.auth.CLASS_NOT_EXIST);
+        let student;
+        const found = classinst.users.classes[0].students.some((stud,s)=>{
+          student = stud;
+          return String(stud._id) == String(resp.user.id);
+        });
+        if(!found) return code.event(code.auth.USER_NOT_EXIST);
+        if(body.email!= student.teacherID) return code.event(code.auth.EMAIL_INVALID);
+        const isMatch = await bcrypt.compare(body.password, student.password);
+        if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
+        this.createSession(res,student._id,body.uiid,secret,classinst.users.classes[0].classname);
+        return code.event(code.auth.AUTH_SUCCESS);
+      }
     }
   }
 

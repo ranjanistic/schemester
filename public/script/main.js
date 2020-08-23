@@ -62,27 +62,27 @@ class TextInput {
   enableInput() {
     this.input.disabled = false;
   }
-  validateNow(validAction = nothing(), ifmatchfield = null) {
+  validateNow(validAction = _=>{}, ifmatchfield = null) {
     validateTextField(this, this.type, validAction, ifmatchfield);
   }
-  validate(validAction = nothing(), ifmatchfield = null) {
+  validate(validAction = _=>{}, ifmatchfield = null) {
     this.onTextDefocus((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
   stopValidate(){
     clog("here");
-    this.onTextDefocus(nothing());
+    this.onTextDefocus(_=>{});
   }
   isValid(matchfieldvalue = null) {
     return stringIsValid(this.getInput(), this.type, matchfieldvalue);
   }
-  strictValidate(validAction = nothing(), ifmatchfield = null) {
+  strictValidate(validAction = _=>{}, ifmatchfield = null) {
     this.onTextInput((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
-  onTextInput(action = nothing()) {
+  onTextInput(action = _=>{}) {
     if (this.input) {
       this.input.oninput = () => {
         action();
@@ -228,7 +228,7 @@ class Checkbox {
   setLabel(text = String) {
     this.label.innerHTML = text;
   }
-  onCheckChange(checked = nothing(), unchecked = nothing()) {
+  onCheckChange(checked = _=>{}, unchecked = _=>{}) {
     this.checkbox.addEventListener(change, (_) => {
       if (this.checkbox.checked) {
         checked();
@@ -267,7 +267,7 @@ class Switch{
     this.switchText = switchTextID?getElement(switchTextID):null;
     this.switchView = switchViewID?getElement(switchViewID):null;
     this.switchContainer = switchContainerID?getElement(switchContainerID):null;
-    this.switchView?this.setViewType(viewType):nothing();
+    this.switchView?this.setViewType(viewType):_=>{};
   }
   setViewType(viewType){
     setClassNames(this.switchView, actionType.getSwitchStyle(viewType));
@@ -275,7 +275,7 @@ class Switch{
   setLabel(text = String) {
     this.label.innerHTML = text;
   }
-  onTurnChange(onAction = nothing(), offAction = nothing()) {
+  onTurnChange(onAction = _=>{}, offAction = _=>{}) {
     this.switch.addEventListener(change, (_) => {
       if (this.switch.checked) {
         onAction();
@@ -624,12 +624,12 @@ class Dialog extends DialogID {
       this.getInputType(inputFieldIndex)
     );
   }
-  validate(inputFieldIndex = Number, validateAction = nothing()) {
+  validate(inputFieldIndex = Number, validateAction = _=>{}) {
     this.inputField[inputFieldIndex].validate((_) => {
       validateAction();
     });
   }
-  validateNow(inputFieldIndex = Number, validateAction = nothing()) {
+  validateNow(inputFieldIndex = Number, validateAction = _=>{}) {
     this.inputField[inputFieldIndex].validateNow((_) => {
       validateAction();
     });
@@ -760,7 +760,8 @@ let sendPassResetLink = () => {
 };
 
 //todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
-const adminloginDialog = (
+const authenticateDialog = (
+  clientType,
   afterLogin = (_) => {
     snackBar("Success");
   },
@@ -796,7 +797,13 @@ const adminloginDialog = (
             loginDialog.validateNow(1);
           } else {
             loginDialog.loader();
-            postJsonData(post.admin.self, {
+            let postpath;
+            switch(clientType){
+              case client.admin:{postpath = post.admin.self;}break;
+              case client.teacher:{postpath = post.teacher.self;}break;
+              case client.student:{postpath = post.student.self;}break;
+            }
+            postJsonData(postpath, {
               target: "authenticate",
               email: loginDialog.getInputValue(0),
               password: loginDialog.getInputValue(1),
@@ -819,7 +826,6 @@ const adminloginDialog = (
                 snackBar("Authentication failed");
               }
             });
-            //todo: authenticate
           }
         },
         (_) => {
@@ -831,7 +837,7 @@ const adminloginDialog = (
   loginDialog.existence(isShowing);
 };
 
-const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
+const resetPasswordDialog = (clientType,isShowing = true) => {
   const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
@@ -856,7 +862,13 @@ const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
         resetDialog.validateNow(0);
         if (!resetDialog.isValid(0)) return;
         resetDialog.loader();
-        postJsonData(post.admin.self,{
+        let postpath;
+        switch(clientType){
+          case client.admin:postpath = post.admin.self;break;
+          case client.teacher:postpath = post.teacher.self;break;
+          case client.student:postpath = post.student.self;break;
+        }
+        postJsonData(postpath, {
           target:"account",
           action:code.action.CHANGE_PASSWORD,
           newpassword:resetDialog.getInputValue(0)
@@ -880,9 +892,9 @@ const resetPasswordDialog = (isShowing = true, inputvalue = null) => {
   resetDialog.existence(isShowing);
 };
 
-const changeEmailBox = (isShowing = true) => {
-  adminloginDialog((_) => {
-    var mailChange = new Dialog();
+const changeEmailBox = (clientType,isShowing = true) => {
+  authenticateDialog(clientType,(_) => {
+    const mailChange = new Dialog();
     mailChange.setDisplay(
       "Change Email Address",
       "Provide your the new email address. You'll be logged out after successful change, for verification purposes."
@@ -903,7 +915,13 @@ const changeEmailBox = (isShowing = true) => {
         () => {
           if (!mailChange.isValid(0)) return mailChange.validateNow(0);
           mailChange.loader();
-          postJsonData(post.admin.self, {
+          let postpath;
+          switch(clientType){
+            case client.admin:postpath = post.admin.self;break;
+            case client.teacher:postpath = post.teacher.self;break;
+            case client.student:postpath = post.student.self;break;
+          }
+          postJsonData(postpath, {
             target: "account",
             action: code.action.CHANGE_ID,
             newemail: mailChange.getInputValue(0),
@@ -1543,8 +1561,8 @@ let checkSessionValidation = (
 };
 
 const receiveSessionData = (
-  validAction = nothing(),
-  invalidAction = nothing()
+  validAction = _=>{},
+  invalidAction = _=>{}
 ) => {
   postData(post.admin.sessionValidate, {
     getuser: true,
