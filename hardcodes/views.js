@@ -114,8 +114,9 @@ class StudentView{
         this.dash = 'student/student_dash.ejs';
         class FragmentView{
             constructor(){
-                this.fullschedule = 'student/fragments/fullweek.ejs';
                 this.today = 'student/fragments/today.ejs';
+                this.fullschedule = 'student/fragments/fullweek.ejs';
+                this.classroom = 'student/fragments/classroom.ejs';
                 this.settings = 'student/fragments/settings.ejs';
             }
         }
@@ -127,7 +128,9 @@ class StudentView{
                 constructor(){
                     this.today = "today";
                     this.fullweek = "fullschedule";
+                    this.classroom = "classroom";
                     this.settings = "settings";
+
                 }
               }
               this.fragment = new Fragment()
@@ -141,6 +144,7 @@ class StudentView{
             case this.target.fragment.today:return this.fragment.today;
             case this.target.fragment.fullweek:return this.fragment.fullschedule;
             case this.target.fragment.settings:return this.fragment.settings;
+            case this.target.fragment.classroom:return this.fragment.classroom;
             default:return this.getViewByTarget();
         }
     }

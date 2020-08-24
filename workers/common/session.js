@@ -6,6 +6,8 @@ const code = require("../../public/script/codes"),
   Admin = require("../../collections/Admins"),
   Institute = require("../../collections/Institutions"),
   adminworker = require("../adminworker"),
+  teacherworker = require("../teacherworker"),
+  studentworker = require("../studentworker"),
   share = require("./sharedata");
 
 class Session {
@@ -83,7 +85,7 @@ class Session {
             }
           }
         }
-      }
+      }break;
       case this.studentsessionsecret:{
         const inst = await Institute.findOne({uiid:body.uiid});
         switch (body.type) {
@@ -105,19 +107,19 @@ class Session {
               case "password": {
                 const {email, password, uiid, classname,target } = body;
                 if(!classInst) return code.event(code.auth.CLASS_NOT_EXIST);
-                let thestudent;
-                const found = classInst.users.classes[0].students.some((student,_)=>{
-                  thestudent = student;
-                  return student.studentID == email;
+                let student;
+                const found = classInst.users.classes[0].students.some((stud,_)=>{
+                  student = stud;
+                  return stud.studentID == email;
                 });
                 if(!found) return code.event(code.auth.USER_NOT_EXIST);
-                clog(thestudent);
-                const isMatch = await bcrypt.compare(password, thestudent.password);
+                clog(student);
+                const isMatch = await bcrypt.compare(password, student.password);
                 if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-                this.createSession(response,thestudent._id,uiid,secret,classname);
+                this.createSession(response,student._id,uiid,secret,classname);
                 return {
                   event: code.auth.AUTH_SUCCESS,
-                  user: share.getStudentShareData(thestudent),
+                  user: share.getStudentShareData(student),
                   target: target,
                 };
               }
@@ -238,41 +240,24 @@ class Session {
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
-          const doc = await Institute.findOneAndUpdate(
-            { uiid: uiid },
-            {
-              $push: {
-                "users.teachers": {
-                  _id: new ObjectId(),
-                  username: username,
-                  teacherID: email,
-                  password: epassword,
-                  createdAt: Date.now(),
-                  verified:false,
-                  vacations:[],
-                  prefs:{}
-                },
-              },
-            },{
-              returnOriginal:false
-            }
-          );
-          clog(doc);
-          if(!doc) return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
+          const result = await teacherworker.self.account.createAccount(uiid,{
+            _id: new ObjectId(),
+            username: username,
+            teacherID: email,
+            password: epassword,
+            createdAt: Date.now(),
+            verified:false,
+            vacations:[],
+            prefs:{}
+          });
+          if(result.event == code.NO) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           clog("created?");
-          const userInst = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}},{
+          const teacherdoc = await Institute.findOne({uiid:uiid, "users.teachers":{$elemMatch:{"teacherID":email}}},{
             projection:{_id:0,"users.teachers.$":1}
           });
-          if(!userInst) return code.event(code.auth.USER_NOT_EXIST);
-          const teacher = userInst.users.teachers[0];
-          const payload = {
-            user: {
-              id: teacher._id,
-              uiid: uiid
-            },
-          };
-          const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
-          response.cookie(this.sessionKey, token, { signed: true });
+          if(!teacherdoc) return code.event(code.auth.USER_NOT_EXIST);
+          const teacher = teacherdoc.users.teachers[0];
+          this.createSession(response,teacher._id,uiid,secret);
           return {
             event: code.auth.ACCOUNT_CREATED,
             user: share.getTeacherShareData(teacher),
@@ -282,10 +267,10 @@ class Session {
         const { username, email, password, uiid, classname} = request.body;
           const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-          let classInst = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{classname:classname}}},
+          let classdoc = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{classname:classname}}},
           {projection:{"_id":0,"users.classes.$":1}});
-          if(!classInst) return code.event(code.schedule.BATCH_NOT_FOUND);
-          const theclass = classInst.users.classes[0];
+          if(!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
+          const theclass = classdoc.users.classes[0];
           let found = theclass.students.some((student,_)=>{
             return student.studentID == email;
           });
@@ -293,57 +278,33 @@ class Session {
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
-          const filter = {
-            uiid: uiid,
-            "users.classes": {
-              $elemMatch: { classname: classname },
-            }, //existing classname
-          };
-          const newdocument = {
-            $push: { "users.classes.$[outer].students":{
-              _id: new ObjectId(),
-              username: username,
-              studentID: email,
-              password: epassword,
-              className:classname,
-              createdAt: Date.now(),
-              verified:false,
-              prefs:{}
-            }}, //new student push
-          };
-          const options = {
-            arrayFilters: [{ "outer.classname": classname }],
-          };
-          const doc = await Institute.findOneAndUpdate(
-            filter,
-            newdocument,
-            options
-          );
-          if(!doc) return code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, err);
+          const result = studentworker.self.account.createAccount(uiid,classname,{
+            _id: new ObjectId(),
+            username: username,
+            studentID: email,
+            password: epassword,
+            className:classname,
+            createdAt: Date.now(),
+            verified:false,
+            prefs:{}
+          }); //new student push
+
+          if(result.event == code.NO) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           clog("new student appended?");
-          classInst = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{"classname":classname}}},{
+          classdoc = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{"classname":classname}}},{
             projection:{"_id":0,"users.classes.$":1}
           });
-          if(!classInst) return code.event(code.schedule.BATCH_NOT_FOUND);
-          let newstudent;
-          const newfound = classInst.users.classes[0].students.some((student,_)=>{
-            if(student.studentID == email){
-              newstudent = student;
-              return true;
-            }
+          if(!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
+          let student;
+          const sfound = classdoc.users.classes[0].students.some((stud,_)=>{
+            student = share.getStudentShareData(stud);
+            return stud.studentID == email
           });
-          if(!newfound) return code.event(code.auth.USER_NOT_EXIST);
-          const payload = {
-            user: {
-              id: newstudent._id,
-              uiid: uiid
-            },
-          };
-          const token = jwt.sign(payload, secret, {expiresIn: this.expiresIn});
-          response.cookie(this.sessionKey, token, { signed: true });
+          if(!sfound) return code.event(code.auth.USER_NOT_EXIST);
+          this.createSession(response,student.uid,uiid,secret,classname);
           return {
             event: code.auth.ACCOUNT_CREATED,
-            user: share.getStudentShareData(newstudent),
+            user: student,
           };
       }
       default: return code.event(code.server.DATABASE_ERROR);
@@ -369,7 +330,7 @@ class Session {
               $elemMatch:{"_id":response.user.id}
             }
           },{
-            $projection:{
+            projection:{
               "_id":0,
               "users.teachers.$":1
             }
@@ -383,12 +344,17 @@ class Session {
               $elemMatch:{"classname":response.user.classname}
             }
           },{
-            $projection:{
+            projection:{
               "_id":0,
               "users.classes.$":1
             }
           });
-          return userinst?share.getStudentShareData(userinst.users.classes[0]):code.event(code.auth.USER_NOT_EXIST);
+          let student;
+          userinst.users.classes[0].students.some((stud)=>{
+            student = share.getStudentShareData(stud);
+            return String(stud._id)==String(response.user.id)
+          })
+          return userinst?student:code.event(code.auth.USER_NOT_EXIST);
         }
         default: return code.event(code.auth.AUTH_REQ_FAILED);
       }

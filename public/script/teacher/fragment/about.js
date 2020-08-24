@@ -14,10 +14,6 @@ class TeacherAbout {
       theme.switch();
       this.darkmode.change();
     };
-    // this.settings = getElement("moreSettings");
-    // this.settings.onclick =_=>{
-    //     referParent(locate.teacher.session,{u:localStorage.getItem('uid'),target:locate.teacher.target.settings});
-    // }
 
     this.logout = getElement("logout");
     this.logout.onclick = (_) => {

@@ -83,6 +83,7 @@ admin.get("/session*", (req, res) => {
             case view.admin.target.addteacher: {
               return res.render(view.admin.getViewByTarget(data.target), {
                 user: adata,
+                data:data,
                 inst,
               });
             }

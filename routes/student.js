@@ -7,6 +7,7 @@ const express = require("express"),
   view = require("../hardcodes/views"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
+  share = require("../workers/common/sharedata"),
   verify = require("../workers/common/verification"),
   worker = require("../workers/studentworker"),
   Institute = require("../collections/Institutions"),
@@ -14,6 +15,8 @@ const express = require("express"),
 
 const sessionsecret = session.studentsessionsecret;
 student.use(cookieParser(sessionsecret));
+const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
+  authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
 student.get("/", (req, res) => {
   res.redirect(worker.toLogin());
@@ -74,11 +77,10 @@ student.get("/session*", async (req, res) => {
     .then(async (response) => {
       if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
-      const userinst = await Institute.findOne(
-        {
+      const classinst = await Institute.findOne({
           uiid: response.user.uiid,
-          "users.students": {
-            $elemMatch: { _id: ObjectId(response.user.id) },
+          "users.classes": {
+            $elemMatch: { "classname": response.user.classname },
           },
         },
         {
@@ -86,56 +88,47 @@ student.get("/session*", async (req, res) => {
             _id: 1,
             uiid: 1,
             default: 1,
-            schedule: 1,
-            "users.students.$": 1,
+            "schedule.classes": 1,
+            "users.classes.$": 1,
           },
         }
       );
-      if (!userinst)
+      if (!classinst)
         return session.finish(res).then((response) => {
           if (response) res.redirect(worker.toLogin(data));
         });
 
-      //user student exists
-      const student = getStudentShareData(userinst.users.students[0]);
+      //classroom exists
+      const classroom  = classinst.users.classes[0];
+      let student;
+      const found = classroom.students.some((stud)=>{
+        student = share.getStudentShareData(stud);
+        return student._id == response.user.id
+      })
+      if(!found) return session.finish(res).then((response) => {
+        if (response) res.redirect(worker.toLogin(data));
+      });
+
       if (!student.verified)
         return res.render(view.verification, { user: student });
 
-      const scheduleinst = await Institute.findOne(
-        {
+      const scheduleinst = await Institute.findOne({
           uiid: response.user.uiid,
-          "schedule.students": { $elemMatch: { classname: student.classname } },
-        },
-        {
-          projection: { _id: 0, "schedule.students.$": 1 },
-        }
-      );
-
-      const inst = await Institute.findOne(
-        {
-          uiid: response.user.uiid,
-          "users.students": { $elemMatch: { studentID: student.id } },
-        },
-        {
-          projection: {
-            _id: 1,
-            uiid: 1,
-            default: 1,
-            schedule: 1,
-            "users.students.$": 1,
-          },
-        }
-      );
+          "schedule.classes": { $elemMatch: { classname: response.user.classname } },
+      },{
+          projection: { _id: 0, "schedule.classes.$": 1 },
+      });
+      const schedule = scheduleinst?scheduleinst.schedule.classes[0]:false;
       try {
         clog("in session try");
         clog(data);
         return res.render(view.student.getViewByTarget(data.target), {
           student,
-          inst,
+          classinst,
           target: {
             fragment: data.fragment,
           },
-          schedule:scheduleinst.schedule.students[0],
+          schedule
         });
       } catch (e) {
         clog(e);
@@ -157,19 +150,22 @@ student.get("/fragment*", (req, res) => {
       switch (query.fragment) {
         case view.student.target.fragment.today: {
           clog("today");
-          getSchedule(response, 1)
-            .then((resp) => {
-              if (!resp.schedule)
-                return res.render(
-                  view.student.getViewByTarget(query.fragment),
-                  {
-                    today: false,
-                    timings: resp.timings,
-                  }
-                );
+          worker.schedule.getSchedule(response.user, new Date().getDay())
+            .then((scheduleresponse) => {
+              if(!scheduleresponse){  //no schedule
+                return res.render(view.student.getViewByTarget(query.fragment), {
+                  today: null,
+                  timings:null
+                });
+              }
+              if (!scheduleresponse.schedule)
+                return res.render(view.student.getViewByTarget(query.fragment),{
+                  today: false,
+                  timings: scheduleresponse.timings,
+                });
               return res.render(view.student.getViewByTarget(query.fragment), {
-                today: resp.schedule.period,
-                timings: resp.timings,
+                today: scheduleresponse.schedule.period,
+                timings: scheduleresponse.timings,
               });
             })
             .catch((e) => {
@@ -179,8 +175,8 @@ student.get("/fragment*", (req, res) => {
         }
         case view.student.target.fragment.fullweek: {
           clog("full week");
-          getSchedule(response)
-            .then((resp) => {
+          worker.schedule.getSchedule(response.user)
+          .then((resp) => {
               return res.render(view.student.getViewByTarget(query.fragment), {
                 schedule: resp.schedule,
                 timings: resp.timings,
@@ -191,79 +187,64 @@ student.get("/fragment*", (req, res) => {
             });
           return;
         }
+        case view.student.target.fragment.classroom: {
+          clog("classroom");
+          const classuser = await Institute.findOne({
+            uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}
+          },{projection:{"users.classes.$":1}});
+          const classroom = classuser.users.classes[0];
+          clog(classroom);
+          return res.render(view.teacher.getViewByTarget(query.fragment), {
+            classroom: false,
+            classroom
+          });
+        }
         case view.student.target.fragment.about: {
           clog("about");
-          const studentuser = await Institute.findOne(
-            {
-              uiid: response.user.uiid,
-              "users.students": {
-                $elemMatch: { _id: ObjectId(response.user.id) },
-              },
+          const classuser = await Institute.findOne({
+            uiid: response.user.uiid,
+            "users.classes": {
+              $elemMatch: { "classname": response.user.classname },
             },
-            { projection: { "users.students.$": 1 } }
+          },
+            { projection: { "users.classes.$": 1 } }
           );
-          if (!studentuser) return null;
-          return res.render(view.student.getViewByTarget(query.fragment), {
-            student: getStudentShareData(studentuser.users.students[0]),
-          });
+          if (!classuser) return null;
+          let student;
+          classuser.users.classes[0].students.some((stud)=>{
+            student = share.getStudentShareData(stud);
+            return String(stud._id) == String(response.user.id)
+          })
+          return res.render(view.student.getViewByTarget(query.fragment), {student});
         }
       }
     });
 });
 
-const getSchedule = async (response, dayIndex = null) => {
-  const studentuser = await Institute.findOne(
-    {
-      uiid: response.user.uiid,
-      "users.students": { $elemMatch: { _id: ObjectId(response.user.id) } },
-    },
-    { projection: { _id: 0, "users.students.$": 1 } }
-  );
-  if (!studentuser)
-    return session.finish(res).then((response) => {
-      if (response) res.redirect(worker.toLogin());
-    });
-  const student = getStudentShareData(studentuser.users.students[0]);
-  const studentschedule = await Institute.findOne(
-    {
-      uiid: response.user.uiid,
-      "schedule.students": { $elemMatch: { classname: student.classname } },
-    },
-    {
-      projection: {
-        _id: 0,
-        default: 1,
-        "schedule.students.$": 1,
-      },
+
+student.post("/self", async (req, res) => {
+  const body = req.body;
+  clog(body);
+  if(body.external){
+    switch (body.target) {
+      case "account": return res.json({ result: await worker.self.handleAccount(body.user,body)});
     }
-  );
-  if (!studentschedule) return res.redirect(worker.toLogin(req.query));
-  const schedule = studentschedule.schedule.students[0].days;
-  const timings = studentschedule.default.timings;
-  if (!dayIndex) return { schedule: schedule, timings: timings };
-  let today = studentschedule.schedule.students[0].days[0];
-  const found = schedule.some((day, index) => {
-    if (day.dayIndex == dayIndex) {
-      today = day;
-      return true;
+    return;
+  }
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return;
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.json(invalidsession);
+    switch (body.target) {
+      case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
+      case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
+      case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
   });
-  if (!found) return { schedule: false, timings: timings };
-  return { schedule: today, timings: timings };
-};
+});
 
-const getStudentShareData = (data = {}) => {
-  return {
-    isStudent: true,
-    [sessionUID]: data._id,
-    username: data.username,
-    [sessionID]: data.teacherID,
-    classname:data.className,
-    createdAt: data.createdAt,
-    verified: data.verified,
-    prefs: data.prefs,
-  };
-};
 
 module.exports = student;
 let clog=(m)=>console.log(m);

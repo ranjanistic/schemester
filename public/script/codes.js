@@ -82,6 +82,11 @@ class Codes {
 
         this.SCHEDULE_UPLOADED = "inst/schedule-upload-success";
         this.SCHEDULE_UPLOAD_FAILED = "inst/schedule-upload-failed";
+
+        this.CLASS_EXISTS = "inst/class-exists";
+        this.CLASS_NOT_FOUND = "inst/class-not-found";
+        this.CLASSES_CREATED = "inst/classes-creation-success";
+        this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
       }
     }
 

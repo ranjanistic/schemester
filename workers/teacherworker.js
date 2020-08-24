@@ -49,9 +49,16 @@ class Self {
       }
       //send feedback emails
 
-      async createAccount(newadmin){
-        const result = await Admin.insertOne(newadmin);
-        return result.insertedCount==0?result.ops[0]:code.event(code.NO)
+      async createAccount(uiid,newteacher){
+        const doc = await Institute.findOneAndUpdate(
+          { uiid: uiid },
+          {
+            $push: {
+              "users.teachers": newteacher
+            },
+          }
+        );
+        return code.event(doc?code.OK:code.NO);
       }
 
       /**
@@ -79,7 +86,7 @@ class Self {
             [passpath]:epassword
           },
           $unset: {
-            [passpath]: null,
+            [this.rlinkexp]: null,
           },  
         });
         return code.event(newteacher ? code.OK : code.NO);
@@ -88,12 +95,12 @@ class Self {
       /**
        * 
        */
-      changeEmailID = async (user, admin, body) => {
-        if (admin.email == body.newemail)
+      changeEmailID = async (user, teacher, body) => {
+        if (teacher.email == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
-        const someadmin = await Admin.findOne({ email: body.newemail });
-        if (someadmin) return code.event(code.auth.USER_EXIST);
-        const newadmin = await Admin.findOneAndUpdate(
+        const someteacher = await Admin.findOne({ email: body.newemail });
+        if (someteacher) return code.event(code.auth.USER_EXIST);
+        const newteacher = await Admin.findOneAndUpdate(
           { _id: ObjectId(user.id) },
           {
             $set: {
@@ -102,7 +109,7 @@ class Self {
             },
           }
         );
-        return newadmin?code.event(
+        return newteacher?code.event(
           (await this.defaults.admin.setEmail(user, body)) ? code.OK : code.NO
         ):code.event(code.NO);
       };
@@ -279,15 +286,85 @@ class Schedule{
 
 class Classroom{
   constructor(){
+    this.path = 'users.classes';
+    this.classname = 'classname';
+    this.incharge = 'incharge';
+    this.students = 'students';
 
+    class Manage{
+      constructor(){}
+      async handleSettings(user,teacher,body,classroom){
+        return;
+      }
+    }
+    this.manage = new Manage()
   }
-  async getClassroom(user,classname){
+
+  async manageClassroom(user,body,teacher,classroom){
+    switch(body.action){
+      case "create":return await this.createClassroom(user,body);
+      case "update":return await this.updateClassroom(user,teacher,body,classroom);
+      case "delete":return;
+      case "receive":return await this.getClassroom(user,classroom);
+      case "manage": return await this.manage.handleSettings(user,body,teacher,classroom);
+    }
+  }
+
+  async createClassroom(user,teacher,body){
+    switch(body.specific){
+      case "newclass":{
+        const data = {
+          classname:body.classname,
+          incharge:teacher.teacherID,
+          students:[]
+        }
+        const classdoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+          $push:{
+            [this.path]:data
+          }
+        })
+        return code.event(classdoc?code.inst.CLASSES_CREATED:code.inst.CLASSES_CREATION_FAILED);
+      }
+    }
+  }
+  async updateClassroom(user,teacher,body,classroom){
+    switch(body.specific){
+      case "addstudent":{
+
+      }
+      case "removestudent":{
+
+      }
+    }
+  }
+  
+  async getClassroom(user,classroom){
     const classdoc = await Institute.findOne({
-      uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classname}}
+      uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classroom.classname}}
     },{projection:{"users.classes.$":1}});
     if(!classdoc) return {teacher:teacher,classroom:false}
     return {classroom :classdoc.users.classes[0]}
   }
+
+  async handleInvitation(user,body,teacher,classroom){
+    switch(body.action){
+      case "create":return await this.createStudentInviteLink();
+      case "accept":return await this.acceptStudentRequest();
+      case "reject":return await this.rejectStudentRequest();
+    }
+    return;
+  }
+
+  async createStudentInviteLink(){
+
+  }
+  async acceptStudentRequest(){
+
+  }
+  async rejectStudentRequest(){
+
+  }
+
 }
 
 const clog = (m) =>console.log(m);

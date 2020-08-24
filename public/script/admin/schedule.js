@@ -7,9 +7,24 @@ class Schedule{
         this.data = new ReceiveData();
         this.back = getElement("back");
         this.back.onclick=_=>{window.history.back()}
-        window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
+        try{
+            window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
+        }catch{
+            new NoSchedule();
+        }
     }
 }
+
+class NoSchedule{
+    constructor(){
+        const data = new ReceiveData();
+        this.addschedule = getElement("addschedule");
+        this.addschedule.onclick=_=>{
+            refer(locate.admin.session, { target: locate.admin.target.addteacher, teacherID:data.teacherID });
+        }
+    }
+}
+
 /**
  * A class for a teacher's schedule view script.
  */
@@ -189,13 +204,37 @@ class Teacher{
                 `editsubject${p}`,`subject${p}`,`savesubject${p}`,`cancelsubject${p}`,`subjectloader${p}`
             ));
             this.subjecteditable[p].onSave(_=>{
-                this.subjecteditable[p].load();
                 this.subjecteditable[p].validateInputNow();
                 if(!this.subjecteditable[p].isValidInput()) return;
                 this.subjecteditable[p].disableInput();
                 if(this.subjecteditable[p].getInputValue() == this.classeditable[p].displayText()){
-                  return this.subjecteditable[p].clickCancel();
+                    return this.subjecteditable[p].clickCancel();
                 }
+                this.subjecteditable[p].load();
+                
+                postJsonData(post.admin.schedule,{
+                    target:client.teacher,
+                    action:"update",
+                    specific:"renamesubject",
+                    teacherID:this.data.teacherID,
+                    dayIndex:Number(this.currentdayIndex),
+                    period:p,
+                    oldsubject:this.subjecteditable[p].displayText(),
+                    newsubject:this.subjecteditable[p].getInputValue()
+                }).then(response=>{
+                    this.subjecteditable[p].load(false);
+                    clog(response);
+                    if(response.event == code.OK){
+                        this.subjecteditable[p].setDisplayText(this.subjecteditable[p].getInputValue());
+                        this.subjecteditable[p].display();
+                        return;
+                    }
+                    switch(response.event){
+                        default:return this.subjecteditable[p].textInput.showError('Error');
+                    }
+                }).catch(err=>{
+                    snackBar(err,'Report');
+                });
             })
         })
     }
@@ -213,7 +252,7 @@ class Class{
 class ReceiveData{
     constructor(){
         this.client = getElement("client").innerHTML;
-        if(this.client == client.teacher){
+        if(this.isTeacher()){
             this.teacherID = getElement("teacherID").innerHTML == 'null'?null:getElement("teacherID").innerHTML;
             if(this.teacherID){
                 this.teacherUID = getElement("teacherUID").innerHTML;
@@ -222,12 +261,20 @@ class ReceiveData{
             } else {
                 this.teacherID = getElement("scheduleteacherID").innerHTML
             }
+        } else {
+            this.classname = getElement("classname").innerHTML == 'null'?null:getElement("classname").innerHTML;
+            if(this.classname){
+                this.classUID = getElement("classUID").innerHTML;
+            }
         }
         this.weekdays = String(getElement("daysinweek").innerHTML).split(',');
         this.totalperiods = Number(getElement("periodcount").innerHTML);
     }
     isTeacher(){
         return this.client == client.teacher;
+    }
+    isStudent(){
+        return this.client == client.student;
     }
 }
 

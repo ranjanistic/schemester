@@ -67,27 +67,35 @@
                 </div>
             </div>
             <br/>
-            <div class="fmt-row fmt-center" id="dayTabs">
-            </div>
-            <div class="fmt-row tab-view">
-                <div class="fmt-row fmt-center fmt-padding active fmt-hide-small" id="period0">
-                    <div class="fmt-col fmt-quarter">
-                        Period
+            <% if(schedule) { %>
+                <div class="fmt-row fmt-center" id="dayTabs">
+                </div>
+                <div class="fmt-row tab-view">
+                    <div class="fmt-row fmt-center fmt-padding active fmt-hide-small" id="period0">
+                        <div class="fmt-col fmt-quarter">
+                            Period
+                        </div>
+                        <div class="fmt-col fmt-quarter">
+                            Class
+                        </div>
+                        <div class="fmt-col fmt-quarter">
+                            Subject
+                        </div>
+                        <div class="fmt-col fmt-quarter">
+                            Action
+                        </div>
                     </div>
-                    <div class="fmt-col fmt-quarter">
-                        Class
-                    </div>
-                    <div class="fmt-col fmt-quarter">
-                        Subject
-                    </div>
-                    <div class="fmt-col fmt-quarter">
-                        Action
+                    <div id="dayscheduleview">
+                        <!-- schedule view -->
                     </div>
                 </div>
-                <div id="dayscheduleview">
-                    <!-- schedule view -->
+            <% } else { %>
+                <div class="fmt-center">
+                    <div class="questrial">No schedule present for <%= teacher.username %>.</div>
+                    <br/>
+                    <button class="positive-button" id="addschedule">Add schedule</button>
                 </div>
-            </div>
+            <% } %>
         </div>
         <span hidden>
             <% if (group.Class) { %>

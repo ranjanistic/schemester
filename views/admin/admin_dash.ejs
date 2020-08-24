@@ -205,11 +205,11 @@
                         <span class="heading">Add</span>
                         <% if (!isEmptyObject(inst.schedule.teachers)) { %>
                             <br/>
-                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:'locate.admin.target'})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
+                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
                             You can add another teacher's schedule.</div> 
                         <% } else { %>
                             <br/>
-                            <div class="questrial">Add a teacher of <a href="/admin/session?target=manage"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
+                            <div class="questrial">Add a teacher of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
                         <% } %>
                         <br/>
                         <button class="positive-button" id="addteacher">Add Teachers</button>
@@ -217,7 +217,7 @@
                         <% if (isEmptyObject(inst.users.teachers)) { %>
                             <span class="heading">Otherwise</span>
                             <br/>
-                            <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
+                            <div class="questrial">Generate an invitation link to share with teachers of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, and let them 
                                 add their own schedule.
                             </div>
                             <br/>
@@ -234,7 +234,7 @@
                         <br/>
                         <span class="heading">Otherwise</span>
                         <br/>
-                        <div class="questrial">Generate an invitation link to share with teachers of <%= inst.default.institute.instituteName %>, and let them 
+                        <div class="questrial">Generate an invitation link to share with teachers of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, and let them 
                             add their own schedule.
                         </div>
                         <br/>

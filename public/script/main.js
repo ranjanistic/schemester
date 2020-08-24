@@ -634,7 +634,7 @@ class Dialog extends DialogID {
       validateAction();
     });
   }
-  setDisplay(head, body = null, imgsrc = null) {
+  setDisplay(head, body = null, imgsrc  = null) {
     this.heading.textContent = head;
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);

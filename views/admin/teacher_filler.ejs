@@ -72,7 +72,11 @@
                         <% if (user.isAdmin) { %>
                             <fieldset class="text-field" id="teacherEmailField">
                                 <legend class="field-caption">Email address of teacher</legend>
-                                <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail">
+                                <input class="text-input" required placeholder="teacher@example.com"  type="email" id="teacherEmail" name="teacherScheduleDetail"
+                                <% if(data.teacherID) { %>
+                                    value="<%= data.teacherID %>"
+                                <% } %>
+                                >
                                 <span id="teacherEmailView" style="font-size:24px"></span>
                                 <span class="fmt-right error-caption"  id="teacherEmailError"></span>
                             </fieldset>

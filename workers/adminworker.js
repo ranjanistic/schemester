@@ -50,36 +50,40 @@ class Self {
     class Account {
       constructor() {
         this.defaults = new Default();
-        this.username = 'username';
-        this.email = 'email';
-        this.password = 'password';
-        this.uiid = 'uiid';
-        this.createdAt = 'createdAt';
-        this.verified = 'verified';
-        this.vlinkexp = 'vlinkexp';
-        this.rlinkexp = 'rlinkexp';
+        this.username = "username";
+        this.email = "email";
+        this.password = "password";
+        this.uiid = "uiid";
+        this.createdAt = "createdAt";
+        this.verified = "verified";
+        this.vlinkexp = "vlinkexp";
+        this.rlinkexp = "rlinkexp";
       }
       //send feedback emails
 
-      async createAccount(newadmin){
+      async createAccount(newadmin) {
         const result = await Admin.insertOne(newadmin);
-        return result.insertedCount==0?result.ops[0]:code.event(code.NO)
+        return result.insertedCount == 0 ? result.ops[0] : code.event(code.NO);
       }
 
       /**
-       * 
+       *
        */
       changeName = async (user, body) => {
         const newadmin = await Admin.findOneAndUpdate(
           { _id: ObjectId(user.id) },
           { $set: { [this.username]: body.newname } }
         );
-        return newadmin?code.event(
-          (await this.defaults.admin.setName(user, body)) ? code.OK : code.NO
-        ):code.event(code.NO);
+        return newadmin
+          ? code.event(
+              (await this.defaults.admin.setName(user, body))
+                ? code.OK
+                : code.NO
+            )
+          : code.event(code.NO);
       };
       /**
-       * 
+       *
        */
       changePassword = async (user, body) => {
         const salt = await bcrypt.genSalt(10);
@@ -91,7 +95,7 @@ class Self {
               [this.password]: epassword,
             },
             $unset: {
-              rlinkexp: null,
+              [this.rlinkexp]: null,
             },
           }
         );
@@ -99,7 +103,7 @@ class Self {
       };
 
       /**
-       * 
+       *
        */
       changeEmailID = async (user, admin, body) => {
         if (admin.email == body.newemail)
@@ -115,13 +119,17 @@ class Self {
             },
           }
         );
-        return newadmin?code.event(
-          (await this.defaults.admin.setEmail(user, body)) ? code.OK : code.NO
-        ):code.event(code.NO);
+        return newadmin
+          ? code.event(
+              (await this.defaults.admin.setEmail(user, body))
+                ? code.OK
+                : code.NO
+            )
+          : code.event(code.NO);
       };
 
       /**
-       * 
+       *
        */
       changePhone = async (user, body) => {
         return code.event(
@@ -130,62 +138,87 @@ class Self {
       };
 
       /**
-       * 
+       *
        */
       deleteAccount = async (user) => {
         const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
         return code.event(del ? code.OK : code.NO);
       };
     }
-    class Preferences{
-      constructor(){
+    class Preferences {
+      constructor() {
         this.object = `prefs`;
-        this.showemailtoteacher = 'showemailtoteacher';
-        this.showphonetoteacher = 'showphonetoteacher';
-        this.showemailtostudent = 'showemailtostudent';
-        this.showphonetostudent = 'showphonetostudent';
+        this.showemailtoteacher = "showemailtoteacher";
+        this.showphonetoteacher = "showphonetoteacher";
+        this.showemailtostudent = "showemailtostudent";
+        this.showphonetostudent = "showphonetostudent";
       }
-      getSpecificPath(specific){
+      getSpecificPath(specific) {
         return `${this.object}.${specific}`;
       }
-      async setPreference(user,body){
+      async setPreference(user, body) {
         let value;
-        switch(body.specific){
-          case this.showemailtoteacher:{value = body.show}break;
-          case this.showphonetoteacher:{value = body.show}break;
-          case this.showemailtostudent:{value = body.show}break;
-          case this.showphonetostudent:{value = body.show}break;
-          default:return null;
+        switch (body.specific) {
+          case this.showemailtoteacher:
+            {
+              value = body.show;
+            }
+            break;
+          case this.showphonetoteacher:
+            {
+              value = body.show;
+            }
+            break;
+          case this.showemailtostudent:
+            {
+              value = body.show;
+            }
+            break;
+          case this.showphonetostudent:
+            {
+              value = body.show;
+            }
+            break;
+          default:
+            return null;
         }
-        const adoc = await Admin.findOneAndUpdate({"_id":ObjectId(user.id)},{
-          $set:{
-            [this.getSpecificPath(body.specific)]:value
+        const adoc = await Admin.findOneAndUpdate(
+          { _id: ObjectId(user.id) },
+          {
+            $set: {
+              [this.getSpecificPath(body.specific)]: value,
+            },
           }
-        });
-        return code.event(adoc?code.OK:code.NO);
+        );
+        return code.event(adoc ? code.OK : code.NO);
       }
-      async getPreference(user,body){
-        switch(body.specific){
-          case this.showemailtoteacher:break;
-          case this.showphonetoteacher:break;
-          case this.showemailtostudent:break;
-          case this.showphonetostudent:break;
-          default:{
-            const adoc = await Admin.findOne({"_id":ObjectId(user.id)});
-            return code.event(adoc?adoc.prefs:code.NO);
+      async getPreference(user, body) {
+        switch (body.specific) {
+          case this.showemailtoteacher:
+            break;
+          case this.showphonetoteacher:
+            break;
+          case this.showemailtostudent:
+            break;
+          case this.showphonetostudent:
+            break;
+          default: {
+            const adoc = await Admin.findOne({ _id: ObjectId(user.id) });
+            return code.event(adoc ? adoc.prefs : code.NO);
           }
         }
-        const adoc = await Admin.findOne({"_id":ObjectId(user.id)});
+        const adoc = await Admin.findOne({ _id: ObjectId(user.id) });
         clog(adoc[this.getSpecificPath(body.specific)]);
-        return code.event(adoc?adoc[this.getSpecificPath(body.specific)]:code.NO);
+        return code.event(
+          adoc ? adoc[this.getSpecificPath(body.specific)] : code.NO
+        );
       }
-      
     }
     this.account = new Account();
     this.prefs = new Preferences();
   }
 
-  handleAccount = async (user, body,admin) => {
+  handleAccount = async (user, body, admin) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
@@ -201,8 +234,10 @@ class Self {
   };
   handlePreferences = async (user, body) => {
     switch (body.action) {
-      case "set": return await this.prefs.setPreference(user,body);
-      case "get": return await this.prefs.getPreference(user,body)
+      case "set":
+        return await this.prefs.setPreference(user, body);
+      case "get":
+        return await this.prefs.getPreference(user, body);
     }
   };
   handleVerification = async (user, body) => {
@@ -228,7 +263,8 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":{
+      case "send":
+        {
           const linkdata = await reset.generateLink(verify.target.admin, {
             uid: user.id,
           });
@@ -237,7 +273,8 @@ class Self {
           return code.event(
             linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
           );
-      }break;
+        }
+        break;
     }
   };
 }
@@ -330,48 +367,48 @@ class Default {
         this.totalperiodspath = `${this.path}.periodsInDay`;
         this.daysinweekpath = `${this.path}.daysInWeek`;
       }
-      async setStartTime(user,body) {
+      async setStartTime(user, body) {
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.startpath]:body.start}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.startpath]: body.start } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async setBreakStartTime(user,body) {
+      async setBreakStartTime(user, body) {
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.breakstartpath]:body.breakstart}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.breakstartpath]: body.breakstart } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async setPeriodDuration(user,body) {
+      async setPeriodDuration(user, body) {
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.periodminpath]:Number(body.periodduration)}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.periodminpath]: Number(body.periodduration) } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async setBreakDuration(user,body) {
+      async setBreakDuration(user, body) {
         clog(body);
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.breakminpath]:Number(body.breakduration)}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.breakminpath]: Number(body.breakduration) } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
 
-      async setPeriodsInDay(user,body) {
+      async setPeriodsInDay(user, body) {
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.totalperiodspath]:Number(body.totalperiods)}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.totalperiodspath]: Number(body.totalperiods) } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async setDaysInWeek(user,body) {
+      async setDaysInWeek(user, body) {
         const newinst = await Institute.findOneAndUpdate(
-          {uiid:user.uiid},
-          {$set:{[this.daysinweekpath]:body.daysinweek}}
-        )
+          { uiid: user.uiid },
+          { $set: { [this.daysinweekpath]: body.daysinweek } }
+        );
         return code.event(newinst ? code.OK : code.NO);
       }
       async getInfo() {}
@@ -402,25 +439,38 @@ class Default {
   };
   handleTimings = async (user, body) => {
     switch (body.action) {
-      case code.action.CHANGE_START_TIME:return await this.timings.setStartTime(user,body);
-      case code.action.CHANGE_BREAK_START_TIME:return await this.timings.setBreakStartTime(user,body);
-      case code.action.CHANGE_PERIOD_DURATION:return await this.timings.setPeriodDuration(user,body);
-      case code.action.CHANGE_BREAK_DURATION:return await this.timings.setBreakDuration(user,body);
-      case code.action.CHANGE_TOTAL_PERIODS:return await this.timings.setDaysInWeek(user,body);
-      case code.action.CHANGE_WORKING_DAYS:return await this.timings.setPeriodsInDay(user,body);
+      case code.action.CHANGE_START_TIME:
+        return await this.timings.setStartTime(user, body);
+      case code.action.CHANGE_BREAK_START_TIME:
+        return await this.timings.setBreakStartTime(user, body);
+      case code.action.CHANGE_PERIOD_DURATION:
+        return await this.timings.setPeriodDuration(user, body);
+      case code.action.CHANGE_BREAK_DURATION:
+        return await this.timings.setBreakDuration(user, body);
+      case code.action.CHANGE_TOTAL_PERIODS:
+        return await this.timings.setDaysInWeek(user, body);
+      case code.action.CHANGE_WORKING_DAYS:
+        return await this.timings.setPeriodsInDay(user, body);
     }
   };
   handleRegistration = async (user, body) => {
     //todo:validation
     clog(body.data);
-    const existingInst = await Institute.findOne({uiid:user.uiid});
-    if(existingInst){
-      const doc = Institute.findOneAndUpdate({uiid:user.uiid},{
-        $set:{
-          default:body.data.default
+    const existingInst = await Institute.findOne({ uiid: user.uiid });
+    if (existingInst) {
+      const doc = Institute.findOneAndUpdate(
+        { uiid: user.uiid },
+        {
+          $set: {
+            default: body.data.default,
+          },
         }
-      });
-      return code.event(doc?code.inst.INSTITUTION_CREATED:code.inst.INSTITUTION_CREATION_FAILED);
+      );
+      return code.event(
+        doc
+          ? code.inst.INSTITUTION_CREATED
+          : code.inst.INSTITUTION_CREATION_FAILED
+      );
     }
     const registerdoc = {
       uiid: user.uiid,
@@ -464,13 +514,17 @@ class Users {
         let teachers = Array();
         inst.users.teachers.forEach((teacher, t) => {
           if (
-            String(teacher.username).toLowerCase().includes(String(body.q).toLowerCase()) ||
-            String(teacher.teacherID).toLowerCase().includes(String(body.q).toLowerCase())
+            String(teacher.username)
+              .toLowerCase()
+              .includes(String(body.q).toLowerCase()) ||
+            String(teacher.teacherID)
+              .toLowerCase()
+              .includes(String(body.q).toLowerCase())
           ) {
             teachers.push({
               username: teacher.username,
               teacherID: teacher.teacherID,
-              teacherUID:teacher._id
+              teacherUID: teacher._id,
             });
           }
         });
@@ -483,17 +537,21 @@ class Users {
     }
     class ClassAction {
       constructor() {}
-      searchClass = async (inst,body) => {
+      searchClass = async (inst, body) => {
         let classes = Array();
         inst.users.classes.forEach((Class, t) => {
           if (
-            String(Class.classname).toLowerCase().includes(String(body.q).toLowerCase()) ||
-            String(Class.inchargeID).toLowerCase().includes(String(body.q).toLowerCase())
+            String(Class.classname)
+              .toLowerCase()
+              .includes(String(body.q).toLowerCase()) ||
+            String(Class.inchargeID)
+              .toLowerCase()
+              .includes(String(body.q).toLowerCase())
           ) {
             classes.push({
               classname: Class.classname,
               inchargeID: Class.inchargeID,
-              classUID:Class._id
+              classUID: Class._id,
             });
           }
         });
@@ -530,10 +588,11 @@ class Users {
  */
 class Schedule {
   constructor() {
-    const defaults  = new Default();
-    class TeacherAction  {
+    const defaults = new Default();
+    class TeacherAction {
       constructor() {}
       async scheduleUpload(inst, body) {
+
         let overwriting = false; //if existing teacher schedule being overwritten after completion.
         let incomplete = false; //if existing teacher schedule being rewritten without completion.
         let found = inst.schedule.teachers.some((teacher, index) => {
@@ -703,90 +762,177 @@ class Schedule {
             };
         }
       }
-      async scheduleUpdate(user,inst, body) {
-        switch(body.specific){
-          case "renameclass":{
-            clog(body);
-            if(body.teacherID){ //only change in class shift of a teacher
-              const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.classname`;
-              //check clash with other teachers
-              const clash = inst.schedule.teachers.some((teacher,t)=>{
-                if(teacher.teacherID != body.teacherID){
-                  const clash = teacher.days.some((day,d)=>{
-                    if(day.dayIndex == body.dayIndex){
-                      return day.period[body.period].classname == body.newclassname;
-                    }
-                  })
-                  return clash;
-                }
-              });
-              if(clash) return code.event(code.schedule.SCHEDULE_CLASHED);  //clashed
-              const instdoc = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":body.teacherID}}},{
-                $set:{
-                  [path]:body.newclassname
-                }
-              },{
-                arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.dayIndex},]
-              })
-              clog(instdoc);
-              return code.event(instdoc?code.OK:code.NO);
-            } else {} //change in classname of all teachers (correction type)
-          }break;
-          case "switchweekdays":{
-            const daysinweek = Array();
-            inst.schedule.teachers.forEach((teacher,tindex)=>{
-              teacher.days.forEach((d,dindex)=>{
-                body.days.forEach(async(day,_)=>{
-                  if((!(day.new < 0))&&(day.new!=null)&&(day.new!='')){
-                    if(!daysinweek.includes(day.new)) daysinweek.push(day.new);
-                    if(day.old == d.dayIndex){
-                      const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
-                      const doc = await Institute.findOneAndUpdate(
-                        {uiid:inst.uiid},{
-                          $set:{[path]:day.new}
-                        }
-                      );
-                      //todo: doc return
-                      clog(doc);
-                      return code.event(doc?code.OK:code.NO);
-                    }
+      async scheduleUpdate(user, inst, body) {
+        switch (body.specific) {
+          case "renameclass":
+            {
+              if (body.teacherID) {
+                clog(body);
+                //only change in class shift of a teacher
+                const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.classname`;
+                //check clash with other teachers
+                const clash = inst.schedule.teachers.some((teacher, t) => {
+                  if (teacher.teacherID != body.teacherID) {
+                    const clash = teacher.days.some((day, d) => {
+                      if (day.dayIndex == body.dayIndex) {
+                        return (
+                          day.period[body.period].classname == body.newclassname
+                        );
+                      }
+                    });
+                    return clash;
                   }
                 });
-              });
-            });
-            clog(body.days);
-            clog(daysinweek);
-            if(daysinweek.length>0){
-              return await defaults.timings.setDaysInWeek(user,{daysinweek})
-            } else {
-              return code.event(code.NO);
+                if (clash) return code.event(code.schedule.SCHEDULE_CLASHED); //clashed
+                const instdoc = await Institute.findOneAndUpdate(
+                  {
+                    uiid: user.uiid,
+                    "schedule.teachers": {
+                      $elemMatch: { teacherID: body.teacherID },
+                    },
+                  },
+                  {
+                    $set: {
+                      [path]: body.newclassname,
+                    },
+                  },
+                  {
+                    arrayFilters: [
+                      { "outer.teacherID": body.teacherID },
+                      { "outer1.dayIndex": body.dayIndex },
+                    ],
+                  }
+                );
+                clog(instdoc);
+                return code.event(instdoc ? code.OK : code.NO);
+              } else {
+                //todo: change in classname of all teachers (correction type)
+                clog(body);
+
+                // if (found) {
+                //   return {
+                //     event: code.schedule.SCHEDULE_CLASHED,
+                //     clash: clashteachers,
+                //   };
+                // }
+                let done = false;
+                const promises = inst.schedule.teachers.map(
+                  async (teacher, tindex) => {
+                    teacher.days.forEach(async (day, dindex) => {
+                      day.period.forEach(async (period, pindex) => {
+                        if (period.classname == body.oldclassname) {
+                          const setpath = `schedule.teachers.${tindex}.days.${dindex}.period.${pindex}.classname`;
+                          const doc = await Institute.findOneAndUpdate(
+                            { uiid: inst.uiid },
+                            { $set: { [setpath]: body.newclassname } }
+                          );
+                          done = doc ? true : false;
+                        }
+                      });
+                    });
+                  }
+                );
+                await Promise.all(promises);
+                clog(done);
+                return code.event(done ? code.OK : code.NO);
+              }
             }
-          }break;
+            break;
+          case "renamesubject":
+            {
+              clog(body);
+              if (body.teacherID) {
+                //only change in subject shift of a teacher
+                const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.subject`;
+                const instdoc = await Institute.findOneAndUpdate(
+                  {
+                    uiid: user.uiid,
+                    "schedule.teachers": {
+                      $elemMatch: { teacherID: body.teacherID },
+                    },
+                  },
+                  {
+                    $set: {
+                      [path]: body.newsubject,
+                    },
+                  },
+                  {
+                    arrayFilters: [
+                      { "outer.teacherID": body.teacherID },
+                      { "outer1.dayIndex": body.dayIndex },
+                    ],
+                  }
+                );
+                clog(instdoc);
+                return code.event(instdoc ? code.OK : code.NO);
+              } else {
+              } //change in subject of all teachers (correction type)
+            }
+            break;
+          case "switchweekdays":
+            {
+              const daysinweek = Array();
+              inst.schedule.teachers.forEach((teacher, tindex) => {
+                teacher.days.forEach((d, dindex) => {
+                  body.days.forEach(async (day, _) => {
+                    if (!(day.new < 0) && day.new != null && day.new != "") {
+                      if (!daysinweek.includes(day.new))
+                        daysinweek.push(day.new);
+                      if (day.old == d.dayIndex) {
+                        const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
+                        const doc = await Institute.findOneAndUpdate(
+                          { uiid: inst.uiid },
+                          {
+                            $set: { [path]: day.new },
+                          }
+                        );
+                        //todo: doc return
+                        clog(doc);
+                        return code.event(doc ? code.OK : code.NO);
+                      }
+                    }
+                  });
+                });
+              });
+              clog(body.days);
+              clog(daysinweek);
+              if (daysinweek.length > 0) {
+                return await defaults.timings.setDaysInWeek(user, {
+                  daysinweek,
+                });
+              } else {
+                return code.event(code.NO);
+              }
+            }
+            break;
         }
         return;
       }
-      async scheduleRemove(user,inst,body){
-        switch(body.specific){
-          case "weekday":{
-              const promises = inst.schedule.teachers.map(async(teacher,tindex)=>{
-                if(!(body.removeday < 0)&&!isNaN(body.removeday)){
-                  const path = `schedule.teachers.${tindex}.days`;
-                  const doc = await Institute.findOneAndUpdate(
-                    {uiid:inst.uiid},
-                    {
-                      $pull:{
-                        [path]:{dayIndex:body.removeday},
-                        [defaults.timings.daysinweekpath]:body.removeday
-                      },
-                    }
-                  );
+      async scheduleRemove(user, inst, body) {
+        switch (body.specific) {
+          case "weekday":
+            {
+              const promises = inst.schedule.teachers.map(
+                async (teacher, tindex) => {
+                  if (!(body.removeday < 0) && !isNaN(body.removeday)) {
+                    const path = `schedule.teachers.${tindex}.days`;
+                    const doc = await Institute.findOneAndUpdate(
+                      { uiid: inst.uiid },
+                      {
+                        $pull: {
+                          [path]: { dayIndex: body.removeday },
+                          [defaults.timings.daysinweekpath]: body.removeday,
+                        },
+                      }
+                    );
+                  }
                 }
-              });
+              );
               await Promise.all(promises);
               return code.event(code.OK);
-          }break;
-          case "periods":{
-
+            }
+            break;
+          case "periods": {
           }
         }
       }
@@ -815,63 +961,17 @@ class Schedule {
         };
       }
       async scheduleUpdate(inst, body) {
-        let existingclasses = Array();
-        //getting existing classes
-        inst.schedule.classes.forEach((Class, _) => {
-          existingclasses.push(Class.classname);
-        });
-        clog(existingclasses);
-        let newClasses = Array();
-        inst.schedule.teachers.forEach((teacher, tindex) => {
-          teacher.days.forEach((day, _) => {
-            day.period.forEach((period, _) => {
-              if (
-                !existingclasses.includes(period.classname) &&
-                !newClasses.includes(period.classname)
-              ) {
-                newClasses.push(period.classname);
+        switch(body.specific){
+          case "createclasses":{
+            clog(body.classes);
+            const doc = await Institute.findOneAndUpdate({uiid:inst.uiid},
+              {
+                $set:{
+                  "schedule.classes":body.classes
+                }
               }
-            });
-          });
-        });
-        clog(newClasses);
-        if (!body.confirmed) {
-          return {
-            event: code.OK,
-            classes: newClasses,
-          };
-        } else {
-          try {
-            let done = false;
-            const promises = inst.schedule.teachers.map(async(teacher,tindex)=>{
-              teacher.days.forEach(async(day, dindex) => {
-                day.period.forEach(async(__, _) => {
-                  body.data.forEach(async (c, _) => {
-                    const setter = `schedule.teachers.${tindex}.days.${dindex}.period.$[outer].classname`;
-                    const filter = {
-                      uiid: inst.uiid,
-                    };
-                    const newdocument = {
-                      $set: { [setter]: c.renamed },
-                    };
-                    const options = {
-                      arrayFilters: [{ "outer.classname": c.classname }],
-                    };
-                    const doc = await Institute.findOneAndUpdate(
-                      filter,
-                      newdocument,
-                      options
-                    );
-                    done = doc ? true : false;
-                  });
-                });
-              });
-            });
-            await Promise.all(promises);
-            clog(done);
-            return code.event(done ? code.OK : code.NO);
-          } catch (e) {
-            return code.eventmsg(code.NO, e);
+            )
+            return code.event(doc?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);
           }
         }
       }
@@ -880,16 +980,16 @@ class Schedule {
     this.teacher = new TeacherAction();
     this.classes = new ClassAction();
   }
-  handleScheduleTeachersAction = async (user,inst, body) => {
+  handleScheduleTeachersAction = async (user, inst, body) => {
     switch (body.action) {
       case "upload":
         return await this.teacher.scheduleUpload(inst, body);
       case "receive":
         return await this.teacher.scheduleReceive(inst, body);
       case "update":
-        return await this.teacher.scheduleUpdate(user,inst, body);
+        return await this.teacher.scheduleUpdate(user, inst, body);
       case "remove":
-        return await this.teacher.scheduleRemove(user,inst,body);
+        return await this.teacher.scheduleRemove(user, inst, body);
       default:
         return code.event(code.server.DATABASE_ERROR);
     }
@@ -1005,58 +1105,72 @@ class Vacations {
 
 class Preferences {
   constructor() {
-    const object = 'preferences'
+    const object = "preferences";
     this.allowTeacherAddSchedule = `${object}.allowTeacherAddSchedule`;
     this.active = `${object}.active`;
   }
-  async handlePreferences(user,body){
-    switch(body.action){
-      case "set":{
-        switch(body.specific){
-          case "allowTeacherAddSchedule":return await this.teacherAddSchedule(user,body.allow);
-          case "active":return await this.scheduleActive(user,body.active);
-          default:return await this.setAllPreferences(user,body);
+  async handlePreferences(user, body) {
+    switch (body.action) {
+      case "set":
+        {
+          switch (body.specific) {
+            case "allowTeacherAddSchedule":
+              return await this.teacherAddSchedule(user, body.allow);
+            case "active":
+              return await this.scheduleActive(user, body.active);
+            default:
+              return await this.setAllPreferences(user, body);
+          }
         }
-      }break;
-      case "get":{
-        switch(body.specific){
-          case "allowTeacherAddSchedule":return await this.canTeacherAddSchedule(user);
-          case "active":return await this.isScheduleActive(user);
-          default:return await this.allPreferences(user);
+        break;
+      case "get":
+        {
+          switch (body.specific) {
+            case "allowTeacherAddSchedule":
+              return await this.canTeacherAddSchedule(user);
+            case "active":
+              return await this.isScheduleActive(user);
+            default:
+              return await this.allPreferences(user);
+          }
         }
-      }break;
+        break;
     }
   }
-  async setAllPreferences(user,body){
-  
+  async setAllPreferences(user, body) {}
+  async allPreferences(user) {
+    const doc = await Institute.findOne({ uiid: user.uiid });
+    return code.event(doc ? doc.preferences : code.NO);
   }
-  async allPreferences(user){
-    const doc = await Institute.findOne({uiid:user.uiid});
-    return code.event(doc?doc.preferences:code.NO);
+  async canTeacherAddSchedule(user) {
+    const doc = await Institute.findOne({ uiid: user.uiid });
+    return doc ? doc.preferences.allowTeacherAddSchedule : code.event(code.NO);
   }
-  async canTeacherAddSchedule(user){
-    const doc = await Institute.findOne({uiid:user.uiid});
-    return doc?doc.preferences.allowTeacherAddSchedule:code.event(code.NO);
-  }
-  async teacherAddSchedule(user,allow){
-    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
-      $set:{
-        [this.allowTeacherAddSchedule]:allow
+  async teacherAddSchedule(user, allow) {
+    const doc = await Institute.findOneAndUpdate(
+      { uiid: user.uiid },
+      {
+        $set: {
+          [this.allowTeacherAddSchedule]: allow,
+        },
       }
-    });
-    return code.event(doc?code.OK:code.NO);
+    );
+    return code.event(doc ? code.OK : code.NO);
   }
-  async isScheduleActive(user){
-    const doc = await Institute.findOne({uiid:user.uiid});
-    return code.event(doc?doc.preferences.active:code.NO);
+  async isScheduleActive(user) {
+    const doc = await Institute.findOne({ uiid: user.uiid });
+    return code.event(doc ? doc.preferences.active : code.NO);
   }
-  async scheduleActive(user,active){
-    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
-      $set:{
-        [this.active]:active
+  async scheduleActive(user, active) {
+    const doc = await Institute.findOneAndUpdate(
+      { uiid: user.uiid },
+      {
+        $set: {
+          [this.active]: active,
+        },
       }
-    });
-    return code.event(doc?code.OK:code.NO);
+    );
+    return code.event(doc ? code.OK : code.NO);
   }
 }
 

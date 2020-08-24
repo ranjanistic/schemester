@@ -17,14 +17,15 @@ const express = require("express"),
 
 const sessionsecret = session.teachersessionsecret;
 teacher.use(cookieParser(sessionsecret));
+const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
+  authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
 teacher.get("/", (req, res) => {
   res.redirect(worker.toLogin());
 });
 
 teacher.get("/auth/login*", (req, res) => {
-  session
-    .verify(req, sessionsecret)
+  session.verify(req, sessionsecret)
     .catch((error) => {
       return res.render(view.servererror, { error });
     })
@@ -38,14 +39,12 @@ teacher.get("/auth/login*", (req, res) => {
 });
 
 teacher.post("/auth/login", async (req, res) => {
-  session
-    .login(req, res, sessionsecret)
+  session.login(req, res, sessionsecret)
     .then((response) => {
-      clog(response);
       return res.json({ result: response });
     })
     .catch((error) => {
-      clog(error);
+      return res.json(authreqfailed(error));
     });
 });
 
@@ -106,6 +105,7 @@ teacher.get("/session*", async (req, res) => {
     const teacher = share.getTeacherShareData(userinst.users.teachers[0]);
     if (!teacher.verified)
       return res.render(view.verification, { user: teacher });
+      
     const scheduleinst = await Institute.findOne({
         uiid: response.user.uiid,
         "schedule.teachers": { $elemMatch: { teacherID: teacher.id } },
@@ -422,7 +422,30 @@ teacher.post("/schedule", async (req, res) => {
     });
 });
 
-let result = {};
+teacher.post("/classroom",async(req,res)=>{
+  session
+    .verify(req, sessionsecret)
+    .catch((error) => {
+      return res.json(authreqfailed(error));
+    })
+    .then(async(response) => {
+      if(!session.valid(response)) return res.json(invalidsession);
+      const teacherinst = await Institute.findOne({uiid:response.user.uiid, "users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}},
+        {projection:{"users.teachers.$":1}}
+      );
+      const teacher = teacherinst.users.teachers[0];
+      const classinst = await Institute.findOne({uiid:response.user.uiid, "users.classes":{$elemMatch:{"incharge":teacher.teacherID}}},{
+        projection:{"users.classes.$":1}
+      });
+      const classroom = classinst?classinst.users.classes[0]:false;
+      const body = req.body;
+      switch(body.target){
+        case "classroom":return { result:await worker.classroom.manageClassroom(response.user,body,teacher,classroom)};
+        case "invitation":return { result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom)};
+      }
+    });
+});
+
 
 teacher.post("/session/validate", async (req, res) => {
   session
@@ -431,9 +454,7 @@ teacher.post("/session/validate", async (req, res) => {
       return res.json({ result: response });
     })
     .catch((error) => {
-      return res.json({
-        result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error),
-      });
+      return res.json(authreqfailed(error));
     });
 });
 
@@ -510,7 +531,7 @@ teacher.post("/manage", async (req, res) => {
     .verify(req, sessionsecret)
     .catch((e) => {
       clog(e);
-      return res.json({ result: code.event(code.auth.AUTH_REQ_FAILED) });
+      return res.json(authreqfailed(e));
     })
     .then(async (response) => {
       if (!session.valid(response)) return res.json({ result: response });
