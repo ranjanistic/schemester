@@ -1,4 +1,4 @@
-class TeacherToday{
+class StudentToday{
     constructor(){
         this.data = new ReceiveData();
         this.rawdata = new ReceiveData(true);
@@ -155,4 +155,4 @@ class ReceiveData{
     }
 }
 
-window.onload =_=>new TeacherToday();
+window.onload =_=>new StudentToday();

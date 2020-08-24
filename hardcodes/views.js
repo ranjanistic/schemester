@@ -117,7 +117,7 @@ class StudentView{
                 this.today = 'student/fragments/today.ejs';
                 this.fullschedule = 'student/fragments/fullweek.ejs';
                 this.classroom = 'student/fragments/classroom.ejs';
-                this.settings = 'student/fragments/settings.ejs';
+                this.settings = 'student/fragments/about.ejs';
             }
         }
         this.fragment = new FragmentView();

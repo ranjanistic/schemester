@@ -1,0 +1,130 @@
+<html>
+    <head>
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script src="/script/codes.js"></script>
+        <script src="/script/main.js"></script>
+        <script src="/script/student/fragment/about.js"></script>
+    </head>
+    <body>
+        <div class="fmt-col fmt-padding fmt-animate-right">
+            <div class="fmt-row">
+                <div class="fmt-col" style="width: 60%;">
+                    <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Details</div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;"><%= defaults.institute.instituteName %></div>
+                </div>
+                <div class="fmt-col" style="width:40%;margin-top: 12px;">
+                    <img class="fmt-right" src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="relocateParent(locate.root)">
+                </div>
+            </div>
+            <% if (student) { %>
+                <div  class="fmt-col">
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="fmt-row group-heading questrial">Account</div>
+                        <div class="caption">Logged in as</div>
+                        <div class="fmt-row" id="studentnameview">
+                            <span class=" positive questrial" id="studentname"><%= student.username %></span>
+                            <span class="caption" style="font-size:12px" id="editstudentname">✒️</span>
+                        </div>
+                        <div id="studentnameeditor">
+                            <fieldset class="text-field questrial" style="margin:0" id="studentnamefield">
+                                <legend class="field-caption questrial">Change your name</legend>
+                                <input class="text-input questrial" style="font-size:16px" required value="<%= student.username %>" placeholder="Visible in <%=  %>" type="text" id="studentnameinput" name="studentname" >
+                                <span class="fmt-right error-caption"  id="studentnameerror"></span>
+                            </fieldset>
+                            <button class="positive-button caption" id="savestudentname">Save</button>
+                            <button class="neutral-button caption" id="cancelstudentname">Cancel</button>
+                        </div>
+                        <div class="active questrial caption">
+                            <%= student.id %>
+                        </div>
+                        <button class="negative-button fmt-center wide" id="logout">Logout</button>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral" id="themetab">
+                        <span class="group-text positive">Set Theme</span>
+                        <span class="fmt-right">
+                            <label class="switch-container">
+                                <input type="checkbox" id="darkmode">
+                                <span class="switch-positive"></span>
+                            </label>
+                        </span>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
+                        Change email address <span class="fmt-right">✒️</span>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral">
+                        Change password <span class="fmt-right pointer" id="resetpass">✒️</span>
+                        <button class="fmt-row wide tab-container warning-button" id="forgotpass">Forgot password</button>
+                    </div>
+                    <div class="fmt-row tab-container b-neutral">
+                        <button class="fmt-row fmt-right negative-button questrial" id="deleteaccount">DELETE ACCOUNT</button>
+                    </div>
+                    <br/>
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="fmt-row group-heading questrial">Information</div>
+                        <div class="caption">Institution</div>
+                        <div class="group-text questrial"><%= defaults.institute.instituteName %></div>
+                        <span class="group-text questrial positive pointer" onclick="mailTo('<%= defaults.institute.email %>')"><%= defaults.institute.email %></span>
+                        <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.institute.phone %>')"><%= defaults.institute.phone %></span>
+                    </div>
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Administrator</div>
+                        <div class="group-text questrial"><%= defaults.admin.username %></div>
+                        <% if(adminemailvisible) {%>
+                            <span class="group-text questrial positive pointer" onclick="mailTo('<%= defaults.admin.email %>')"><%= defaults.admin.email %></span>
+                        <% } %>
+                        <% if(adminphonevisible) {%>
+                        <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.admin.phone %>')"><%= defaults.admin.phone %></span>
+                        <% } %>
+                    </div>
+                    <% 
+                        function getDaysArray(indices){
+                            const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
+                            let indays = Array();
+                            indices.forEach((index,i)=>{
+                                if(i>0){
+                                    indays.push(` ${days[Number(index)]}`);
+                                } else {
+                                    indays.push(days[Number(index)]);
+                                }
+                            });
+                            return indays;
+                        }
+                        %> 
+                    <div class="fmt-row  tab-container b-neutral">
+                        <div class="caption">Timings</div>
+                        <div class="group-text questrial">Everyday, schedule starts at <span class="active"><%= defaults.timings.startTime %></span>, 
+                            break starts at <span class="active"><%= defaults.timings.breakStartTime %></span>, 
+                        every period lasts <span class="active"><%= defaults.timings.periodMinutes %> minutes</span> and
+                        break lasts for <span class="active"><%= defaults.timings.breakMinutes %> minutes</span>.<br/>
+                        You have <span class="active"><%= defaults.timings.periodsInDay %></span> periods every working day, where
+                        <span class="active"><%= getDaysArray(defaults.timings.daysInWeek) %></span> are your working days.</div>
+                    </div>
+                </div>
+             <% } else { %>
+                An error occurred
+            <% } %>
+        </div>
+
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
+        <div id="snackBar" class="snack-positive fmt-animate-bottom">
+            <span class="fmt-left fmt-padding" id="snackText"></span>
+            <button class="fmt-right neutral-button" id="snackButton"></button>
+        </div>
+
+        <span hidden>
+            <span id="studentUID"><%= student.uid %></span>
+            <span id="studentID"><%= student.id %></span>
+            <span id="studentname"><%= student.username %></span>
+            <span id="createdAt"><%= student.createdAt %></span>
+            <span id="vacations"><%= student.vacations %></span>
+            <span id="prefs"><%= student.prefs %></span>
+        </span>
+    </body>
+</html>
