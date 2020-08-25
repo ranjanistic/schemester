@@ -33,7 +33,7 @@
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
-            <span id="greeting">Dashboard</span>
+            <span id="greeting" class="pointer"><%= inst.default.institute.instituteName %></span>
             <span class="fmt-right">
                 <input type="text" class="searcher" name="search"/>
                 <button class="neutral-button" id="refresh">Refresh</button>
@@ -56,7 +56,8 @@
             </span>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            <% if (inst.preferences.active) { %>
+            <% if (inst.schedule.classes.length) { %>
+                <% if (inst.preferences.active) { %>
             <div class="fmt-col fmt-half fmt-padding-small">
                 <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
                     <div class="fmt-row">
@@ -180,6 +181,23 @@
                     </fieldset>
                 </div>
             </div>
+                <% } else { %>
+                    <div class="fmt-row fmt-center">
+                        <div class="fmt-padding fmt-quarter">
+                        </div>
+                        <div class="container fmt-half">
+                            <span class="heading ">Scheduling paused</span>
+                            <br/><br/>
+                            <span class="questrial group-text fmt-left">Students are unable to see their schedule.</span>
+                            <br/>
+                            <span class="questrial group-text fmt-left">Teachers are unable access shit.</span>
+                            <br/><br/>
+                            <button class="active-button" id="resumeschedule">Resume Scheduling</button>
+                        </div>
+                        <div class="fmt-padding fmt-quarter">
+                        </div>
+                    </div>
+                <% } %>
             <% } else { %>
                 <div class="fmt-row">
                 <% if (!isEmptyObject(inst.users.teachers)) { %>

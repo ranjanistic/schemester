@@ -9,7 +9,9 @@
     --secondary-text:#121212;
     --tertiary-text:#00000093;
     --dead-text:#343434;
+    --light-base:#eeeeeeee;
     --base-radius:12px;
+
 }
 
 [data-theme="dark"] {
@@ -23,6 +25,7 @@
     --secondary-text:#dedede;
     --tertiary-text:#ffffff6c;
     --dead-text:#dedede;
+    --light-base:#222222ee;
 }
 
 html{
@@ -607,7 +610,7 @@ img{vertical-align:middle}
 }
 .neutral-button:focus{
     outline:none;
-    background-color: #eeeeeeee;
+    background-color: var(--light-base);
     box-shadow: 1px 5px 5px #00000000;
 }
 .negative-button{

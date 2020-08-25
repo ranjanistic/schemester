@@ -96,6 +96,8 @@ class Session {
             const classInst = await Institute.findOne({uiid:body.uiid,"users.classes":{$elemMatch:{"classname":body.classname}}},
               {projection:{"_id":0,"users.classes.$":1}}
             );
+            clog(body);
+            clog(classInst);
             switch(body.type){
               case "classname": return code.event(classInst?code.auth.CLASS_EXISTS:code.auth.CLASS_NOT_EXIST);
               case "email":{
@@ -268,10 +270,9 @@ class Session {
           const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
           let classdoc = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{classname:classname}}},
-          {projection:{"_id":0,"users.classes.$":1}});
-          if(!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
-          const theclass = classdoc.users.classes[0];
-          let found = theclass.students.some((student,_)=>{
+          {projection:{"users.classes.$":1}});
+          if(!classdoc) return code.event(code.inst.CLASS_NOT_FOUND);
+          let found = classdoc.users.classes[0].students.some((student,_)=>{
             return student.studentID == email;
           });
           if(found) return code.event(code.auth.USER_EXIST);
@@ -297,14 +298,14 @@ class Session {
           if(!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
           let student;
           const sfound = classdoc.users.classes[0].students.some((stud,_)=>{
-            student = share.getStudentShareData(stud);
+            student = stud;
             return stud.studentID == email
           });
           if(!sfound) return code.event(code.auth.USER_NOT_EXIST);
           this.createSession(response,student.uid,uiid,secret,classname);
           return {
             event: code.auth.ACCOUNT_CREATED,
-            user: student,
+            user: share.getStudentShareData(student)
           };
       }
       default: return code.event(code.server.DATABASE_ERROR);

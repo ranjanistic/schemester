@@ -962,21 +962,69 @@ class Schedule {
       }
       async scheduleUpdate(inst, body) {
         switch(body.specific){
-          case "createclasses":{
-            clog(body.classes);
-            const doc = await Institute.findOneAndUpdate({uiid:inst.uiid},
-              {
-                $set:{
-                  "schedule.classes":body.classes
-                }
+          case "createclasses":{  //bulk
+            const classes = body.classes;
+            let doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
+              $set:{
+                "users.classes":body.classes
               }
-            )
+            });
+            if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
+            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
+              $set:{
+                "pseudousers.classes":body.classes
+              }
+            });
+            if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
+            classes.forEach((Class,c)=>{  //generating every class' schedule from teachers;
+              Class['days'] = Array();
+              delete Class['inchargeID'];
+              delete Class['students'];
+              inst.default.timings.daysInWeek.forEach((dw)=>{
+                Class.days.push({
+                  dayIndex:dw,
+                  period:Array(inst.default.timings.periodsInDay)
+                });
+              });
+              inst.schedule.teachers.forEach((teacher,t)=>{
+                teacher.days.forEach((day,d)=>{
+                  day.period.forEach((period,p)=>{
+                    if(period.classname==Class.classname){
+                      const found = Class.days.some((cday)=>{
+                        if(cday.dayIndex == day.dayIndex){
+                          cday.period[p] = {
+                            teacherID:teacher.teacherID,
+                            subject:period.subject,
+                            hold:true,
+                          };
+                          return true;
+                        }
+                      });
+                      if(!found){   //new day
+                        Class.days[d]={
+                          dayIndex:day.dayIndex,
+                          period:[{
+                            teacherID:teacher.teacherID,
+                            subject:period.subject,
+                            hold:true,
+                          }]
+                        };
+                      };
+                    };
+                  });
+                });
+              });
+            });
+            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in schedule.
+              $set:{
+                "schedule.classes":classes
+              }
+            });
             return code.event(doc?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);
           }
         }
       }
     }
-
     this.teacher = new TeacherAction();
     this.classes = new ClassAction();
   }

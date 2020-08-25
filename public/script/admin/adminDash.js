@@ -362,7 +362,8 @@ class ConfirmClasses {
               receivedclasses.forEach((Class,c)=>{
                 data.push({
                   classname:Class,
-                  incharge:sessionStorage.getItem(Class)
+                  inchargeID:sessionStorage.getItem(Class),
+                  students:[],
                 });
               });
               postJsonData(post.admin.schedule, {
@@ -373,7 +374,10 @@ class ConfirmClasses {
               }).then((response) => {
                 clog(response);
                 if (response.event == code.schedule.SCHEDULE_CREATED) {
-                  
+                  location.reload();
+                } else {
+                  this.inchargeDialog.loader(false);
+                  snackBar('Classes not created: ' + response.event,'Report');
                 }
               });
             },
@@ -532,9 +536,9 @@ class BaseView {
       location.reload();
     };
     this.greeting = getElement("greeting");
+    this.greeting.onclick=_=>{refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})};
     this.logOut = getElement("logoutAdminButton");
     this.dateTime = getElement("todayDateTime");
-    this.greeting = getElement("greeting");
     this.settings = getElement("settingsAdminButton");
     this.logOut.addEventListener(click, (_) => {
       showLoader();
@@ -556,9 +560,9 @@ class BaseView {
         section: locate.admin.section.account,
       });
     });
-    var prevScrollpos = window.pageYOffset;
+    const prevScrollpos = window.pageYOffset;
     window.onscroll = (_) => {
-      var currentScrollPos = window.pageYOffset;
+      const currentScrollPos = window.pageYOffset;
       replaceClass(
         this.dateTime,
         "fmt-animate-opacity-off",
@@ -567,11 +571,13 @@ class BaseView {
       );
       prevScrollpos = currentScrollPos;
     };
-    setTimeGreeting(this.greeting);
-    var today = new Date();
+    const today = new Date();
     this.dateTime.textContent = `${getDayName(today.getDay())}, ${getMonthName(
       today.getMonth()
     )} ${today.getDate()}, ${today.getFullYear()}, ${today.getHours()}:${today.getMinutes()}`;
+    try{
+      getElement("resumeschedule").onclick =_=>{this.greeting.click()}
+    }catch{}
   }
 }
 
@@ -593,6 +599,6 @@ window.onload = (_) => {
   try {
     window.app = new NoDataView();
   } catch {
-    window.app = new Dashboard();
+      window.app = new Dashboard();
   }
 };

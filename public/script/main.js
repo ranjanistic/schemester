@@ -1096,9 +1096,9 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
     ),
     Array(
       "Your institution's unique ID",
-      "8B,12A, like this.",
+      "Type in the format of your institute.",
       "youremail@example.domain",
-      "Sunaina Kapoor, or something",
+      "Sunaina Kapoor, or something.",
       "A strong password."
     ),
     Array("text", "text", "email", "text", "password"),
@@ -1122,9 +1122,9 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
     studialog.getInput(3).focus();
   });
   studialog.validate(3);
-
+  
   studialog.createActions(
-    Array("Create account", "Abort"),
+    Array("Register as Student", "Abort"),
     Array(bodyType.positive, bodyType.neutral)
   );
   studialog.onButtonClick(

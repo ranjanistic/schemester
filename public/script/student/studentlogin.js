@@ -4,6 +4,7 @@ class StudentLogin{
     this.back = getElement("backFromLogin");
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     hide(getElement("previous"));
+    hide(getElement("userclassfield"))
     hide(getElement("useremailfield"));
     hide(getElement("userpasswordfield"));
     this.logInLoader = getElement("loginLoader");
@@ -32,10 +33,9 @@ class UIID{
     this.uiidField = new TextInput("uiidfield","uiid","uiidError",validType.nonempty);
     this.uiidField.show();
     this.uiidField.enableInput();
-    this.rememberuiid = new Checkbox("rememberuiidcontainer",'rememberuiidtext','rememberuiidcheck');
-    this.rememberuiid.show();
+    this.rememberuiid = new Switch('rememberuiidcheck');
     this.saveuiid = false;
-    this.rememberuiid.onCheckChange(_=>{
+    this.rememberuiid.onTurnChange(_=>{
       this.saveuiid = true;
       this.uiidField.onTextInput(_=>{
         localStorage.setItem('uiid',this.uiidField.getInput());  
@@ -44,16 +44,15 @@ class UIID{
     },_=>{
       this.saveuiid = false
       localStorage.removeItem('uiid')
-    });
-    this.rememberuiid.setLabel("Remember UIID");
+    })
     if(localStorage.getItem('uiid')){
       if(!back){
-        this.rememberuiid.check();
+        this.rememberuiid.turn();
         this.uiidField.setInput(localStorage.getItem('uiid'));
         sessionStorage.setItem('uiid',this.uiidField.getInput());
         this.uiidField.activate();
         this.uiidField.disableInput();
-        return new Email();
+        return new Classname();
       }
     }
     
@@ -79,7 +78,7 @@ class UIID{
           localStorage.setItem('uiid', uiid);
         }
         sessionStorage.setItem('uiid',uiid);
-        new Email();
+        new Classname();
       } else {
         this.uiidField.showError('No such institution');
         clearLocalData();
@@ -98,7 +97,74 @@ class UIID{
   }
 }
 
-//class Classname
+class Classname{
+  constructor(){
+    this.previous = getElement("previous");
+    this.proceed = getElement("proceed");
+    this.proceed.innerHTML = "Proceed";
+    this.logInLoader = getElement("loginLoader");
+    getElement("subtext").innerHTML = `Now, provide your class name which you've enrolled with ${this.getUIID()} institute.`;
+    this.classField = new TextInput("userclassfield","userclass","classerror",validType.nonempty);
+    this.classField.validate();
+    this.classCheck(null);
+    this.classField.enableInput();
+    this.classField.show();
+    show(this.previous);
+    this.proceed.onclick=_=>{
+      if(!this.classField.isValid()){
+        return this.classField.validateNow();
+      }
+      this.loader();
+      this.classnameProcedure(String(this.classField.getInput()).trim());
+    }
+    this.previous.onclick=_=>{
+      this.classField.hide();
+      new UIID(true);
+    };
+  }
+  getUIID(){
+    return sessionStorage.getItem('uiid');
+  }
+  classnameProcedure(classname){
+    postData(post.student.login,{
+      type:'classname',
+      classname:classname,
+      uiid:this.getUIID()
+    }).then(response=>{
+      clog("email respnse");
+      clog(response);
+      switch(response.event){
+        case code.auth.CLASS_NOT_EXIST:{
+          this.classField.showError("Class not found.");
+          this.proceed.textContent = "Retry";
+        };break;
+        case code.auth.CLASS_EXISTS:{
+          clog("claaaaaaaaaaaas");
+          this.classField.activate();
+          this.classField.disableInput();
+          this.classCheck(classname);
+          new Email();
+        };break;
+        default:{
+          snackBar(response.event,null,false);
+        }
+      }
+      this.loader(false);
+    })
+
+  }
+  classCheck(checkedEmail = null){
+    sessionStorage.setItem('userclass',checkedEmail);
+  }
+  isClassChecked(){
+    return sessionStorage.getItem('userclass');
+  }
+  loader=(show=true)=>{
+    visibilityOf(this.logInLoader, show);
+    visibilityOf(this.proceed, !show);
+  }
+
+}
 
 class Email{
   constructor(){
@@ -122,16 +188,19 @@ class Email{
     }
     this.previous.onclick=_=>{
       this.emailField.hide();
-      new UIID(true);
+      new Classname(true);
     };
   }
   getUIID(){
     return sessionStorage.getItem('uiid');
   }
-  
+  getClassname(){
+    return sessionStorage.getItem('userclass');
+  }
   emailIDProcedure(emailid){
     postData(post.student.login,{
       type:'email',
+      classname:this.getClassname(),
       email:emailid,
       uiid:this.getUIID()
     }).then(response=>{

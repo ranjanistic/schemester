@@ -35,9 +35,12 @@ class TeacherWorker {
 
 class Self {
   constructor() {
-    const path = `users.teachers`
+    const path = `users.teachers`;
+    const pseudopath = `pseudousers.teachers`;
     class Account {
       constructor() {
+        this.path = path;
+        this.pseudopath = pseudopath;
         this.username = 'username';
         this.uid = '_id';
         this.teacherID = 'teacherID';
@@ -54,10 +57,26 @@ class Self {
           { uiid: uiid },
           {
             $push: {
-              "users.teachers": newteacher
+              [this.path]: newteacher
             },
           }
         );
+        return code.event(doc?code.OK:code.NO);
+      }
+
+      /**
+       * This will create an account in teachers of the pseudousers object of instiution, and will be shown as a requestee teacher to join the institution.
+       * @param {String} uiid The unique institute ID
+       * @param {JSON} pseudoteacher The teacher data for which pseudo account will be created.
+       */
+      async createPseudoAccount(uiid,classname,pseudoteacher){
+        const doc = await Institute.findOneAndUpdate({
+          uiid:uiid,
+        },{
+          $push:{
+            [this.pseudopath]:pseudoteacher
+          }
+        });
         return code.event(doc?code.OK:code.NO);
       }
 

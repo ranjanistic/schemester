@@ -36,14 +36,25 @@ class StudentWorker {
 
 class Self {
   constructor() {
-    const path = `users.classes`
+    const path = `users.classes`;
+    const pseudopath = `pseudousers.classes`;
+
     const studentspath = `${path}.$.students`;
+    const pseudostudentspath = `${pseudopath}.$.students`;
+
     this.path = path;
+    this.pseudopath = pseudopath;
+
     this.studentspath = studentspath;
+    this.pseudostudentspath = pseudostudentspath;
+
     this.classname = 'classname';
     class Account {
       constructor() {
+        this.path = path;
+        this.pseudopath = pseudopath;
         this.studentspath = studentspath;
+        this.pseudostudentspath = pseudostudentspath;
         this.classname = 'classname';
         this.uid = '_id';
         this.username = 'username';
@@ -59,13 +70,31 @@ class Self {
       async createAccount(uiid,classname,newstudent){
         const doc = await Institute.findOneAndUpdate({
           uiid: uiid,
-          "users.classes": {
+          [this.path]: {
             $elemMatch: { classname: classname },
           }, //existing classname
         },{
           $push: { "users.classes.$[outer].students":newstudent}, //new student push
         },{
           arrayFilters: [{ "outer.classname": classname }],
+        });
+        return code.event(doc?code.OK:code.NO);
+      }
+
+      /**
+       * This will create an account in a class of the pseudousers object of instiution, and will be shown as a requestee student to join the classroom.
+       * @param {String} uiid The unique institute ID
+       * @param {String} classname The classname of classroom in which request is to be sent.
+       * @param {JSON} pseudostudent The student data for which pseudo account will be created.
+       */
+      async createPseudoAccount(uiid,classname,pseudostudent){
+        const doc = await Institute.findOneAndUpdate({
+          uiid:uiid,
+          [this.path]:{$elemMatch:{"classname":classname}}
+        },{
+          $push:{
+            [this.pseudostudentspath]:pseudostudent
+          }
         });
         return code.event(doc?code.OK:code.NO);
       }

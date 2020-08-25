@@ -43,12 +43,17 @@
                     <input class="text-input" spellcheck="false" placeholder="Your institution's unique ID." type="text" id="uiid" name="uiid" value="<%= autofill.uiid %>">
                     <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
-                <label class="check-container fmt-right" id="rememberuiidcontainer">
-                    <span id="rememberuiidtext"></span>
+                <label class="switch-container" id="rememberuiidcontainer">
                     <input type="checkbox" id="rememberuiidcheck">
-                    <span class="tickmark-positive"></span>
+                    <span class="switch-positive"></span>
                 </label>
+                <span class="fmt-padding-small fmt-right caption questrial">Remember UIID</span>
                 <br/>
+                <fieldset class="text-field" id="userclassfield">
+                    <legend class="field-caption">Classname</legend>
+                    <input class="text-input" spellcheck="false" placeholder="Your enrolled class." type="text" id="userclass" name="classname" value="<%= autofill.classname %>">
+                    <span class="fmt-right error-caption" id="classerror"></span>
+                </fieldset>
                 <fieldset class="text-field" id="useremailfield">
                     <legend class="field-caption" >Email Address</legend>
                     <input class="text-input" required placeholder="youremail@example.domain" type="email" inputmode="email" id="useremail" name="email" value="<%= autofill.email %>">
