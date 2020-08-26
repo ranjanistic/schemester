@@ -12,23 +12,61 @@ class ResetPassword{
         this.savepass.onclick=_=>{
             if(!this.passField.isValid()) return this.passField.validateNow();
             this.load();
-            if(this.data.client == client.admin){
-                postJsonData(post.admin.self,{
-                    target:"account",
-                    action:code.action.CHANGE_PASSWORD,
-                    external:true,
-                    user:{
-                        id:this.data.userid,
-                    },
-                    newpassword:this.passField.getInput()
-                }).then(response=>{
-                    this.load(false);
-                    if(response.event == code.OK){
-                        this.view.innerHTML = `Password was changed successfully for ${this.data.email}.`
-                    } else {
-                        snackBar('An error occurred','Report');
-                    }
-                })
+            switch(this.data.client){
+                case client.admin:{
+                    postJsonData(post.admin.self,{
+                        target:"account",
+                        action:code.action.CHANGE_PASSWORD,
+                        external:true,
+                        user:{
+                            id:this.data.userid,
+                        },
+                        newpassword:this.passField.getInput()
+                    }).then(response=>{
+                        this.load(false);
+                        if(response.event == code.OK){
+                            this.view.innerHTML = `Password was changed successfully for ${this.data.email}.`
+                        } else {
+                            snackBar('An error occurred','Report');
+                        }
+                    })
+                }break;
+                case client.teacher:{
+                    postJsonData(post.teacher.self,{
+                        target:"account",
+                        action:code.action.CHANGE_PASSWORD,
+                        external:true,
+                        user:{
+                            id:this.data.userid,
+                        },
+                        newpassword:this.passField.getInput()
+                    }).then(response=>{
+                        this.load(false);
+                        if(response.event == code.OK){
+                            this.view.innerHTML = `Password was changed successfully for ${this.data.email}.`
+                        } else {
+                            snackBar('An error occurred','Report');
+                        }
+                    })
+                }break;
+                case client.student:{
+                    postJsonData(post.student.self,{
+                        target:"account",
+                        action:code.action.CHANGE_PASSWORD,
+                        external:true,
+                        user:{
+                            id:this.data.userid,
+                        },
+                        newpassword:this.passField.getInput()
+                    }).then(response=>{
+                        this.load(false);
+                        if(response.event == code.OK){
+                            this.view.innerHTML = `Password was changed successfully for ${this.data.email}.`
+                        } else {
+                            snackBar('An error occurred','Report');
+                        }
+                    })
+                }break;
             }
         }
         this.load(false);

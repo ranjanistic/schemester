@@ -310,6 +310,30 @@ class Switch{
   }
 }
 
+class Menu{
+  constructor(menuID,toggleID){
+    this.menu = getElement(menuID);
+    this.toggle = toggleID?getElement(toggleID):null;
+    hide(this.menu);
+    this.hidden = true;
+    this.toggle.onclick=_=>{
+      this.visible(this.hidden);
+    }
+  }
+  hide(){
+    hide(this.menu);
+    this.hidden = true;
+  }
+  show(){
+    show(this.menu);
+    this.hidden = false;
+  }
+  visible(show= true){
+    visibilityOf(this.menu,show);
+    this.hidden = !show;
+  }
+}
+
 class Snackbar {
   id = "snackBar";
   textId = "snackText";
@@ -1078,6 +1102,147 @@ const registrationDialog = (isShowing = true, email = null, uiid = null) => {
       regDial.existence(isShowing);
     }
   );
+};
+
+const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
+  const teachdialog = new Dialog();
+  teachdialog.setDisplay(
+    "Registration",
+    "Provide your details, including the unique ID of your institute (UIID)."
+  );
+  teachdialog.createInputs(
+    Array(
+      "UIID",
+      "Your email address",
+      "Your name",
+      "Create password"
+    ),
+    Array(
+      "Your institution's unique ID",
+      "youremail@example.domain",
+      "Sunaina Kapoor, or something.",
+      "A strong password."
+    ),
+    Array("text", "email", "text", "password"),
+    Array(
+      validType.nonempty,
+      validType.email,
+      validType.name,
+      validType.password
+    ),
+    Array(uiid, email, null, null),
+    Array(null,"email","name","newpassword")
+  );
+
+  teachdialog.validate(0, (_) => {
+    teachdialog.getInput(1).focus();
+  });
+  teachdialog.validate(1, (_) => {
+    teachdialog.getInput(2).focus();
+  });
+  teachdialog.validate(2, (_) => {
+    teachdialog.getInput(3).focus();
+  });
+  teachdialog.validate(3);
+  
+  teachdialog.createActions(
+    Array("Register as Teacher", "Abort"),
+    Array(bodyType.positive, bodyType.neutral)
+  );
+  teachdialog.onButtonClick(
+    Array(
+      (_) => {
+        if (
+          !(
+            teachdialog.isValid(0) &&
+            teachdialog.isValid(1) &&
+            teachdialog.isValid(2) &&
+            teachdialog.isValid(3)
+          )
+        ) {
+          clog("invalid");
+          teachdialog.validateNow(0, (_) => {
+            teachdialog.getInput(1).focus();
+          });
+          teachdialog.validateNow(1, (_) => {
+            teachdialog.getInput(2).focus();
+          });
+          teachdialog.validateNow(2, (_) => {
+            teachdialog.getInput(3).focus();
+          });
+          teachdialog.validateNow(3);
+        } else {
+          teachdialog.loader();
+          clog("posting");
+          postData(post.teacher.auth,{
+            action:post.teacher.action.signup,
+            pseudo:true,
+            uiid: teachdialog.getInputValue(0),
+            email: teachdialog.getInputValue(1),
+            username: teachdialog.getInputValue(2),
+            password: teachdialog.getInputValue(3),
+          }).then((response) => {
+              clog(response);
+              switch (response.event) {
+                case code.auth.ACCOUNT_CREATED:{
+                  clog(response.user);
+                  saveDataLocally(response.user);
+                  relocate(locate.teacher.session,{
+                    u:response.user.uid,
+                    target:locate.teacher.target.dash
+                  });
+                }break;
+                case code.auth.USER_EXIST:{
+                  teachdialog.inputField[1].showError(
+                    "Account already exists."
+                  );
+                  snackBar("Try signing in?", "Login", true, (_) => {
+                    refer(locate.teacher.login, {
+                      email: teachdialog.getInputValue(1),
+                      uiid: teachdialog.getInputValue(0),
+                    });
+                  });
+                }break;
+                case code.inst.INSTITUTION_NOT_EXISTS:{
+                  teachdialog.inputField[0].showError(
+                    "No institution with this UIID found."
+                  );
+                }break;
+                case code.auth.EMAIL_INVALID:{
+                    teachdialog.inputField[1].showError("Invalid email address.");
+                }break;
+                case code.auth.PASSWORD_INVALID:{
+                    //todo: check invalidity and show suggesstions
+                    teachdialog.inputField[3].showError(
+                      "Weak password, try something better."
+                    );
+                }break;
+                case code.auth.NAME_INVALID:{
+                  teachdialog.inputField[3].showError(
+                    "This doesn't seem like a name."
+                  );
+                }
+                  break;
+                default: {
+                  clog("in default");
+                  teachdialog.hide();
+                  snackBar(`${response.event}:${response.msg}`, "Report");
+                }
+              }
+              teachdialog.loader(false);
+            })
+            .catch((e) => {
+              snackBar(e, "Report");
+              teachdialog.hide();
+            });
+        }
+      },
+      (_) => {
+        teachdialog.hide();
+      }
+    )
+  );
+  teachdialog.existence(visible);
 };
 
 const showStudentRegistration = (visible = true, email = null, uiid = null) => {

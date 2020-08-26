@@ -108,8 +108,8 @@ class Verification {
             });
         }
         break;
-      default: {
-        postJsonData(`/${this.data.client}/manage`, {
+      case client.teacher:{
+        postJsonData(post.teacher.manage, {
           type: "verification",
           action: "send",
         })
@@ -121,7 +121,21 @@ class Verification {
             clog(e);
             this.load(false);
           });
-      }
+      }break;
+      case client.student:{
+        postJsonData(post.student.manage, {
+          type: "verification",
+          action: "send",
+        })
+          .then((response) => {
+            clog(response);
+            this.afterSend(response);
+          })
+          .catch((e) => {
+            clog(e);
+            this.load(false);
+          });
+      }break;
     }
   }
   afterSend(response) {

@@ -5,6 +5,7 @@
  */
 class Dashboard {
   constructor() {
+    this.data = new ReceiveData()
     this.dayInput = getElement("dayinput");
     this.dayDropdown = getElement("daydropdown");
     this.teacherChipToday = getElement("teacherRadioToday");
@@ -14,50 +15,78 @@ class Dashboard {
     this.classBoxToday = getElement("classSectionToday");
     this.teacherSearchInput = getElement("teachersearchinput");
     this.teacherDropdown = getElement("teacherDropdown");
-    this.dayInput.placeholder = getDayName(today.getDay());
-
-    //classSearchInput = getElement('classsearchinput');
-    //classDropdown = getElement('classDropdown');
-    visibilityOf(this.workboxtoday, false);
-    //visibilityOf(teacherBoxToday,false);
-    this.classChipToday.addEventListener(click, (_) => {
-      visibilityOf(this.workboxtoday, true);
-      visibilityOf(this.teacherBoxToday, false);
-      visibilityOf(this.classBoxToday, true);
-    });
-    this.teacherChipToday.addEventListener(click, (_) => {
-      visibilityOf(this.workboxtoday, true);
-      visibilityOf(this.classBoxToday, false);
-      visibilityOf(this.teacherBoxToday, true);
-    });
-
-    this.dayInput.addEventListener(click, (_) => {
-      visibilityOf(this.dayDropdown, false);
-    });
-
-    this.dayInput.oninput = (_) => {
-      visibilityOf(this.dayDropdown, true);
-      this.filterFunction(this.dayInput, this.dayDropdown);
+    
+    this.teacherrequests = getElement("teacherrequests");
+    if(this.data.requstees){
+    this.teacherrequests.onclick=_=>{
+      loadingBox('Getting requests');
+      postJsonData(post.admin.receivedata,{
+        target:"pseudousers",
+        specific:"teachers",
+      }).then(teachers=>{
+        if(teachers.event != code.NO){
+          const requestDialog  = new Dialog();
+          requestDialog.createActions(Array('Hide'),Array(bodyType.neutral));
+          requestDialog.onButtonClick(Array(_=>{requestDialog.hide()}));
+          let bodytext = `<center>${this.data.requstees} people have requested to join ${this.data.instname} as teacher.</center><br/>`;
+          teachers.forEach((teacher,t)=>{
+            if(teacher.verified){
+              bodytext += `
+              <div class="fmt-row tab-view" id="request${t}">
+                <div class="fmt-col fmt-half group-text">
+                  <div class="positive">${teacher.username}</div>
+                  <div class="questrial">${teacher.id}</div>
+                </div>
+                <div class="fmt-col fmt-half caption">
+                  <button class="fmt-right negative-button" id="reject${t}">Reject</button>
+                  <button class="fmt-right positive-button" id="accept${t}">Accept</button>
+                </div>
+              </div>
+              `;
+            }
+          })
+          bodytext += `</div>`;
+          requestDialog.setDisplay('Teacher requests',bodytext);
+          const rejects = Array();
+          const accepts = Array();
+          teachers.forEach((teacher,t)=>{
+            rejects.push(getElement(`reject${t}`));
+            accepts.push(getElement(`accept${t}`));
+            rejects[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:"teachers",
+                action:"reject",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Rejected ${teacher.username} (${teacher.id})`,null,false);
+                }
+                requestDialog.loader(false);
+              });
+            };
+            accepts[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:"teachers",
+                action:"accept",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Accepted ${teacher.username} (${teacher.id})`);
+                }
+                requestDialog.loader(false);
+              });
+            };
+          });
+        };
+      });
     };
   }
-
-  filterFunction = (input, dropdown) => {
-    var input, filter, a;
-    filter = input.value.toUpperCase();
-    a = dropdown.getElementsByTagName("a");
-    for (var i = 0; i < a.length; i++) {
-      var txtValue = a[i].textContent || a[i].innerText;
-      visibilityOf(a[i], txtValue.toUpperCase().indexOf(filter) > -1);
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        a[i].onclick = (_) => {
-          input.value = txtValue;
-          visibilityOf(this.dayDropdown, false);
-        };
-        break;
-      }
-    }
   };
-}
+};
 
 /**
  * For if scheduling hasn't started yet.
@@ -535,8 +564,10 @@ class BaseView {
     this.reload.onclick = (_) => {
       location.reload();
     };
-    this.greeting = getElement("greeting");
-    this.greeting.onclick=_=>{refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})};
+    this.notifmenu = new Menu("notifications","notificationbutton");
+    this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
+    this.instname = getElement("instname");
+    this.instname.onclick=_=>{refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})};
     this.logOut = getElement("logoutAdminButton");
     this.dateTime = getElement("todayDateTime");
     this.settings = getElement("settingsAdminButton");
@@ -576,7 +607,7 @@ class BaseView {
       today.getMonth()
     )} ${today.getDate()}, ${today.getFullYear()}, ${today.getHours()}:${today.getMinutes()}`;
     try{
-      getElement("resumeschedule").onclick =_=>{this.greeting.click()}
+      getElement("resumeschedule").onclick =_=>{this.instname.click()}
     }catch{}
   }
 }
@@ -591,6 +622,13 @@ class ReceiveData {
       getElement("hasTeachers").innerHTML == "true" ? true : false;
     this.hasTeacherSchedule =
       getElement("hasTeacherSchedule").innerHTML == "true" ? true : false;
+    this.instname = getElement("instname").innerHTML;
+    try{
+      this.requstees = Number(getElement("requestees").innerHTML);
+    }catch{
+
+    }
+    
   }
 }
 
@@ -599,6 +637,6 @@ window.onload = (_) => {
   try {
     window.app = new NoDataView();
   } catch {
-      window.app = new Dashboard();
+    window.app = new Dashboard();
   }
 };

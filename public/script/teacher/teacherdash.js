@@ -54,4 +54,32 @@ class TeacherDash{
     }
 }
 
-window.onload=_=>window.app = new TeacherDash();
+class PseudoTeacher{
+    constructor(){
+        this.darkmode = new Switch('darkmode');
+        this.darkmode.turn(theme.isDark());
+        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        this.deleteRequest = getElement("deleterequest");
+        this.deleteRequest.onclick=_=>{
+            snackBar('Deleting the request will also remove your account on Schemester.','Delete Request',false,_=>{
+                postJsonData(post.teacher.self,{
+                    target:"account",
+                    action:code.action.ACCOUNT_DELETE
+                }).then(response=>{
+                    if(response.event == code.OK){
+
+                    }
+                })
+            });
+        }
+    }
+}
+
+window.onload=_=>{
+    try{
+        new TeacherDash();
+    }catch{
+        new PseudoTeacher()
+    }
+
+}

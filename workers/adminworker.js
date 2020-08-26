@@ -6,6 +6,7 @@ const Admin = require("../collections/Admins"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
   reset = require("./common/passwordreset"),
+  share = require("./common/sharedata"),
   { ObjectId } = require("mongodb"),
   session = require("./common/session");
 const { findOneAndUpdate } = require("../collections/Admins");
@@ -17,6 +18,7 @@ class AdminWorker {
     this.users = new Users();
     this.schedule = new Schedule();
     this.invite = new Invite();
+    this.pseudo = new PseudoUsers();
     this.vacation = new Vacations();
     this.prefs = new Preferences();
   }
@@ -43,6 +45,10 @@ class AdminWorker {
     }
     return path;
   };
+  async getInstitute(user){
+    const inst = await Institute.findOne({uiid:user.uiid});
+    return inst?inst:code.event(code.NO);
+  }
 }
 
 class Self {
@@ -59,6 +65,12 @@ class Self {
         this.vlinkexp = "vlinkexp";
         this.rlinkexp = "rlinkexp";
       }
+
+      async getAccount(user){
+        const userdoc = await Admin.findOne({"_id":ObjectId(user.id)});
+        return userdoc?userdoc:code.event(code.NO);
+      }
+
       //send feedback emails
 
       async createAccount(newadmin) {
@@ -417,6 +429,12 @@ class Default {
     this.institute = new Institution();
     this.timings = new Timing();
   }
+  async getDefaults(user){
+    const doc = await Institute.findOne({uiid:user.uiid},{
+      projection:{"default":1}
+    });
+    return doc?doc.default:code.event(code.NO);
+  }
   handleAdmin = async (user, inst, body) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
@@ -564,6 +582,12 @@ class Users {
     }
     this.teachers = new TeacherAction();
     this.classes = new ClassAction();
+  }
+  async getUsers(user){
+    const userdoc = await Institute.findOne({uiid:user.uiid},{
+      projection:{"users":1}
+    });
+    return userdoc?userdoc.users:code.event(code.NO);
   }
   handleUserSearch = async (inst, body) => {
     switch (body.target) {
@@ -1028,6 +1052,13 @@ class Schedule {
     this.teacher = new TeacherAction();
     this.classes = new ClassAction();
   }
+  async getSchedule(user){
+    const scheduledoc = await Institute.findOne({uiid:user.uiid},
+      {projection:{"schedule":1}}
+    );
+    return scheduledoc?scheduledoc.schedule:code.event(code.NO);
+  }
+
   handleScheduleTeachersAction = async (user, inst, body) => {
     switch (body.action) {
       case "upload":
@@ -1056,6 +1087,7 @@ class Schedule {
 
 class Invite {
   constructor() {
+    this.object = 'invite';
     class TeacherAction {
       constructor() {}
       inviteLinkCreation = async (user, inst, body) => {
@@ -1145,17 +1177,105 @@ class Invite {
         return await this.teacher.inviteLinkDisable(inst, body);
     }
   };
+  async getInvitation(user){
+    const doc = await Institute.findOne({uiid:user.uiid},{
+      projection:{[this.object]:1}
+    });
+    return doc?doc[this.object]:code.event(code.NO);
+  }
+}
+
+class PseudoUsers{
+  constructor(){
+    this.object = 'pseudousers';
+    this.teacherpath = `${this.object}.teachers`;
+    this.classpath = `${this.object}.classes`;
+    this.someteacherpath = `${this.teacherpath}.$`;
+    this.someclasspath = `${this.classpath}.$`;
+    this.teacherID = 'teacherID';
+    this.classname = 'classname';
+  }
+  async getPseudoUsers(user,body){
+    let projection = {[this.object]:1};
+    switch(body.specific){
+      case "teachers":{projection = {[this.teacherpath]:1}};break;
+      case "classes" :{projection = {[this.classpath]:1}};break;
+    }
+    const doc = await Institute.findOne({uiid:user.uiid},{
+      projection:projection
+    });
+    if(!doc) return code.event(code.NO);
+    switch(body.specific){
+      case "teachers":{
+        doc.pseudousers.teachers.forEach((teacher,t)=>{
+          doc.pseudousers.teachers[t] = share.getPseudoTeacherShareData(teacher);
+        })
+        return doc.pseudousers.teachers;
+      };break;
+      case "classes" :{
+
+      };break;
+    }
+  }
+  async handleTeachers(user,body){
+    switch(body.action){
+      case "reject":{
+        const rejdoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+          $pull:{
+            [this.teacherpath]:{teacherID:body.teacherID}
+          }
+        });
+        return code.event(rejdoc?code.OK:code.NO);
+      }
+      case "accept":{
+        const pseudodoc = await Institute.findOne({uiid:user.uiid,[this.teacherpath]:{$elemMatch:{[this.teacherID]:body.teacherID}}},{
+          projection:{[this.someteacherpath]:1}
+        });
+        if(!pseudodoc) return code.event(code.NO);
+        const teacher = pseudodoc.pseudousers.teachers[0];
+        const tdoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+          $push:{
+            "users.teachers":teacher
+          }
+        });
+        if(!tdoc) return code.event(code.NO);
+        return await this.handleTeachers(user,{action:"reject",teacherID:body.teacherID});
+      }break;
+    }
+  }
+  async handleStudents(user,body){
+    switch(body.action){
+      case "accept":{
+
+      }
+      case "reject":{}
+    }
+  }
 }
 
 class Vacations {
-  constructor() {}
+  constructor() {
+    this.object = 'vacations';
+  }
+  async getVacations(user){
+    const vacdoc = await Institute.findOne({uiid:user.uiid},{
+      projection:{[this.object]:1}
+    });
+    return vacdoc?vacdoc[this.object]:code.event(code.NO);
+  }
 }
 
 class Preferences {
   constructor() {
-    const object = "preferences";
-    this.allowTeacherAddSchedule = `${object}.allowTeacherAddSchedule`;
-    this.active = `${object}.active`;
+    this.object = "preferences";
+    this.allowTeacherAddSchedule = `${this.object}.allowTeacherAddSchedule`;
+    this.active = `${this.object}.active`;
+  }
+  async getPreferences(user){
+    const prefdoc = await Institute.findOne({uiid:user.uiid},{
+      projection:{[this.object]:1}
+    });
+    return prefdoc?prefdoc[this.object]:code.event(code.NO);
   }
   async handlePreferences(user, body) {
     switch (body.action) {

@@ -283,7 +283,6 @@ class Locations {
     this.homepage = "/home";
     this.root = "/";
     this.planspage = "/plans";
-
     class Admin {
       constructor() {
         this.session = "/admin/session";
@@ -291,8 +290,8 @@ class Locations {
 
         class Target {
           constructor() {
-            this.dashboard = "dashboard";
             this.settings = "manage";
+            this.dashboard = "dashboard";
             this.manage = "manage";
             this.addteacher = "addteacher";
             this.register = "registration";
@@ -370,19 +369,26 @@ class Posts {
   constructor() {
     class Admin {
       constructor() {
-        this.login = "/admin/auth/login";
-        this.logout = "/admin/auth/logout";
-        this.signup = "/admin/auth/signup";
-        this.manage = "/admin/manage";
-        this.self = "/admin/self";
-        this.default = "/admin/default";
-        this.sessionValidate = "/admin/session/validate";
-        this.register = "/admin/session/registerinstitution";
-        this.schedule = "/admin/schedule";
+        const root = "/admin"
+        this.login = `${root}/auth/login`;
+        this.logout = `${root}/auth/logout`;
+        this.signup = `${root}/auth/signup`;
 
+        this.auth = `${root}/auth`;
+        this.self = `${root}/self `;
+        this.default = `${root}/default `;
+        this.sessionValidate = `${root}/session/validate`;
+        this.manage = `${root}/manage `;
+        this.register = `${root}/session/registerinstitution`;
+        this.schedule = `${root}/schedule `;
+        this.receivedata = `${root}/receivedata `;
+        this.pseudousers = `${root}/pseudousers `;
         class Action {
           constructor() {
             this.registerInstitute = "registerinstitute";
+            this.login = "login";
+            this.logout = "logout";
+            this.signup = "signup";
           }
         }
         this.action = new Action();
@@ -392,11 +398,21 @@ class Posts {
 
     class Teacher {
       constructor() {
-        this.login = "/teacher/auth/login";
-        this.logout = "/teacher/auth/logout";
-        this.sessionValidate = "/teacher/session/validate";
-        this.schedule = "/teacher/schedule";
-        this.self = '/teacher/self';
+        const root = "/teacher"
+        this.auth = `${root}/auth`;
+        this.sessionValidate = `${root}/session/validate`;
+        this.schedule = `${root}/schedule`;
+        this.self = `${root}/self`;
+        this.manage = `${root}/manage`;
+
+        class Action {
+          constructor() {
+            this.login = "login";
+            this.logout = "logout";
+            this.signup = "signup";
+          }
+        }
+        this.action = new Action();
       }
     }
     this.teacher = new Teacher();

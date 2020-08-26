@@ -38,6 +38,17 @@ class ShareData {
       verified: data.verified,
     };
   }
+  getPseudoTeacherShareData(data = {}) {
+    return {
+      isTeacher: true,
+      pseudo:true,
+      [this.uid]: data._id,
+      username: data.username,
+      [this.id]: data.teacherID,
+      createdAt: data.createdAt,
+      verified: data.verified,
+    };
+  }
 
   /**
    * Returns peronal data of client type - student, after extracting from passed student user data from database, except confidential ones.
@@ -45,6 +56,16 @@ class ShareData {
    * @returns {JSON} Filters confidential values from given personal data, and returns in shareable form.
    */
   getStudentShareData(data = {}) {
+    return {
+      isStudent: true,
+      [this.uid]: data._id,
+      username: data.username,
+      [this.id]: data.studentID,
+      createdAt: data.createdAt,
+      verified: data.verified,
+    };
+  }
+  getPseudoStudentShareData(data = {}) {
     return {
       isStudent: true,
       [this.uid]: data._id,

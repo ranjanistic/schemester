@@ -1,5 +1,6 @@
 class TeacherLogin{
   constructor(){
+    value.backbluecovered = true;
     this.back = getElement("backFromLogin");
     this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     hide(getElement("previous"));
@@ -31,10 +32,10 @@ class UIID{
     this.uiidField = new TextInput("uiidfield","uiid","uiidError",validType.nonempty);
     this.uiidField.show();
     this.uiidField.enableInput();
-    this.rememberuiid = new Checkbox("rememberuiidcontainer",'rememberuiidtext','rememberuiidcheck');
-    this.rememberuiid.show();
+
+    this.rememberuiid = new Switch('rememberuiidcheck');
     this.saveuiid = false;
-    this.rememberuiid.onCheckChange(_=>{
+    this.rememberuiid.onTurnChange(_=>{
       this.saveuiid = true;
       this.uiidField.onTextInput(_=>{
         localStorage.setItem('uiid',this.uiidField.getInput());  
@@ -43,8 +44,8 @@ class UIID{
     },_=>{
       this.saveuiid = false
       localStorage.removeItem('uiid')
-    });
-    this.rememberuiid.setLabel("Remember UIID");
+    })
+    
     if(localStorage.getItem('uiid')){
       if(!back){
         this.rememberuiid.check();
@@ -67,7 +68,11 @@ class UIID{
     };
   }
    uiidProcedure(uiid){
-    postData(post.teacher.login,{type:'uiid',uiid:uiid}).then(response=>{
+    postJsonData(post.teacher.auth,{
+      action:post.teacher.action.login,
+      type:'uiid',
+      uiid:uiid
+    }).then(response=>{
       clog("response");
       clog(response);
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
@@ -128,7 +133,8 @@ class Email{
   }
   
   emailIDProcedure(emailid){
-    postData(post.teacher.login,{
+    postJsonData(post.teacher.auth,{
+      action:post.teacher.action.login,
       type:'email',
       email:emailid,
       uiid:this.getUIID()
@@ -139,14 +145,17 @@ class Email{
         case code.auth.USER_NOT_EXIST:{
           this.emailField.showError("Account not found.");
           this.proceed.textContent = "Retry";
-        };break;
+          snackBar("Try registering yourself?","Signup",true,_=>{
+            showTeacherRegistration(true,this.emailField.getInput(),this.getUIID());
+          })
+        }break;
         case code.auth.USER_EXIST:{
           clog("yaaaaaaaaaaaas");
           this.emailField.activate();
           this.emailField.disableInput();
           this.emailCheck(emailid);
           new Password();
-        };break;
+        }break;
         default:{
           snackBar(response.event,null,false);
         }
@@ -185,7 +194,23 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.getEmail())}, false);
+    if (Number(sessionStorage.getItem("linkin")) > 0) {
+      opacityOf(this.forgotPassword, 0.5);
+      let time = Number(sessionStorage.getItem("linkin"));
+      const timer = setInterval(() => {
+        time--;
+        sessionStorage.setItem("linkin", time);
+        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+        if (Number(sessionStorage.getItem("linkin")) == 0) {
+          this.forgotPassword.innerHTML = "Get password link";
+          opacityOf(this.forgotPassword, 1);
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+          clearInterval(timer);
+        }
+      }, 1000);
+    } else {
+      this.forgotPassword.onclick = (_) => {this.linkSender()};
+    }
     this.previous.onclick = _=>{
       this.passField.hide();
       new Email();
@@ -199,7 +224,8 @@ class Password{
     };
   }
   passwordProcedure(password){
-    postData(post.teacher.login,{
+    postJsonData(post.teacher.auth,{
+      action:post.teacher.action.login,
       type:'password',
       email:this.getEmail(),
       uiid:this.getUIID(),
@@ -225,7 +251,40 @@ class Password{
     opacityOf(this.view,show?0.5:1);
   }
 
-  
+  linkSender(){
+    if(!stringIsValid(this.getEmail(),validType.email)){ this.previous.click(); return snackBar('Provide your valid email address');}
+    snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
+      postJsonData(post.teacher.manage,{
+        external:true,
+        type:"resetpassword",
+        action:"send",
+        uiid:this.getUIID(),
+        email:this.getEmail()
+      }).then((resp)=>{
+        if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
+          return snackBar('An error occurred','Report');
+        }
+        snackBar(
+          "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
+        );
+        opacityOf(this.forgotPassword, 0.4);
+        this.forgotPassword.onclick = (_) => {};
+        let time = 120;
+        sessionStorage.setItem("linkin", time);
+        const timer = setInterval(() => {
+          time--;
+          sessionStorage.setItem("linkin", time);
+          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+          if (Number(sessionStorage.getItem("linkin")) == 0) {
+            clearInterval(timer);
+            this.forgotPassword.innerHTML = "Get password link";
+            opacityOf(this.forgotPassword, 1);
+          }
+        }, 1000);
+      })
+    })
+  }
+
   handleAuthResult=(result)=>{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{

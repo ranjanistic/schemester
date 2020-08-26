@@ -78,6 +78,7 @@ admin.get("/session*", (req, res) => {
             worker.toSession(adata.uid, { target: view.admin.target.dashboard })
           );
         }
+        clog(inst.pseudousers.teachers)
         try {
           switch (data.target) {
             case view.admin.target.addteacher: {
@@ -443,6 +444,25 @@ admin.post("/users",async (req,res)=>{
     });
 });
 
+admin.post("/pseudousers",async(req,res)=>{
+  session
+    .verify(req, sessionsecret)
+    .catch((error) => {
+      clog(error);
+      return res.json({
+        result: code.eventmsg(code.auth.AUTH_FAILED, error),
+      });
+    })
+    .then(async (response) => {
+      if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+      const body = req.body;
+      switch(body.target){
+        case "teachers":return res.json({result:await worker.pseudo.handleTeachers(response.user,body)})
+        case "classes": return res.json({result:await worker.pseudo.handleStudents(response.user,body)})
+      }
+    })
+})
+
 /**
  * For actions related to schedule subdocument.
 */
@@ -464,6 +484,27 @@ admin.post("/schedule", async (req, res) => {
   }); 
 });
 
+admin.post("/receivedata",async(req,res)=>{
+  session.verify(req, sessionsecret).catch((error) => {
+    clog(error);
+    return res.json({
+      result: code.eventmsg(code.auth.AUTH_FAILED, error),
+    });
+  }).then(async (response) => {
+    if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+    const body = req.body;
+    switch(body.target){  
+      case "default":return res.json({result:await worker.default.getDefaults(response.user)});
+      case "users":return res.json({result:await worker.users.getUsers(response.user)});
+      case "schedule":return res.json({result:await worker.schedule.getSchedule(response.user)});
+      case "pseudousers":return res.json({result:await worker.pseudo.getPseudoUsers(response.user,body)});
+      case "vacations":return res.json({result:await worker.vacation.getVacations(response.user)});
+      case "preferences":return res.json({result:await worker.prefs.getPreferences(response.user)});
+      case "invite":return res.json({result:await worker.invite.getInvitation(response.user)});
+      default:return res.json({result:await worker.getInstitute(response.user)})
+    }
+  })
+})
 
 admin.post("/manage", async (req, res) => { //for settings
   clog("in post manage");

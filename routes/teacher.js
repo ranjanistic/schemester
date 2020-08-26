@@ -9,6 +9,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
+  reset = require("../workers/common/passwordreset"),
   mailer = require("../workers/common/mailer"),
   worker = require("../workers/teacherworker"),
   share = require("../workers/common/sharedata"),
@@ -38,36 +39,68 @@ teacher.get("/auth/login*", (req, res) => {
     });
 });
 
-teacher.post("/auth/login", async (req, res) => {
-  session.login(req, res, sessionsecret)
-    .then((response) => {
-      return res.json({ result: response });
-    })
-    .catch((error) => {
-      return res.json(authreqfailed(error));
-    });
-});
+// teacher.post("/auth/login", async (req, res) => {
+//   session.login(req, res, sessionsecret)
+//     .then((response) => {
+//       return res.json({ result: response });
+//     })
+//     .catch((error) => {
+//       return res.json(authreqfailed(error));
+//     });
+// });
 
-teacher.post("/auth/logout", (_, res) => {
-  session.finish(res).then((response) => {
-    return res.json({ result: response });
-  });
-});
+// teacher.post("/auth/logout", (_, res) => {
+//   session.finish(res).then((response) => {
+//     return res.json({ result: response });
+//   });
+// });
 
-teacher.post("/auth/signup", async (req, res) => {
-  clog(req.body);
-  session
-    .signup(req, res, sessionsecret)
-    .then((response) => {
-      return res.json({ result: response });
-    })
-    .catch((error) => {
-      clog(error);
-      return res.json({
-        result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+teacher.post("/auth",async(req,res)=>{
+  const body = req.body;
+  clog(body);
+  switch(body.action){
+    case "login":{  session.login(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        return res.json(authreqfailed(error));
+      })
+    }break;
+    case "logout":{
+      session.finish(res).then((response) => {
+        return res.json({ result: response });
+      }); 
+    }break;
+    case "signup":{
+      session.signup(req, res, sessionsecret,body.pseudo)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        clog(error);
+        return res.json({
+          result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+        });
       });
-    });
+    }break;
+    default:res.sendStatus(500);
+  }
 });
+// teacher.post("/auth/signup", async (req, res) => {
+//   clog(req.body);
+//   session
+//     .signup(req, res, sessionsecret)
+//     .then((response) => {
+//       return res.json({ result: response });
+//     })
+//     .catch((error) => {
+//       clog(error);
+//       return res.json({
+//         result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+//       });
+//     });
+// });
 
 
 teacher.get("/session*", async (req, res) => {
@@ -82,10 +115,10 @@ teacher.get("/session*", async (req, res) => {
     if (!session.valid(response)) return res.redirect(worker.toLogin(data));
     if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
     const userinst = await Institute.findOne({
-        uiid: response.user.uiid,
-        "users.teachers": {
-          $elemMatch: { _id: ObjectId(response.user.id) },
-        },
+      uiid: response.user.uiid,
+      "users.teachers": {
+        $elemMatch: { _id: ObjectId(response.user.id) },
+      },
     },{
       projection: {
         _id: 1,
@@ -96,10 +129,25 @@ teacher.get("/session*", async (req, res) => {
         preferences:1
       },
     });
-    if (!userinst)
-      return session.finish(res).then((response) => {
-        if (response) res.redirect(worker.toLogin(data));
+    if (!userinst){
+      //checking if membership requested (pseudo user)
+      const pseudodoc = await Institute.findOne({
+        uiid:response.user.uiid,
+        "pseudousers.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
+      },{
+        projection:{
+          "pseudousers.teachers.$":1
+        }
       });
+      if(!pseudodoc){
+        return session.finish(res).then((response) => {
+          if (response) res.redirect(worker.toLogin(data));
+        });
+      }
+      const teacher = share.getPseudoTeacherShareData(pseudodoc.pseudousers.teachers[0]);
+      if (!teacher.verified) return res.render(view.verification, { user: teacher });
+      return res.render(view.teacher.getViewByTarget(view.teacher.target.dash), {teacher,target:{fragment:null}});
+    }
 
     //user teacher exists
     const teacher = share.getTeacherShareData(userinst.users.teachers[0]);
@@ -520,6 +568,15 @@ teacher.get("/external*", async (req, res) => {
         });
       return;
     }
+    case reset.type:{
+      reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
+        if (!resp) return res.render(view.notfound);
+        return res.render(view.passwordreset, { user: resp.user });
+      }).catch(e=>{
+        clog(e);
+        return res.render(view.servererror, {error:e});
+      });
+    }break;
     default:
       res.render(view.servererror);
   }
@@ -527,6 +584,12 @@ teacher.get("/external*", async (req, res) => {
 
 
 teacher.post("/manage", async (req, res) => {
+  const body = req.body;
+  if(body.external){
+    switch (body.type) {
+      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body,true)});
+    }
+  }
   session
     .verify(req, sessionsecret)
     .catch((e) => {
@@ -535,72 +598,13 @@ teacher.post("/manage", async (req, res) => {
     })
     .then(async (response) => {
       if (!session.valid(response)) return res.json({ result: response });
-      const manage = req.body;
-      switch (manage.type) {
-        case verify.type: {
-          switch (manage.action) {
-            case "send":
-              {
-                clog(response);
-                const inst = await Institute.findOne({
-                  uiid: response.user.uiid,
-                });
-                const linkdata = await verify.generateLink(verify.target.teacher, {
-                  instID: inst._id,
-                  uid: response.user.id,
-                });
-                clog(linkdata);
-                //todo: send email then save.
-                let teacherInst = await Institute.findOneAndUpdate(
-                  {
-                    uiid: response.user.uiid,
-                    "users.teachers": {
-                      $elemMatch: { _id: ObjectId(response.user.id) },
-                    },
-                  },
-                  {
-                    $set: {
-                      "users.teachers.$.vlinkexp": linkdata.exp,
-                    },
-                  }
-                );
-                clog(teacherInst);
-                if (teacherInst) {
-                  return res.json({ result: code.event(code.mail.MAIL_SENT) });
-                }
-              }
-              break;
-            case "check":
-              {
-                const teacherinst = await Institute.findOne(
-                  {
-                    uiid: response.user.uiid,
-                    "users.teachers": {
-                      $elemMatch: { _id: ObjectId(response.user.id) },
-                    },
-                  },
-                  {
-                    projection: {
-                      "users.teachers.$": 1,
-                    },
-                  }
-                );
-                if (!teacherinst)
-                  return res.json({
-                    result: code.event(code.auth.USER_NOT_EXIST),
-                  });
-                const teacher = teacherinst.users.teachers[0];
-                return teacher.verified
-                  ? res.json({ result: code.event(code.verify.VERIFIED) })
-                  : res.json({ result: code.event(code.verify.NOT_VERIFIED) });
-              }
-              break;
-            default:
-              res.sendStatus(500);
-          }
-        }
-        default:
-          res.sendStatus(500);
+      const inst = await Institute.findOne({uiid:response.user.uiid},{projection:{"_id":1}});
+      if(!inst) return false;
+      body['instID'] = inst._id;
+      clog(body);
+      switch (body.type) {
+        case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
+        default: return res.sendStatus(500);
       }
     });
 });

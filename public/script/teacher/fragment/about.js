@@ -133,7 +133,7 @@ class TeacherAbout {
             action: code.action.ACCOUNT_DELETE,
           }).then((response) => {
             if (response.event == code.OK) {
-              relocate(locate.root);
+              relocateParent(locate.root);
             } else {
               snackBar("Action Failed");
             }

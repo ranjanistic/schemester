@@ -124,6 +124,14 @@ img{vertical-align:middle}
     box-shadow:0 4px 10px 0 #00000033,0 4px 20px 0 #00000030;
 }
 
+#snackButton {
+    display: none;
+}
+#snackText{
+    float:left;
+    padding:8px 12px;
+}
+
 .searcher {
     width: 40px;
     height:40px;
@@ -553,7 +561,7 @@ img{vertical-align:middle}
 }
 .sub-display-button:focus{
     outline: none;
-    background-color: #ededed;
+    background-color: var(--light-base);
 
 }
 .positive-button{
@@ -805,13 +813,13 @@ img{vertical-align:middle}
     cursor: pointer;
 }
 .image-text-button:hover{
-    background-color: #ffffffc7;
+    background-color: var(--light-base);
     box-shadow: 1px 5px 20px #00000079;
 }
 .image-text-button:focus{
     outline:none;
-    color:#00000066;
-    background-color: #ffffff98;
+
+    background-color: var(--base);
     box-shadow: 2px 2px 2px 2px #00000011;
 }
 
@@ -1003,4 +1011,40 @@ img{vertical-align:middle}
     background-color: var(--base);
     color:var(--positive);
 
+}
+
+.menu {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .menubox {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    overflow: auto;
+    right:0;
+    z-index: 1;
+    border:1px solid var(--positive);
+    border-radius: 0 0 4px 4px;
+    color:var(--base-text);
+    padding:8px 0;
+    box-shadow: 2px 2px 5px #00000045;
+    background-color: var(--base);
+  }
+  
+  .menubox div {
+    border-width: 0;
+    padding:12px;
+    margin:4px 0;
+    transition: 0.3s ease;
+    background-color: var(--secondary);
+    cursor: pointer;
+  }
+  
+  .menubox div:hover {color: var(--positive);}
+
+.menubox div:active{
+    background-color: var(--light-base);
+    opacity:50%;
 }

@@ -1,6 +1,10 @@
 const Institute = require("../collections/Institutions"),
   view = require("../hardcodes/views"),
   code = require("../public/script/codes"),
+  verify = require("./common/verification"),
+  bcrypt = require("bcryptjs"),
+  reset = require("./common/passwordreset"),
+  share = require("./common/sharedata"),
   { ObjectId } = require("mongodb");
 class TeacherWorker {
   constructor() {
@@ -69,7 +73,7 @@ class Self {
        * @param {String} uiid The unique institute ID
        * @param {JSON} pseudoteacher The teacher data for which pseudo account will be created.
        */
-      async createPseudoAccount(uiid,classname,pseudoteacher){
+      async createPseudoAccount(uiid,pseudoteacher){
         const doc = await Institute.findOneAndUpdate({
           uiid:uiid,
         },{
@@ -100,15 +104,29 @@ class Self {
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
         const passpath = `${path}.$.${this.password}`;
+        const rlinkpath = `${path}.$.${this.rlinkexp}`;
         const newteacher = await Institute.findOneAndUpdate({uiid:user.uiid, [path]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},{
           $set:{
             [passpath]:epassword
           },
           $unset: {
-            [this.rlinkexp]: null,
-          },  
+            [rlinkpath]: null,
+          },
         });
-        return code.event(newteacher ? code.OK : code.NO);
+        if(!newteacher.value){
+          const passpath = `${pseudopath}.$.${this.password}`;
+          const rlinkpath = `${pseudopath}.$.${this.rlinkexp}`;
+          const newteacher = await Institute.findOneAndUpdate({uiid:user.uiid, [pseudopath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},{
+            $set:{
+              [passpath]:epassword
+            },
+            $unset: {
+              [rlinkpath]: null,
+            },
+          });
+          return code.event(newteacher.value ? code.OK : code.NO);
+        }
+        return code.event(newteacher.value ? code.OK : code.NO);
       };
 
       /**
@@ -136,18 +154,21 @@ class Self {
       /**
        * 
        */
-      changePhone = async (user, body) => {
-        return code.event(
-          (await this.defaults.admin.setPhone(user, body)) ? code.OK : code.NO
-        );
-      };
-
-      /**
-       * 
-       */
       deleteAccount = async (user) => {
-        const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
-        return code.event(del ? code.OK : code.NO);
+        const deluser = await Institute.findOneAndUpdate({uiid:user.uiid,[this.path]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},{
+          $pull:{
+            [this.path]:{[this.uid]:ObjectId(user.id)}
+          }
+        });
+        if(!deluser.value){
+          const delpseudo = await Institute.findOneAndUpdate({uiid:user.uiid,[this.pseudopath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},{
+            $pull:{
+              [this.pseudopath]:{[this.uid]:ObjectId(user.id)}
+            }
+          });
+          return code.event(delpseudo.value?code.OK:code.NO);
+        }
+        return code.event(deluser.value?code.OK:code.NO);
       };
     }
     class Preferences{
@@ -223,6 +244,7 @@ class Self {
       case "send": {
         const linkdata = await verify.generateLink(verify.target.teacher, {
           uid: user.id,
+          instID:body.instID
         });
         clog(linkdata);
         //todo: send email then return.
@@ -231,25 +253,52 @@ class Self {
         );
       }
       case "check": {
-        const admin = await Admin.findOne({ _id: ObjectId(user.id) });
-        if (!admin) return code.event(code.auth.USER_NOT_EXIST);
+        const teacherdoc = await Institute.findOne({uiid:user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(user.id)}}},{
+          projection:{"users.teachers.$":1}
+        });
+        if(!teacherdoc){
+          const pseudodoc = await Institute.findOne({uiid:user.uiid,"pseudousers.teachers":{$elemMatch:{"_id":ObjectId(user.id)}}},{
+            projection:{"pseudousers.teachers.$":1}
+          });
+          if(!pseudodoc) return code.event(code.auth.USER_NOT_EXIST);
+          return code.event(
+            pseudodoc.pseudousers.teachers[0].verified? code.verify.VERIFIED : code.verify.NOT_VERIFIED
+          );
+        }
         return code.event(
-          admin.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
+          teacherdoc.users.teachers[0].verified? code.verify.VERIFIED : code.verify.NOT_VERIFIED
         );
       }
     }
   };
-  handlePassReset = async (user, body) => {
+  handlePassReset = async (user, body,anonymous = false) => {
     switch (body.action) {
       case "send":{
-          const linkdata = await reset.generateLink(verify.target.teacher, {
-            uid: user.id,
-          });
-          clog(linkdata);
-          //todo: send email then return.
-          return code.event(
-            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
+        if(anonymous){  //user not logged in
+          const userdoc = await Institute.findOne({uiid:body.uiid,"users.teachers":{$elemMatch:{"teacherID":body.email}}},
+            {projection:{"_id":1,"users.teachers.$":1}}
           );
+          if(!userdoc) {
+            const pseudodoc = await Institute.findOne({uiid:body.uiid,"pseudousers.teachers":{$elemMatch:{"teacherID":body.email}}},
+              {projection:{"_id":1,"pseudousers.teachers.$":1}}
+            );
+            if(!pseudodoc) return {result:code.event(code.OK)};  //don't tell if user not exists, while sending reset email.
+            body['instID'] = pseudodoc._id;
+            return await this.handlePassReset({id:share.getPseudoTeacherShareData(pseudodoc.pseudousers.teachers[0]).uid},body);
+          }
+          body['instID'] = userdoc._id;
+          return await this.handlePassReset({id:share.getTeacherShareData(userdoc.users.teachers[0]).uid},body);
+        }
+        clog(user);
+        const linkdata = await reset.generateLink(reset.target.teacher, {
+          uid: user.id,
+          instID:body.instID
+        });
+        clog(linkdata);
+        //todo: send email then return.
+        return code.event(
+          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
+        );
       }break;
     }
   };

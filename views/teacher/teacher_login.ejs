@@ -43,12 +43,11 @@
                     <input class="text-input" spellcheck="false" placeholder="Your institution's unique ID." type="text" id="uiid" name="uiid" value="<%= autofill.uiid %>">
                     <span class="fmt-right error-caption" id="uiidError"></span>
                 </fieldset>
-                <label class="check-container fmt-right" id="rememberuiidcontainer">
-                    <span id="rememberuiidtext"></span>
+                <label class="switch-container" id="rememberuiidcontainer">
                     <input type="checkbox" id="rememberuiidcheck">
-                    <span class="tickmark-positive"></span>
+                    <span class="switch-positive"></span>
                 </label>
-
+                <span class="fmt-padding-small fmt-right caption questrial">Remember UIID</span>
                 <br/>
                 <fieldset class="text-field" id="useremailfield">
                     <legend class="field-caption" >Email Address</legend>
@@ -78,9 +77,9 @@
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>
-        <div id="snackBar" class="snack-positive fmt-animate-bottom">
-            <span class="fmt-left fmt-padding" id="snackText"></span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
+        <div id="snackBar" class="fmt-animate-bottom">
+            <span id="snackText"></span>
+            <button id="snackButton"></button>
         </div>
         <span hidden id="target"><%= autofill.target %></span>
     </body>

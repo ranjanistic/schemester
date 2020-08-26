@@ -33,29 +33,61 @@
     <body>
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
-            <span id="greeting" class="pointer"><%= inst.default.institute.instituteName %></span>
-            <span class="fmt-right">
-                <input type="text" class="searcher" name="search"/>
-                <button class="neutral-button" id="refresh">Refresh</button>
-                <span class="fmt-dropdown-hover">
-                    <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                    <div class="fmt-dropdown-content container fmt-padding" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: var(--base);border:4px solid var(--positive)">
-                        <div class="fmt-center">
-                            Logged in as<br/>
-                            <%= adata.id %>
-                        </div>
-                        <button class="neutral-button" id="settingsAdminButton">
-                            Settings
-                        </button>
-                        <button class="negative-button" id="logoutAdminButton">
-                            Logout
-                        </button>
-                    </div>
-                </span>
-                <img class="fmt-spin-fast fmt-circle" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+            <span id="instname" class="pointer"><%= inst.default.institute.instituteName %></span>
+            <span class="menu fmt-right">
+                <button class="neutral-button" id="notificationbutton">🔔</button>
+                <div class="menubox" id="notifications">
+                    <section class="fmt-padding positive fmt-center">
+                        Notifications
+                    </section>
+                    <% var notifs = false%>
+                    <% if(inst.pseudousers.teachers.length) {%>
+                        <% legitteachers = Array() %> 
+                        <% for(let i=0;i<inst.pseudousers.teachers.length;i++) {
+                            if(inst.pseudousers.teachers[i].verified) {
+                                legitteachers.push(inst.pseudousers.teachers[i]);
+                            }
+                        } %>
+                        <% if(legitteachers.length) {%>
+                            <% notifs = true %>
+                            <div id="teacherrequests">
+                                👩‍🏫<span id="requestees"><%= legitteachers.length %></span> pending requests.
+                            </div>
+                        <% } %>
+                    <% } %>
+                    <% if(!notifs) {%>
+                        <section class="fmt-center group-text">
+                            Nothing here.
+                        </sectionn>
+                    <% } else {%>
+                        <section class="fmt-center positive">
+                            🕗
+                        </sectionn>
+                    <% } %>
+
+                </div>
             </span>
+            <span  class="menu fmt-right">
+                <img class="positive-button" src="/graphic/menudotsvertical.svg" width="50" id="settingsmenubutton">
+                <div class="menubox" id="settingsmenu">
+                    <section class="fmt-padding active fmt-center">
+                        <%= adata.username %>
+                        <%= adata.id %>
+                    </section>
+                    <div class="" id="settingsAdminButton">
+                        ⚙ Settings
+                    </div>
+                    <div class="negative" id="logoutAdminButton">
+                        ❌ Logout
+                    </div>
+                </div>
+            </span >
+            <button class="neutral-button fmt-right" id="refresh">🔁</button>
+            <input type="text" class="fmt-right searcher" name="search"/>
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
+            
             <% if (inst.schedule.classes.length) { %>
                 <% if (inst.preferences.active) { %>
             <div class="fmt-col fmt-half fmt-padding-small">
@@ -270,9 +302,9 @@
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
             </div>
         </div>
-        <div id="snackBar" class="snack-positive fmt-animate-bottom">
-            <span class="fmt-left fmt-padding" id="snackText"></span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
+        <div id="snackBar" class="fmt-animate-bottom">
+            <span id="snackText"></span>
+            <button id="snackButton"></button>
         </div>
         <span hidden>
             <span id="hasTeacherSchedule"><%= !isEmptyObject(inst.users.teachers) %></span>

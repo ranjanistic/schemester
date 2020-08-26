@@ -4,19 +4,24 @@ class Homepage{
         this.teacherLogin = getElement('teacherLogin');
         this.studentLogin = getElement('studentLogin');
         this.adminSignup = getElement('registerInstitution');
-        this.plans = getElement('plansPricing');
+        this.teacherSignup = getElement('registerTeacher');
+        this.studentSignup = getElement('registerStudent');
+        
         this.getstarted = getElement('getStarted');
         
-        this.adminSignup.addEventListener(click,_=>registrationDialog());
-        this.plans.addEventListener(click,_=>refer(locate.planspage));
-        this.getstarted.addEventListener(click,_=>registrationDialog());
-        this.adminLogin.addEventListener(click,_=>refer(locate.admin.login));
-        this.teacherLogin.addEventListener(click,_=>refer(locate.teacher.login));
-        this.studentLogin.addEventListener(click,_=>refer(locate.student.login));
+        this.adminSignup.onclick=_=>{registrationDialog()};
+        this.getstarted.onclick=this.adminSignup.onclick;
+        this.teacherSignup.onclick=_=>{showTeacherRegistration()};
+        this.studentSignup.onclick=_=>{showStudentRegistration()};
+
+        this.adminLogin.onclick=_=>{refer(locate.admin.login)};
+        this.teacherLogin.onclick=_=>{refer(locate.teacher.login)};
+        this.studentLogin.onclick=_=>{refer(locate.student.login)};
+
         this.darkmode = new Switch('darkmode');
         this.darkmode.turn(theme.isDark());
         this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
-    }    
+    }
 }
 
 if ('serviceWorker' in window.navigator) {
