@@ -139,7 +139,7 @@ admin.get("/session*", (req, res) => {
                     });
                   } else {  //user account considered not exists.
                     if(!data.teacherID) return res.render(view.notfound); //so teacher ID must be provided for schedule.
-                    const teacherInst = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
+                    const teacherdoc = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
                       uiid: response.user.uiid,
                       "users.teachers": {
                         $elemMatch: { "teacherID": data.teacherID },
@@ -150,27 +150,27 @@ admin.get("/session*", (req, res) => {
                         "users.teachers.$": 1,
                       },
                     });
-                    if(teacherInst){  //then providing teacher _id to session, for previous condition.
-                      data['t'] = teacherInst.users.teachers[0]._id;
+                    if(teacherdoc){  //then providing teacher _id to session, for previous condition.
+                      data['t'] = teacherdoc.users.teachers[0]._id;
                       return res.redirect(worker.toSession(data.u,data))
                     }
-                    const teacherScheduleInst = await Institute.findOne({ //finding schedule with teacherID
+                    const teacherScheduledoc = await Institute.findOne({ //finding schedule with teacherID
                       uiid: response.user.uiid,
                       "schedule.teachers": {
                         $elemMatch: { "teacherID": data.teacherID},
                       },
                     },{
                       projection: {
-                      _id: 0,
-                      "schedule.teachers.$": 1,
+                        _id: 0,
+                        "schedule.teachers.$": 1,
                       },
                     });
-                    if(!teacherScheduleInst)//no schedule found, so 404, as only schedule was requested.
+                    if(!teacherScheduledoc)//no schedule found, so 404, as only schedule was requested.
                       return res.render(view.notfound);
 
                     return res.render(view.admin.scheduleview, {  //account not found, so only schedule.
                       group: { teacher: false },
-                      schedule: teacherScheduleInst.schedule.teachers[0],
+                      schedule: teacherScheduledoc.schedule.teachers[0],
                       inst,
                     });
                   }

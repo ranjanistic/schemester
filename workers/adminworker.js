@@ -616,15 +616,15 @@ class Schedule {
     class TeacherAction {
       constructor() {}
       async scheduleUpload(inst, body) {
-
         let overwriting = false; //if existing teacher schedule being overwritten after completion.
         let incomplete = false; //if existing teacher schedule being rewritten without completion.
-        let found = inst.schedule.teachers.some((teacher, index) => {
+        let tid;
+        let found = inst.schedule.teachers.some((teacher) => {
           if (teacher.teacherID == body.teacherID) {
-            overwriting =
-              teacher.days.length == inst.default.timings.daysInWeek.length;
+            overwriting = teacher.days.length == inst.default.timings.daysInWeek.length;
+            tid = teacher.teacherID;
             if (!overwriting) {
-              incomplete = teacher.days.some((day, index) => {
+              incomplete = teacher.days.some((day) => {
                 if (body.data.dayIndex <= day.dayIndex) {
                   return true;
                 }
@@ -635,23 +635,33 @@ class Schedule {
         });
         if (overwriting) {
           //completed schedule, must be edited from schedule view.
-          return code.event(code.schedule.SCHEDULE_EXISTS);
-        }
-        if (incomplete) {
-          //remove teacher schedule
-          Institute.findOneAndUpdate(
-            { uiid: inst.uiid },
-            {
-              $pull: {
-                "schedule.teachers": { teacherID: body.teacherID },
-              },
+          const found = inst.users.teachers.some((teacher)=>{
+            if(teacher.teacherID == tid){
+              tid = teacher._id;
+              return true;
             }
-          );
+          })
+          clog("here");
+          return found?{
+            event:code.schedule.SCHEDULE_EXISTS,
+            uid:tid
+          }:{
+            event:code.schedule.SCHEDULE_EXISTS,
+            id:tid
+          };
+        }
+
+        if (incomplete) { //remove incomplete schedule teacher
+          await Institute.findOneAndUpdate({ uiid: inst.uiid },{
+            $pull: {
+              "schedule.teachers": { teacherID: body.teacherID },
+            },
+          });
           found = false; //add as a new teacher schedule
         }
         let clashClass, clashPeriod, clashTeacher;
-        let clashed = inst.schedule.teachers.some((teacher, _) => {
-          let clashed = teacher.days.some((day, _) => {
+        let clashed = inst.schedule.teachers.some((teacher) => {
+          let clashed = teacher.days.some((day) => {
             if (day.dayIndex == body.data.dayIndex) {
               let clashed = day.period.some((period, pindex) => {
                 if (period.classname == body.data.period[pindex].classname) {
@@ -672,33 +682,38 @@ class Schedule {
         });
         if (clashed) {
           //if some period clashed with an existing teacher.
+          const found = inst.users.teachers.some((teacher)=>{
+            if(teacher.teacherID == clashTeacher){
+              tid = teacher._id;
+              return true;
+            }
+          });
+          clog(found);
           return {
             event: code.schedule.SCHEDULE_CLASHED,
-            clash: {
+            clash: found?{
               classname: clashClass,
               period: clashPeriod,
-              teacherID: clashTeacher,
+              id: clashTeacher,
+              uid:tid,
+            }:{classname: clashClass,
+              period: clashPeriod,
+              id: clashTeacher,
             },
           };
         }
         if (found) {
           //existing teacher schedule, incomplete (new day index)
-          const doc = await Institute.findOneAndUpdate(
-            {
-              uiid: inst.uiid,
-              "schedule.teachers": {
-                $elemMatch: { teacherID: body.teacherID },
-              },
+          const doc = await Institute.findOneAndUpdate({
+            uiid: inst.uiid,
+            "schedule.teachers": {
+              $elemMatch: { teacherID: body.teacherID },
             },
-            {
-              $push: { "schedule.teachers.$[outer].days": body.data }, //new day push
-            },
-            {
-              arrayFilters: [{ "outer.teacherID": body.teacherID }],
-            }
-          );
+          },{
+            $push: { "schedule.teachers.$.days": body.data }, //new day push
+          });
           clog("schedule appended?");
-          if (doc) return code.event(code.schedule.SCHEDULE_CREATED); //new day created.
+          return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED); //new day created.
         } else {
           //no existing schedule teacherID
           const doc = await Institute.findOneAndUpdate(
@@ -713,9 +728,10 @@ class Schedule {
             }
           );
           clog("schedule created?");
-          if (doc) return code.event(code.schedule.SCHEDULE_CREATED); //new teacher new day created.
+          return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED); //new day created.
         }
       }
+
       /**
        * To receive data under schedule.teachers
        * @param {Document} inst
@@ -792,22 +808,29 @@ class Schedule {
             {
               if (body.teacherID) {
                 clog(body);
-                //only change in class shift of a teacher
-                const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.classname`;
                 //check clash with other teachers
+                let clashID,clashUID;
                 const clash = inst.schedule.teachers.some((teacher, t) => {
                   if (teacher.teacherID != body.teacherID) {
                     const clash = teacher.days.some((day, d) => {
                       if (day.dayIndex == body.dayIndex) {
-                        return (
-                          day.period[body.period].classname == body.newclassname
-                        );
+                        if(day.period[body.period].classname == body.newclassname){
+                          clashID = teacher.teacherID;
+                          return true;
+                        }
                       }
                     });
                     return clash;
                   }
                 });
-                if (clash) return code.event(code.schedule.SCHEDULE_CLASHED); //clashed
+                if (clash) return {
+                  event:code.schedule.SCHEDULE_CLASHED,
+                  clash:{
+                    id:clashID,
+                  }
+                }; //clashed
+                //only change in class shift of a teacher
+                const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.classname`;
                 const instdoc = await Institute.findOneAndUpdate(
                   {
                     uiid: user.uiid,
@@ -832,33 +855,35 @@ class Schedule {
               } else {
                 //todo: change in classname of all teachers (correction type)
                 clog(body);
-
-                // if (found) {
-                //   return {
-                //     event: code.schedule.SCHEDULE_CLASHED,
-                //     clash: clashteachers,
-                //   };
-                // }
-                let done = false;
-                const promises = inst.schedule.teachers.map(
-                  async (teacher, tindex) => {
-                    teacher.days.forEach(async (day, dindex) => {
-                      day.period.forEach(async (period, pindex) => {
-                        if (period.classname == body.oldclassname) {
-                          const setpath = `schedule.teachers.${tindex}.days.${dindex}.period.${pindex}.classname`;
-                          const doc = await Institute.findOneAndUpdate(
-                            { uiid: inst.uiid },
-                            { $set: { [setpath]: body.newclassname } }
-                          );
-                          done = doc ? true : false;
-                        }
-                      });
-                    });
-                  }
-                );
-                await Promise.all(promises);
-                clog(done);
-                return code.event(done ? code.OK : code.NO);
+                try{
+                let result = await Promise.all(inst.schedule.teachers.map(async(teacher)=>{
+                  return await Promise.all(teacher.days.map(async(day)=>{
+                    return await Promise.all(day.period.map(async(period,p)=>{
+                      if(period.classname == body.oldclassname){
+                        body['teacherID'] = teacher.teacherID;
+                        body['dayIndex'] = day.dayIndex;
+                        body['period'] = p;
+                          const res = await this.scheduleUpdate(user,inst,body);
+                          if(res.event == code.schedule.SCHEDULE_CLASHED){
+                            res.clash['targetid'] = body.teacherID;
+                            res.clash['targetday'] = body.dayIndex;
+                            res.clash['targetperiod'] = body.period;
+                            clog("throwing");
+                            throw res;
+                          }
+                          clog("returning");
+                        return res;
+                      };
+                    }));
+                  }));
+                }));
+                  clog("result");
+                  clog(result);
+                  return code.event(code.OK);
+                }catch(e){
+                  clog("catched");
+                  return e;
+                }
               }
             }
             break;
@@ -988,13 +1013,17 @@ class Schedule {
         switch(body.specific){
           case "createclasses":{  //bulk
             const classes = body.classes;
+            body.classes.forEach((Class)=>{
+              Class['_id'] = new ObjectId()
+            })
+            clog(body.classes);
             let doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
               $set:{
                 "users.classes":body.classes
               }
             });
             if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
-            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
+            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes for pseudousers
               $set:{
                 "pseudousers.classes":body.classes
               }
@@ -1222,10 +1251,10 @@ class PseudoUsers{
       case "reject":{
         const rejdoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
           $pull:{
-            [this.teacherpath]:{teacherID:body.teacherID}
+            [this.teacherpath]:{teacherID: body.teacherID}
           }
         });
-        return code.event(rejdoc?code.OK:code.NO);
+        return code.event(rejdoc.value?code.OK:code.NO);
       }
       case "accept":{
         const pseudodoc = await Institute.findOne({uiid:user.uiid,[this.teacherpath]:{$elemMatch:{[this.teacherID]:body.teacherID}}},{

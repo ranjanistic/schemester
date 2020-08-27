@@ -39,22 +39,6 @@ teacher.get("/auth/login*", (req, res) => {
     });
 });
 
-// teacher.post("/auth/login", async (req, res) => {
-//   session.login(req, res, sessionsecret)
-//     .then((response) => {
-//       return res.json({ result: response });
-//     })
-//     .catch((error) => {
-//       return res.json(authreqfailed(error));
-//     });
-// });
-
-// teacher.post("/auth/logout", (_, res) => {
-//   session.finish(res).then((response) => {
-//     return res.json({ result: response });
-//   });
-// });
-
 teacher.post("/auth",async(req,res)=>{
   const body = req.body;
   clog(body);
@@ -87,20 +71,6 @@ teacher.post("/auth",async(req,res)=>{
     default:res.sendStatus(500);
   }
 });
-// teacher.post("/auth/signup", async (req, res) => {
-//   clog(req.body);
-//   session
-//     .signup(req, res, sessionsecret)
-//     .then((response) => {
-//       return res.json({ result: response });
-//     })
-//     .catch((error) => {
-//       clog(error);
-//       return res.json({
-//         result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
-//       });
-//     });
-// });
 
 
 teacher.get("/session*", async (req, res) => {
@@ -154,14 +124,14 @@ teacher.get("/session*", async (req, res) => {
     if (!teacher.verified)
       return res.render(view.verification, { user: teacher });
       
-    const scheduleinst = await Institute.findOne({
+    const scheduledoc = await Institute.findOne({
         uiid: response.user.uiid,
         "schedule.teachers": { $elemMatch: { teacherID: teacher.id } },
     },{
         projection: { _id: 0, "schedule.teachers.$": 1 },
     });
 
-    if (!scheduleinst) {
+    if (!scheduledoc) {
       //no schedule for this user teacher
       if(userinst.preferences.allowTeacherAddSchedule){
         clog("yes");
@@ -174,7 +144,7 @@ teacher.get("/session*", async (req, res) => {
       }
     } else {
       //schedule exists;
-      const schedule = scheduleinst.schedule.teachers[0];
+      const schedule = scheduledoc.schedule.teachers[0];
       if (
         Object.keys(schedule.days).length !=
         userinst.default.timings.daysInWeek.length
@@ -290,7 +260,7 @@ teacher.get("/fragment*", (req, res) => {
             uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
           },{projection:{"users.teachers.$":1,"default":1}});
           if(!teacheruser) return null;
-          const admindoc = await Admin.findOne({uiid:response.user.uiid},{$projection:{"prefs":1}});
+          const admindoc = await Admin.findOne({uiid:response.user.uiid},{projection:{"prefs":1}});
           return res.render(view.teacher.getViewByTarget(query.fragment),{
             teacher:share.getTeacherShareData(teacheruser.users.teachers[0]),
             defaults:teacheruser.default,
@@ -306,8 +276,8 @@ teacher.post("/self", async (req, res) => {
   const body = req.body;
   clog(body);
   if(body.external){
-    switch (body.target) {
-      case "account": return res.json({ result: await worker.self.handleAccount(body.user,body)});
+    switch (body.action) {
+      case code.action.CHANGE_PASSWORD: return res.json({ result: await worker.self.account.changePassword(body.user,body,true)});
     }
     return;
   }
@@ -571,7 +541,7 @@ teacher.get("/external*", async (req, res) => {
     case reset.type:{
       reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
-        return res.render(view.passwordreset, { user: resp.user });
+        return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
       }).catch(e=>{
         clog(e);
         return res.render(view.servererror, {error:e});

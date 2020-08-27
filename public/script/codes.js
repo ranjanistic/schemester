@@ -343,9 +343,10 @@ class Locations {
 
     class Student {
       constructor() {
-        this.session = "/student/session";
-        this.login = "/student/auth/login";
-        this.fragment = "/student/fragment";
+        const root = '/student';
+        this.session = `${root}/session`;
+        this.login = `${root}/auth/login`;
+        this.fragment = `${root}/fragment`;
         class Target {
           constructor() {
             this.dash = "dash";
@@ -419,19 +420,29 @@ class Posts {
 
     class Student {
       constructor() {
+        const root = '/student';
         this.login = "/student/auth/login";
         this.logout = "/student/auth/logout";
         this.signup = "/student/auth/signup";
-        this.sessionValidate = "/student/session/validate";
-        this.schedule = "/student/schedule";
+
+        this.auth = `${root}/auth`;
+        this.sessionValidate = `${root}/session/validate`;
+        this.schedule = `${root}/schedule`;
+        this.self = `${root}/self`;
+        this.manage = `${root}/manage`;
+
+        class Action {
+          constructor() {
+            this.login = "login";
+            this.logout = "logout";
+            this.signup = "signup";
+          }
+        }
+        this.action = new Action();
       }
+
     }
     this.student = new Student();
-
-    this.sessionValidate = "/admin/session/validate";
-    this.authlogin = "/admin/auth/login";
-    this.authlogout = "/admin/auth/logout";
-    this.authsignup = "/admin/auth/signup";
   }
 }
 class Theme {

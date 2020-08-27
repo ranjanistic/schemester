@@ -1,8 +1,11 @@
 const Institute = require("../collections/Institutions"),
   view = require("../hardcodes/views"),
-  code = require("../public/script/codes");
-const { ObjectId } = require("mongodb");
-const { users } = require("./adminworker");
+  code = require("../public/script/codes"),
+  verify = require("./common/verification"),
+  bcrypt = require("bcryptjs"),
+  reset = require("./common/passwordreset"),
+  share = require("./common/sharedata"),
+  { ObjectId } = require("mongodb");
 
 class StudentWorker {
   constructor() {
@@ -30,6 +33,7 @@ class StudentWorker {
         i++;
       }
     }
+    clog(path);
     return path;
   };
 }
@@ -90,13 +94,14 @@ class Self {
       async createPseudoAccount(uiid,classname,pseudostudent){
         const doc = await Institute.findOneAndUpdate({
           uiid:uiid,
-          [this.path]:{$elemMatch:{"classname":classname}}
+          [this.pseudopath]:{$elemMatch:{"classname":classname}}
         },{
           $push:{
             [this.pseudostudentspath]:pseudostudent
           }
         });
-        return code.event(doc?code.OK:code.NO);
+        clog(doc);
+        return code.event(doc.value?code.OK:code.NO);
       }
 
       /**
@@ -225,6 +230,8 @@ class Self {
       case "send": {
         const linkdata = await verify.generateLink(verify.target.student, {
           uid: user.id,
+          cid:body.classID,
+          instID:body.instID,
         });
         clog(linkdata);
         //todo: send email then return.
@@ -296,3 +303,4 @@ class Schedule{
 }
 
 module.exports = new StudentWorker();
+const clog = (m)=>console.log(m);

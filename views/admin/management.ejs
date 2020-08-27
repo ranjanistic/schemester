@@ -44,6 +44,10 @@
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="container">
                 <span class="heading">Settings</span>
+                <label class="switch-container fmt-right">
+                    <input type="checkbox" id="darkmode">
+                    <span class="switch-positive"></span>
+                </label>
                 <div class="fmt-row">
                     <!--Tabs on large screens-->
                     <div class="fmt-col fmt-hide-small leftTabGroup fmt-quarter" id="tabGroup">
@@ -141,13 +145,6 @@
                             </div>
                             <div class="fmt-col fmt-half">
                                 <span class="sub-heading">Settings</span>
-                                <div class="switch-view">
-                                    <span class="switch-text">Dark mode</span>
-                                    <label class="switch-container">
-                                        <input type="checkbox" id="darkmode">
-                                        <span class="switch-positive"></span>
-                                    </label>
-                                </div>
                                 <div class="fmt-row switch-view caption" id="phonevisibilitycontainer">
                                     Show phone number to
                                     <div>
@@ -362,34 +359,36 @@
                             </div>
                         </div>
                         <!--users settings-->
-                        <div class="fmt-row fmt-animate-opacity" id="usersSettingsBox">
-                            <div class="fmt-col fmt-half fmt-padding-small">
-                                <div class="fmt-col sub-container">
-                                    <div class="fmt-row">
-                                        <span class="sub-heading">Teachers</span>
-                                        <button class="fmt-right positive-button" id="inviteUsers">Invite</button>
-                                    </div>
-                                    <div class="fmt-row">
-                                        <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
-                                    </div>
-                                    <br/>
-                                    <div class="fmt-row" id="teacherList">
-                                        
-                                    </div>
+                        <div class="fmt-row sub-container fmt-animate-opacity" id="usersSettingsBox">
+                            <div class="fmt-col fmt-padding-small
+                            <% if(countObjects(inst.users.classes)>0) {%> 
+                             fmt-half"
+                            <% } %>
+                            >
+                                <div class="fmt-row">
+                                    <span class="sub-heading">Teachers</span>
+                                    <button class="fmt-right neutral-button" id="inviteUsers">➕</button>
+                                </div>
+                                <div class="fmt-row">
+                                    <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
+                                </div>
+                                <br/>
+                                <div class="fmt-row" id="teacherList">
                                 </div>
                             </div>
-                            <div class="fmt-col fmt-half fmt-padding-small">
-                                <div class="sub-container">
-                                    <span class="sub-heading">Classes</span>
-                                    <div>
-                                        <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search teacher" id="classSearch" style="width:100%"/>
-                                    </div>
-                                    <br/>
-                                    <div class="fmt-row" id="classList">
-                                        
-                                    </div>
+                            <% if(countObjects(inst.users.classes)>0) {%>
+                                <div class="fmt-col fmt-half fmt-padding-small">
+                                        <span class="sub-heading">Classes</span>
+                                        <div>
+                                            <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.classes)%> classes" id="classSearch" style="width:100%"/>
+                                        </div>
+                                        <br/>
+                                        <div class="fmt-row" id="classList">
+                                            
+                                        </div>
+                                    
                                 </div>
-                            </div>
+                            <% } %>
                         </div>
                         <!--security settings-->
                         <div class="sub-container fmt-animate-opacity" id="securitySettingsBox">
@@ -401,7 +400,8 @@
                                 <span class="caption">Transfer Ownership</span><br/>
                                 <button class="negative-button" id="resetMailButton">Reset email address</button><br/>
                                 <span class="caption">End Service</span><br/>
-                                <button class="negative-button" id="deleteAdminAccount">Delete account</button><br/>
+                                <button class="negative-button" id="deleteAdminAccount">Delete account</button>
+                                <button class="negative-button" id="deleteInstitute">Delete Institute</button><br/>
                             </div>
                         </div>
                         <!--about settings-->
@@ -412,7 +412,7 @@
                             <div>Tell us your experience with Schemester by clicking the button below.</div>
                             <br/>
                             <button class="positive-button" id="contactDevelopers">Contact Devs.</button>
-                            <img class="fmt-right" src="/graphic/icons/schemester256.png"/>
+                            <img class="fmt-right fmt-spin-slow" src="/graphic/icons/schemester256.png"/>
                         </div>
                     </div>
                 </div>

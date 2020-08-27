@@ -155,27 +155,56 @@ class Stage2 {
     this.daySelector = getElement("dayselector");
     this.daychecks = Array(constant.weekdays.length);
     this.dayschecked = Array(constant.weekdays.length);
-    var checks = constant.nothing;
+    var checks = '<div class="fmt-row">';
 
     constant.weekdays.forEach((day, index) => {
-      checks += `<label class="check-container fmt-margin" id="daycheckcontainer${index}">
-        <span id="daychecklabel${index}">${day}</span>
+      checks += `
+      <div class="fmt-col third fmt-padding">
+        <span class="questrial group-text" id="daychecklabel${index}">${day}</span>
+        <label class="switch-container fmt-left fmt-padding">
         <input type="checkbox" id="daycheck${index}">
-        <span class="tickmark-positive" id="daycheckview${index}"></span>
-      </label>`;
+        <span class="switch-active" id="daycheckview${index}"></span>
+      </label>
+      </div>
+    `;
+      // checks += `<label class="check-container fmt-margin" id="daycheckcontainer${index}">
+      //   <span id="daychecklabel${index}">${day}</span>
+      //   <input type="checkbox" id="daycheck${index}">
+      //   <span class="tickmark-positive" id="daycheckview${index}"></span>
+      // </label>`;
     });
-    this.daySelector.innerHTML = checks;
+    this.daySelector.innerHTML = checks + '</div>';
+    let days = Array();
     constant.weekdays.forEach((_, index) => {
-      this.daychecks[index] = new Checkbox(
-        `daycheckcontainer${index}`,
-        `daychecklabel${index}`,
+      this.daychecks[index] = new Switch(
         `daycheck${index}`,
-        `daycheckview${index}`
+        `daychecklabel${index}`,
+        `daycheckview${index}`,
+        `daycheckcontainer${index}`,
+        bodyType.active
       );
+      this.daychecks[index].onTurnChange(_=>{
+        this.workingdaysField.normalize();
+        appendClass(this.daychecks[index].switchText,'active')
+        days.push(index);
+        sessionStorage.setItem("totalDaysField", days);
+      },_=>{
+        if(!this.someChecked()){
+          this.workingdaysField.showError("Select at least one",false);
+        }
+        if(days.indexOf(index)>-1){
+          days.splice(days.indexOf(index),1);
+          sessionStorage.setItem("totalDaysField", days);
+        }
+        replaceClass(this.daychecks[index].switchText,'active','group-text');
+      });
     });
+
+
     if(sessionStorage.getItem("totalDaysField")){
       String(sessionStorage.getItem("totalDaysField")).split(',').forEach((dayi,index)=>{
-        this.daychecks[dayi].checked();
+        appendClass(this.daychecks[dayi].switchText,'active')
+        this.daychecks[dayi].on();
       });
     }
     this.eachDurationField = new TextInput(
@@ -265,20 +294,17 @@ class Stage2 {
     let bdur = Number(this.breakDurationField.getInput());
     clog(((end - start)-bdur)/pdur);
   }
-  noneChecked(){
+  someChecked(){
     let valid = this.daychecks.some((check,index)=>{
-      return (check.isChecked())
+      return (check.isOn())
     });
     if(!valid){
       this.workingdaysField.showError("Select at least one",false);
-      this.daychecks.forEach((day,i)=>{
-        day.onCheckChange(_=>{this.workingdaysField.normalize()},_=>{this.workingdaysField.showError("Select at least one",false);});
-      });
     }
     return valid;
   }
   saveInstitution() {
-    this.noneChecked();
+    this.someChecked();
     if (
       !(
         this.startTimeField.isValid() &&
@@ -286,7 +312,7 @@ class Stage2 {
         this.eachDurationField.isValid() &&
         this.totalPeriodsField.isValid() &&
         this.breakDurationField.isValid() &&
-        this.noneChecked()
+        this.someChecked()
       )
     ) {
       this.startTimeField.validateNow((_) => {
@@ -340,21 +366,19 @@ class Stage2 {
         <div class="questrial">
         <ul>
           <li>Administrator : <b>${sessionStorage.getItem("adname")}</b></li>
-          <li>Admin email address : <b>${sessionStorage.getItem("ademail")}</b></li>
-          <li>Admin contact number : <b>${sessionStorage.getItem("adphone")}</b></li>
-          <li>Institute email address : <b>${sessionStorage.getItem("instemail")}</b></li>
-          <li>Institute phone : <b>${sessionStorage.getItem("instphone")}</b></li>
+          <li>Admin email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem("ademail")}')">${sessionStorage.getItem("ademail")}</b></li>
+          <li>Admin contact number : <b class=" pointer active" onclick="callTo('${sessionStorage.getItem("adphone")}')">${sessionStorage.getItem("adphone")}</b></li>
+          <li>Institute email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem("instemail")})">${sessionStorage.getItem("instemail")}</b></li>
+          <li>Institute phone : <b class="active pointer" onclick="callTo('${sessionStorage.getItem("instphone")}')">${sessionStorage.getItem("instphone")}</b></li>
           <li>Day starts at: <b>${sessionStorage.getItem("startTimeField")} hours</b></li>
           <li>Break starts at : <b>${sessionStorage.getItem("breakStartField")} hours</b></li>
           <li>Each period duration : <b>${sessionStorage.getItem("eachDurationField")} minutes</b></li>
           <li>Break duration : <b>${sessionStorage.getItem("breakDurationField")} minutes</b></li>
           <li>Periods in a day : <b>${sessionStorage.getItem("totalPeriodsField")}</b></li>
           <li>Working days : <b>${days}</li>
-        <ul>
+        </ul>
         </div>`
       );
-      //confirm.setBackgroundColor(colors.transparent, this.view);
-      
       confirm.createActions(
         Array("Confirm & Proceed", "Edit"),
         Array(actionType.active, actionType.neutral)
@@ -472,7 +496,7 @@ class Stage2 {
   saveLocally() {
     let days = Array();
     this.daychecks.forEach((daycheck, index) => {
-      if (daycheck.isChecked()) {
+      if (daycheck.isOn()) {
         days.push(index);
       }
     });

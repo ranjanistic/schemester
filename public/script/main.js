@@ -163,6 +163,7 @@ class Editable{
   display(){
     show(this.view);
     hide(this.editView);
+    this.load(false);
     this.disableInput();
   }
   existence(isViewing = Boolean){
@@ -642,6 +643,12 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
+  allValid(){
+    const invalid = this.inputField.every((_,i)=>{
+      return this.isValid(i);
+    });
+    return invalid?true:false;
+  }
   isValid(inputFieldIndex = Number) {
     return stringIsValid(
       this.getInputValue(inputFieldIndex),
@@ -1245,8 +1252,8 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
   teachdialog.existence(visible);
 };
 
-const showStudentRegistration = (visible = true, email = null, uiid = null) => {
-  let studialog = new Dialog();
+const showStudentRegistration = (visible = true, email = null, uiid = null,classname = null) => {
+  const studialog = new Dialog();
   studialog.setDisplay(
     "Registration",
     "Provide your details, including the unique ID of your institute (UIID)."
@@ -1274,7 +1281,7 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
       validType.name,
       validType.password
     ),
-    Array(uiid, null, email, null, null)
+    Array(uiid, classname, email, null, null)
   );
 
   studialog.validate(0, (_) => {
@@ -1295,17 +1302,7 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
   studialog.onButtonClick(
     Array(
       (_) => {
-        clog("clickinng");
-        if (
-          !(
-            studialog.isValid(0) &&
-            studialog.isValid(1) &&
-            studialog.isValid(2) &&
-            studialog.isValid(3) &&
-            studialog.isValid(4)
-          )
-        ) {
-          clog("invalid");
+        if (!(studialog.allValid())) {
           studialog.validateNow(0, (_) => {
             studialog.getInput(1).focus();
           });
@@ -1322,7 +1319,9 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
         } else {
           studialog.loader();
           clog("posting");
-          postJsonData(post.student.signup, {
+          postJsonData(post.student.auth, {
+            action:post.student.action.signup,
+            pseudo:true,
             uiid: studialog.getInputValue(0),
             classname: studialog.getInputValue(1),
             email: studialog.getInputValue(2),
@@ -1332,15 +1331,20 @@ const showStudentRegistration = (visible = true, email = null, uiid = null) => {
             .then((response) => {
               clog(response);
               switch (response.event) {
-                case code.auth.ACCOUNT_CREATED:
-                  {
+                case code.auth.ACCOUNT_CREATED:{
                     clog(response.user);
                     saveDataLocally(response.user);
-                    relocate(locate.student.session);
-                  }
-                  break;
-                case code.auth.USER_EXIST:
-                  {
+                    relocate(locate.student.session,{
+                      u:response.user.uid,
+                      target:locate.student.target.dash
+                    });
+                }break;
+                case code.auth.CLASS_NOT_EXIST:{
+                  studialog.inputField[1].showError(
+                    "No such classroom found."
+                  );
+                }break;
+                case code.auth.USER_EXIST:{
                     studialog.inputField[2].showError(
                       "Account already exists."
                     );

@@ -191,7 +191,19 @@ class Teacher{
                         return;
                     }
                     switch(response.event){
-                        case code.schedule.SCHEDULE_CLASHED:return this.classeditable[p].textInput.showError('Clashed');
+                        case code.schedule.SCHEDULE_CLASHED:{
+                            this.classeditable[p].textInput.showError(
+                                `This class is already taken at this period by 
+                                <a id="clashlink${response.clash.id}">${response.clash.id}</a>.`
+                            );
+                            return getElement(`clashlink${response.clash.id}`).onclick=_=>{
+                                refer(locate.admin.session, {
+                                    target: locate.admin.target.viewschedule,
+                                    type: client.teacher,
+                                    'teacherID':response.clash.id
+                                });
+                            }
+                        }
                         default:return this.classeditable[p].textInput.showError('Error');
                     }
                 }).catch(err=>{

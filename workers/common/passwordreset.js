@@ -101,7 +101,7 @@ class PasswordReset {
       case this.target.teacher: {
         if (!(query.u && query.in)) return false;
         try {
-            let teacherinst = await Institute.findOne(
+            let teacherdoc = await Institute.findOne(
               {
                 "_id": ObjectId(query.in),
                 "users.teachers": { $elemMatch: { "_id": ObjectId(query.u) } },
@@ -109,33 +109,32 @@ class PasswordReset {
               {
                 projection: {
                   "_id":0,
+                  "uiid":1,
                   "users.teachers.$": 1,
                 },
               }
-            );
-            if (!teacherinst){
-              let pseudodoc = await Institute.findOne(
-                {
+              );
+              if (!teacherdoc){
+              const pseudodoc = await Institute.findOne({
                   _id: ObjectId(query.in),
                   "pseudousers.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
-                },
-                {
-                  projection: {
+              },{
+                projection: {
                     _id: 0,
-                    "pseudousers.teachers.$": 1,
-                  },
-                }
-              );
+                    "uiid":1,
+                  "pseudousers.teachers.$": 1,
+                },
+              });
               if(!pseudodoc) return false;
               let teacher = pseudodoc.pseudousers.teachers[0];
               if(!teacher || !teacher.rlinkexp) return false;
               if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
-              return { user: share.getPseudoTeacherShareData(teacher) };
+              return { user: share.getPseudoTeacherShareData(teacher) , uiid:pseudodoc.uiid};
             }
-            const teacher = teacherinst.users.teachers[0];
+            const teacher = teacherdoc.users.teachers[0];
             if (!teacher || !teacher.rlinkexp) return false;
             if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
-            return {user:share.getTeacherShareData(teacher)};
+            return {user:share.getTeacherShareData(teacher),uiid:teacherdoc.uiid};
         } catch (e) {
             clog(e);
             return false;
@@ -148,7 +147,7 @@ class PasswordReset {
                 '_id':ObjectId(query.in),
                 'users.classes':{$elemMatch:{'_id':ObjectId(query.cls)}}
             },{
-                $projection:{
+                projection:{
                     '_id':0,
                     'users.classes.$':1
                 }

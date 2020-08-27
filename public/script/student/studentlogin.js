@@ -67,7 +67,7 @@ class UIID{
     };
   }
    uiidProcedure(uiid){
-    postData(post.student.login,{type:'uiid',uiid:uiid}).then(response=>{
+    postData(post.student.auth,{action:post.student.action.login,type:'uiid',uiid:uiid}).then(response=>{
       clog("response");
       clog(response);
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
@@ -126,7 +126,8 @@ class Classname{
     return sessionStorage.getItem('uiid');
   }
   classnameProcedure(classname){
-    postData(post.student.login,{
+    postData(post.student.auth,{
+      action:post.student.action.login,
       type:'classname',
       classname:classname,
       uiid:this.getUIID()
@@ -198,7 +199,8 @@ class Email{
     return sessionStorage.getItem('userclass');
   }
   emailIDProcedure(emailid){
-    postData(post.student.login,{
+    postData(post.student.auth,{
+      action:post.student.action.login,
       type:'email',
       classname:this.getClassname(),
       email:emailid,
@@ -211,7 +213,7 @@ class Email{
           this.emailField.showError("Account not found.");
           this.proceed.textContent = "Retry";
           snackBar("Try registering yourself?","Signup",true,_=>{
-            showStudentRegistration(true,emailid,this.getUIID())
+            showStudentRegistration(true,emailid,this.getUIID(),this.getClassname());
           });
         };break;
         case code.auth.USER_EXIST:{
@@ -273,8 +275,10 @@ class Password{
     };
   }
   passwordProcedure(password){
-    postData(post.student.login,{
+    postData(post.student.auth,{
+      action:post.student.action.login,
       type:'password',
+      classname:this.getClassname(),
       email:this.getEmail(),
       uiid:this.getUIID(),
       password:password,
@@ -287,11 +291,14 @@ class Password{
       snackBar(e,null,false);
     })
   }
-  getEmail(){
-    return sessionStorage.getItem('useremail');
-  }
   getUIID(){
     return sessionStorage.getItem('uiid');
+  }
+  getClassname(){
+    return sessionStorage.getItem('userclass');
+  }
+  getEmail(){
+    return sessionStorage.getItem('useremail');
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);

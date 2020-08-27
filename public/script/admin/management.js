@@ -888,8 +888,8 @@ class Users {
           if (this.search.value && this.search.value.trim()!='@' && this.search.value.trim()!='.' && this.search.value.trim() != constant.nothing) {
             this.load();
             postJsonData(post.admin.manage, {
-              type: "search",
               target: client.student,
+              type: "search",
               q: this.search.value.trim(),
             }).then((resp) => {
               if (resp.event == code.OK) {
@@ -944,7 +944,9 @@ class Users {
         this.listview.innerHTML = '<div class="fmt-center group-text">No class found.</div>';
       }
     }
-    this.classes = new Classes();
+    try{
+      this.classes = new Classes();
+    }catch{}
   }
   linkGenerator = (target) => {
     clog("link generator");

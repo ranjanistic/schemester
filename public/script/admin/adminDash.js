@@ -16,75 +16,6 @@ class Dashboard {
     this.teacherSearchInput = getElement("teachersearchinput");
     this.teacherDropdown = getElement("teacherDropdown");
     
-    this.teacherrequests = getElement("teacherrequests");
-    if(this.data.requstees){
-    this.teacherrequests.onclick=_=>{
-      loadingBox('Getting requests');
-      postJsonData(post.admin.receivedata,{
-        target:"pseudousers",
-        specific:"teachers",
-      }).then(teachers=>{
-        if(teachers.event != code.NO){
-          const requestDialog  = new Dialog();
-          requestDialog.createActions(Array('Hide'),Array(bodyType.neutral));
-          requestDialog.onButtonClick(Array(_=>{requestDialog.hide()}));
-          let bodytext = `<center>${this.data.requstees} people have requested to join ${this.data.instname} as teacher.</center><br/>`;
-          teachers.forEach((teacher,t)=>{
-            if(teacher.verified){
-              bodytext += `
-              <div class="fmt-row tab-view" id="request${t}">
-                <div class="fmt-col fmt-half group-text">
-                  <div class="positive">${teacher.username}</div>
-                  <div class="questrial">${teacher.id}</div>
-                </div>
-                <div class="fmt-col fmt-half caption">
-                  <button class="fmt-right negative-button" id="reject${t}">Reject</button>
-                  <button class="fmt-right positive-button" id="accept${t}">Accept</button>
-                </div>
-              </div>
-              `;
-            }
-          })
-          bodytext += `</div>`;
-          requestDialog.setDisplay('Teacher requests',bodytext);
-          const rejects = Array();
-          const accepts = Array();
-          teachers.forEach((teacher,t)=>{
-            rejects.push(getElement(`reject${t}`));
-            accepts.push(getElement(`accept${t}`));
-            rejects[t].onclick=_=>{
-              requestDialog.loader();
-              postJsonData(post.admin.pseudousers,{
-                target:"teachers",
-                action:"reject",
-                teacherID:teacher.id
-              }).then(resp=>{
-                if(resp.event == code.OK){
-                  hide(getElement(`request${t}`));
-                  snackBar(`Rejected ${teacher.username} (${teacher.id})`,null,false);
-                }
-                requestDialog.loader(false);
-              });
-            };
-            accepts[t].onclick=_=>{
-              requestDialog.loader();
-              postJsonData(post.admin.pseudousers,{
-                target:"teachers",
-                action:"accept",
-                teacherID:teacher.id
-              }).then(resp=>{
-                if(resp.event == code.OK){
-                  hide(getElement(`request${t}`));
-                  snackBar(`Accepted ${teacher.username} (${teacher.id})`);
-                }
-                requestDialog.loader(false);
-              });
-            };
-          });
-        };
-      });
-    };
-  }
   };
 };
 
@@ -441,10 +372,10 @@ class ConfirmClasses {
     class RenameDialog {
       constructor(receivedclasses) {
         this.receivedclasses = receivedclasses;
-        let bodyview = `<center>${receivedclasses.length} unique classes found. 
+        let bodyview = receivedclasses.length?`<center>${receivedclasses.length} unique classes found. 
           Rename classes, or edit the duplicate classes and rename them as actual ones, then continue.</center>
           <br/>
-          <div class="fmt-col">`;
+          <div class="fmt-col">`:`No schedule is available of any teacher.`;
         receivedclasses.forEach((Class, c) => {
           //each class row
           bodyview += `
@@ -478,7 +409,8 @@ class ConfirmClasses {
                 `classfield${c}`,
                 `class${c}`,
                 `classerror${c}`,
-                validType.nonempty
+                validType.nonempty,
+                `classcaption${c}`
               ),
               `editclass${c}`,
               `classname${c}`,
@@ -488,7 +420,6 @@ class ConfirmClasses {
             )
           );
           this.classeditables[c].onSave((_) => {
-            this.classeditables[c].load();
             this.classeditables[c].validateInputNow();
             if (!this.classeditables[c].isValidInput()) return;
             this.classeditables[c].disableInput();
@@ -498,6 +429,7 @@ class ConfirmClasses {
             ) {
               return this.classeditables[c].clickCancel();
             }
+            this.classeditables[c].load();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
               action: "update",
@@ -511,34 +443,42 @@ class ConfirmClasses {
                 this.classeditables[c].setDisplayText(
                   this.classeditables[c].getInputValue().trim()
                 );
-                this.classeditables[c].display();
-                return;
+                this.classeditables[c].textInput.setFieldCaption(`Rename ${this.classeditables[c].getInputValue().trim()} as`);
+                return this.classeditables[c].display();
               }
               switch (response.event) {
                 case code.schedule.SCHEDULE_CLASHED:
-                  return this.classeditables[c].textInput.showError("Clashed");
+                  return this.classeditables[c].textInput.showError(
+                    `This change will clash period ${response.clash.targetperiod+1} on ${constant.weekdays[response.clash.targetday]} of
+                    <a target="_blank" rel="noreferrer" href="${locate.admin.session}?target=${locate.admin.target.viewschedule}&type=${client.teacher}&teacherID=${response.clash.targetid}" id="changer${response.clash.targetid}">${response.clash.targetid}</a>
+                    with <a target="_blank" rel="noreferrer" href="${locate.admin.session}?target=${locate.admin.target.viewschedule}&type=${client.teacher}&teacherID=${response.clash.id}" id="clash${response.clash.targetid}">${response.clash.id}</a>`);
                 default:
                   return this.classeditables[c].textInput.showError("Error");
               }
             });
           });
         });
-        // this.setDefaultDialog();
 
         this.classesDialog.createActions(
-          Array("Continue", "Abort"),
+          Array(receivedclasses.length?"Continue":"View teachers", "Abort"),
           Array(actionType.positive, actionType.neutral)
         );
         this.classesDialog.onButtonClick(
           Array(
+            receivedclasses.length?
             (_) => {
               this.classesDialog.loader();
               let finalClasses = Array();
-              receivedclasses.forEach((rclass) => {
-                finalClasses.push(rclass);
-              });
-              new InchargeDialog(finalClasses);
-            },
+              postJsonData(post.admin.schedule, {
+                target: client.teacher,
+                action: "receive",
+                specific: "classes",
+              })
+              .then((response) => {
+                receivedclasses = response.classes;
+                new InchargeDialog(receivedclasses);
+              })
+            }:_=>{refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users})},
             (_) => {
               this.classesDialog.hide();
             }
@@ -556,6 +496,7 @@ class ConfirmClasses {
  */
 class BaseView {
   constructor() {
+    this.data = new ReceiveData();
     this.navicon = getElement("navicon");
     this.navicon.onclick = (_) => {
       relocate(locate.root, { client: client.admin });
@@ -591,7 +532,78 @@ class BaseView {
         section: locate.admin.section.account,
       });
     });
-    const prevScrollpos = window.pageYOffset;
+
+    this.teacherrequests = getElement("teacherrequests");
+    if(this.data.requstees){
+    this.teacherrequests.onclick=_=>{
+      loadingBox('Getting requests');
+      postJsonData(post.admin.receivedata,{
+        target:"pseudousers",
+        specific:"teachers",
+      }).then(teachers=>{
+        if(teachers.event != code.NO){
+          const requestDialog  = new Dialog();
+          requestDialog.createActions(Array('Hide'),Array(bodyType.neutral));
+          requestDialog.onButtonClick(Array(_=>{requestDialog.hide()}));
+          let bodytext = `<center>${this.data.requstees} people have requested to join ${this.data.instname} as teacher.</center><br/>`;
+          teachers.forEach((teacher,t)=>{
+            if(teacher.verified){
+              bodytext += `
+              <div class="fmt-row tab-view" id="request${t}">
+                <div class="fmt-col fmt-half group-text">
+                  <div class="positive">${teacher.username}</div>
+                  <div class="questrial">${teacher.id}</div>
+                </div>
+                <div class="fmt-col fmt-half caption">
+                  <button class="fmt-right negative-button" id="reject${t}">Reject</button>
+                  <button class="fmt-right positive-button" id="accept${t}">Accept</button>
+                </div>
+              </div>
+              `;
+            }
+          })
+          bodytext += `</div>`;
+          requestDialog.setDisplay('Teacher requests',bodytext);
+          const rejects = Array();
+          const accepts = Array();
+          teachers.forEach((teacher,t)=>{
+            rejects.push(getElement(`reject${t}`));
+            accepts.push(getElement(`accept${t}`));
+            rejects[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:"teachers",
+                action:"reject",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Rejected ${teacher.username} (${teacher.id})`,null,false);
+                }
+                requestDialog.loader(false);
+              });
+            };
+            accepts[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:"teachers",
+                action:"accept",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Accepted ${teacher.username} (${teacher.id})`);
+                }
+                requestDialog.loader(false);
+              });
+            };
+          });
+        };
+      });
+    };
+  }
+
+    let prevScrollpos = window.pageYOffset;
     window.onscroll = (_) => {
       const currentScrollPos = window.pageYOffset;
       replaceClass(

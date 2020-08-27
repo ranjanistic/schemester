@@ -38,6 +38,7 @@ class ResetPassword{
                         external:true,
                         user:{
                             id:this.data.userid,
+                            uiid:this.data.uiid
                         },
                         newpassword:this.passField.getInput()
                     }).then(response=>{
@@ -56,6 +57,7 @@ class ResetPassword{
                         external:true,
                         user:{
                             id:this.data.userid,
+                            uiid:this.data.uiid
                         },
                         newpassword:this.passField.getInput()
                     }).then(response=>{

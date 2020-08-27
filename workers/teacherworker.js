@@ -105,6 +105,7 @@ class Self {
         const epassword = await bcrypt.hash(body.newpassword, salt);
         const passpath = `${path}.$.${this.password}`;
         const rlinkpath = `${path}.$.${this.rlinkexp}`;
+        
         const newteacher = await Institute.findOneAndUpdate({uiid:user.uiid, [path]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},{
           $set:{
             [passpath]:epassword
@@ -113,6 +114,7 @@ class Self {
             [rlinkpath]: null,
           },
         });
+        clog(newteacher);
         if(!newteacher.value){
           const passpath = `${pseudopath}.$.${this.password}`;
           const rlinkpath = `${pseudopath}.$.${this.rlinkexp}`;
@@ -124,6 +126,7 @@ class Self {
               [rlinkpath]: null,
             },
           });
+          clog(newteacher);
           return code.event(newteacher.value ? code.OK : code.NO);
         }
         return code.event(newteacher.value ? code.OK : code.NO);

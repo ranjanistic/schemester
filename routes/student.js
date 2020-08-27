@@ -1,3 +1,5 @@
+const { getStudentShareData } = require("../workers/common/sharedata");
+
 const express = require("express"),
   student = express.Router(),
   cookieParser = require("cookie-parser"),
@@ -22,6 +24,7 @@ student.get("/", (req, res) => {
   res.redirect(worker.toLogin());
 });
 
+
 student.get("/auth/login*", (req, res) => {
   session
     .verify(req, sessionsecret)
@@ -29,6 +32,7 @@ student.get("/auth/login*", (req, res) => {
       return res.render(view.servererror, { error });
     })
     .then((response) => {
+      clog(response);
       if (!session.valid(response))
         return res.render(view.student.login, { autofill: req.query });
       let data = req.query;
@@ -37,94 +41,119 @@ student.get("/auth/login*", (req, res) => {
     });
 });
 
-student.post("/auth/login", async (req, res) => {
-  session
-    .login(req, res, sessionsecret)
-    .then((response) => {
-      clog(response);
-      return res.json({ result: response });
-    })
-    .catch((error) => {
-      clog(error);
-    });
-});
-
-student.post("/auth/signup", async (req, res) => {
-  clog(req.body);
-  session
-    .signup(req, res, sessionsecret)
-    .then((response) => {
-      return res.json({ result: response });
-    })
-    .catch((error) => {
-      clog(error);
-      return res.json({
-        result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+student.post("/auth",async(req,res)=>{
+  const body = req.body;
+  clog(body);
+  switch(body.action){
+    case "login":{  session.login(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        return res.json(authreqfailed(error));
+      })
+    }break;
+    case "logout":{
+      session.finish(res).then((response) => {
+        return res.json({ result: response });
+      }); 
+    }break;
+    case "signup":{
+      session.signup(req, res, sessionsecret,body.pseudo)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        clog(error);
+        return res.json({
+          result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+        });
       });
-    });
+    }break;
+    default:res.sendStatus(500);
+  }
 });
 
 student.get("/session*", async (req, res) => {
   let data = req.query;
   clog(data);
-  session
-    .verify(req, sessionsecret)
+  session.verify(req, sessionsecret)
     .catch((e) => {
-      clog("session catch");
       clog(e);
       return res.redirect(worker.toLogin(data));
     })
     .then(async (response) => {
       if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
-      const classinst = await Institute.findOne({
+
+      const classdoc = await Institute.findOne({
           uiid: response.user.uiid,
           "users.classes": {
             $elemMatch: { "classname": response.user.classname },
           },
-        },
-        {
+        },{
           projection: {
             _id: 1,
             uiid: 1,
             default: 1,
-            "schedule.classes": 1,
             "users.classes.$": 1,
           },
         }
       );
-      if (!classinst)
-        return session.finish(res).then((response) => {
+      let student;
+      let found = classdoc.users.classes[0].students.some((stud)=>{
+        if(String(stud._id)==String(response.user.id)){
+          student = share.getStudentShareData(stud);
+          return true;
+        }
+      })
+      if (!found) {
+        clog("pseudo?")
+        const pclassdoc = await Institute.findOne({
+          uiid: response.user.uiid,
+          "pseudousers.classes": {
+            $elemMatch: { "classname": response.user.classname },
+          },
+        },{
+          projection: {
+            "pseudousers.classes.$": 1,
+          },
+        });
+        clog(pclassdoc);
+        if(!pclassdoc) return session.finish(res).then((response) => {
+          if (response) res.redirect(worker.toLogin(data));
+        });
+        const pclassroom = pclassdoc.pseudousers.classes[0];
+        found = pclassroom.students.some(stud=>{
+          if(String(stud._id) == String(response.user.id)){
+            student = share.getPseudoStudentShareData(stud);
+            return true;
+          }
+        });
+        if(!found) return session.finish(res).then((response) => {
           if (response) res.redirect(worker.toLogin(data));
         });
 
-      //classroom exists
-      const classroom  = classinst.users.classes[0];
-      let student;
-      const found = classroom.students.some((stud)=>{
-        student = share.getStudentShareData(stud);
-        return student._id == response.user.id
-      })
-      if(!found) return session.finish(res).then((response) => {
-        if (response) res.redirect(worker.toLogin(data));
-      });
+        if (!student.verified) return res.render(view.verification, { user: student });
+        return res.render(view.student.getViewByTarget(view.student.target.dash), {student: student,target:{fragment:null}});
+      }
 
       if (!student.verified)
         return res.render(view.verification, { user: student });
 
-      const scheduleinst = await Institute.findOne({
+      const scheduledoc = await Institute.findOne({
           uiid: response.user.uiid,
           "schedule.classes": { $elemMatch: { classname: response.user.classname } },
       },{
           projection: { _id: 0, "schedule.classes.$": 1 },
       });
-      const schedule = scheduleinst?scheduleinst.schedule.classes[0]:false;
+      const schedule = scheduledoc?scheduledoc.schedule.classes[0]:false;
       try {
         clog("in session try");
         clog(data);
         return res.render(view.student.getViewByTarget(data.target), {
           student,
-          classinst,
+          classinst: classdoc,
           target: {
             fragment: data.fragment,
           },
@@ -243,6 +272,69 @@ student.post("/self", async (req, res) => {
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
     }
   });
+});
+
+student.post("/manage", async (req, res) => {
+  const body = req.body;
+  if(body.external){
+    switch (body.type) {
+      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body,true)});
+    }
+  }
+  session
+    .verify(req, sessionsecret)
+    .catch((e) => {
+      clog(e);
+      return res.json(authreqfailed(e));
+    })
+    .then(async (response) => {
+      if (!session.valid(response)) return res.json({ result: response });
+      const classdoc = await Institute.findOne({uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}},
+      {projection:{"_id":1,"users.classes.$._id":1}});
+      if(!classdoc) return false;
+      body['instID'] = classdoc._id;
+      body['classID'] = classdoc.users.classes[0]._id;
+      clog(body);
+      switch (body.type) {
+        case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
+        default: return res.sendStatus(500);
+      }
+    });
+});
+
+student.get("/external*", async (req, res) => {
+  const query = req.query;
+  switch (query.type) {
+    case invite.type:{
+      
+      }
+      break;
+    case verify.type: { //verification link
+      clog("verify type");
+      verify.handleVerification(query,verify.target.student).then((resp) => {
+        clog("resp");
+          clog(resp);
+          if (!resp) return res.render(view.notfound);
+          return res.render(view.verification,{user:resp.user});
+        })
+        .catch((e) => {
+          clog(e);
+          return res.render(view.servererror, { error: e });
+        });
+      return;
+    }
+    case reset.type:{
+      reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
+        if (!resp) return res.render(view.notfound);
+        return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
+      }).catch(e=>{
+        clog(e);
+        return res.render(view.servererror, {error:e});
+      });
+    }break;
+    default:
+      res.render(view.servererror);
+  }
 });
 
 

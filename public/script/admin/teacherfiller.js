@@ -227,18 +227,32 @@ class TeacherFiller {
           }
         }break;
         case code.schedule.SCHEDULE_EXISTS:{
+          clog(response)
           if(this.data.isAdmin){
             snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.warning,_=>{
-              refer(locate.admin.session,{
-                target:locate.admin.target.viewschedule,
-                client:client.teacher,
-                teacherID:sessionStorage.getItem('teacherID')
+              refer(locate.admin.session, {
+                target: locate.admin.target.viewschedule,
+                type: client.teacher,
+                [response.uid?'t':'teacherID']: response.uid?response.uid:response.id,
               });
             });
           }
         }break;
         case code.schedule.SCHEDULE_CLASHED:{
-          this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.teacherID}.`);
+          if(this.data.client = client.admin){
+            this.teacherClass[response.clash.period].showError(
+              `This class is already taken at this period by 
+              <a id="clashlink${response.clash.uid}">${response.clash.id}</a>.`);
+              getElement(`clashlink${response.clash.uid}`).onclick=_=>{
+                refer(locate.admin.session, {
+                  target: locate.admin.target.viewschedule,
+                  type: client.teacher,
+                  [response.clash.uid?'t':'teacherID']:response.clash.uid?response.clash.uid:response.clash.id
+                });
+              }
+          } else {
+            this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.id}.`);
+          }
         }break;
         default:{
           if(!navigator.onLine){
