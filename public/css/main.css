@@ -583,6 +583,23 @@ img{vertical-align:middle}
     background-color: #94a5db;
     box-shadow: 1px 5px 10px #00000011;
 }
+
+.positive-button-togg{
+    background-color: var(--positive);
+    color:var(--secondary);
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+.positive-button-togg:active{
+    outline:none;
+    background-color: #94a5db;
+    box-shadow: 1px 5px 10px #00000011;
+}
 .active-button{
     background-color: var(--active);
     color:var(--secondary);
@@ -617,6 +634,24 @@ img{vertical-align:middle}
     box-shadow: 1px 5px 18px #00000044;
 }
 .neutral-button:focus{
+    outline:none;
+    background-color: var(--light-base);
+    box-shadow: 1px 5px 5px #00000000;
+}
+
+.neutral-button-togg{
+    outline:none;
+    background-color: var(--secondary);
+    color:var(--positive);
+    margin: 4px;
+    border-width: 0;
+    border-radius: 4px;
+    box-shadow: 1px 5px 10px #00000022;
+    padding:4px 12px 4px 12px;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+.neutral-button-togg:active{
     outline:none;
     background-color: var(--light-base);
     box-shadow: 1px 5px 5px #00000000;

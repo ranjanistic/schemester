@@ -321,10 +321,16 @@ class Session {
           let classdoc = await Institute.findOne({uiid:uiid, "users.classes":{$elemMatch:{classname:classname}}},
           {projection:{"users.classes.$":1}});
           if(!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);
-          let found = classdoc.users.classes[0].students.some((student,_)=>{
-            return student.studentID == email;
+          let found = classdoc.users.classes[0].students.some((stud)=>{
+            return stud.studentID == email;
           });
-          if(found) return code.event(code.auth.USER_EXIST);
+          let pclassdoc = await Institute.findOne({uiid:uiid, "pseudousers.classes":{$elemMatch:{classname:classname}}},
+            {projection:{"pseudousers.classes.$":1}});
+          if(!pclassdoc) return code.event(code.auth.CLASS_NOT_EXIST);
+          let pfound = pclassdoc.pseudousers.classes[0].students.some((stud)=>{
+            return stud.studentID == email;
+          })
+          if(found||pfound) return code.event(code.auth.USER_EXIST);
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
@@ -355,6 +361,7 @@ class Session {
             projection:{"_id":0,"users.classes.$":1}
           });
           if(!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
+          clog(classdoc);
           let student;
           const sfound = pseudo?classdoc.pseudousers.classes[0].students.some((stud)=>{
             student = stud;
@@ -364,7 +371,7 @@ class Session {
             return stud.studentID == email
           });
           if(!sfound) return code.event(code.auth.USER_NOT_EXIST);
-          this.createSession(response,student.uid,uiid,secret,classname);
+          this.createSession(response,student._id,uiid,secret,classname);
           return {
             event: code.auth.ACCOUNT_CREATED,
             user: share.getStudentShareData(student),

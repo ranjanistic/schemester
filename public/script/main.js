@@ -621,7 +621,7 @@ class Dialog extends DialogID {
     this.optionsRadioLabel[labels.indexOf(clicked)].click();
   }
 
-  createActions(labels, types) {
+  createActions(labels, types = Array(actionType.positive)) {
     let total = labels.length;
     this.actions = getElement(this.actionsId);
     let actionSet = String();

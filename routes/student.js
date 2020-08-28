@@ -85,7 +85,7 @@ student.get("/session*", async (req, res) => {
     .then(async (response) => {
       if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
-
+      
       const classdoc = await Institute.findOne({
           uiid: response.user.uiid,
           "users.classes": {
@@ -289,11 +289,17 @@ student.post("/manage", async (req, res) => {
     })
     .then(async (response) => {
       if (!session.valid(response)) return res.json({ result: response });
-      const classdoc = await Institute.findOne({uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}},
+      let classdoc = await Institute.findOne({uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}},
       {projection:{"_id":1,"users.classes.$._id":1}});
-      if(!classdoc) return false;
+      if(!classdoc){ 
+        classdoc = await Institute.findOne({uiid:response.user.uiid,"pseudousers.classes":{$elemMatch:{"classname":response.user.classname}}},
+        {projection:{"_id":1,"pseudousers.classes.$._id":1}});
+        if(!classdoc) return false;
+        body['classID'] = classdoc.pseudousers.classes[0]._id;
+      } else {
+        body['classID'] = classdoc.users.classes[0]._id;
+      }
       body['instID'] = classdoc._id;
-      body['classID'] = classdoc.users.classes[0]._id;
       clog(body);
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});

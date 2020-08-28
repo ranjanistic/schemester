@@ -68,6 +68,7 @@ class ShareData {
   getPseudoStudentShareData(data = {}) {
     return {
       isStudent: true,
+      pseudo:true,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.studentID,

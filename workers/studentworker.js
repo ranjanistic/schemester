@@ -170,14 +170,20 @@ class Self {
        * 
        */
       deleteAccount = async (user) => {
-        const deldoc = await Institute.findOneAndUpdate({uiid:user.uiid,[path]:{$elemMatch:{[this.classname]:user.classname}}},{
+        let deldoc = await Institute.updateOne({uiid:user.uiid,[path]:{$elemMatch:{[this.classname]:user.classname}}},{
           $pull:{
-            [this.studentspath]:{[this.uid]:user.id}
+            [this.studentspath]:{[this.uid]:ObjectId(user.id)}
           }
-        },{
-          arrayFilters:[{'outer._id':ObjectId(user.id)}]
-        })
-        return code.event(deldoc ? code.OK : code.NO);
+        });
+        if(!deldoc.result.nModified){
+          deldoc = await Institute.updateOne({uiid:user.uiid,[pseudopath]:{$elemMatch:{[this.classname]:user.classname}}},{
+            $pull:{
+              [this.pseudostudentspath]:{[this.uid]:ObjectId(user.id)}
+            }
+          });
+          return code.event(deldoc.result.nModified ? code.OK : code.NO);
+        }
+        return code.event(deldoc.result.nModified ? code.OK : code.NO);
       };
     }
     class Preferences{
@@ -205,14 +211,14 @@ class Self {
     this.prefs = new Preferences();
   }
 
-  handleAccount = async (user, body,teacher) => {
+  handleAccount = async (user, body,student) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
       case code.action.CHANGE_PASSWORD:
         return await this.account.changePassword(user, body);
       case code.action.CHANGE_ID:
-        return await this.account.changeEmailID(user, teacher, body);
+        return await this.account.changeEmailID(user, student, body);
       case code.action.CHANGE_PHONE:
         return await this.account.changePhone(user, body);
       case code.action.ACCOUNT_DELETE:
@@ -240,13 +246,32 @@ class Self {
         );
       }
       case "check": {
-        const classdoc = await Institute.findOne({uiid:user.uiid,[this.path]:{$elemMatch:{[this.classname]:user.classname}}},
+        let classdoc = await Institute.findOne({uiid:user.uiid,[this.path]:{$elemMatch:{[this.classname]:user.classname}}},
           {projection:{"users.classes.$":1}});
         let student;
-        classdoc.users.classes[0].students.some((stud)=>{
-          student = stud;
-          return String(stud._id) == String(user.id);
+        if(!classdoc){
+          return false;
+        }
+        let found = classdoc.users.classes[0].students.some((stud)=>{
+          if(String(stud._id) == String(user.id)){
+            student = stud;
+            return true;
+          }
         });
+        if(!found){
+          classdoc = await Institute.findOne({uiid:user.uiid,[this.pseudopath]:{$elemMatch:{[this.classname]:user.classname}}},
+            {projection:{"pseudousers.classes.$":1}});
+          found = classdoc.pseudousers.classes[0].students.some((stud)=>{
+            if(String(stud._id) == String(user.id)){
+              student = stud;
+              return true;
+            }
+          });
+          if(!found) return false;
+          return code.event(
+            student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
+          );
+        }
         return code.event(
           student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
         );

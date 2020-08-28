@@ -11,6 +11,7 @@ class TeacherWorker {
     this.self = new Self();
     this.schedule = new Schedule();
     this.classroom = new Classroom();
+    this.pseudo = new PseudoUsers();
   }
   toSession = (u, query = { target: view.teacher.target.dash }) => {
     let path = `/teacher/session?u=${u}`;
@@ -375,8 +376,7 @@ class Classroom{
     switch(body.action){
       case "create":return await this.createClassroom(user,body);
       case "update":return await this.updateClassroom(user,teacher,body,classroom);
-      case "delete":return;
-      case "receive":return await this.getClassroom(user,classroom);
+      case "receive":return await this.getClassroom(user,teacher);
       case "manage": return await this.manage.handleSettings(user,body,teacher,classroom);
     }
   }
@@ -409,19 +409,20 @@ class Classroom{
     }
   }
   
-  async getClassroom(user,classroom){
+  async getClassroom(user,teacher){
     const classdoc = await Institute.findOne({
-      uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classroom.classname}}
+      uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}
     },{projection:{"users.classes.$":1}});
-    if(!classdoc) return {teacher:teacher,classroom:false}
-    return {classroom :classdoc.users.classes[0]}
+    if(!classdoc) return {classroom:false,pseudostudents:false}
+    const pclassdoc = await Institute.findOne({
+      uiid:user.uiid,"pseudousers.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}
+    },{projection:{"pseudousers.classes.$":1}});
+    return {classroom :classdoc.users.classes[0],pseudostudents:pclassdoc.pseudousers.classes[0].students}
   }
 
   async handleInvitation(user,body,teacher,classroom){
     switch(body.action){
       case "create":return await this.createStudentInviteLink();
-      case "accept":return await this.acceptStudentRequest();
-      case "reject":return await this.rejectStudentRequest();
     }
     return;
   }
@@ -429,13 +430,63 @@ class Classroom{
   async createStudentInviteLink(){
 
   }
-  async acceptStudentRequest(){
+  
+
+}
+
+class PseudoUsers{
+  constructor(){
 
   }
-  async rejectStudentRequest(){
-
+  async managePseudousers(user,body,teacher){
+    switch(body.action){
+      case "receive":return await this.getPseudoUsers(user,teacher);
+      case "accept":return await this.acceptStudentRequest(user,teacher,body);
+      case "reject":return await this.rejectStudentRequest(user,teacher,body);
+    }
   }
-
+  async getPseudoUsers(user,teacher){
+    clog("getting");
+    clog(teacher);
+    const pclassdoc = await Institute.findOne({uiid:user.uiid,"pseudousers.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},
+      {projection:{"pseudousers.classes.$":1}});
+    clog(pclassdoc.pseudousers.classes[0].students);
+    return pclassdoc?pclassdoc.pseudousers.classes[0].students:code.event(code.NO);
+  }
+  async acceptStudentRequest(user,teacher,body){
+    const pclassdoc = await Institute.findOne({uiid:user.uiid,"pseudousers.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},
+      {projection:{"pseudousers.classes.$":1}});
+    if(!pclassdoc) return code.event(code.NO);
+    let student;
+    const found = pclassdoc.pseudousers.classes[0].students.some((stud)=>{
+      if(stud.studentID == body.studentID){
+        student = stud;
+        return true;
+      }
+    });
+    if(!found) return code.event(code.NO);
+    const doc = await Institute.updateOne({uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
+      $push:{
+        "users.classes.$.students":student
+      },
+      $pull:{
+        "pseudousers.classes.$[outer].students":{studentID:student.studentID}
+      }
+    },{
+      arrayFilters:[{"outer.inchargeID":teacher.teacherID}]
+    });
+    return code.event(doc.result.nModified?code.OK:code.NO);
+  }
+  async rejectStudentRequest(user,teacher,body){
+    clog(body.studentID);
+    const doc = await Institute.updateOne({uiid:user.uiid,"pseudousers.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
+      $pull:{
+        "pseudousers.classes.$.students":{"studentID":body.studentID}
+      }
+    });
+    clog(doc.result);
+    return code.event(doc.result.nModified?code.OK:code.NO);
+  }
 }
 
 const clog = (m) =>console.log(m);

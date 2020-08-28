@@ -58,35 +58,52 @@ class Verification {
   }
   checkVerification() {
     this.load();
-    if (this.data.client == client.admin) {
-      postJsonData(post.admin.manage, {
-        type: "verification",
-        action: "check",
-      }).then((response) => {
-        if (response.event == code.verify.VERIFIED) {
-          location.reload();
-        } else {
-          snackBar("Not yet verified", "Recheck", false, (_) => {
-            this.check.click();
-          });
-        }
-        this.load(false);
-      });
-    } else {
-      postJsonData(`/${this.data.client}/manage`, {
-        type: "verification",
-        action: "check",
-      }).then((response) => {
-        if (response.event == code.verify.VERIFIED) {
-          location.reload();
-        } else {
-          snackBar("Not yet verified", "Recheck", false, (_) => {
-            this.check.click();
-          });
-        }
-        this.load(false);
-      });
+    let plink;
+    switch(this.data.client){
+      case client.admin:{
+        postJsonData(post.admin.manage, {
+          type: "verification",
+          action: "check",
+        }).then((response) => {
+          if (response.event == code.verify.VERIFIED) {
+            location.reload();
+          } else {
+            snackBar("Not yet verified", "Recheck", false, (_) => {
+              this.check.click();
+            });
+          }
+        });
+      }break;
+      case client.teacher:{
+        postJsonData(post.teacher.manage, {
+          type: "verification",
+          action: "check",
+        }).then((response) => {
+          if (response.event == code.verify.VERIFIED) {
+            location.reload();
+          } else {
+            snackBar("Not yet verified", "Recheck", false, (_) => {
+              this.check.click();
+            });
+          }
+        });
+      }break;
+      case client.student:{
+        postJsonData(post.student.manage, {
+          type: "verification",
+          action: "check",
+        }).then((response) => {
+          if (response.event == code.verify.VERIFIED) {
+            location.reload();
+          } else {
+            snackBar("Not yet verified", "Recheck", false, (_) => {
+              this.check.click();
+            });
+          }
+        });
+      }
     }
+    this.load(false);
   }
   sendVerificationLink() {
     this.load();

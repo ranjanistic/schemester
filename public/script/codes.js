@@ -405,7 +405,7 @@ class Posts {
         this.schedule = `${root}/schedule`;
         this.self = `${root}/self`;
         this.manage = `${root}/manage`;
-
+        this.classroom = `${root}/classroom`;
         class Action {
           constructor() {
             this.login = "login";
