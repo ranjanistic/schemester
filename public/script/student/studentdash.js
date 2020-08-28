@@ -9,7 +9,7 @@ class StudentDash{
         this.today = getElement("todaytab");
         this.fullweek = getElement("fulltab");
         this.classroom = getElement("classtab")
-        this.about = getElement("abouttab");
+        this.settings = getElement("settingstab");
         
         this.today.onclick = _=>{
             speechSynthesis.speak(new SpeechSynthesisUtterance("Today"));
@@ -17,7 +17,7 @@ class StudentDash{
             replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected");
             replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.about,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.today})
         }
         this.fullweek.onclick =_=>{
@@ -26,7 +26,7 @@ class StudentDash{
             replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected");
             replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.about,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.fullweek})
         }
         this.classroom.onclick =_=>{
@@ -35,29 +35,29 @@ class StudentDash{
             replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.about,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.classroom})
         }
-        this.about.onclick =_=>{
-            speechSynthesis.speak(new SpeechSynthesisUtterance("About"));
-            sessionStorage.setItem('fragment',locate.student.target.fragment.about);
+        this.settings.onclick =_=>{
+            speechSynthesis.speak(new SpeechSynthesisUtterance("settings"));
+            sessionStorage.setItem('fragment',locate.student.target.fragment.settings);
             replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
             replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.about,"bottom-tab-section","bottom-tab-section-selected");
-            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.about})
+            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected");
+            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.settings})
         }
 
         this.setview(this.frag);
     }
     setview(frag){
-        const frags = [locate.student.target.fragment.today,locate.student.target.fragment.fullweek,locate.student.target.fragment.classroom,locate.student.target.fragment.about];
+        const frags = [locate.student.target.fragment.today,locate.student.target.fragment.fullweek,locate.student.target.fragment.classroom,locate.student.target.fragment.settings];
         switch(frag){
             case locate.student.target.fragment.fullweek:{
                 this.fullweek.click();
             }break;
-            case locate.student.target.fragment.about:{
-                this.about.click();
+            case locate.student.target.fragment.settings:{
+                this.settings.click();
             }break;
             case locate.student.target.fragment.classroom:{
                 this.classroom.click();
@@ -94,10 +94,10 @@ class Pseudostudent{
 }
 
 window.onload=_=>{
-     try{
+    //  try{
         new StudentDash();
-    }catch{
-        new Pseudostudent()
-    }
+    // }catch{
+    //     new Pseudostudent()
+    // }
 
 }

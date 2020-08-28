@@ -66,25 +66,22 @@
                                 <%= getDayName(schedule[i].dayIndex) %>
                                 </div>
                                 <div class="fmt-col fourth fmt-padding">
-                                    <button class="fmt-right" id="dayexpander<%= schedule[i].dayIndex %>">Show</button>
+                                    <button class="fmt-right neutral-button-togg" id="dayexpander<%= schedule[i].dayIndex %>">Show</button>
                                 </div>
                             </div>
                             <div class="fmt-row "  id="periodsview<%= schedule[i].dayIndex %>">
                                 <% for( let j = 0; j < schedule[i].period.length; j++ ) { %>
                                     <div class="fmt-row">
-                                        <div class="fmt-col fmt-padding fourth active caption fmt-center" style="margin:12px 0px">
+                                        <div class="fmt-col fmt-padding third active caption fmt-center" style="margin:12px 0px">
                                             <%= addNumberSuffixHTML(j+1) %> period
                                         </div>
                                         <div class="fmt-col fmt-center fmt-padding-small positive group-text half">
-                                            <div class="fmt-row ">
-                                                <%= schedule[i].period[j].classname %>
-                                            </div>
-                                            <div class="fmt-row fmt-center group-text">
+                                            <div class="fmt-row">
                                                 <%= schedule[i].period[j].subject %>
                                             </div>
-                                        </div>
-                                        <div class="fmt-col fmt-center fmt-padding fourth">
-                                            ✒️
+                                            <div class="fmt-row group-text fmt-center ">
+                                                <%= schedule[i].period[j].teacherID %>
+                                            </div>
                                         </div>
                                     </div>
                                 <% } %>

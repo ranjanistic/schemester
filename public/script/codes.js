@@ -353,8 +353,9 @@ class Locations {
             class Fragment {
               constructor() {
                 this.today = "today";
-                this.fullweek = "fullschedule";
                 this.settings = "settings";
+                this.fullweek = "fullschedule";
+                this.classroom = "classroom";
               }
             }
             this.fragment = new Fragment();

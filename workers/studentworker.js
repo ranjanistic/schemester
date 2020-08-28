@@ -315,7 +315,7 @@ class Schedule{
     const schedule = classdoc.schedule.classes[0].days;
     const timings = classdoc.default.timings;
     if (dayIndex==null) return { schedule: schedule, timings:timings};
-    let today = classdoc.schedule.teachers[0].days[0];
+    let today = classdoc.schedule.classes[0].days[0];
     const found = schedule.some((day) => {
       if (day.dayIndex == dayIndex) {
         today = day;

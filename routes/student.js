@@ -178,7 +178,7 @@ student.get("/fragment*", (req, res) => {
       const query = req.query;
       switch (query.fragment) {
         case view.student.target.fragment.today: {
-          clog("today");
+          clog("todaystudent");
           worker.schedule.getSchedule(response.user, new Date().getDay())
             .then((scheduleresponse) => {
               if(!scheduleresponse){  //no schedule
@@ -223,12 +223,12 @@ student.get("/fragment*", (req, res) => {
           },{projection:{"users.classes.$":1}});
           const classroom = classuser.users.classes[0];
           clog(classroom);
-          return res.render(view.teacher.getViewByTarget(query.fragment), {
-            classroom: false,
+          return res.render(view.student.getViewByTarget(query.fragment), {
             classroom
           });
+          return;
         }
-        case view.student.target.fragment.about: {
+        case view.student.target.fragment.settings: {
           clog("about");
           const classuser = await Institute.findOne({
             uiid: response.user.uiid,
@@ -236,7 +236,7 @@ student.get("/fragment*", (req, res) => {
               $elemMatch: { "classname": response.user.classname },
             },
           },
-            { projection: { "users.classes.$": 1 } }
+            { projection: { "users.classes.$": 1,"default":1 } }
           );
           if (!classuser) return null;
           let student;
@@ -244,7 +244,9 @@ student.get("/fragment*", (req, res) => {
             student = share.getStudentShareData(stud);
             return String(stud._id) == String(response.user.id)
           })
-          return res.render(view.student.getViewByTarget(query.fragment), {student});
+          const adminpref = await Admin.findOne({uiid:response.user.uiid},{projection:{"prefs":1}});
+          clog(adminpref);
+          return res.render(view.student.getViewByTarget(query.fragment), {student,defaults:classuser.default,adminemailvisible:adminpref.prefs.showemailtostudent,adminphonevisible:adminpref.prefs.showphonetostudent});
         }
       }
     });

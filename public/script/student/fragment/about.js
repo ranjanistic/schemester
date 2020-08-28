@@ -185,5 +185,5 @@ class StudentAbout {
       });
     }
   }
-  window.onload = (_) => new TeacherAbout();
+  window.onload = (_) => new StudentAbout();
   
