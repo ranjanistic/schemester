@@ -57,9 +57,11 @@ class TextInput {
     this.input.focus();
   }
   disableInput() {
+    opacityOf(this.fieldset?this.fieldset:this.input,0.5);
     this.input.disabled = true;
   }
   enableInput() {
+    opacityOf(this.fieldset?this.fieldset:this.input,1);
     this.input.disabled = false;
   }
   validateNow(validAction = _=>{}, ifmatchfield = null) {
@@ -130,6 +132,9 @@ class TextInput {
   }
   setInput(value) {
     this.input.value = value;
+  }
+  clearInput(){
+    this.input.value = null;
   }
 }
 
@@ -274,7 +279,7 @@ class Switch{
     setClassNames(this.switchView, actionType.getSwitchStyle(viewType));
   }
   setLabel(text = String) {
-    this.label.innerHTML = text;
+    this.switchText.innerHTML = text;
   }
   onTurnChange(onAction = _=>{}, offAction = _=>{}) {
     this.switch.addEventListener(change, (_) => {
@@ -284,6 +289,14 @@ class Switch{
         offAction();
       }
     });
+    this.switchText?this.switchText.onclick=_=>{
+      this.change();
+      if(this.isOn()){
+        onAction();
+      }else {
+        offAction();
+      }
+    }:_=>{};
   }
   isOn() {
     return this.switch.checked;

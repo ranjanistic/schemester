@@ -76,9 +76,17 @@ class Verification {
         clog("studd");
         clog(studdoc.result.nModified);
         if(!studdoc.result.nModified){
+          const classdoc = await Institute.findOne({
+            _id:ObjectId(data.instID),
+            "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+          },{
+            projection:{
+              "users.classes.$.classname":1
+            }
+          });
           const pseudodoc = await Institute.updateOne({
             _id:ObjectId(data.instID),
-            "pseudousers.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+            "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}
           },{
             $set:{
               "pseudousers.classes.$.students.$[outer1].vlinkexp":exp
@@ -264,7 +272,7 @@ class Verification {
           if (!found){  //pseudo
             let pclassdoc = await Institute.findOne({
                 _id: ObjectId(query.in),
-                "pseudousers.classes": { $elemMatch: { _id: ObjectId(query.c) } },
+                "pseudousers.classes": { $elemMatch: { classname: classdoc.users.classes[0].classname } },
             },{
               projection: {
                 _id: 0,
@@ -284,8 +292,8 @@ class Verification {
             if (!this.isValidTime(student.vlinkexp)) return { user: { expired: true } };
             clog("valid time");
             const doc = await Institute.updateOne({
-                _id: ObjectId(query.in),
-                "pseudousers.classes": { $elemMatch: { _id: ObjectId(query.c) } },
+              _id: ObjectId(query.in),
+              "pseudousers.classes": { $elemMatch: { classname: pclassdoc.pseudousers.classes[0].classname } },
             },{
               $set: {
                 "pseudousers.classes.$.students.$[outer1].verified": true,
@@ -300,7 +308,7 @@ class Verification {
             if (!doc.result.nModified) return false;
             pclassdoc = await Institute.findOne({
               _id: ObjectId(query.in),
-              "pseudousers.classes": { $elemMatch: { _id: ObjectId(query.c) } },
+              "pseudousers.classes": { $elemMatch: { classname: pclassdoc.pseudousers.classes[0].classname } },
             },{
               projection: {
                 "pseudousers.classes.$": 1,

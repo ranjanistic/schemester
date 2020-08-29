@@ -110,15 +110,15 @@
     <span hidden>
         <span id="schedule"><%= schedule %></span>
         <span id="timings"><%= timings %></span>
-            <% if (timings) { %>
-            <span id="startTime"><%= timings.startTime %></span>
-            <span id="endTime"><%= timings.endTime %></span>
-            <span id="breakTime"><%= timings.breakStartTime %></span>
-            <span id="periodDuration"><%= timings.periodMinutes %></span>
-            <span id="breakDuration"><%= timings.breakMinutes %></span>
-            <span id="periodsInDay"><%= timings.periodsInDay %></span>
-            <span id="daysInWeek"><%= timings.daysInWeek %></span>
-            <% } %>
-        </span>
+        <% if (timings) { %>
+        <span id="startTime"><%= timings.startTime %></span>
+        <span id="endTime"><%= timings.endTime %></span>
+        <span id="breakTime"><%= timings.breakStartTime %></span>
+        <span id="periodDuration"><%= timings.periodMinutes %></span>
+        <span id="breakDuration"><%= timings.breakMinutes %></span>
+        <span id="periodsInDay"><%= timings.periodsInDay %></span>
+        <span id="daysInWeek"><%= timings.daysInWeek %></span>
+        <% } %>
+    </span>
     </body>
 </html>

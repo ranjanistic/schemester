@@ -31,7 +31,7 @@ class TeacherFiller {
 
       this.teacherClass = Array(this.data.totalPeriods);
       this.teacherSubject = Array(this.data.totalPeriods);
-
+      this.teacherfreeswitch = Array(this.data.totalperiods);
       for(let i = 0;i<this.data.totalPeriods;i++){
         this.teacherClass[i] = new TextInput(
           `teacherClassField${i}`,
@@ -45,6 +45,20 @@ class TeacherFiller {
           `teacherSubjectError${i}`,
           validType.nonempty
         );
+        this.teacherfreeswitch[i] = new Switch(`teacherperiodfreecheck${i}`,`teacherperiodfreelabel${i}`);
+        this.teacherfreeswitch[i].onTurnChange(_=>{
+          this.teacherClass[i].setInput('Free');
+          this.teacherClass[i].disableInput();
+          this.teacherSubject[i].setInput('Free');
+          this.teacherSubject[i].disableInput();
+          this.teacherClass[i].normalize();
+          this.teacherSubject[i].normalize();
+        },_=>{
+          this.teacherClass[i].clearInput();
+          this.teacherClass[i].enableInput();
+          this.teacherSubject[i].clearInput();
+          this.teacherSubject[i].enableInput();          
+        });
       }
 
       for(let i = 0;i<this.data.totalPeriods;i++){
@@ -108,8 +122,11 @@ class TeacherFiller {
       for(let i=0;i<this.data.totalPeriods;i++){
         this.teacherClass[i].setInput(constant.nothing);
         this.teacherSubject[i].setInput(constant.nothing);
+        this.teacherClass[i].enableInput();
+        this.teacherSubject[i].enableInput();
         this.teacherClass[i].normalize();
         this.teacherSubject[i].normalize();
+        this.teacherfreeswitch[i].off();
       }
     }
 
@@ -213,9 +230,8 @@ class TeacherFiller {
             this.setDayView();
             this.clearForm();
             if(this.data.isAdmin){
-              hide(this.teacherIDField.input);
-              show(this.teacherID);
-              this.teacherID.innerHTML = sessionStorage.getItem('teacherID');
+              this.teacherIDField.setInput(sessionStorage.getItem('teacherID'));
+              this.teacherIDField.disableInput();
               this.teacherIDField.activate();
             }
           } else {
@@ -239,7 +255,7 @@ class TeacherFiller {
           }
         }break;
         case code.schedule.SCHEDULE_CLASHED:{
-          if(this.data.client = client.admin){
+          if(this.data.isAdmin){
             this.teacherClass[response.clash.period].showError(
               `This class is already taken at this period by 
               <a id="clashlink${response.clash.uid}">${response.clash.id}</a>.`);
@@ -251,7 +267,7 @@ class TeacherFiller {
                 });
               }
           } else {
-            this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.id}.`);
+            this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.clashwith}.`);
           }
         }break;
         default:{

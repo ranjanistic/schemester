@@ -3,30 +3,31 @@ class StudentToday{
         this.data = new ReceiveData();
         this.rawdata = new ReceiveData(true);
         this.dateview = getElement("simpledate");
-        if(!this.data.today){
+        if(!this.data.today || !this.data.timings){
             getElement("weekschedule").onclick = window.parent.document.getElementById("fulltab").onclick;
-        }
-        this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-        this.periodview = Array();
-        this.periodExpand = Array();
-        this.periodTime = Array();
-        this.periodActions = Array();
-        this.actionYes = Array();
-        this.actionNo = Array();
-        for(let i = 0;i<this.data.totalperiods;i++){
-            this.periodview.push(getElement(`periodview${i}`));
-            this.periodExpand.push(getElement(`showactions${i}`));
-            this.periodTime.push(getElement(`timing${i}`));
-            this.periodActions.push(getElement(`action${i}`));
-            this.actionYes.push(getElement(`present${i}`));
-            this.actionNo.push(getElement(`absent${i}`));
+        } else {
+            this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
+            this.periodview = Array();
+            this.periodExpand = Array();
+            this.periodTime = Array();
+            this.periodActions = Array();
+            this.actionYes = Array();
+            this.actionNo = Array();
+            for(let i = 0;i<this.data.totalperiods;i++){
+                this.periodview.push(getElement(`periodview${i}`));
+                this.periodExpand.push(getElement(`showactions${i}`));
+                this.periodTime.push(getElement(`timing${i}`));
+                this.periodActions.push(getElement(`action${i}`));
+                this.actionYes.push(getElement(`present${i}`));
+                this.actionNo.push(getElement(`absent${i}`));
+            }
+            this.controlVisibility();
+            this.options = getElement("todayOptions");
+            this.options.onclick=_=>{
+                this.todayactions();
+            }
         }
         this.startTimers();
-        this.controlVisibility();
-        this.options = getElement("todayOptions");
-        this.options.onclick=_=>{
-            this.todayactions();
-        }
     }
     controlVisibility(){
         hideElement(this.periodActions);
@@ -49,7 +50,7 @@ class StudentToday{
             const date = new Date();
             if(date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0){ // Check the time
                 clearInterval(indicator);
-                window.location.reload();
+                window.location.reload();   //reloads every night 00:00:00 hrs.
             }
             if(this.data.today){
                 const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
@@ -78,7 +79,7 @@ class StudentToday{
         element.style.border = "4px solid var(--positive)";
     }
     setActive(element = new HTMLElement){
-        element.style.backgroundColor ="24f36b21";
+        element.style.backgroundColor ="24f36b34";
         element.style.border = "4px solid var(--active)";
     }
     setNegative(element = new HTMLElement){
@@ -125,20 +126,24 @@ class StudentToday{
 
 class ReceiveData{
     constructor(raw = false){
-        if(raw){
-            this.start = getElement("startTime").innerHTML;
-            this.end = getElement("endTime").innerHTML;
-            this.breakstart = getElement("breakTime").innerHTML;
-        }else {
-            this.start = this.getNumericTime(getElement("startTime").innerHTML);
-            this.end = this.getNumericTime(getElement("endTime").innerHTML);
-            this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
+        this.timings = getElement("timings").innerHTML?true:false;
+        if(this.timings){
+            if(raw){
+                this.start = getElement("startTime").innerHTML;
+                this.end = getElement("endTime").innerHTML;
+                this.breakstart = getElement("breakTime").innerHTML;
+            }else {
+                this.start = this.getNumericTime(getElement("startTime").innerHTML);
+                this.end = this.getNumericTime(getElement("endTime").innerHTML);
+                this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
+            }
+            this.periodduration = Number(getElement("periodDuration").innerHTML);
+            this.breakduration = Number(getElement("breakDuration").innerHTML);
+            this.totalperiods = Number(getElement("periodsInDay").innerHTML);
+            this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
         }
         this.today = getElement("today").innerHTML == 'false'?false:true;
-        this.periodduration = Number(getElement("periodDuration").innerHTML);
-        this.breakduration = Number(getElement("breakDuration").innerHTML);
-        this.totalperiods = Number(getElement("periodsInDay").innerHTML);
-        this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
+        clog(this.today);
         if(this.today){
             this.classname = Array();
             this.subject = Array();

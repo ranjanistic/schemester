@@ -100,6 +100,9 @@ student.get("/session*", async (req, res) => {
           },
         }
       );
+      if(!classdoc) return session.finish(res).then((response) => {
+        if (response) res.redirect(worker.toLogin(data));
+      });
       let student;
       let found = classdoc.users.classes[0].students.some((stud)=>{
         if(String(stud._id)==String(response.user.id)){

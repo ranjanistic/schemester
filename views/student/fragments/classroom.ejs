@@ -14,17 +14,39 @@
             <div class="fmt-row">
                 <div class="fmt-col three-fifth">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Class</div>
-                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeof"><% classroom.classname %></div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeof">Classroom <%= classroom.classname %></div>
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
-                    <button class="fmt-right circle-button" id="todayOptions">
-                        <img width="30" src="/graphic/blueLoader.svg"/>
-                    </button>
+                    <span class="menu fmt-right">
+                        <button class="neutral-button-togg" id="notificationbutton">🔔</button>
+                    </span>
+                    <span class="menu fmt-right">
+                        <button class="neutral-button-togg" id="setupbutton">⚙</button>
+                    </span>
                 </div>
             </div>
             <% if(classroom){ %>
                 <div class="fmt-row">
-                    
+                    <% if(classroom.students.length){ %>
+                        <br/>
+                        <input type="text" class="dropdown-input fmt-padding-small wide" placeholder="Search among <%= classroom.students.length %> classmates" id="studentSearch"/>
+                        <br/>
+                        <div class="fmt-row" id="studentslist">
+                            <% classroom.students.forEach((student,s) => {%>
+                                <div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="studentslate<%= s %> ">
+                                    <div class="fmt-col fmt-twothird group-text">
+                                      <span class="positive" id="studentname<%= s %>"><%= student.username %></span><br/>
+                                      <span class="questrial" id="studentmail<%= s %>"><%= student.studentID %></span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="fmt-center group-text">
+                            <br/><br/>
+                            No classmates yet.
+                        </div>
+                    <% } %>
                 </div>
             <% } else { %>
                 <div class="fmt-row">
@@ -34,7 +56,7 @@
                         <div class="group-heading positive">No class enrolled</div>
                         <br/>
                         <div class="questrial">
-                            You don't hold any class.
+                            You aren't a part of any class
                         </div>
                     </div>
                     <div class="fmt-col fmt-quarter fmt-padding">
@@ -45,5 +67,16 @@
                 </div>
             <% } %>
         </div>
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
+        <div id="snackBar" class="fmt-animate-bottom">
+            <span id="snackText"></span>
+            <button id="snackButton"></button>
+        </div>
+        <span hidden>
+            <span id="classname"><%= classroom.classname %></span>
+        </span>
     </body>
 </html>

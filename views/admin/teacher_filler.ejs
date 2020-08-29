@@ -16,6 +16,7 @@
         <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel="stylesheet" href="/css/fmt.css">
         <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -113,34 +114,44 @@
                     <div class="fmt-col fmt-quarter">
                         Period
                     </div>
-                    <div class="fmt-col fmt-third">
+                    <div class="fmt-col fmt-quarter">
                         Class
                     </div>
-                    <div class="fmt-col fmt-third">
+                    <div class="fmt-col fmt-quarter">
                         Subject
+                    </div>
+                    <div class="fmt-col fmt-quarter">
+                        
                     </div>
                 </div>
 
                 
                 <div class="fmt-row fmt-center" style="padding:4px" id="teacherFillerBox">
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
-                        <div class="fmt-row tab-container" style="margin-bottom:4px">
+                        <div class="fmt-row tab-container" style="margin-bottom:4px" id="teacherperiodrow<%= index %>">
                             <div class="fmt-col fmt-quarter fmt-center active" style="padding:18px;">
                                 <%= addNumberSuffixHTML(index+1) %><span class="fmt-hide-large fmt-hide-medium"> period</span>
                             </div>
-                            <div class="fmt-col fmt-third" >
+                            <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">
                                     <legend class="field-caption">Class assigned</legend>
                                     <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
                                     <span class="fmt-right error-caption"  id="teacherClassError<%= index %>"></span>
                                 </fieldset>
                             </div>
-                            <div class="fmt-col fmt-third" >
+                            <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherSubjectField<%= index %>">
                                     <legend class="field-caption">Subject to be taken</legend>
                                     <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
                                     <span class="fmt-right error-caption"  id="teacherSubjectError<%= index %>"></span>
                                 </fieldset>
+                            </div>
+                            <div class="fmt-col fmt-quarter group-text" style="padding:18px;">
+                                <span class="fmt-padding" id="teacherperiodfreelabel<%= index %>">Set free</span>
+                                <label class="switch-container" style="align-content: center;">
+                                    <input type="checkbox" id="teacherperiodfreecheck<%= index %>">
+                                    <span class="switch-positive"></span>
+                                </label>
                             </div>
                         </div>
                     <% } %>

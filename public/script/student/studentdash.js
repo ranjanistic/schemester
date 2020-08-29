@@ -11,7 +11,7 @@ class StudentDash{
         this.classroom = getElement("classtab")
         this.settings = getElement("settingstab");
         
-        this.today.onclick = _=>{
+        this.today.onclick =_=>{
             speechSynthesis.speak(new SpeechSynthesisUtterance("Today"));
             sessionStorage.setItem('fragment',locate.student.target.fragment.today);
             replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected");
@@ -94,10 +94,10 @@ class Pseudostudent{
 }
 
 window.onload=_=>{
-    //  try{
+     try{
         new StudentDash();
-    // }catch{
-    //     new Pseudostudent()
-    // }
+    }catch{
+        new Pseudostudent()
+    }
 
 }

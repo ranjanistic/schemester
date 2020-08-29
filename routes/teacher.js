@@ -193,7 +193,7 @@ teacher.get("/fragment*", (req, res) => {
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           clog("today");
-          worker.schedule.getSchedule(response.user, new Date().getDay())
+          worker.schedule.getSchedule(response.user, {dayIndex:new Date().getDay()})
             .then((scheduleresponse) => {
               if(!scheduleresponse){  //no schedule
                 return res.render(view.teacher.getViewByTarget(query.fragment), {
@@ -295,146 +295,23 @@ teacher.post("/self", async (req, res) => {
 
 teacher.post("/schedule", async (req, res) => {
   session
-    .verify(req, sessionsecret)
-    .then(async (response) => {
-      if (!session.valid(response)) {
-        return res.json({ result: code.auth.SESSION_INVALID });
-      }
-      switch (req.body.action) {
+    .verify(req, sessionsecret).catch((e) => {
+      clog(e);
+      return authreqfailed(e)
+    }).then(async (response) => {
+      if (!session.valid(response)) return res.json(invalidsession);
+      const body = req.body
+      switch (body.action) {
         case "upload":
-          {
-            const body = req.body;
-            let inst = await Institute.findOne({ uiid: response.user.uiid });
-            if (!inst)
-              return res.json({ result: code.inst.INSTITUTION_NOT_EXISTS });
-
-            let overwriting = false; //if existing teacher schedule being overwritten after completion.
-            let incomplete = false; //if existing teacher schedule being rewritten without completion.
-            let found = inst.schedule.teachers.some((teacher, index) => {
-              if (teacher.teacherID == body.teacherID) {
-                if (
-                  teacher.days.length == inst.default.timings.daysInWeek.length
-                ) {
-                  overwriting = true;
-                } else {
-                  incomplete = teacher.days.some((day, index) => {
-                    if (body.data.dayIndex <= day.dayIndex) {
-                      return true;
-                    }
-                  });
-                }
-                return true;
-              }
-            });
-            if (overwriting) {
-              //completed schedule, must be edited from schedule view.
-              result = code.event(code.schedule.SCHEDULE_EXISTS);
-              return res.json({ result });
-            }
-            if (incomplete) {
-              //remove teacher schedule
-              clog("is incomplete");
-              await Institute.findOneAndUpdate(
-                { uiid: response.user.uiid },
-                {
-                  $pull: { "schedule.teachers": { teacherID: body.teacherID } },
-                }
-              );
-              found = false; //add as a new teacher schedule
-            }
-            let clashClass,clashPeriod,clashTeacher;
-            let clashed = inst.schedule.teachers.some((teacher,_)=>{
-              clog("eachteacher");
-              clog(teacher);
-              let clashed = teacher.days.some((day,_)=>{
-                clog("eachday")
-                clog(day);
-                if(day.dayIndex == body.data.dayIndex){
-                  let clashed = day.period.some((period,pindex)=>{
-                    clog("eachperiod");
-                    clog(period);
-                    if(period.classname == body.data.period[pindex].classname){
-                      mathcclass = period.classname;
-                      clashPeriod = pindex;
-                      return true;
-                    }
-                  })
-                  clog(clashed);
-                  if(clashed){
-                    return true
-                  }
-                }
-              })
-              clog(clashed)
-              if(clashed){
-                clashTeacher = teacher.teacherID;
-                return true
-              }
-            });
-            clog(clashed);
-            if(clashed){  //if schedule clashed.
-              return res.json({result:{
-                event:code.schedule.SCHEDULE_CLASHED,
-                clash:{
-                  classname:clashClass,
-                  period:clashPeriod,
-                  teacherID:clashTeacher
-                }
-              }});
-            }
-            if (found) {
-              //existing teacher schedule, incomplete (new day index)
-              const filter = {
-                uiid: response.user.uiid,
-                "schedule.teachers": {
-                  $elemMatch: { teacherID: body.teacherID },
-                }, //existing schedule teacherID
-              };
-              const newdocument = {
-                $push: { "schedule.teachers.$[outer].days": body.data }, //new day push
-              };
-              const options = {
-                arrayFilters: [{ "outer.teacherID": body.teacherID }],
-              };
-              let doc = await Institute.findOneAndUpdate(
-                filter,
-                newdocument,
-                options
-              );
-              clog("schedule appended?");
-              if (doc) {
-                result = code.event(code.schedule.SCHEDULE_CREATED);
-                return res.json({ result }); //new day created.
-              }
-            } else {
-              //no existing schedule teacherID
-              const filter = { uiid: response.user.uiid };
-              const newdocument = {
-                $push: {
-                  "schedule.teachers": {
-                    teacherID: body.teacherID,
-                    days: [body.data],
-                  },
-                }, //new teacher schedule push
-              };
-              let doc = await Institute.findOneAndUpdate(filter, newdocument);
-              clog("schedule created?");
-              if (doc) {
-                result = code.event(code.schedule.SCHEDULE_CREATED);
-                return res.json({ result }); //new teacher new day created.
-              }
-            }
-          }
-          break;
+          return res.json({result:await worker.schedule.scheduleUpload(response.user, body)});
+        case "receive":
+          return res.json({result:await worker.schedule.getSchedule(response.user, body)});
         case "update":
-          {
-          }
-          break;
+          return res.json({result:await worker.schedule.scheduleUpdate(response.user, body)});
+        default:
+          return res.json({result:code.event(code.server.DATABASE_ERROR)});
       }
     })
-    .catch((e) => {
-      clog(e);
-    });
 });
 
 teacher.post("/classroom",async(req,res)=>{

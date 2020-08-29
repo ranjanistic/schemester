@@ -76,12 +76,18 @@
                                             <%= addNumberSuffixHTML(j+1) %> period
                                         </div>
                                         <div class="fmt-col fmt-center fmt-padding-small positive group-text half">
+                                            <% if(schedule[i].period[j]) {%>
                                             <div class="fmt-row">
                                                 <%= schedule[i].period[j].subject %>
                                             </div>
-                                            <div class="fmt-row group-text fmt-center ">
-                                                <%= schedule[i].period[j].teacherID %>
+                                            <div class="fmt-row group-text fmt-center break">
+                                                <%= schedule[i].period[j].teacher %>
                                             </div>
+                                            <% } else {%>
+                                                <div class="fmt-row fmt-padding fmt-margin">
+                                                    Not set
+                                                </div>
+                                            <% } %>
                                         </div>
                                     </div>
                                 <% } %>
@@ -95,6 +101,8 @@
         </div>
         <span hidden>
             <span id="schedule"><%= schedule %></span>
+            <span id="timings"><%= timings %></span>
+            <% if (timings) { %>
             <span id="startTime"><%= timings.startTime %></span>
             <span id="endTime"><%= timings.endTime %></span>
             <span id="breakTime"><%= timings.breakStartTime %></span>
@@ -102,6 +110,7 @@
             <span id="breakDuration"><%= timings.breakMinutes %></span>
             <span id="periodsInDay"><%= timings.periodsInDay %></span>
             <span id="daysInWeek"><%= timings.daysInWeek %></span>
+            <% } %>
         </span>
     </body>
 </html>

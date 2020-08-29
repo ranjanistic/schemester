@@ -88,12 +88,12 @@
                             <span class="checkmark"></span>
                         </label>
                         <label class="radio-container">
-                            Security<input type="radio" name="settingSelection" id="msecurityTab">       
+                            Users<input type="radio" name="settingSelection" id="musersTab">
                             <span class="checkmark"></span>
                         </label>
                         <div class="fmt-padding-small"></div>
                         <label class="radio-container">
-                            Users<input type="radio" name="settingSelection" id="musersTab">
+                            Security<input type="radio" name="settingSelection" id="msecurityTab">       
                             <span class="checkmark"></span>
                         </label>
                         <label class="radio-container">
@@ -360,11 +360,7 @@
                         </div>
                         <!--users settings-->
                         <div class="fmt-row sub-container fmt-animate-opacity" id="usersSettingsBox">
-                            <div class="fmt-col fmt-padding-small
-                            <% if(countObjects(inst.users.classes)>0) {%> 
-                             fmt-half"
-                            <% } %>
-                            >
+                            <div class="fmt-col fmt-padding-small<% if(countObjects(inst.users.classes)>0) {%> fmt-half<% } %>">
                                 <div class="fmt-row">
                                     <span class="sub-heading">Teachers</span>
                                     <button class="fmt-right neutral-button" id="inviteUsers">➕</button>
@@ -378,20 +374,17 @@
                             </div>
                             <% if(countObjects(inst.users.classes)>0) {%>
                                 <div class="fmt-col fmt-half fmt-padding-small">
-                                        <span class="sub-heading">Classes</span>
-                                        <div>
-                                            <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.classes)%> classes" id="classSearch" style="width:100%"/>
-                                        </div>
-                                        <br/>
-                                        <div class="fmt-row" id="classList">
-                                            
-                                        </div>
-                                    
+                                    <span class="sub-heading">Classes</span>
+                                    <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.classes)%> classes" id="classSearch" style="width:100%"/>
+                                    <br/>
+                                    <div class="fmt-row" id="classList">
+                                        
+                                    </div>
                                 </div>
                             <% } %>
                         </div>
                         <!--security settings-->
-                        <div class="sub-container fmt-animate-opacity" id="securitySettingsBox">
+                        <div class="sub-container  fmt-animate-opacity" id="securitySettingsBox">
                             <span class="sub-heading">Security</span>
                             <div>
                                 <span class="caption">Reset Admin Password</span><br/>
@@ -401,7 +394,7 @@
                                 <button class="negative-button" id="resetMailButton">Reset email address</button><br/>
                                 <span class="caption">End Service</span><br/>
                                 <button class="negative-button" id="deleteAdminAccount">Delete account</button>
-                                <button class="negative-button" id="deleteInstitute">Delete Institute</button><br/>
+                                <button class="negative-button" id="deleteInstitute">Delete Institute</button>
                             </div>
                         </div>
                         <!--about settings-->

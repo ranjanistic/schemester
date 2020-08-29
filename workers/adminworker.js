@@ -660,24 +660,26 @@ class Schedule {
           found = false; //add as a new teacher schedule
         }
         let clashClass, clashPeriod, clashTeacher;
-        let clashed = inst.schedule.teachers.some((teacher) => {
-          let clashed = teacher.days.some((day) => {
-            if (day.dayIndex == body.data.dayIndex) {
-              let clashed = day.period.some((period, pindex) => {
-                if (period.classname == body.data.period[pindex].classname) {
-                  clashClass = period.classname;
-                  clashPeriod = pindex;
+        let clashed = inst.schedule.teachers.some((teacher) => {  //period clash checking
+          if(teacher.teacherID!=body.teacherID){
+            let clashed = teacher.days.some((day) => {
+              if (day.dayIndex == body.data.dayIndex) {
+                let clashed = day.period.some((period, pindex) => {
+                  if (period.classname == body.data.period[pindex].classname && period.classname != code.schedule.FREE) {
+                    clashClass = period.classname;
+                    clashPeriod = pindex;
+                    return true;
+                  }
+                });
+                if (clashed) {
                   return true;
                 }
-              });
-              if (clashed) {
-                return true;
               }
+            });
+            if (clashed) {
+              clashTeacher = teacher.teacherID;
+              return true;
             }
-          });
-          if (clashed) {
-            clashTeacher = teacher.teacherID;
-            return true;
           }
         });
         if (clashed) {
@@ -736,6 +738,7 @@ class Schedule {
        * To receive data under schedule.teachers
        * @param {Document} inst
        * @param {JSON} body
+       * @returns {JSON} success event,unique classes
        */
       async scheduleReceive(inst, body) {
         let filter, options;
@@ -752,13 +755,12 @@ class Schedule {
               options = { projection: { _id: 0, "schedule.teachers.$": 1 } };
             }
             break;
-          case "classes":
-            {
+          case "classes":{
               let newClasses = Array();
-              inst.schedule.teachers.forEach((teacher, tindex) => {
-                teacher.days.forEach((day, _) => {
-                  day.period.forEach((period, _) => {
-                    if (!newClasses.includes(period.classname)) {
+              inst.schedule.teachers.forEach((teacher) => {
+                teacher.days.forEach((day) => {
+                  day.period.forEach((period) => {
+                    if (!newClasses.includes(period.classname) && period.classname != code.schedule.FREE) {
                       newClasses.push(period.classname);
                     }
                   });
@@ -769,7 +771,7 @@ class Schedule {
                 event: code.OK,
                 classes: newClasses,
               };
-            }
+          }
             break;
           default: {
             filter = { uiid: inst.uiid };
@@ -804,8 +806,7 @@ class Schedule {
       }
       async scheduleUpdate(user, inst, body) {
         switch (body.specific) {
-          case "renameclass":
-            {
+          case "renameclass":{
               if (body.teacherID) {
                 clog(body);
                 //check clash with other teachers
@@ -921,36 +922,75 @@ class Schedule {
           case "switchweekdays":
             {
               const daysinweek = Array();
-              inst.schedule.teachers.forEach((teacher, tindex) => {
-                teacher.days.forEach((d, dindex) => {
-                  body.days.forEach(async (day, _) => {
-                    if (!(day.new < 0) && day.new != null && day.new != "") {
-                      if (!daysinweek.includes(day.new))
-                        daysinweek.push(day.new);
-                      if (day.old == d.dayIndex) {
-                        const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
-                        const doc = await Institute.findOneAndUpdate(
-                          { uiid: inst.uiid },
-                          {
-                            $set: { [path]: day.new },
-                          }
-                        );
-                        //todo: doc return
-                        clog(doc);
-                        return code.event(doc ? code.OK : code.NO);
+              try{
+                let result = await Promise.all(inst.schedule.teachers.map(async(teacher, tindex) => {
+                  return await Promise.all(teacher.days.map(async(d, dindex) => {
+                    return await Promise.all(body.days.map(async (day) => {
+                      if (!(day.new < 0) && day.new != null && day.new != "") {
+                        if (!daysinweek.includes(day.new))
+                          daysinweek.push(day.new);
+                        if (day.old == d.dayIndex) {
+                          const path = `schedule.teachers.${tindex}.days.${dindex}.dayIndex`;
+                          const doc = await Institute.findOneAndUpdate(
+                            { uiid: inst.uiid },
+                            {
+                              $set: { [path]: day.new },
+                            }
+                          );
+                          //todo: doc return
+                          clog(doc);
+                          return code.event(doc ? code.OK : code.NO);
+                        }
+                      }else {
+                        return clog("invalid new");
                       }
-                    }
+                    }));
+                  }));
+                }));
+                clog(body.days);
+                clog(daysinweek);
+                clog(result);
+                if(!result) throw result;
+                
+                if(inst.schedule.classes.length){
+                  result = await Promise.all(inst.schedule.classes.map(async(Class, c) => {
+                    return await Promise.all(Class.days.map(async(d, dindex) => {
+                      return await Promise.all(body.days.map(async (day) => {
+                        if (!(day.new < 0) && day.new != null && day.new != "") {
+                          if (day.old == d.dayIndex) {
+                            const path = `schedule.classes.${c}.days.${dindex}.dayIndex`;
+                            const doc = await Institute.findOneAndUpdate(
+                              { uiid: inst.uiid },
+                              {
+                                $set: { [path]: day.new },
+                              }
+                            );
+                            //todo: doc return
+                            clog(doc);
+                            return code.event(doc ? code.OK : code.NO);
+                          }
+                        }
+                      }));
+                    }));
+                  }));
+                  clog(body.days);
+                  clog(daysinweek);
+                  clog(result);
+                  if(!result) throw result;
+                  if (daysinweek.length == body.days) {
+                    return await defaults.timings.setDaysInWeek(user, {
+                      daysinweek,
+                    });
+                  }
+                }
+                if (daysinweek.length > 0) {
+                  return await defaults.timings.setDaysInWeek(user, {
+                    daysinweek,
                   });
-                });
-              });
-              clog(body.days);
-              clog(daysinweek);
-              if (daysinweek.length > 0) {
-                return await defaults.timings.setDaysInWeek(user, {
-                  daysinweek,
-                });
-              } else {
-                return code.event(code.NO);
+                } 
+              }catch(e){
+                clog(e);
+                return code.eventmsg(code.NO,e);
               }
             }
             break;
@@ -1023,14 +1063,22 @@ class Schedule {
               }
             });
             if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
+            let onlyclasses = Array();
+            body.classes.forEach((c)=>{
+              onlyclasses.push({
+                classname:c.classname,
+                students:[]
+              });
+            });
             doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes for pseudousers
               $set:{
-                "pseudousers.classes":body.classes
+                "pseudousers.classes":onlyclasses
               }
             });
             if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
             classes.forEach((Class,c)=>{  //generating every class' schedule from teachers;
               Class['days'] = Array();
+              delete Class['_id'];
               delete Class['inchargeID'];
               delete Class['students'];
               inst.default.timings.daysInWeek.forEach((dw)=>{
@@ -1039,13 +1087,14 @@ class Schedule {
                   period:Array(inst.default.timings.periodsInDay)
                 });
               });
-              inst.schedule.teachers.forEach((teacher,t)=>{
+              inst.schedule.teachers.forEach((teacher)=>{
                 teacher.days.forEach((day,d)=>{
                   day.period.forEach((period,p)=>{
                     if(period.classname==Class.classname){
                       const found = Class.days.some((cday)=>{
                         if(cday.dayIndex == day.dayIndex){
                           cday.period[p] = {
+                            teacher:teacher.username,//is null as in schedule object
                             teacherID:teacher.teacherID,
                             subject:period.subject,
                             hold:true,

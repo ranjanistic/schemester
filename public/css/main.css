@@ -1,8 +1,10 @@
 :root {
     --positive: #216bf3;
-    --negative: #c40c0c;
-    --warning: #d66a04;
-    --active: #00893E;
+    /* --negative: #c40c0c; */
+    --negative: #d62828;
+    --warning: #f77f00;
+    /* --active: #00893E; */
+    --active: #117255;
     --base: #efefef;
     --base-text: #000000;
     --secondary:#ffffff;
@@ -16,9 +18,9 @@
 
 [data-theme="dark"] {
     --positive: #739dec;
-    --negative: #ec6565;
-    --warning: #df9d5f;
-    --active: #48cc84;
+    --negative: #ff5151;
+    --warning: #fcbf49;
+    --active: #00cc88;
     --base: #101010;
     --base-text: #ffffff;
     --secondary:#131313;
@@ -315,6 +317,10 @@ img{vertical-align:middle}
 .pointer{
     cursor:pointer;
 }
+.break{
+    overflow-wrap: break-word;
+}
+
 .tab-container{
     border-radius: 12px;
     padding:8px 12px;

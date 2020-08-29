@@ -179,6 +179,7 @@ class Codes {
         this.BATCH_EXISTS = "schedule/batch-or-class-exists";
         this.BATCH_NOT_FOUND = "schedule/batch-or-class-not-exist";
         this.SCHEDULE_CLASHED = "schedule/conflicting-schedule";
+        this.FREE = "Free";
       }
     }
     this.auth = new Authcodes();
