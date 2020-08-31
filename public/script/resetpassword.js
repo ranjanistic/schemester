@@ -57,7 +57,8 @@ class ResetPassword{
                         external:true,
                         user:{
                             id:this.data.userid,
-                            uiid:this.data.uiid
+                            uiid:this.data.uiid,
+                            classname:this.data.classname
                         },
                         newpassword:this.passField.getInput()
                     }).then(response=>{
@@ -95,6 +96,9 @@ class Expired {
       this.expired = getElement("expired").innerHTML ? true : false;
       if(!this.expired){
           this.client = getElement("client").innerHTML;
+          if(this.client == client.student){
+              this.classname = getElement("classname").innerHTML;
+          }
       }
       this.username = getElement("username").innerHTML;
       this.email = getElement("email").innerHTML;

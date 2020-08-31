@@ -89,33 +89,43 @@ class Self {
       }
 
       /**
-       * To change current teacher's user name
+       * To change current teacher's user name (pseudo or user)
        */
       changeName = async (user, body) => {
-        const namepath = `${path}.$.${this.username}`;
-        const newteacher = await Institute.findOneAndUpdate(
-          {
+        let teacher = await getTeacherById(user.uiid,user.id);
+        const pseudo = teacher?false:true;
+        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const namepath = pseudo?`${pseudopath}.$.${this.username}`:`${this.path}.$.${this.username}`;
+        const path = pseudo?pseudopath:this.path;
+        const newteacher = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
-          },
+        },
           {
             $set: {
               [namepath]: body.newname,
             },
           }
         );
-        return code.event(newteacher ? code.OK : code.NO);
+        return code.event(newteacher.value ? code.OK : code.NO);
       };
 
       /**
-       * To change current teacher's user password
+       * To change current teacher's user password (pseudo or user)
        */
       changePassword = async (user, body) => {
+        let teacher = await getTeacherById(user.uiid,user.id);
+        clog(teacher);
+        const pseudo = teacher?false:true;
+        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const passpath = pseudo?`${pseudopath}.$.${this.password}`:`${this.path}.$.${this.password}`;
+        const rlinkpath = pseudo?`${pseudopath}.$.${this.rlinkexp}`:`${this.path}.$.${this.rlinkexp}`;
+        const path = pseudo?pseudopath:this.path;
+
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
-        const passpath = `${path}.$.${this.password}`;
-        const rlinkpath = `${path}.$.${this.rlinkexp}`;
-
         const newteacher = await Institute.findOneAndUpdate(
           {
             uiid: user.uiid,
@@ -131,86 +141,66 @@ class Self {
           }
         );
         clog(newteacher);
-        if (!newteacher.value) {
-          const passpath = `${pseudopath}.$.${this.password}`;
-          const rlinkpath = `${pseudopath}.$.${this.rlinkexp}`;
-          const newteacher = await Institute.findOneAndUpdate(
-            {
-              uiid: user.uiid,
-              [pseudopath]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
-            },
-            {
-              $set: {
-                [passpath]: epassword,
-              },
-              $unset: {
-                [rlinkpath]: null,
-              },
-            }
-          );
-          clog(newteacher);
-          return code.event(newteacher.value ? code.OK : code.NO);
-        }
         return code.event(newteacher.value ? code.OK : code.NO);
       };
 
       /**
-       *
+       * To change email address of teacher, pseudo or user
        */
-      changeEmailID = async (user, teacher, body) => {
-        if (teacher.email == body.newemail)
+      changeEmailID = async (user, body) => {
+        let teacher = await getTeacherById(user.uiid,user.id);
+        const pseudo = teacher?false:true;
+        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const mailpath = pseudo?`${pseudopath}.$.${this.teacherID}`:`${this.path}.$.${this.teacherID}`;
+        const verifiedpath = pseudo?`${pseudopath}.$.${this.verified}`:`${this.path}.$.${this.verified}`;
+        const path = pseudo?pseudopath:this.path;
+
+        if (teacher.teacherID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
-        const someteacher = await Admin.findOne({ email: body.newemail });
+        const someteacher = await getTeacherByEmail(user.uiid,body.newemail);
         if (someteacher) return code.event(code.auth.USER_EXIST);
-        const newteacher = await Admin.findOneAndUpdate(
-          { _id: ObjectId(user.id) },
+        const newteacher = await Institute.findOneAndUpdate(
+          { uiid: user.uiid, [path]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},
           {
             $set: {
-              [this.teacherID]: body.newemail,
-              verified: false,
+              [mailpath]: body.newemail,
+              [verifiedpath]: false,
             },
           }
         );
-        return newteacher
-          ? code.event(
-              (await this.defaults.admin.setEmail(user, body))
-                ? code.OK
-                : code.NO
-            )
-          : code.event(code.NO);
+        if(newteacher.value){
+          const sched = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
+          {
+            $set:{
+              "schedule.teachers.$.teacherID":body.newemail
+            }
+          });
+        }
+        clog(newteacher);
+        return code.event(newteacher.value? code.OK: code.NO);
       };
 
       /**
-       *
+       *To delete teacher account, pseudo or user.
        */
       deleteAccount = async (user) => {
-        const deluser = await Institute.findOneAndUpdate(
-          {
+        let teacher = await getTeacherById(user.uiid,user.id);
+        const pseudo = teacher?false:true;
+        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const path = pseudo?pseudopath:this.path;
+
+        const deluser = await Institute.findOneAndUpdate({
             uiid: user.uiid,
-            [this.path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
+            [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
           },
           {
             $pull: {
-              [this.path]: { [this.uid]: ObjectId(user.id) },
+              [path]: { [this.uid]: ObjectId(user.id) },
             },
           }
         );
-        if (!deluser.value) {
-          const delpseudo = await Institute.findOneAndUpdate(
-            {
-              uiid: user.uiid,
-              [this.pseudopath]: {
-                $elemMatch: { [this.uid]: ObjectId(user.id) },
-              },
-            },
-            {
-              $pull: {
-                [this.pseudopath]: { [this.uid]: ObjectId(user.id) },
-              },
-            }
-          );
-          return code.event(delpseudo.value ? code.OK : code.NO);
-        }
         return code.event(deluser.value ? code.OK : code.NO);
       };
     }
@@ -287,14 +277,14 @@ class Self {
     this.prefs = new Preferences();
   }
 
-  handleAccount = async (user, body, teacher) => {
+  handleAccount = async (user, body) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
       case code.action.CHANGE_PASSWORD:
         return await this.account.changePassword(user, body);
       case code.action.CHANGE_ID:
-        return await this.account.changeEmailID(user, teacher, body);
+        return await this.account.changeEmailID(user, body);
       case code.action.CHANGE_PHONE:
         return await this.account.changePhone(user, body);
       case code.action.ACCOUNT_DELETE:
@@ -748,3 +738,24 @@ class PseudoUsers {
 
 const clog = (m) => console.log(m);
 module.exports = new TeacherWorker();
+
+async function getTeacherById(uiid,id,pseudo = false){
+  let path = pseudo?"pseudousers.teachers":"users.teachers";
+  let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
+  const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"_id":ObjectId(id)}}},{
+    projection:{
+      [getpath]:1
+    }
+  });
+  return tdoc?tdoc.users.teachers[0]:false;
+}
+async function getTeacherByEmail(uiid,email,pseudo = false){
+  let path = pseudo?"pseudousers.teachers":"users.teachers";
+  let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
+  const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"teacherID":email}}},{
+    projection:{
+      [getpath]:1
+    }
+  });
+  return tdoc?tdoc.users.teachers[0]:false;
+}

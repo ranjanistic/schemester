@@ -94,10 +94,10 @@ class PseudoTeacher{
 }
 
 window.onload=_=>{
-    // try{
+    try{
         new TeacherDash();
-    // }catch{
-    //     new PseudoTeacher()
-    // }
+    }catch{
+        new PseudoTeacher()
+    }
 
 }

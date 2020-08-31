@@ -43,18 +43,16 @@
                     <% if (group.teacher) { %>
                         <%= teacher.username %>
                     <% } else if(group.Class) { %>
-                        <%= Class.classname %>
+                        Classroom <%= Class.classname %>
                     <% } else { %>
                         U/A
                     <% } %>
                     </div>
                     <div class="questrial fmt-row" style="color:var(--tertiary-text)">
                         <% if (group.teacher) { %>
-                        <%= teacher.teacherID %>
+                            <%= teacher.teacherID %>
                         <% } else if(group.Class) { %>
-                            taken by <a>5 teachers</a>
-                        <% } else {%>
-                            <%= schedule.teacherID %>
+                            Incharge <a><%= Class.inchargeID %></a>
                         <% } %>
                     </div>
                 </div>
@@ -76,10 +74,18 @@
                             Period
                         </div>
                         <div class="fmt-col fmt-quarter">
-                            Class
+                            <% if (group.teacher) { %>
+                                Class
+                            <% } else { %>
+                                Subject
+                            <% } %>
                         </div>
                         <div class="fmt-col fmt-quarter">
-                            Subject
+                            <% if (group.teacher) { %>
+                                Subject
+                            <% } else { %>
+                                Teacher
+                            <% } %>
                         </div>
                         <div class="fmt-col fmt-quarter">
                             Action
@@ -105,6 +111,8 @@
             <% if (group.Class) { %>
                 <span id="client">student</span>
                 <span id="classname"><%= Class.classname %></span>
+                <span id="classUID"><% Class._id %></span>
+                <span id="inchargeID"><% null %></span>
             <% } %>
             <% if(group.teacher) {%>
                 <span id="client">teacher</span>
@@ -112,13 +120,8 @@
                 <span id="teacherID"><%= teacher.teacherID %></span>
                 <span id="teachername"><%= teacher.username %></span>
                 <span id="teacherverified"><%= teacher.verified %></span>
-            <% } else { %>
-                <span id="teacherID"><% null %></span>
-                <span id="client">teacher</span>
-                <% if (schedule) { %>
-                    <span id="scheduleteacherID"><%= schedule.teacherID %></span>      
-                <% } %>
             <% } %>
+            <span id="schedule"><%= schedule %></span>  
             <span id="daysinweek"><%= inst.default.timings.daysInWeek %></span>
             <span id="periodcount"><%= inst.default.timings.periodsInDay %></span>
         </span>

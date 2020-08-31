@@ -184,18 +184,20 @@ class Session {
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.studentsessionsecret:{
+        clog(resp.user);  
         const classdoc = await Institute.findOne({uiid:resp.user.uiid,"users.classes":{$elemMatch:{"classname":resp.user.classname}}},
-          {projection:{"_id":0,"users.classes.$":1}}
+          {projection:{"users.classes.$":1}}
         );
-        const pseudoclassdoc = await Institute.findOne({uiid:resp.user.uiid,"pseudousers.classes":{$elemMatch:{"classname":resp.user.classname}}},
-          {projection:{"_id":0,"pseudousers.classes.$":1}}
-        );
+        clog(classdoc);
         if(!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);
         let student;
         const found = classdoc.users.classes[0].students.some((stud)=>{
           student = stud;
           return String(stud._id) == String(resp.user.id);
         });
+        const pseudoclassdoc = await Institute.findOne({uiid:resp.user.uiid,"pseudousers.classes":{$elemMatch:{"classname":resp.user.classname}}},
+          {projection:{"_id":0,"pseudousers.classes.$":1}}
+        );
         let pstudent;
         const pfound = pseudoclassdoc.pseudousers.classes[0].students.some((stud)=>{
           pstudent = stud;

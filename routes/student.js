@@ -11,6 +11,7 @@ const express = require("express"),
   invite = require("../workers/common/invitation"),
   share = require("../workers/common/sharedata"),
   verify = require("../workers/common/verification"),
+  reset = require("../workers/common/passwordreset"),
   worker = require("../workers/studentworker"),
   Institute = require("../collections/Institutions"),
   Admin = require("../collections/Admins");
@@ -271,6 +272,7 @@ student.post("/self", async (req, res) => {
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json(invalidsession);
+    clog(response);
     switch (body.target) {
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
@@ -283,7 +285,7 @@ student.post("/manage", async (req, res) => {
   const body = req.body;
   if(body.external){
     switch (body.type) {
-      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body,true)});
+      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body)});
     }
   }
   session
@@ -313,6 +315,17 @@ student.post("/manage", async (req, res) => {
     });
 });
 
+student.post("/session/validate", async (req, res) => {
+  session
+    .verify(req, sessionsecret)
+    .then((response) => {
+      return res.json({ result: response });
+    })
+    .catch((error) => {
+      return res.json(authreqfailed(error));
+    });
+});
+
 student.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
@@ -335,9 +348,9 @@ student.get("/external*", async (req, res) => {
       return;
     }
     case reset.type:{
-      reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,reset.target.student).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
-        return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
+        return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid,classname:resp.classname});
       }).catch(e=>{
         clog(e);
         return res.render(view.servererror, {error:e});

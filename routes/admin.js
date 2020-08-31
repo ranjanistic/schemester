@@ -174,9 +174,9 @@ admin.get("/session*", (req, res) => {
                       inst,
                     });
                   }
-                } else if (data.client == "student") {  //class schedule
+                } else if (data.type == "student") {  //class schedule
                   if(data.c){ //if class _id is provided, means required class considered exists.
-                    const classInst = await Institute.findOne({
+                    const classdoc = await Institute.findOne({
                       uiid: response.user.uiid,
                       "users.classes": {
                         $elemMatch: { "_id": ObjectId(data.c) },
@@ -187,9 +187,10 @@ admin.get("/session*", (req, res) => {
                         "users.classes.$": 1,
                       },
                     });
-                    if(!classInst) return res.render(view.notfound);  //no class for data.c (_id).
-                    const Class = classInst.users.classes[0];
-                    const classScheduleInst = await Institute.findOne({
+                    clog(classdoc);
+                    if(!classdoc) return res.render(view.notfound);  //no class for data.c (_id).
+                    const Class = classdoc.users.classes[0];
+                    const scheduledoc = await Institute.findOne({
                       uiid: response.user.uiid,
                       "schedule.classes": {
                         $elemMatch: { "classname": Class.classname },
@@ -200,7 +201,7 @@ admin.get("/session*", (req, res) => {
                         "schedule.classes.$": 1,
                       },
                     });
-                    if(!classScheduleInst){ //class exists:true, schedule:false
+                    if(!scheduledoc){ //class exists:true, schedule:false
                       return res.render(view.admin.scheduleview, {
                         group: { Class: true },
                         Class: Class,
@@ -208,15 +209,16 @@ admin.get("/session*", (req, res) => {
                         inst,
                       });
                     }
+                    clog("both");
                     return res.render(view.admin.scheduleview, { //both account and schedule
                       group: { Class: true },
                       Class: Class,
-                      schedule: classScheduleInst.schedule.classes[0],
+                      schedule: scheduledoc.schedule.classes[0],
                       inst,
                     });
                   } else {  //class considered not exists.
                     if(!data.classname) return res.render(view.notfound); //so classname must be provided for schedule.
-                    const classInst = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
+                    const classdoc = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
                       uiid: response.user.uiid,
                       "users.classes": {
                         $elemMatch: { "classname": data.classname },
@@ -227,8 +229,8 @@ admin.get("/session*", (req, res) => {
                         "users.classes.$": 1,
                       },
                     });
-                    if(classInst){  //then providing class _id to session, for previous condition.
-                      data['c'] = classInst.users.classes[0]._id;
+                    if(classdoc){  //then providing class _id to session, for previous condition.
+                      data['c'] = classdoc.users.classes[0]._id;
                       return res.redirect(worker.toSession(data.u,data))
                     }
                     const classScheduleInst = await Institute.findOne({ //finding schedule with classname
@@ -238,8 +240,8 @@ admin.get("/session*", (req, res) => {
                       },
                     },{
                       projection: {
-                      _id: 0,
-                      "schedule.classes.$": 1,
+                        _id: 0,
+                        "schedule.classes.$": 1,
                       },
                     });
                     if(!classScheduleInst)//no schedule found, so 404, as only schedule was requested.
@@ -247,6 +249,7 @@ admin.get("/session*", (req, res) => {
 
                     return res.render(view.admin.scheduleview, {  //class not found, so only schedule.
                       group: { Class: false },
+                      Class:false,
                       schedule: classScheduleInst.schedule.classes[0],
                       inst,
                     });
@@ -477,9 +480,10 @@ admin.post("/schedule", async (req, res) => {
     const inst = await Institute.findOne({ uiid: response.user.uiid });
     if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
     const body = req.body;
+    clog(body);
     switch (body.target) {
       case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,inst,body)});
-      case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(inst,body)});
+      case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,inst,body)});
     }
   }); 
 });

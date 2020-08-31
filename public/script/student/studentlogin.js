@@ -261,7 +261,24 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    this.forgotPassword.addEventListener(click, _=>{resetPasswordDialog(true,this.getEmail())}, false);
+    if (Number(sessionStorage.getItem("linkin")) > 0) {
+      opacityOf(this.forgotPassword, 0.5);
+      let time = Number(sessionStorage.getItem("linkin"));
+      const timer = setInterval(() => {
+        time--;
+        sessionStorage.setItem("linkin", time);
+        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+        if (Number(sessionStorage.getItem("linkin")) == 0) {
+          this.forgotPassword.innerHTML = "Get password link";
+          opacityOf(this.forgotPassword, 1);
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+          clearInterval(timer);
+        }
+      }, 1000);
+    } else {
+      this.forgotPassword.onclick = (_) => {this.linkSender()};
+    }
+
     this.previous.onclick = _=>{
       this.passField.hide();
       new Email();
@@ -306,7 +323,41 @@ class Password{
     opacityOf(this.view,show?0.5:1);
   }
 
-  
+  linkSender(){
+    if(!stringIsValid(this.getEmail(),validType.email)){ this.previous.click(); return snackBar('Provide your valid email address');}
+    snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
+      postJsonData(post.student.manage,{
+        external:true,
+        type:"resetpassword",
+        action:"send",
+        uiid:this.getUIID(),
+        classname:this.getClassname(),
+        email:this.getEmail()
+      }).then((resp)=>{
+        if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
+          return snackBar('An error occurred','Report');
+        }
+        snackBar(
+          "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
+        );
+        opacityOf(this.forgotPassword, 0.4);
+        this.forgotPassword.onclick = (_) => {};
+        let time = 120;
+        sessionStorage.setItem("linkin", time);
+        const timer = setInterval(() => {
+          time--;
+          sessionStorage.setItem("linkin", time);
+          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+          if (Number(sessionStorage.getItem("linkin")) == 0) {
+            clearInterval(timer);
+            this.forgotPassword.innerHTML = "Get password link";
+            opacityOf(this.forgotPassword, 1);
+          }
+        }, 1000);
+      })
+    })
+  }
+
   handleAuthResult=(result)=>{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{

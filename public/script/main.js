@@ -840,6 +840,7 @@ const authenticateDialog = (
             loginDialog.validateNow(0);
             loginDialog.validateNow(1);
           } else {
+            clog("clicked");
             loginDialog.loader();
             let postpath;
             switch(clientType){
@@ -965,11 +966,13 @@ const changeEmailBox = (clientType,isShowing = true) => {
             case client.teacher:postpath = post.teacher.self;break;
             case client.student:postpath = post.student.self;break;
           }
+          clog(postpath);
           postJsonData(postpath, {
             target: "account",
             action: code.action.CHANGE_ID,
             newemail: mailChange.getInputValue(0),
           }).then((response) => {
+            clog(response);
             if (response.event == code.OK) {
               return location.reload();
             }
@@ -1676,7 +1679,7 @@ let checkSessionValidation = (
           .catch((error) => {
             clog("error in admin validation");
             snackBar(
-              getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
               "Report"
             );
           });
@@ -1702,13 +1705,38 @@ let checkSessionValidation = (
           .catch((error) => {
             clog("error in teacher validation");
             snackBar(
-              getLogInfo(code.auth.AUTH_REQ_FAILED, jstr(error)),
+              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
               "Report",
               false
             );
           });
       }
       break;
+    case client.student:{
+      postData(post.student.sessionValidate)
+          .then((result) => {
+            if (result.event == code.auth.SESSION_INVALID) {
+              invalidAction();
+            } else {
+              if (validAction == null) {
+                validAction = (_) => {
+                  relocate(locate.student.session, {
+                    target: locate.student.target.dash,
+                  });
+                };
+              }
+              validAction();
+            }
+          })
+          .catch((error) => {
+            clog("error in teacher validation");
+            snackBar(
+              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
+              "Report",
+              false
+            );
+          });
+      }break;
     default: {
       clog("in target default");
       if (validAction == null) {
@@ -1731,11 +1759,22 @@ let checkSessionValidation = (
               };
             }
             break;
+          case client.student:
+            {
+              validAction = (_) => {
+                relocate(locate.student.session, {
+                  target: locate.student.target.dash,
+                });
+              };
+            }
+            break;
         }
       }
       checkSessionValidation(client.admin, null, (_) => {
         checkSessionValidation(client.teacher, null, (_) => {
-          invalidAction();
+          checkSessionValidation(client.student, null, (_) => {
+            invalidAction();
+          });
         });
       });
     }
