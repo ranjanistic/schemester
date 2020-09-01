@@ -9,7 +9,6 @@ const Admin = require("../config/db").getAdmin(),
   share = require("./common/sharedata"),
   { ObjectId } = require("mongodb"),
   session = require("./common/session");
-const { findOneAndUpdate } = require("../collections/Admins");
 
 class AdminWorker {
   constructor() {
