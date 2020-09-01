@@ -13,8 +13,8 @@ const express = require("express"),
   mailer = require("../workers/common/mailer"),
   worker = require("../workers/teacherworker"),
   share = require("../workers/common/sharedata"),
-  Institute = require("../collections/Institutions"),
-  Admin = require("../collections/Admins");
+  Institute = require("../config/db").getInstitute(),
+  Admin = require("../config/db").getAdmin();
 
 const sessionsecret = session.teachersessionsecret;
 teacher.use(cookieParser(sessionsecret));

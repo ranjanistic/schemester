@@ -1,16 +1,23 @@
 const MongoClient = require('mongodb').MongoClient;
 const dbName = "schemesterDB",
-getLocalDBLink = () => `mongodb://localhost:27017/${dbName}`,
-getCloudDBLink = () => `mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${dbName}?retryWrites=true&w=majority`;
+getLink=(cloud=false)=>cloud?`mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${dbName}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${dbName}`;
+var _db;
+const adcoll = "0administrators",instcoll = "1institutions";
+module.exports = {
+  connectToServer: ( callback )=>{
+    MongoClient.connect( getLink(),  { useNewUrlParser: true , useUnifiedTopology: true}, function( err, client ) {
+      _db  = client.db(dbName);
+      return callback( err );
+    });
+  },
 
-try {
-  const client = new MongoClient(getLocalDBLink(), { useNewUrlParser: true , useUnifiedTopology: true, keepAlive: 1});
-  client.connect();
-  const database = client.db(dbName);
-  if(database) console.log("connected to " + database.databaseName);
-  module.exports = database;
-} catch (e) {
-  console.log(e);
-}
-
-
+  getDb: ()=>{
+    return _db;
+  },
+  getAdmin:()=>{
+    return _db.collection(adcoll)
+  },
+  getInstitute:()=>{
+    return _db.collection(instcoll)
+  }
+};

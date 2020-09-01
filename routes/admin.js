@@ -11,10 +11,10 @@ const express = require("express"),
   share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/adminworker"),
-  Admin = require("../collections/Admins"),
-  Institute = require("../collections/Institutions");
+  Admin = require("../config/db").getAdmin(),
+  Institute = require("../config/db").getInstitute();
+  const sessionsecret = session.adminsessionsecret;
 
-const sessionsecret = session.adminsessionsecret;
 admin.use(cookieParser(sessionsecret));
 
 admin.get("/", function (_, res) {
@@ -52,6 +52,7 @@ admin.get("/session*", (req, res) => {
       if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       try {
         if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
+        clog(Admin);
         const admin = await Admin.findOne({ "_id": ObjectId(response.user.id) });
         if (!admin)
           return session.finish(res).then((response) => {
@@ -78,7 +79,6 @@ admin.get("/session*", (req, res) => {
             worker.toSession(adata.uid, { target: view.admin.target.dashboard })
           );
         }
-        clog(inst.pseudousers.teachers)
         try {
           switch (data.target) {
             case view.admin.target.addteacher: {

@@ -48,7 +48,7 @@ class UIID{
     
     if(localStorage.getItem('uiid')){
       if(!back){
-        this.rememberuiid.check();
+        this.rememberuiid.on();
         this.uiidField.setInput(localStorage.getItem('uiid'));
         sessionStorage.setItem('uiid',this.uiidField.getInput());
         this.uiidField.activate();

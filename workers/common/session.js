@@ -3,8 +3,8 @@ const { ObjectId } = require("mongodb");
 const code = require("../../public/script/codes"),
   jwt = require("../../node_modules/jsonwebtoken"),
   bcrypt = require("../../node_modules/bcryptjs"),
-  Admin = require("../../collections/Admins"),
-  Institute = require("../../collections/Institutions"),
+  Institute = require("../../config/db").getInstitute(),
+  Admin = require("../../config/db").getAdmin(),
   adminworker = require("../adminworker"),
   teacherworker = require("../teacherworker"),
   studentworker = require("../studentworker"),
@@ -29,7 +29,23 @@ class Session {
       return code.eventmsg(code.auth.SESSION_INVALID,e);
     }
   };
-
+  createSession(response,userID,userUIID,secret,studentclass = null){
+    const payload = studentclass?{
+      user: {
+        id: userID,
+        uiid: userUIID,
+        classname:studentclass
+      },
+    }:{
+      user: {
+        id: userID,
+        uiid: userUIID
+      },
+    };
+    clog(payload);
+    const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
+    return response.cookie(this.sessionKey, token, { signed: true });
+  }
   finish = async (response) => {
     await response.clearCookie(this.sessionKey);
     return code.event(code.auth.LOGGED_OUT);
@@ -214,23 +230,6 @@ class Session {
     }
   }
 
-  createSession(response,userID,userUIID,secret,studentclass = null){
-    const payload = studentclass?{
-      user: {
-        id: userID,
-        uiid: userUIID,
-        classname:studentclass
-      },
-    }:{
-      user: {
-        id: userID,
-        uiid: userUIID
-      },
-    };
-    clog(payload);
-    const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
-    return response.cookie(this.sessionKey, token, { signed: true });
-  }
   signup = async (request, response, secret,pseudo = false) => {
     switch (secret) {
       case this.adminsessionsecret:{
@@ -242,7 +241,7 @@ class Session {
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
-          const result = adminworker.self.account.createAccount({
+          const result = await adminworker.self.account.createAccount({
             username:username,
             email:email,
             password:epassword,
@@ -255,10 +254,12 @@ class Session {
               'showemailtostudent':false,
               'showphonetostudent':false,
             }
-          })
+          });
+          clog(result);
           if(result.event==code.NO) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           //account created
-          this.createSession(response,result._id,result.uiid,this.adminsessionsecret);
+          this.createSession(response,result._id,result.uiid,secret);
+          clog("session created?");
           return {
             event: code.auth.ACCOUNT_CREATED,
             user: share.getAdminShareData(result)

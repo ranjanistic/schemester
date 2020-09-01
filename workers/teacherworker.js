@@ -1,4 +1,4 @@
-const Institute = require("../collections/Institutions"),
+const Institute = require("../config/db").getInstitute(),
   view = require("../hardcodes/views"),
   code = require("../public/script/codes"),
   verify = require("./common/verification"),

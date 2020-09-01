@@ -1,5 +1,5 @@
-const Admin = require("../collections/Admins"),
-  Institute = require("../collections/Institutions"),
+const Admin = require("../config/db").getAdmin(),
+  Institute = require("../config/db").getInstitute(),
   view = require("../hardcodes/views"),
   bcrypt = require("bcryptjs"),
   code = require("../public/script/codes"),
@@ -75,7 +75,7 @@ class Self {
 
       async createAccount(newadmin) {
         const result = await Admin.insertOne(newadmin);
-        return result.insertedCount == 0 ? result.ops[0] : code.event(code.NO);
+        return result.insertedCount == 0 ?code.event(code.NO): result.ops[0];
       }
 
       /**
@@ -496,6 +496,10 @@ class Default {
       users: {
         teachers: [],
         classes: [],
+      },
+      pseudousers:{
+        teachers:[],
+        classes:[],
       },
       schedule: {
         teachers: [],

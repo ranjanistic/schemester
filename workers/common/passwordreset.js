@@ -2,8 +2,8 @@ const code = require("../../public/script/codes"),
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),
-  Institute = require("../../collections/Institutions"),
-  Admin = require("../../collections/Admins");
+  Institute = require("../../config/db").getInstitute(),
+  Admin = require("../../config/db").getAdmin();
 
 class PasswordReset {
   constructor() {

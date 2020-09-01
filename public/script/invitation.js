@@ -87,7 +87,8 @@ class Active {
         this.emailField.showError("Account already exists");
       } else {
         clog("posting");
-        postData(`/${data.target}/auth/signup`, {
+        postData(post.teacher.auth, {
+          action:post.teacher.action.signup,
           username: username,
           email: usermail,
           password: userpass,

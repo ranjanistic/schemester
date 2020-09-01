@@ -1,4 +1,6 @@
 const code = require("../../public/script/codes"),
+  Institute = require("../../config/db").getInstitute(),
+  Admin = require("../../config/db").getAdmin(),
   time = require("./timer");
 class Invitation {
   constructor() {

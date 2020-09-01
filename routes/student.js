@@ -13,8 +13,8 @@ const express = require("express"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/studentworker"),
-  Institute = require("../collections/Institutions"),
-  Admin = require("../collections/Admins");
+  Institute = require("../config/db").getInstitute(),
+  Admin = require("../config/db").getAdmin();
 
 const sessionsecret = session.studentsessionsecret;
 student.use(cookieParser(sessionsecret));
