@@ -1,53 +1,207 @@
 const code = require("../../public/script/codes"),
   Institute = require("../../config/db").getInstitute(),
   Admin = require("../../config/db").getAdmin(),
-  time = require("./timer");
+  time = require("./timer"),
+  {ObjectId} = require("mongodb");
 class Invitation {
   constructor() {
     this.type = "invitation";
     this.target = new Target();
-    this.domain = "http://localhost:3000";  //todo
+    this.domain = code.domain
     this.defaultValidity = 7;
   }
 
-/**
+  /**
    * Generates a new invitation link based on given parameters.
-   * @param {String} adminID The id of admin for which institution verificaiton link is to be generated, can be passed from Invitaiton().target.
-   * @param {String} instID The id of institution in which invitation is to be generated.
    * @param {String} target The target group for which invitation link is to be generated (teachers by admin, students by teacher incharges).
+   * @param {JSON} data The key value pairs according to target.
    * @param {Number} validdays The number of days this link remains valid for. Defaults to 7.
-   * @returns {JSON} Returns expiry and creation time according to SGT notation, and the generated link, as key value pairs
+   * @returns {Promise} Returns expiry and creation time according to SGT notation, and the generated link, as key value pairs
    *  of link,create,exp.
    */
   generateLink = async (
-    adminID,
-    instID,
     target,
+    data,
     validdays = this.defaultValidity
   ) => {
-    let creationTime = time.getTheMoment(false);
-    let expiryTime = time.getTheMoment(false, validdays);
-    let link = `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}&t=${creationTime}`;
-    clog("generated");
-    clog(link);
-    return {
-      link: link,
-      create: creationTime,
-      exp: expiryTime,
-    };
+    switch(target){
+      case this.target.teacher:{
+        const instdoc = await Institute.findOne({"_id":ObjectId(data.instID)},{projection:{"invite":1}});
+        if (instdoc.invite[target].active == true) {
+          if (this.isActive(this.checkTimingValidity(
+            instdoc.invite[target].createdAt,
+            instdoc.invite[target].expiresAt,
+            instdoc.invite[target].createdAt
+            ))) {
+              clog("already active");
+            let link = this.getTemplateLink(
+              target,
+              data,
+              instdoc.invite[target].createdAt
+            );
+            clog("templated");
+            clog(link);
+            clog("returning existing link");
+            return {
+              event: code.invite.LINK_EXISTS,
+              link: link,
+              exp: instdoc.invite[target].expiresAt,
+            };
+          }
+        }
+      }break;
+      case this.target.student:{
+        const classdoc = await Institute.findOne({"_id":ObjectId(data.instID),"users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}},{
+          projection:{"users.classes.$.invite":1}
+        });
+        if(!classdoc) return code.inst.CLASS_NOT_FOUND;
+        const Class = classdoc.users.classes[0];
+        if(Class.invite[target].active == true){
+          if(this.isActive(this.checkTimingValidity(
+            Class.invite[target].createdAt,
+            Class.invite[target].expiresAt,
+            Class.invite[target].createdAt
+          ))){
+            let link = this.getTemplateLink(
+              target,
+              data,
+              Class.invite[target].createdAt
+            );
+            clog("templated");
+            clog(link);
+            clog("returning existing link");
+            return {
+              event: code.invite.LINK_EXISTS,
+              link: link,
+              exp: Class.invite[target].expiresAt,
+            };
+          }
+        }
+      }break;
+    }
+    const creationTime = time.getTheMoment(false);
+    const expiryTime = time.getTheMoment(false, validdays);
+    let link;
+    switch (target) {
+      case this.target.teacher: {
+        const path = `invite.${target}`;
+        const document = await Institute.findOneAndUpdate(
+          { "_id": ObjectId(data.instID) },
+          {
+            $set: {
+              [path]: {
+                active: true,
+                createdAt: creationTime,
+                expiresAt: expiryTime,
+              },
+            },
+          }
+        );
+        link = this.getTemplateLink(
+          target,
+          data,
+          creationTime
+        );
+        clog("generated");
+        clog(document);
+        clog(link);
+        return document.value
+        ? {
+          event: code.invite.LINK_CREATED,
+          link: link,
+          exp: expiryTime,
+        }: code.event(code.invite.LINK_CREATION_FAILED);
+      }break;
+      case this.target.student:{
+        const path = `users.classes.$.invite.student`;
+        const document = await Institute.updateOne(
+          { "_id": ObjectId(data.instID) , "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}},
+          {
+            $set: {
+              [path]: {
+                active: true,
+                createdAt: creationTime,
+                expiresAt: expiryTime,
+              },
+            },
+          }
+        );
+        link = this.getTemplateLink(
+          target,
+          data,
+          creationTime
+        );
+        clog("generated");
+        clog(document.result);
+        clog(link);
+        return document.result.nModified
+        ? {
+          event: code.invite.LINK_CREATED,
+          link: link,
+          exp: expiryTime,
+        }: code.event(code.invite.LINK_CREATION_FAILED);
+      }
+    }
   };
+
+  async disableInvitation(target,data){
+    switch(target){
+      case this.target.teacher:{
+        const path = `invite.${target}`;
+        const doc = await Institute.findOneAndUpdate(
+          { "_id": ObjectId(data.instID) },
+          {
+            $set: {
+              [path]: {
+                active: false,
+                createdAt: 0,
+                expiresAt: 0,
+              },
+            },
+          }
+        );
+        clog("returning");
+        return doc.value
+          ? code.event(code.invite.LINK_DISABLED)
+          : code.event(code.invite.LINK_DISABLE_FAILED);
+      }
+      case this.target.student:{
+        const path = `users.classes.$.invite.student`;
+        const doc = await Institute.findOneAndUpdate(
+          { "_id": ObjectId(data.instID),"users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}} },
+          {
+            $set: {
+              [path]: {
+                active: false,
+                createdAt: 0,
+                expiresAt: 0,
+              },
+            },
+          }
+        );
+        clog("returning");
+        return doc.value
+          ? code.event(code.invite.LINK_DISABLED)
+          : code.event(code.invite.LINK_DISABLE_FAILED);
+      }
+    }
+  }
 
   /**
    * Returns dummy link for given parameters.
-   * @param adminID The id of admin to be inserted.
-   * @param instID The institution id to be inserted.
-   * @param target The target group for which link is to be generated.
-   * @param createdAt The creation time to be inserted in the link.
-   * @returns The produced link identical to actual invitation link.
+   * @param {String} target The target group for which link is to be generated.
+   * @param {JSON} data The key value pairs according to target.
+   * @param {any} createdAt The creation time to be inserted in the link.
+   * @returns {String} The produced link identical to actual invitation link.
    * @note This method does not generate an actual invitation link. For invitation purposes, see generateLink() method of Invitation class.
    */
-  getTemplateLink(adminID, instID, target, createdAt) {
-    return `${this.domain}/${target}/external?type=${this.type}&in=${instID}&ad=${adminID}&t=${createdAt}`;
+  getTemplateLink(target,data, createdAt) {
+    switch(target){
+      case this.target.teacher:
+        return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&ad=${data.uid}&t=${createdAt}`;
+      case this.target.student:
+        return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&t=${createdAt}`;
+    }
   }
 
   /**
@@ -56,7 +210,7 @@ class Invitation {
    * @param expiration The expiration time in SGT notation.
    * @param linktime The given creation time of link in the link in SGT notation.(to check if link has been tampered.)
    */
-  checkTimingValidity(creation, expiration, linktime){
+  checkTimingValidity(creation, expiration, linktime) {
     let current = time.getTheMoment(false);
     clog("times of link");
     let t = Number(linktime);
@@ -72,7 +226,6 @@ class Invitation {
       linktime != String(creation) ||
       current < creation
     ) {
-      clog("first invalid");
       return code.event(code.invite.LINK_INVALID);
     }
     if (current > expiration) {
@@ -82,9 +235,8 @@ class Invitation {
       return code.event(code.invite.LINK_ACTIVE);
     }
     return code.event(code.invite.LINK_INVALID);
-  };
+  }
 
-  
   /**
    * Checks if given response is active for link validation.
    * @param {JSON} response This should contain a key 'event' with some link validity code value.
@@ -104,7 +256,7 @@ class Invitation {
   isExpired(response) {
     return response.event == code.invite.LINK_EXPIRED;
   }
-  
+
   /**
    * Checks if given response is invalid for link validation.
    * @param {JSON} response This should contain a key 'event' with some link validity code value.

@@ -22,29 +22,35 @@
             </div>
             <% if (teacher) { %>
                 <div  class="fmt-col">
+                    <div class="fmt-half fmt-padding-small">
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="fmt-row group-heading questrial">Account</div>
                         <div class="caption">Logged in as</div>
-                        <div class="fmt-row" id="teachernameview">
-                            <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
-                            <span class="caption" style="font-size:12px" id="editteachername">✒️</span>
+                        <div class="fmt-col fmt-threequarter">
+                            <div class="fmt-row" id="teachernameview">
+                                <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
+                                <span class="caption" style="font-size:12px" id="editteachername">✒️</span>
+                            </div>
+                            <div id="teachernameeditor">
+                                <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
+                                    <legend class="field-caption questrial">Change your name</legend>
+                                    <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
+                                    <span class="fmt-right error-caption"  id="teachernameerror"></span>
+                                </fieldset>
+                                <button class="positive-button caption" id="saveteachername">Save</button>
+                                <button class="neutral-button caption" id="cancelteachername">Cancel</button>
+                            </div>
+                            <div class="active questrial caption">
+                                <%= teacher.id %>
+                            </div>
                         </div>
-                        <div id="teachernameeditor">
-                            <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
-                                <legend class="field-caption questrial">Change your name</legend>
-                                <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
-                                <span class="fmt-right error-caption"  id="teachernameerror"></span>
-                            </fieldset>
-                            <button class="positive-button caption" id="saveteachername">Save</button>
-                            <button class="neutral-button caption" id="cancelteachername">Cancel</button>
+                        <div class="fmt-col fmt-quarter ">
+                            <button class="negative-button fmt-center wide" id="logout">Logout</button>
                         </div>
-                        <div class="active questrial caption">
-                            <%= teacher.id %>
-                        </div>
-                        <button class="negative-button fmt-center wide" id="logout">Logout</button>
                     </div>
+
                     <div class="fmt-row tab-container b-neutral" id="themetab">
-                        <span class="group-text positive">Set Theme</span>
+                        <span class="group-text positive">Dark Mode</span>
                         <span class="fmt-right">
                             <label class="switch-container">
                                 <input type="checkbox" id="darkmode">
@@ -55,14 +61,19 @@
                     <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
                         Change email address <span class="fmt-right">✒️</span>
                     </div>
-                    <div class="fmt-row tab-container b-neutral">
-                        Change password <span class="fmt-right pointer" id="resetpass">✒️</span>
-                        <button class="fmt-row wide tab-container warning-button" id="forgotpass">Forgot password</button>
+                    <div class="fmt-row fmt-center tab-container b-neutral">
+                        <div class="fmt-col fmt-half ">
+                            <button class="tab-container neutral-button" id="resetpass">Change password</button>
+                        </div>
+                        <div class="fmt-col fmt-half ">
+                            <button class=" tab-container warning-button" id="forgotpass">Forgot password</button>
+                        </div>
                     </div>
                     <div class="fmt-row tab-container b-neutral">
                         <button class="fmt-row fmt-right negative-button questrial" id="deleteaccount">DELETE ACCOUNT</button>
                     </div>
-                    <br/>
+                    </div>
+                    <div class="fmt-half fmt-padding-small">
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="fmt-row group-heading questrial">Information</div>
                         <div class="caption">Institution</div>
@@ -102,6 +113,7 @@
                         break lasts for <span class="active"><%= defaults.timings.breakMinutes %> minutes</span>.<br/>
                         You have <span class="active"><%= defaults.timings.periodsInDay %></span> periods every working day, where
                         <span class="active"><%= getDaysArray(defaults.timings.daysInWeek) %></span> are your working days.</div>
+                    </div>
                     </div>
                 </div>
              <% } else { %>

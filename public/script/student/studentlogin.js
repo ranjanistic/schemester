@@ -350,8 +350,9 @@ class Password{
           this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
           if (Number(sessionStorage.getItem("linkin")) == 0) {
             clearInterval(timer);
-            this.forgotPassword.innerHTML = "Get password link";
+            this.forgotPassword.innerHTML = "Forget password";
             opacityOf(this.forgotPassword, 1);
+            this.forgotPassword.onclick = (_) => {this.linkSender()};
           }
         }, 1000);
       })

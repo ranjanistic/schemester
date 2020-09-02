@@ -252,6 +252,7 @@ student.get("/fragment*", (req, res) => {
           clog(adminpref);
           return res.render(view.student.getViewByTarget(query.fragment), {student,defaults:classuser.default,adminemailvisible:adminpref.prefs.showemailtostudent,adminphonevisible:adminpref.prefs.showphonetostudent});
         }
+        default:return res.render(view.notfound);
       }
     });
 });
@@ -302,14 +303,15 @@ student.post("/manage", async (req, res) => {
         classdoc = await Institute.findOne({uiid:response.user.uiid,"pseudousers.classes":{$elemMatch:{"classname":response.user.classname}}},
         {projection:{"_id":1,"pseudousers.classes.$._id":1}});
         if(!classdoc) return false;
-        body['classID'] = classdoc.pseudousers.classes[0]._id;
+        body['cid'] = classdoc.pseudousers.classes[0]._id;
       } else {
-        body['classID'] = classdoc.users.classes[0]._id;
+        body['cid'] = classdoc.users.classes[0]._id;
       }
       body['instID'] = classdoc._id;
       clog(body);
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
+        case reset.type:return res.json({result:await worker.self.handlePassReset(response.user,body)});
         default: return res.sendStatus(500);
       }
     });

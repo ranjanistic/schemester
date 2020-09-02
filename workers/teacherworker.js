@@ -1,6 +1,7 @@
 const Institute = require("../config/db").getInstitute(),
   view = require("../hardcodes/views"),
   code = require("../public/script/codes"),
+  invite = require("./common/invitation"),
   verify = require("./common/verification"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
@@ -349,11 +350,10 @@ class Self {
       }
     }
   };
-  handlePassReset = async (user, body, anonymous = false) => {
+  handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":
-        {
-          if (anonymous) {
+      case "send":{
+          if (!user) {
             //user not logged in
             const userdoc = await Institute.findOne(
               {
@@ -602,10 +602,23 @@ class Classroom {
     }
   }
   async updateClassroom(user, teacher, body, classroom) {
+    clog(user.uiid);
+    clog(classroom);
+    clog(teacher.teacherID);
+    clog(body.studentID);
     switch (body.specific) {
       case "addstudent": {
-      }
+      }break;
       case "removestudent": {
+        const deldoc = await Institute.updateOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classroom.classname}}},{
+          $pull:{
+            "users.classes.$[outer].students":{studentID:body.studentID}
+          }
+        },{
+          arrayFilters:[{"outer.inchargeID":teacher.teacherID}]
+        });
+        clog(deldoc.result)
+        return code.event(deldoc.result.nModified?code.OK:code.NO);
       }
     }
   }
@@ -632,10 +645,22 @@ class Classroom {
     };
   }
 
-  async handleInvitation(user, body, teacher, classroom) {
+  async handleInvitation(user, body, teacher, classroom,instID) {
+    clog(body);
     switch (body.action) {
-      case "create":
-        return await this.createStudentInviteLink();
+      case "create":{
+        return await invite.generateLink(invite.target.student,{
+          cid:classroom._id,
+          instID:instID
+        });
+      }break;
+      case "disable":{
+        return await invite.disableInvitation(invite.target.student,{
+          cid:classroom._id,
+          instID:instID
+        });
+      }
+        
     }
     return;
   }

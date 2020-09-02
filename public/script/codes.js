@@ -1,5 +1,6 @@
 class Codes {
   constructor() {
+    this.domain = "http://localhost:3000";//todo
     this.OK = "OK/true";
     this.NO = "NO/false";
     class Servercodes {
@@ -332,6 +333,7 @@ class Locations {
                 this.fullweek = "fullschedule";
                 this.classroom = "classroom";
                 this.about = "about";
+                this.settings = "about";
               }
             }
             this.fragment = new Fragment();

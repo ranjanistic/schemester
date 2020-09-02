@@ -26,7 +26,7 @@
     <body>
         <% if(student.pseudo) { %>
             <div id="topBar">
-                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root,{client:client.teacher})">
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root,{client:client.student})">
                 <span>Dashboard</span>
                 <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
                 <span class="fmt-right">
@@ -60,23 +60,27 @@
         </div>
         <div class="fmt-row bottom-tab fmt-center fmt-animate-bottom">
             <button class="fmt-col bottom-tab-section fourth" id="todaytab">
-                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                <img width="25" class="fmt-spin-fast" src="/graphic/blueLoader.svg" id="todayload"/><br/>
                 Today
             </button>
             <button class="fmt-col bottom-tab-section fourth" id="fulltab">
-                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                <img width="25" class="fmt-spin-fast" src="/graphic/blueLoader.svg" id="weekload"/><br/>
                 Week
             </button>
             <button class="fmt-col bottom-tab-section fourth" id="classtab">
-                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                <img width="25" class="fmt-spin-fast" src="/graphic/blueLoader.svg" id="classload"/><br/>
                 Class
             </button>
             <button class="fmt-col bottom-tab-section fourth" id="settingstab">
-                <img width="30" src="/graphic/blueLoader.svg"/><br/>
+                <img width="25" class="fmt-spin-fast" src="/graphic/blueLoader.svg" id="aboutload"/><br/>
                 About
             </button>
         </div>
         <% } %>
+        <div id="dialogView" class="dialog fmt-animate-bottom">
+            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
         <div id="snackBar" class="fmt-animate-bottom">
             <span id="snackText"></span>
             <button id="snackButton"></button>

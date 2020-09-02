@@ -53,7 +53,7 @@ class StudentAbout {
             this.name.setDisplayText(this.name.getInputValue());
             this.name.display();
           } else {
-            snackBar("Unable to save");
+            parent.snackbar("Unable to save");
           }
         });
       });
@@ -66,7 +66,9 @@ class StudentAbout {
       };
       this.resetpass.onclick = (_) => {
         authenticateDialog(client.student, (_) => {
-          resetPasswordDialog(client.student, true);
+          resetPasswordDialog(client.student, true,_=>{
+            parent.snackbar('Your password was changed','OK');
+          });
         });
       };
       if (Number(sessionStorage.getItem("linkin")) > 0) {
@@ -81,13 +83,13 @@ class StudentAbout {
             this.forgotpass.innerHTML = "Forgot password";
             opacityOf(this.forgotpass, 1);
             this.forgotpass.onclick = (_) => {
-              this.linkSender();
+              this.sendForgotLink()
             };
           }
         }, 1000);
       } else {
         this.forgotpass.onclick = (_) => {
-          this.linkSender();
+          this.sendForgotLink()
         };
       }
   
@@ -102,6 +104,27 @@ class StudentAbout {
         );
       };
     }
+    sendForgotLink(){
+      parent.linkSender().then(done=>{
+        if(done){
+          opacityOf(this.forgotPassword, 0.4);
+          this.forgotPassword.onclick = (_) => {};
+          let time = 120;
+          sessionStorage.setItem("linkin", time);
+          const timer = setInterval(() => {
+            time--;
+            sessionStorage.setItem("linkin", time);
+            this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+            if (Number(sessionStorage.getItem("linkin")) == 0) {
+              clearInterval(timer);
+              this.forgotPassword.innerHTML = "Forgot password";
+              opacityOf(this.forgotPassword, 1);
+              this.forgotPassword.onclick = (_) => {this.linkSender()};
+            }
+          }, 1000);
+        }
+      })
+    }
     accountdeletion() {
       const delconf = new Dialog();
       delconf.setDisplay(
@@ -112,8 +135,8 @@ class StudentAbout {
           <div>
           <ul>
           <li>You will not be able to recover your account forever.</li>
-          <li>Your will be removed from your institution.</li>
-          <li>Your schedule however, will remain untouched (only administrator can delete that).</li>
+          <li>Your will be removed from your classroom and institution.</li>
+          <li>If you will create a new account after this, you'll have to request again to join.</li>
           <li>Make sure you truly understand what your next step will lead to.</li>
           </ul><br/>
           <div class="active">If only your email address is changed, then you can <a onclick="changeEmailBox(client.student)">change your account email address</a>, rather than deleting it.</div>
@@ -135,7 +158,7 @@ class StudentAbout {
               if (response.event == code.OK) {
                 relocate(locate.root);
               } else {
-                snackBar("Action Failed");
+                parent.snackbar("Action Failed");
               }
             });
           },
@@ -145,45 +168,15 @@ class StudentAbout {
         )
       );
       let time = 60;
-      const snack = new Snackbar();
-      snack.show();
       let timer = setInterval(() => {
         time--;
         delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
         if (time == 0) {
           clearInterval(timer);
           delconf.hide();
-          snack.hide();
         }
       }, 1000);
     }
-    linkSender() {
-      postJsonData(post.student.manage, {
-        type: "resetpassword",
-        action: "send",
-      }).then((response) => {
-        clog(response);
-        if (response.event == code.mail.MAIL_SENT) {
-          snackBar(
-            "A link for password reset has been sent to your email address."
-          );
-          opacityOf(this.forgotpass, 0.4);
-          this.forgotpass.onclick = (_) => {};
-          let time = 120;
-          sessionStorage.setItem("linkin", time);
-          const timer = setInterval(() => {
-            time--;
-            sessionStorage.setItem("linkin", time);
-            this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
-            if (Number(sessionStorage.getItem("linkin")) == 0) {
-              clearInterval(timer);
-              this.forgotpass.innerHTML = "Get password link";
-              opacityOf(this.forgotpass, 1);
-            }
-          }, 1000);
-        }
-      });
-    }
-  }
+}
   window.onload = (_) => new StudentAbout();
   

@@ -240,6 +240,12 @@ teacher.get("/fragment*", (req, res) => {
           worker.classroom.getClassroom(response.user,teacher)
             .then((resp) => {
               clog(resp);
+              resp.pseudostudents.forEach((pstud,s)=>{
+                resp.pseudostudents[s] = share.getPseudoStudentShareData(pstud);
+              });
+              resp.classroom.students.forEach((stud,s)=>{
+                resp.classroom.students[s] = share.getStudentShareData(stud);
+              });
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 classroom: resp.classroom,
                 pseudostudents:resp.pseudostudents,
@@ -323,19 +329,22 @@ teacher.post("/classroom",async(req,res)=>{
     .then(async(response) => {
       if(!session.valid(response)) return res.json(invalidsession);
       const teacherdoc = await Institute.findOne({uiid:response.user.uiid, "users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}},
-        {projection:{"users.teachers.$":1}}
+        {projection:{"users.teachers.$":1,"_id":1}}
       );
       const teacher = teacherdoc.users.teachers[0];
-      const classdoc = await Institute.findOne({uiid:response.user.uiid, "users.classes":{$elemMatch:{"incharge":teacher.teacherID}}},{
+      const instID = teacherdoc._id;
+      const classdoc = await Institute.findOne({uiid:response.user.uiid, "users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
         projection:{"users.classes.$":1}
       });
       const classroom = classdoc?classdoc.users.classes[0]:false;
       const body = req.body;
-      clog(body);
+      clog("hereree");
+      clog(teacher);
+      clog(classroom);
       switch(body.target){
         case "classroom":return res.json({ result:await worker.classroom.manageClassroom(response.user,body,teacher,classroom)});
         case "pseudousers": return res.json({ result:await worker.pseudo.managePseudousers(response.user,body,teacher)});
-        case "invitation":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom)});
+        case "invite":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom,instID)});
       }
     });
 });
@@ -433,7 +442,7 @@ teacher.post("/manage", async (req, res) => {
   const body = req.body;
   if(body.external){
     switch (body.type) {
-      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body,true)});
+      case reset.type:return res.json({result:await worker.self.handlePassReset(null,body)});
     }
   }
   session
@@ -450,6 +459,7 @@ teacher.post("/manage", async (req, res) => {
       clog(body);
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
+        case reset.type:return res.json({result:await worker.self.handlePassReset(response.user,body)});
         default: return res.sendStatus(500);
       }
     });

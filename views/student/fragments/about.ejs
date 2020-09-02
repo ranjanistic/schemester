@@ -1,5 +1,8 @@
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
         <link rel = "stylesheet" href="/css/switch.css">
@@ -22,13 +25,16 @@
             </div>
             <% if (student) { %>
                 <div  class="fmt-col">
+                    <div class="fmt-half fmt-padding-small">
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="fmt-row group-heading questrial">Account</div>
                         <div class="caption">Logged in as</div>
-                        <div class="fmt-row" id="studentnameview">
-                            <span class=" positive questrial" id="studentname"><%= student.username %></span>
-                            <span class="caption" style="font-size:12px" id="editstudentname">✒️</span>
-                        </div>
+                        <div class="fmt-col fmt-half">
+                            
+                            <div class="fmt-row" id="studentnameview">
+                                <span class=" positive questrial" id="studentname"><%= student.username %></span>
+                                <span class="caption" style="font-size:12px" id="editstudentname">✒️</span>
+                            </div>
                         <div id="studentnameeditor">
                             <fieldset class="text-field questrial" style="margin:0" id="studentnamefield">
                                 <legend class="field-caption questrial">Change your name</legend>
@@ -41,7 +47,10 @@
                         <div class="active questrial caption">
                             <%= student.id %>
                         </div>
-                        <button class="negative-button fmt-center wide" id="logout">Logout</button>
+                        </div>
+                        <div class="fmt-col fmt-half">
+                            <button class="negative-button fmt-center wide" id="logout">Logout</button>
+                        </div>
                     </div>
                     <div class="fmt-row tab-container b-neutral" id="themetab">
                         <span class="group-text positive">Set Theme</span>
@@ -55,14 +64,20 @@
                     <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
                         Change email address <span class="fmt-right">✒️</span>
                     </div>
-                    <div class="fmt-row tab-container b-neutral">
-                        Change password <span class="fmt-right pointer" id="resetpass">✒️</span>
-                        <button class="fmt-row wide tab-container warning-button" id="forgotpass">Forgot password</button>
+                    <div class="fmt-row fmt-center tab-container b-neutral">
+                        <div class="fmt-col fmt-half ">
+                            <button class="tab-container neutral-button" id="resetpass">Change password</button>
+                        </div>
+                        <div class="fmt-col fmt-half ">
+                            <button class=" tab-container warning-button" id="forgotpass">Forgot password</button>
+                        </div>
                     </div>
                     <div class="fmt-row tab-container b-neutral">
                         <button class="fmt-row fmt-right negative-button questrial" id="deleteaccount">DELETE ACCOUNT</button>
                     </div>
-                    <br/>
+                </div>
+                    <div class="fmt-half fmt-padding-small">
+
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="fmt-row group-heading questrial">Information</div>
                         <div class="caption">Institution</div>
@@ -104,18 +119,20 @@
                         <span class="active"><%= getDaysArray(defaults.timings.daysInWeek) %></span> are your working days.</div>
                     </div>
                 </div>
+                </div>
+
              <% } else { %>
                 An error occurred
             <% } %>
         </div>
 
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+        <div id="dialogView" class="dialog fmt-animate-bottom">
+            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>
-        <div id="snackBar" class="snack-positive fmt-animate-bottom">
-            <span class="fmt-left fmt-padding" id="snackText"></span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
+        <div id="snackBar" class="fmt-animate-top">
+            <span id="snackText"></span>
+            <button id="snackButton"></button>
         </div>
 
         <span hidden>

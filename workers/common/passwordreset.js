@@ -50,6 +50,7 @@ class PasswordReset {
         }break;
         case this.target.student:{
           clog("hersdfe");
+          clog(data);
           const studdoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
             $set:{
               "users.classes.$[outer].students.$[outer1].rlinkexp":exp
@@ -57,7 +58,7 @@ class PasswordReset {
           },{
             arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
           });
-          clog(studdoc);
+          clog(studdoc.result);
           if(!studdoc.result.nModified){
             const pseudodoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
               $set:{
@@ -66,6 +67,7 @@ class PasswordReset {
             },{
               arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
             });
+            clog(pseudodoc.result);
             if(!pseudodoc.result.nModified) return false;
           }
           link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&u=${data.uid}`;

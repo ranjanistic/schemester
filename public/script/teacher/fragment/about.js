@@ -53,7 +53,7 @@ class TeacherAbout {
           this.name.setDisplayText(this.name.getInputValue());
           this.name.display();
         } else {
-          snackBar("Unable to save");
+          parent.snackbar("Unable to save");
         }
       });
     });
@@ -66,7 +66,9 @@ class TeacherAbout {
     };
     this.resetpass.onclick = (_) => {
       authenticateDialog(client.teacher, (_) => {
-        resetPasswordDialog(client.teacher, true);
+        resetPasswordDialog(client.teacher, true,_=>{
+          parent.snackbar('Your password was changed','OK');
+        });
       });
     };
     if (Number(sessionStorage.getItem("linkin")) > 0) {
@@ -81,13 +83,13 @@ class TeacherAbout {
           this.forgotpass.innerHTML = "Forgot password";
           opacityOf(this.forgotpass, 1);
           this.forgotpass.onclick = (_) => {
-            this.linkSender();
+            this.sendForgotLink();
           };
         }
       }, 1000);
     } else {
       this.forgotpass.onclick = (_) => {
-        this.linkSender();
+        this.sendForgotLink();
       };
     }
 
@@ -135,7 +137,7 @@ class TeacherAbout {
             if (response.event == code.OK) {
               relocateParent(locate.root);
             } else {
-              snackBar("Action Failed");
+              parent.snackbar("Action Failed");
             }
           });
         },
@@ -145,28 +147,19 @@ class TeacherAbout {
       )
     );
     let time = 60;
-    const snack = new Snackbar();
-    snack.show();
     let timer = setInterval(() => {
       time--;
       delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
       if (time == 0) {
         clearInterval(timer);
         delconf.hide();
-        snack.hide();
       }
     }, 1000);
   }
-  linkSender() {
-    postJsonData(post.teacher.manage, {
-      type: "resetpassword",
-      action: "send",
-    }).then((response) => {
-      clog(response);
-      if (response.event == code.mail.MAIL_SENT) {
-        snackBar(
-          "A link for password reset has been sent to your email address."
-        );
+  sendForgotLink() {
+    parent.linkSender().then((done) => {
+      clog(done);
+      if (done) {
         opacityOf(this.forgotpass, 0.4);
         this.forgotpass.onclick = (_) => {};
         let time = 120;
@@ -177,8 +170,9 @@ class TeacherAbout {
           this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
           if (Number(sessionStorage.getItem("linkin")) == 0) {
             clearInterval(timer);
-            this.forgotpass.innerHTML = "Get password link";
+            this.forgotpass.innerHTML = "Forgot password";
             opacityOf(this.forgotpass, 1);
+            this.forgotpass.onclick=_=>{this.sendForgotLink()};
           }
         }, 1000);
       }

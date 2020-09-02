@@ -882,7 +882,10 @@ const authenticateDialog = (
   loginDialog.existence(isShowing);
 };
 
-const resetPasswordDialog = (clientType,isShowing = true) => {
+const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackBar(
+    "Your password was changed.",
+    "Done"
+  )}) => {
   const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
@@ -920,10 +923,7 @@ const resetPasswordDialog = (clientType,isShowing = true) => {
         }).then(response=>{
           if(response.event == code.OK){
             resetDialog.hide();
-            return snackBar(
-              "Your password was changed.",
-              "Done"
-            );
+            return onpasschange();
           }
           resetDialog.loader(false);
           snackBar(response.event,'Report');
@@ -937,12 +937,12 @@ const resetPasswordDialog = (clientType,isShowing = true) => {
   resetDialog.existence(isShowing);
 };
 
-const changeEmailBox = (clientType,isShowing = true) => {
+const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType == client.admin?location.reload():parent.location.reload()}) => {
   authenticateDialog(clientType,(_) => {
     const mailChange = new Dialog();
     mailChange.setDisplay(
       "Change Email Address",
-      "Provide your the new email address. You'll be logged out after successful change, for verification purposes."
+      "Provide the new email address. You'll have to verify this in next step."
     );
     mailChange.createInputs(
       Array("New email address"),
@@ -951,7 +951,7 @@ const changeEmailBox = (clientType,isShowing = true) => {
       Array(validType.email)
     );
     mailChange.createActions(
-      Array("Change Email ID", "Abort"),
+      Array("Change email ID", "Abort"),
       Array(actionType.negative, actionType.neutral)
     );
     mailChange.validate(0);
@@ -974,7 +974,7 @@ const changeEmailBox = (clientType,isShowing = true) => {
           }).then((response) => {
             clog(response);
             if (response.event == code.OK) {
-              return location.reload();
+              return onemailchange();
             }
             mailChange.loader(false);
             switch (response.event) {

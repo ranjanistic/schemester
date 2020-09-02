@@ -161,10 +161,13 @@ class Self {
         const pseudo = student?false:true;
         student = student?student:await getStudentById(user.uiid,user.classname,user.id,true);
         if(!student) return code.event(code.auth.USER_NOT_EXIST);
+        if(student.studentID == body.newemail) return code.event(code.auth.SAME_EMAIL);
         const mailpath = pseudo?`${pseudopath}.$[outer].students.$[outer1].${this.studentID}`:`${this.path}.$[outer].students.$[outer1].${this.studentID}`;
+        const verifypath = pseudo?`${pseudopath}.$[outer].students.$[outer1].${this.verified}`:`${this.path}.$[outer].students.$[outer1].${this.verified}`;
         const newstudent = await Institute.updateOne({uiid:user.uiid},{
           $set:{
-            [mailpath]:body.newemail
+            [mailpath]:body.newemail,
+            [verifypath]:false
           }
         },{
           arrayFilters:[{'outer.classname':user.classname},{"outer1._id":ObjectId(user.id)}]
@@ -244,7 +247,7 @@ class Self {
       case "send": {
         const linkdata = await verify.generateLink(verify.target.student, {
           uid: user.id,
-          cid:body.classID,
+          cid:body.cid,
           instID:body.instID,
         });
         clog(linkdata);

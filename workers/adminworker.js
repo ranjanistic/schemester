@@ -1294,79 +1294,21 @@ class Invite {
       constructor() {}
       inviteLinkCreation = async (user, inst, body) => {
         clog("post create link ");
-        if (inst.invite[body.target].active == true) {
-          clog("already active");
-          const validresponse = invite.checkTimingValidity(
-            inst.invite[body.target].createdAt,
-            inst.invite[body.target].expiresAt,
-            inst.invite[body.target].createdAt
-          );
-          if (invite.isActive(validresponse)) {
-            let link = invite.getTemplateLink(
-              user.id,
-              inst._id,
-              body.target,
-              inst.invite[body.target].createdAt
-            );
-            clog("templated");
-            clog(link);
-            clog("returning existing link");
-            return {
-              event: code.invite.LINK_EXISTS,
-              link: link,
-              exp: inst.invite[body.target].expiresAt,
-            };
-          }
-        }
-        clog("creating new link");
-        const genlink = await invite.generateLink(
-          user.id,
-          inst._id,
-          body.target,
+        const result = await invite.generateLink(
+          body.target,{
+            uid:user.id,
+            instID:inst._id,
+          },
           body.daysvalid
         );
-        const path = "invite." + body.target;
-        const document = await Institute.findOneAndUpdate(
-          { uiid: inst.uiid },
-          {
-            $set: {
-              [path]: {
-                active: true,
-                createdAt: genlink.create,
-                expiresAt: genlink.exp,
-              },
-            },
-          }
-        );
-        clog("returning");
-        return document
-          ? {
-              event: code.invite.LINK_CREATED,
-              link: genlink.link,
-              exp: genlink.exp,
-            }
-          : code.event(code.invite.LINK_CREATION_FAILED);
+        return result;
       };
 
       inviteLinkDisable = async (inst, body) => {
         clog("post disabe link");
-        const path = "invite." + body.target;
-        const doc = await Institute.findOneAndUpdate(
-          { uiid: inst.uiid },
-          {
-            $set: {
-              [path]: {
-                active: false,
-                createdAt: 0,
-                expiresAt: 0,
-              },
-            },
-          }
-        );
-        clog("returning");
-        return doc
-          ? code.event(code.invite.LINK_DISABLED)
-          : code.event(code.invite.LINK_DISABLE_FAILED);
+        return await invite.disableInvitation(body.target,{
+          instID:inst._id
+        });
       };
     }
     this.teacher = new TeacherAction();

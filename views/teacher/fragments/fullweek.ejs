@@ -47,8 +47,8 @@
                     <div class="questrial caption" style="margin-top: 0;padding-top: 0;">Year <%= new Date().getFullYear() %></div>
                 </div>
                 <div class="fmt-col" style="width:40%;margin-top: 12px;">
-                    <button class="fmt-right circle-button">
-                        <img class="fmt-spin-fast" width="30" src="/graphic/blueLoader.svg"/><br/>
+                    <button class="fmt-right circle-button" id="weekoptions">
+                        <img width="30" src="/graphic/blueLoader.svg"/>
                     </button>
                 </div>
             </div>
@@ -56,12 +56,13 @@
             <div>
             <% if (schedule && timings.daysInWeek.length) { %>
                 <% for( let i = 0; i < schedule.length; i++ ) { %>
+                    <div class="fmt-col fmt-half fmt-padding-small">
                         <div class="fmt-row tab-container b-neutral" style="color:var(--secondary-text);" id="dayBox<%= schedule[i].dayIndex %>">
                             <div class="fmt-row">
-                                <div class="fmt-col three-fourth positive fmt-padding-small" style="font-size:28px">
+                                <div class="fmt-col three-fourth positive" style="font-size:28px">
                                 <%= getDayName(schedule[i].dayIndex) %>
                                 </div>
-                                <div class="fmt-col fourth fmt-padding">
+                                <div class="fmt-col fourth">
                                     <button class="fmt-right neutral-button" id="dayexpander<%= schedule[i].dayIndex %>">Show</button>
                                 </div>
                             </div>
@@ -86,6 +87,7 @@
                                 <% } %>
                             </div>
                         </div>
+                    </div>
                 <% } %>
              <% } else { %>
                 <div class="fmt-row">

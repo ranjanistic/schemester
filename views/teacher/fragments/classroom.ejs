@@ -48,7 +48,7 @@
                                 <section class="fmt-center positive">
                                     🕗
                                 </sectionn>
-                            <% } %>
+                                <% } %>
                         </div>
                     </span>
                     <span class="menu fmt-right">
@@ -57,12 +57,14 @@
                             <section class="fmt-padding positive fmt-center">
                                 Actions
                             </section>
-                            <div>
-                                Invite students
-                            </div>
-                            <div>
-                                Add students
-                            </div>
+                            <% if(classroom.students.length) {%>
+                                <div class="fmt-center questrial" id="invitestudents">
+                                    Invite students
+                                </div>
+                                <div class="fmt-center questrial" id="addstudent">
+                                    Add student
+                                </div>
+                            <% } %>
                         </div>
                     </span>
                 </div>
@@ -78,10 +80,9 @@
                                 <div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="classslate${index}">
                                     <div class="fmt-col fmt-twothird group-text">
                                       <span class="positive" id="studentname<%= s %>"><%= student.username %></span><br/>
-                                      <span class="questrial" id="studentmail<%= s %>"><%= student.studentID %></span>
-                                      <span class="negative caption">Remove</span>
+                                      <span class="questrial" id="studentmail<%= s %>"><%= student.id %></span><br/>
+                                      <span class="negative caption fmt-right" id="removestudent<%= s %>">Remove</span>
                                     </div>
-
                                 </div>
                             <% }) %>
                         </div>
@@ -91,7 +92,7 @@
                             No students yet.
                             <br/><br/>
                             <button class="positive-button" id="addstudent">Add student</button>
-                            <button class="active-button" id="invitestudent">Invite students</button>
+                            <button class="active-button" id="invitestudents">Invite students</button>
                         </div>
                     <% } %>
                 </div>
@@ -114,7 +115,7 @@
                 </div>
             <% } %>
         </div>
-        <div id="dialogView" class="dialog fmt-animate-opacity">
+        <div id="dialogView" class="dialog fmt-animate-top">
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>
@@ -124,6 +125,7 @@
         </div>
         <span hidden>
             <span id="classname"><%= classroom.classname %></span>
+            <span id="totalstudents"><%= classroom.students.length %></span>
         </span>
     </body>
 </html>

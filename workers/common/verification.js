@@ -341,11 +341,10 @@ class Verification {
           },{
             arrayFilters: [{ "outer1._id": ObjectId(query.u) }],
           });
-          if (!doc) return false;
-          classdoc = await Institute.findOne(
-            {
+          if (!doc.result.nModified) return false;
+          classdoc = await Institute.findOne({
               _id: ObjectId(query.in),
-              "users.classes": { $elemMatch: { _id: ObjectId(query.u) } },
+              "users.classes": { $elemMatch: { _id: ObjectId(query.c) } },
             },
             {
               projection: {
@@ -354,9 +353,9 @@ class Verification {
             }
           );
           if (!classdoc) return false;
-          found = classdoc.users.classes[0].students.some((student, _) => {
-            if(String(student._id) == String(query.u)){
-              student = share.getStudentShareData(student);
+          found = classdoc.users.classes[0].students.some((stud) => {
+            if(String(stud._id) == String(query.u)){
+              student = share.getStudentShareData(stud);
               return true;
             }
           });
