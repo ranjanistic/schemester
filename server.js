@@ -58,6 +58,8 @@ mongo.connectToServer(( err )=>{
     res.status(err.status || 500);
     res.render(view.servererror, { error: err });
   });
+  var server_port = 3000 || process.env.PORT || 80;
+  var server_host = '0.0.0.0';
 
-  app.listen(3000,'0.0.0.0'|| process.env.PORT, ()=>{ clog('listening on 3000')})
+  app.listen(server_port, server_host, ()=>{ clog('listening on %d',server_port)})
 });
