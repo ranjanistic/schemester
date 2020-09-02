@@ -5,7 +5,7 @@ var _db;
 const adcoll = "0administrators",instcoll = "1institutions";
 module.exports = {
   connectToServer: ( callback )=>{
-    MongoClient.connect( getLink(),  { useNewUrlParser: true , useUnifiedTopology: true}, function( err, client ) {
+    MongoClient.connect( getLink(true),  { useNewUrlParser: true , useUnifiedTopology: true}, function( err, client ) {
       _db  = client.db(dbName);
       return callback( err );
     });
