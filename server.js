@@ -59,5 +59,5 @@ mongo.connectToServer(( err )=>{
     res.render(view.servererror, { error: err });
   });
 
-  app.listen(3000 || process.env.PORT, ()=>{ clog('listening on 3000')})
+  app.listen(3000,'0.0.0.0'|| process.env.PORT, ()=>{ clog('listening on 3000')})
 });
