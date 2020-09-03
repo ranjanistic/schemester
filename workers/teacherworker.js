@@ -506,35 +506,32 @@ class Schedule {
   async scheduleUpdate(user, body) {}
 
   async getSchedule(user, body = {}){
-    const teacheruser = await Institute.findOne(
-      {
+    clog(user);
+    const teacheruser = await Institute.findOne({
         uiid: user.uiid,
         "users.teachers": { $elemMatch: { _id: ObjectId(user.id) } },
       },
-      { projection: { _id: 0, "users.teachers.$": 1 } }
+      { projection: { _id: 0, default:1,"users.teachers.$": 1 } }
     );
     if (!teacheruser)
       return session.finish(res).then((response) => {
         if (response) res.redirect(this.toLogin());
       });
     const teacher = teacheruser.users.teachers[0];
-    const teacherschedule = await Institute.findOne(
-      {
+    const teacherschedule = await Institute.findOne({
         uiid: user.uiid,
         "schedule.teachers": { $elemMatch: { teacherID: teacher.teacherID } },
       },
       {
         projection: {
           _id: 0,
-          default: 1,
           "schedule.teachers.$": 1,
         },
       }
     );
-    clog(teacherschedule);
-    if (!teacherschedule) return false;
+    const timings = teacheruser.default.timings;
+    if (!teacherschedule) return { schedule:false,timings:timings};
     const schedule = teacherschedule.schedule.teachers[0].days;
-    const timings = teacherschedule.default.timings;
     if (body.dayIndex == null) return { schedule: schedule, timings: timings };
     let today = teacherschedule.schedule.teachers[0].days[0];
     const found = schedule.some((day, index) => {

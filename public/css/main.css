@@ -1,7 +1,7 @@
 :root {
     --positive: #216bf3;
     /* --negative: #c40c0c; */
-    --negative: #d62828;
+    --negative: #c02e2e;
     --warning: #f77f00;
     /* --active: #00893E; */
     --active: #117255;
@@ -18,7 +18,7 @@
 
 [data-theme="dark"] {
     --positive: #739dec;
-    --negative: #ff5151;
+    --negative: #da5f5f;
     --warning: #fcbf49;
     --active: #00cc88;
     --base: #101010;

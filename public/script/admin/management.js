@@ -711,13 +711,32 @@ class Security {
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
-      <li>Your institution will also get deleted.</li>
       <li>Scheduling for your institution will stop, affecting all the users, and their accounts will be deleted too.</li>
       <li>Make sure you understand what your next step will lead to.</li>
       </ul><br/>
       <div class="active">If someone else is taking administration instead of you, then you can <a onclick="changeEmailBox(client.admin)">transfer ownership of your institution</a> rather than deleting it.</div>
+      <div class="switch-view" id="deleteinstitutecontainer">
+              <span class="switch-text negative">Also delete the institution.</span>
+              <label class="switch-container">
+                <input type="checkbox" id="deleteinstituteswitch">
+                <span class="switch-negative" id="deleteinstituteswitchview"></span>
+              </label>
+      </div>
+      <fieldset class="text-field" id="deluiidfield" style="display:none">
+          <legend class="field-caption" >UIID</legend>
+          <input class="text-input" required placeholder="Type the UIID of your institution" type="email" inputmode="email" id="deluiidinput" name="email"">
+          <span class="fmt-right error-caption" id="deluiiderror"></span>
+      </fieldset>
       </div>`
-            );
+        );
+        const deluiid = new TextInput("deluiidfield","deluiidinput","deluiiderror",validType.nonempty);
+              const deletinstituteswitch = new Switch("deleteinstituteswitch");
+              deletinstituteswitch.onTurnChange(_=>{
+                deluiid.validate();
+                deluiid.show();
+              },_=>{
+                deluiid.hide();
+              })
             delconf.setBackgroundColorType(bodyType.negative);
             delconf.createActions(
               Array(`Delete account & Institution`, "No, step back"),
@@ -726,16 +745,28 @@ class Security {
             delconf.onButtonClick(
               Array(
                 (_) => {
+                  if(deletinstituteswitch.isOn()){
+                    if(!deluiid.isValid()){
+                      return deluiid.validateNow();
+                    }
+                  }
                   delconf.loader();
+                  deluiid.disableInput();
                   postJsonData(post.admin.self, {
                     target: "account",
                     action: code.action.ACCOUNT_DELETE,
+                    uiid:deluiid.getInput().trim()
                   }).then((response) => {
                     if (response.event == code.OK) {
                       relocate(locate.root);
+                    }else{ 
+                      delconf.loader(false);
+                      deluiid.enableInput();
+                    if(response.event == code.auth.WRONG_UIID){
+                      return deluiid.showError('Wrong UIID');
                     } else {
                       snackBar("Action Failed");
-                    }
+                    }}
                   });
                 },
                 (_) => {

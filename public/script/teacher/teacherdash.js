@@ -1,65 +1,102 @@
 //For teacher session view with bottom navigation tabs.
+class Tabs{
+    constructor(){
+        this.todayload = getElement("todayload");
+        this.today = getElement("todaytab");
+        this.fullweek = getElement("fulltab");
+        this.classroom = getElement("classtab");
+        this.settings = getElement("settingstab");
+        this.weekload = getElement("weekload");
+        this.classload = getElement("classload");
+        this.settingload = getElement("aboutload");       
+    }
+}
 
+let tabs;
+
+function hideClassroom(loadanother=false){
+    localStorage.setItem('hideclassroom',true);
+    hide(tabs.classroom);
+    [ tabs.today,
+      tabs.fullweek,
+      tabs.settings
+    ].forEach((tab)=>{
+      replaceClass(tab,'fourth','third');
+    });
+    if(loadanother) tabs.today.click();
+}
+
+function showClassroom(){
+    localStorage.removeItem('hideclassroom');
+    [ tabs.today,
+        tabs.fullweek,
+        tabs.settings
+    ].forEach((tab)=>{
+        replaceClass(tab,'third','fourth');
+    });
+    setTimeout(() => {
+        show(tabs.classroom);
+    }, 300);
+}
 class TeacherDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;
-
         this.frame = getElement("frame");
         this.viewload = getElement('viewload');
-        this.today = getElement("todaytab");
-        this.todayload = getElement("todayload");
-        this.fullweek = getElement("fulltab");
-        this.weekload = getElement("weekload");
-        this.classroom = getElement("classtab")
-        this.classload = getElement("classload");
-        this.settings = getElement("settingstab");
-        this.settingload = getElement("aboutload");
-        this.today.onclick =_=>{
-            this.showLoader(this.todayload);
+        
+        tabs = new Tabs();
+        tabs.today.onclick =_=>{
+            this.showLoader(tabs.todayload);
             sessionStorage.setItem('fragment',locate.teacher.target.fragment.today);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.today,"bottom-tab-section","bottom-tab-section-selected");
+            replaceClass(tabs.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.today});
             this.frame.onload=_=>{
-                this.hideLoader(this.todayload)
+                this.hideLoader(tabs.todayload)
             }
         }
-        this.fullweek.onclick =_=>{
-            this.showLoader(this.weekload);
+        tabs.fullweek.onclick =_=>{
+            this.showLoader(tabs.weekload);
             sessionStorage.setItem('fragment',locate.teacher.target.fragment.fullweek);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.today,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.fullweek,"bottom-tab-section","bottom-tab-section-selected");
+            replaceClass(tabs.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.fullweek});
             this.frame.onload=_=>{
-                this.hideLoader(this.weekload)
+                this.hideLoader(tabs.weekload)
             }
         }
-        this.classroom.onclick =_=>{
-            this.showLoader(this.classload);
+        if(localStorage.getItem('hideclassroom')){
+            hide(tabs.classroom);
+            [tabs.today,tabs.fullweek,tabs.settings].forEach((tab)=>{
+                replaceClass(tab,'fourth','third');
+            });
+        }
+        tabs.classroom.onclick =_=>{
+            this.showLoader(tabs.classload);
             sessionStorage.setItem('fragment',locate.teacher.target.fragment.classroom);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.today,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.classroom,"bottom-tab-section","bottom-tab-section-selected");
+            replaceClass(tabs.settings,"bottom-tab-section","bottom-tab-section-selected",false);
             this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.classroom});
             this.frame.onload=_=>{
-                this.hideLoader(this.classload)
+                this.hideLoader(tabs.classload)
             }
         }
-        this.settings.onclick =_=>{
-            this.showLoader(this.settingload);
+        tabs.settings.onclick =_=>{
+            this.showLoader(tabs.settingload);
             sessionStorage.setItem('fragment',locate.teacher.target.fragment.settings);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected");
+            replaceClass(tabs.today,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
+            replaceClass(tabs.settings,"bottom-tab-section","bottom-tab-section-selected");
             this.frame.src = locate.teacher.fragment + getRequestBody({fragment:locate.teacher.target.fragment.settings});
             this.frame.onload=_=>{
-                this.hideLoader(this.settingload)
+                this.hideLoader(tabs.settingload);
             }
         }
 
@@ -67,44 +104,48 @@ class TeacherDash{
         this.clearAllLoaders();
     }
     showAllLoaders(){
-        [this.todayload,this.weekload,this.classload,this.settingload].forEach((load)=>{
+        [tabs.todayload,tabs.weekload,tabs.classload,tabs.settingload].forEach((load)=>{
             this.showLoader(load);
         });
     }
     clearAllLoaders(){
-        [this.todayload,this.weekload,this.classload,this.settingload].forEach((load)=>{
+        [tabs.todayload,tabs.weekload,tabs.classload,tabs.settingload].forEach((load)=>{
             this.hideLoader(load);
         });
     }
-    hideLoader(tabload = this.todayload){
+    hideLoader(tabload = tabs.todayload){
         let iconpath;
         switch(tabload){
-            case this.weekload:iconpath = '/graphic/leftArrow.svg';break;
-            case this.classload:iconpath = '/graphic/leftArrow.svg';break;
-            case this.settingload:iconpath = '/graphic/leftArrow.svg';break;
-            default:iconpath = '/graphic/leftArrow.svg';break;
+            case tabs.weekload:iconpath = '/graphic/elements/weekicon.svg';break;
+            case tabs.classload:iconpath = '/graphic/elements/classicon.svg';break;
+            case tabs.settingload:iconpath = '/graphic/elements/settingicon.svg';break;
+            default:iconpath = '/graphic/elements/todayicon.svg';break;
         }
         tabload.src = iconpath;
-        tabload.classList.remove('fmt-spin-fast');
+        tabload.onload=_=>{
+            tabload.classList.remove('fmt-spin-fast');
+        }
     }
-    showLoader(tabload = this.todayload){
-        tabload.src = '/graphic/blueloader.svg';
-        tabload.classList.add('fmt-spin-fast');
+    showLoader(tabload = tabs.todayload){
+        tabload.src = '/graphic/blueLoader.svg';
+        tabload.onload=_=>{
+            tabload.classList.add('fmt-spin-fast');
+        }
     }
     setview(frag){
         const frags = [locate.teacher.target.fragment.today,locate.teacher.target.fragment.fullweek,locate.teacher.target.fragment.classroom,locate.teacher.target.fragment.settings];
         switch(frag){
             case locate.teacher.target.fragment.fullweek:{
-                this.fullweek.click();
+                tabs.fullweek.click();
             }break;
             case locate.teacher.target.fragment.settings:{
-                this.settings.click();
+                tabs.settings.click();
             }break;
             case locate.teacher.target.fragment.classroom:{
-                this.classroom.click();
+                tabs.classroom.click();
             }break;
             case locate.teacher.target.fragment.today:{
-                this.today.click();
+                tabs.today.click();
             }break;
             default:{
                 this.setview(frags.includes(sessionStorage.getItem('fragment'))?sessionStorage.getItem('fragment'):locate.teacher.target.fragment.today)
@@ -143,7 +184,7 @@ function snackbar(
         _=>{action()}
     )
 }
-class Pseudostudent{
+class Pseudoteacher{
     constructor(){
         this.darkmode = new Switch('darkmode');
         this.darkmode.turn(theme.isDark());
@@ -164,14 +205,15 @@ class Pseudostudent{
     }
 }
 
-let fragment;
-
 window.onload=_=>{
-    clog("dahsloaded")
-    //  try{
-        fragment = new TeacherDash();
-    // }catch{
-    //     fragment = new Pseudostudent()
-    // }
+    clog("dahsloaded");
+     try{
+        new TeacherDash();
+    }catch{
+        new Pseudoteacher()
+    }
 
+}
+function getelement(id){
+    return getElement(id);
 }

@@ -464,16 +464,24 @@ const snackBar = (
       });
       setTimeout((_) => {
         new Snackbar().hide();
-      }, text.length * 3 * 1000); //lengthwise timer.
+      }, min(Array(text.length*3,10))*1000); //lengthwise timer.
     } else {
       setTimeout((_) => {
         new Snackbar().hide();
-      }, text.length * (3 / 2) * 1000); //lengthwise timer for non action snackbar.
+      }, min(Array(text.length*(3/2),10))*1000); //lengthwise timer for non action snackbar.
     }
     snack.displayType(isNormal);
   }
   snack.existence(text != constant.nothing && text != null);
 };
+
+const min=(numbers = [])=>{
+  let min = numbers[0];
+  numbers.forEach((number)=>{
+    min = min>number?number:min;
+  });
+  return min;
+}
 
 class DialogID {
   viewId = "dialogView";

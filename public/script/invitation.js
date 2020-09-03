@@ -70,57 +70,58 @@ class Active {
       return;
     }
 
-    //this.load();
-    const username = this.nameField.getInput();
-    const usermail = this.emailField.getInput();
-    const userpass = this.passField.getInput();
+    this.load();
     clog(data.target);
-    sessionStorage.setItem("username", username);
-    sessionStorage.setItem("useremail", usermail);
-    sessionStorage.setItem("instname", data.instName);
-    sessionStorage.setItem("uiid", data.uiid);
-    postData(`/${data.target}/find`, {
-      email: sessionStorage.getItem("useremail"),
-      uiid: sessionStorage.getItem("uiid")
+    clog("posting");
+    let posturl,postaction;
+    if(data.target == 'teacher'){
+      posturl = post.teacher.auth;
+      postaction = post.teacher.action.signup;
+    }else if(data.target == 'student'){
+      posturl = post.student.auth;
+      postaction = post.student.action.signup;
+    }
+    postData(posturl, {
+      action: postaction,
+      username: this.nameField.getInput().trim(),
+      email: this.emailField.getInput().trim(),
+      password: this.passField.getInput().trim(),
+      uiid: data.uiid,
+      classname:data.classname
     }).then((response) => {
-      if (response.event == code.auth.USER_EXIST) {
-        this.emailField.showError("Account already exists");
-      } else {
-        clog("posting");
-        postData(post.teacher.auth, {
-          action:post.teacher.action.signup,
-          username: username,
-          email: usermail,
-          password: userpass,
-          uiid: data.uiid,
-        }).then((response) => {
-            clog("response");
-            clog(response);
-            switch (response.event) {
-              case code.auth.ACCOUNT_CREATED:{
-                if(data.target == 'teacher'){
-                  relocate(locate.teacher.session, {
-                    u:response.user.uid,
-                    target: locate.teacher.target.addschedule
-                  });
-                }
-              }
-                break;
-              default: {
-                if (!navigator.onLine) {
-                  snackBar("Network error", null, false);
-                } else {
-                  snackBar(response.event);
-                }
-              }
+        clog("response");
+        clog(response);
+        if (response.event == code.auth.ACCOUNT_CREATED) {
+          if (data.target == "teacher") {
+            relocate(locate.teacher.session, {
+              u: response.user.uid,
+              target: locate.teacher.target.addschedule,
+            });
+          } else if (data.target == "student") {
+            relocate(locate.student.session, {
+              u: response.user.uid,
+              target: locate.student.target.dash,
+            });
+          }
+          return;
+        }
+        this.load(false);
+        switch (response.event) {
+          case code.auth.USER_EXIST:
+            return this.emailField.showError("Account already exists");
+          default: {
+            if (!navigator.onLine) {
+              snackBar("Network error", null, false);
+            } else {
+              snackBar(response.event);
             }
-            this.load(false);
-        }).catch(e=>{
-          clog(e);
-          this.load(false);
-        })
-      }
-    });
+          }
+        }
+      })
+      .catch((e) => {
+        clog(e);
+        this.load(false);
+      });
   }
 
   rejectInvitation(data) {
@@ -167,124 +168,33 @@ class Active {
   }
 }
 
-let emailVerification = (email, afterVerfied = (_) => {}) => {
-  let verify = new Dialog();
-  verify.setDisplay(
-    "Verification Required",
-    `We need to verify you. A link will be sent at <b>${email}</b>, you need to verify your account there. Confirm to send link?`
-  );
-  verify.createActions(
-    Array("Send link", "Cancel"),
-    Array(actionType.positive, actionType.negative)
-  );
-  
-  verify.onButtonClick(Array( () => {
-    verify.loader();
-    //replace with email sender
-    setTimeout(() => {
-      verify.loader(false);
-      verify.setDisplay(
-        "Waiting for verification",
-        `A link has been sent. Check your email box at 
-            <b>${email}</b>, verify your account there, and then click continue here.`
-      );
-      verify.createActions(
-        Array("Verified, now continue", "Abort"),
-        Array(actionType.positive, actionType.negative)
-      );
-      
-      verify.onButtonClick(Array( () => {
-        verify.loader();
-        //check if verified;
-        afterVerfied();
-      }, () => {
-        verify.loader();
-        sessionStorage.clear();
-        verify.hide();
-      }));
-      verify.show();
-    }, 3 * 1000);
-  }, () => {
-    verify.loader();
-    sessionStorage.clear();
-    verify.hide();
-  }));
-  verify.show();
-};
-
 class Expired {
   constructor(data) {
-    clog(sessionStorage.getItem("requestsent"));
-    if (sessionStorage.getItem("requestsent") == "true") {
-      this.mailsentView(data);
-    } else {
-      this.view = getElement("userinvitationexpired");
-      this.useremailfield = new TextInput(
-        "requsermailfield",
-        "requsermail",
-        "requsermailerror",
-        validType.email
-      );
-      this.usermessage = new TextInput(
-        "usermessagefield",
-        "usermessage",
-        "usermessageerror"
-      );
-
-      this.useremailfield.validate();
-      this.request = getElement("requestInvitation");
-      this.request.onclick = (_) => {
-        this.requestInviteAction(data);
-      };
-      this.loader = getElement("inviteloader");
-      this.load(false);
-    }
-  }
-  requestInviteAction(data) {
-    if (!this.useremailfield.isValid()) {
-      return this.useremailfield.validateNow();
-    }
-    this.load();
-    let useremail = this.useremailfield.getInput();
-    //todo: send request email, then change view.
-    sendEmail().then((event) => {
-      if (event == code.mail.MAIL_SENT) {
-        sessionStorage.setItem("requestsentfrom", useremail);
-        sessionStorage.setItem("requestsent", true);
-        this.mailsentView(data);
-      }
-    });
-    this.load(false);
-  }
-  mailsentView(data) {
-    getElement("expinputview").innerHTML = `<br/>
-                <div class="questrial active fmt-center">
-                    Your request has been delivered for ${
-                      data.instName
-                    }.<br/>You'll receive an email at <span class="positive">${sessionStorage.getItem(
-      "requestsentfrom"
-    )}</span>, when the administrator accepts your request.
-                    <br/><br/>
-                    <button class="positive-button" onclick="relocate(locate.root)">Explore Schemester</button>
-                </div>`;
-  }
-  load(show = true) {
-    visibilityOf(this.request, !show);
-    visibilityOf(this.loader, show);
+    this.view = getElement("userinvitationexpired");
+    this.register = getElement("registerbutton");
+    this.register.onclick = (_) => {
+      if(data.target == 'teacher')
+        showTeacherRegistration(true)
+      else if(data.target == 'student')
+        showStudentRegistration(true)
+    };
+    this.loader = getElement("inviteloader");
+    
   }
 }
 
 class ReceivedInfo {
   constructor() {
-    this.adminname = getElement("adminname").innerHTML;
-    this.adminemail = getElement("adminemail").innerHTML;
+    this.invitor = getElement("invitorName").innerHTML;
+    this.invitorID = getElement("invitorID").innerHTML;
     this.uiid = getElement("uiid").innerHTML;
     this.target = getElement("target").innerHTML;
-    this.expiresAt = getElement("exp").innerHTML;
     this.instName = getElement("instname").innerHTML;
-    if (getElement("expireat")) {
+    try{
+      if(this.target == 'student') this.classname = getElement("classname").innerHTML;
+      this.expiresAt = getElement("expireat").innerHTML;
       getElement("expireat").innerHTML = getProperDate(String(this.expiresAt));
-    }
+    }catch{}
   }
 }
 
@@ -292,11 +202,11 @@ class Invitation {
   constructor() {
     this.data = new ReceivedInfo();
     try {
-      window.fragment = new Expired(this.data);
+      new Expired(this.data);
     } catch {
-      window.fragment = new Active(this.data);
+      new Active(this.data);
     }
   }
 }
 
-window.onload = (_) => (window.app = new Invitation());
+window.onload = (_) => new Invitation();

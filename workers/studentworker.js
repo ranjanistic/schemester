@@ -79,8 +79,6 @@ class Self {
           }, //existing classname
         },{
           $push: { "users.classes.$[outer].students":newstudent}, //new student push
-        },{
-          arrayFilters: [{ "outer.classname": classname }],
         });
         return code.event(doc?code.OK:code.NO);
       }

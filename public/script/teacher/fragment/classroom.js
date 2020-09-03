@@ -5,12 +5,17 @@ class Classroom {
     this.setupmenu = new Menu("setup", "setupbutton");
     this.settings = getElement("classsetup");
 
+    if(!this.data.hasclass){
+      return getElement("hidesection").onclick=_=>{
+        parent.hideClassroom(true);
+      }
+    }
+    localStorage.removeItem('hideclassroom');
     this.addstudent = getElement("addstudent");
     this.invitestudents = getElement("invitestudents");
     this.invitestudents.onclick=_=>{
       this.linkGenerator();
     }
-
     this.students = Array();
     for(let s = 0;s<this.data.studentcount;s++){
       this.students.push(new Student(
@@ -278,12 +283,15 @@ class Student{
 
 class ReceiveData{
     constructor(){
-      this.classname = getElement("classname").innerHTML;
-      this.studentcount = Number(getElement("totalstudents").innerHTML);
-      try{
-      this.requestees = getElement("requestees").innerHTML;
-      }catch{
+      this.hasclass = getElement("hasclassroom").innerHTML=='true';
+      if(this.hasclass){
+        this.classname = getElement("classname").innerHTML;
+        this.studentcount = Number(getElement("totalstudents").innerHTML);
+        try{
+        this.requestees = getElement("requestees").innerHTML;
+        }catch{
 
+        }
       }
     }
 }

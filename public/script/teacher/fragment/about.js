@@ -14,6 +14,14 @@ class TeacherAbout {
       theme.switch();
       this.darkmode.change();
     };
+    
+      
+    this.hideclassswitch = new Switch("hideclass");
+    this.hideclassswitch.turn(localStorage.getItem('hideclassroom')?true:false);
+    getElement("hideclassroom").onclick=_=>{
+      this.hideclassswitch.change();
+      this.hideclassswitch.isOn()?parent.hideClassroom():parent.showClassroom();
+    }
 
     this.logout = getElement("logout");
     this.logout.onclick = (_) => {

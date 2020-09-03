@@ -1,6 +1,7 @@
 class Codes {
   constructor() {
-    this.domain = "http://localhost:3000";//todo
+    this.domain = "http://localhost:3000";
+    // this.domain = "https://schemester.herokuapp.com";
     this.OK = "OK/true";
     this.NO = "NO/false";
     class Servercodes {
@@ -474,8 +475,10 @@ class Theme {
   getTheme() {
     return localStorage.getItem(this.key);
   }
-  setTheme(theme = new Theme().light) {
+  setTheme(theme = this.light) {
     localStorage.setItem(this.key, theme);
+    // document.getElementById('themecolor').setAttribute('content',theme == this.dark?'#739dec':'#216bf3');
+    window.parent.document.getElementById('themecolor').setAttribute('content',theme == this.dark?'#739dec':'#216bf3')
     document.documentElement.setAttribute("data-theme", theme);
     window.parent.document.documentElement.setAttribute("data-theme", theme);
   }

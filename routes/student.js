@@ -332,9 +332,13 @@ student.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:{
-      
-      }
-      break;
+      invite.handleInvitation(query,invite.target.student).then((resp)=>{
+        if(!resp) return res.render(view.notfound);
+        return res.render(view.userinvitaion,{invite:resp.invite});
+      }).catch(e=>{
+        return res.render(view.notfound);
+      });
+    }break;
     case verify.type: { //verification link
       clog("verify type");
       verify.handleVerification(query,verify.target.student).then((resp) => {

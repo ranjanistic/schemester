@@ -180,13 +180,13 @@ teacher.get("/session*", async (req, res) => {
   });
 });
 
+//for teacher session fragments.
 teacher.get("/fragment*", (req, res) => {
-  //for teacher session fragments.
   session
     .verify(req, sessionsecret)
     .catch((e) => {
       clog(e);
-      return code.eventmsg(code.auth.AUTH_REQ_FAILED, e);
+      return authreqfailed(e);
     })
     .then(async (response) => {
       const query = req.query;
@@ -220,6 +220,7 @@ teacher.get("/fragment*", (req, res) => {
           clog("full week");
           worker.schedule.getSchedule(response.user)
             .then((resp) => {
+              clog(resp);
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 schedule: resp.schedule,
                 timings:resp.timings
@@ -240,12 +241,16 @@ teacher.get("/fragment*", (req, res) => {
           worker.classroom.getClassroom(response.user,teacher)
             .then((resp) => {
               clog(resp);
-              resp.pseudostudents.forEach((pstud,s)=>{
-                resp.pseudostudents[s] = share.getPseudoStudentShareData(pstud);
-              });
-              resp.classroom.students.forEach((stud,s)=>{
-                resp.classroom.students[s] = share.getStudentShareData(stud);
-              });
+              if(resp.pseudostudents){
+                resp.pseudostudents.forEach((pstud,s)=>{
+                  resp.pseudostudents[s] = share.getPseudoStudentShareData(pstud);
+                });
+              }
+              if(resp.classroom){
+                resp.classroom.students.forEach((stud,s)=>{
+                  resp.classroom.students[s] = share.getStudentShareData(stud);
+                });
+              }
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 classroom: resp.classroom,
                 pseudostudents:resp.pseudostudents,
@@ -259,16 +264,15 @@ teacher.get("/fragment*", (req, res) => {
         }
         case view.teacher.target.fragment.about: {
           clog("about");
-          const teacheruser = await Institute.findOne({
+          const teacherdoc = await Institute.findOne({
             uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
           },{projection:{"users.teachers.$":1,"default":1}});
-          if(!teacheruser) return null;
           const admindoc = await Admin.findOne({uiid:response.user.uiid},{projection:{"prefs":1}});
           return res.render(view.teacher.getViewByTarget(query.fragment),{
-            teacher:share.getTeacherShareData(teacheruser.users.teachers[0]),
-            defaults:teacheruser.default,
-            adminphonevisible:admindoc.prefs.showphonetoteacher,
-            adminemailvisible:admindoc.prefs.showemailtoteacher
+            teacher:teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0]):false,
+            defaults:teacherdoc?teacherdoc.default:false,
+            adminphonevisible:admindoc?admindoc.prefs.showphonetoteacher:false,
+            adminemailvisible:admindoc?admindoc.prefs.showemailtoteacher:false
           });
         }
       }
@@ -364,66 +368,24 @@ teacher.post("/session/validate", async (req, res) => {
 teacher.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
-    case invite.type:
-      {
-        try {
-          const inst = await Institute.findOne({ _id: ObjectId(query.in) });
-          if (!inst) return res.render(view.notfound);
-          const admin = await Admin.findOne({ _id: ObjectId(query.ad) });
-          if (!admin) return res.render(view.notfound);
-          if (admin.uiid != inst.uiid) return res.render(view.notfound);
-          if (!inst.invite.teacher.active)
-            return res.render(view.userinvitaion, {
-              invite: {
-                valid: false,
-                uiid: inst.uiid,
-                adminemail: admin.email,
-                adminName: admin.username,
-                expireAt: inst.invite.teacher.expiresAt,
-                instname: inst.default.institute.instituteName,
-                target: invite.target.teacher,
-              },
-            });
-
-          const expires = inst.invite.teacher.expiresAt;
-          const validity = invite.checkTimingValidity(
-            inst.invite.teacher.createdAt,
-            expires,
-            query.t
-          );
-          if (invite.isInvalid(validity)) return res.render(view.notfound);
-          return res.render(view.userinvitaion, {
-            invite: {
-              valid: invite.isActive(validity),
-              uiid: inst.uiid,
-              adminemail: admin.email,
-              adminName: admin.username,
-              instname: inst.default.institute.instituteName,
-              expireAt: expires,
-              target: invite.target.teacher,
-            },
-          });
-        } catch (e) {
-          clog(e);
-          return res.render(view.notfound);
-        }
-      }
-      break;
+    case invite.type:{  //invitation link
+      invite.handleInvitation(query,invite.target.teacher).then((resp)=>{
+        if(!resp) return res.render(view.notfound);
+        return res.render(view.userinvitaion,{invite:resp.invite});
+      }).catch(e=>{
+        return res.render(view.notfound);
+      });
+    }break;
     case verify.type: { //verification link
-      clog("verify type");
       verify.handleVerification(query,verify.target.teacher).then((resp) => {
-        clog("resp");
-          clog(resp);
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
-        })
-        .catch((e) => {
-          clog(e);
-          return res.render(view.servererror, { error: e });
-        });
-      return;
-    }
-    case reset.type:{
+      }).catch((e) => {
+        clog(e);
+        return res.render(view.servererror, { error: e });
+      });
+    }break;
+    case reset.type:{ //password reset link
       reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});

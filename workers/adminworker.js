@@ -151,9 +151,18 @@ class Self {
       /**
        *
        */
-      deleteAccount = async (user) => {
+      deleteAccount = async (user,uiid = null) => {
+        clog(uiid?true:false);
+        if(uiid){
+          const admin = await Admin.findOne({_id:ObjectId(user.id)});
+          if(admin.uiid!= uiid) return code.event(code.auth.WRONG_UIID);
+        }
         const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
-        return code.event(del ? code.OK : code.NO);
+        if(!uiid) return code.event(del.value ? code.OK : code.NO);
+        if(!del.value) return code.event(code.NO);
+        if(uiid!=del.value.uiid) return code.event(code.auth.WRONG_UIID);
+        const delinst = await Institute.findOneAndDelete({uiid:uiid});
+        return code.event(delinst.value ? code.OK : code.NO);
       };
     }
     class Preferences {
@@ -240,7 +249,7 @@ class Self {
       case code.action.CHANGE_PHONE:
         return await this.account.changePhone(user, body);
       case code.action.ACCOUNT_DELETE:
-        return await this.account.deleteAccount(user);
+        return await this.account.deleteAccount(user,body.uiid);
     }
   };
   handlePreferences = async (user, body) => {
@@ -1303,7 +1312,6 @@ class Invite {
         );
         return result;
       };
-
       inviteLinkDisable = async (inst, body) => {
         clog("post disabe link");
         return await invite.disableInvitation(body.target,{

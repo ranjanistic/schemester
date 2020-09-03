@@ -79,16 +79,16 @@ class StudentDash{
     hideLoader(tabload = this.todayload){
         let iconpath;
         switch(tabload){
-            case this.weekload:iconpath = '/graphic/leftArrow.svg';break;
-            case this.classload:iconpath = '/graphic/leftArrow.svg';break;
-            case this.settingload:iconpath = '/graphic/leftArrow.svg';break;
-            default:iconpath = '/graphic/leftArrow.svg';break;
+            case tabs.weekload:iconpath = '/graphic/elements/weekicon.svg';break;
+            case tabs.classload:iconpath = '/graphic/elements/classicon.svg';break;
+            case tabs.settingload:iconpath = '/graphic/elements/settingicon.svg';break;
+            default:iconpath = '/graphic/elements/todayicon.svg';break;
         }
         tabload.src = iconpath;
         tabload.classList.remove('fmt-spin-fast');
     }
     showLoader(tabload = this.todayload){
-        tabload.src = '/graphic/blueloader.svg';
+        tabload.src = '/graphic/blueLoader.svg';
         tabload.classList.add('fmt-spin-fast');
     }
     setview(frag){

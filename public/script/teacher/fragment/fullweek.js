@@ -2,7 +2,7 @@ class FullSchedule{
     constructor(){
         this.data = new ReceiveData();
         this.rawdata = new ReceiveData(true);
-        if(this.data.schedule){
+        if(!this.data.schedule){
             this.dayBox = Array();
             this.dayBoxExpand = Array();
             this.periodsView = Array();
@@ -13,7 +13,7 @@ class FullSchedule{
             });
             this.controlVisibility();
         } else {
-            getElement("seesettings").onclick = window.parent.document.getElementById("abouttab").onclick;
+            getElement("seesettings").onclick = window.parent.document.getElementById("settingstab").onclick;
         }
         this.startTimers();
     }

@@ -1,4 +1,4 @@
-<html>
+<html style="padding-bottom:20px">
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
@@ -57,7 +57,7 @@
                             <section class="fmt-padding positive fmt-center">
                                 Actions
                             </section>
-                            <% if(classroom.students.length) {%>
+                            <% if(classroom && classroom.students.length) {%>
                                 <div class="fmt-center questrial" id="invitestudents">
                                     Invite students
                                 </div>
@@ -106,11 +106,13 @@
                         <div class="questrial">
                             You don't hold any class.
                         </div>
+                        <br/>
+                        <div class="fmt-center">
+                            <button class="negative-button" id="hidesection">Hide section</button><br/><br/>
+                            <div class="fmt-center group-text">You can toggle classroom from <a onclick="parent.getelement('settingstab').click()">settings</a> too.</div>
+                        </div>
                     </div>
                     <div class="fmt-col fmt-quarter fmt-padding">
-                    </div>
-                    <div class="fmt-center">
-                        <button class="negative-button" id="weekschedule">Hide section</button>
                     </div>
                 </div>
             <% } %>
@@ -124,8 +126,11 @@
             <button id="snackButton"></button>
         </div>
         <span hidden>
-            <span id="classname"><%= classroom.classname %></span>
-            <span id="totalstudents"><%= classroom.students.length %></span>
+                <span id="hasclassroom"><%= classroom?true:false %></span>
+            <% if(classroom) {%>
+                <span id="classname"><%= classroom.classname %></span>
+                <span id="totalstudents"><%= classroom.students.length %></span>
+            <% } %>
         </span>
     </body>
 </html>

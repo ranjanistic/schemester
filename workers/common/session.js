@@ -95,6 +95,7 @@ class Session {
                 const isMatch = await bcrypt.compare(password, teacher.password);
                 if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
                 this.createSession(response,teacher._id,uiid,secret);
+                clog(body);
                 return {
                   event: code.auth.AUTH_SUCCESS,
                   user: userdoc?share.getTeacherShareData(teacher):share.getPseudoTeacherShareData(teacher),
@@ -336,7 +337,7 @@ class Session {
           if(!pclassdoc) return code.event(code.auth.CLASS_NOT_EXIST);
           let pfound = pclassdoc.pseudousers.classes[0].students.some((stud)=>{
             return stud.studentID == email;
-          })
+          });
           if(found||pfound) return code.event(code.auth.USER_EXIST);
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);

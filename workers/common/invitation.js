@@ -1,13 +1,14 @@
 const code = require("../../public/script/codes"),
   Institute = require("../../config/db").getInstitute(),
   Admin = require("../../config/db").getAdmin(),
+  share = require("./sharedata"),
   time = require("./timer"),
-  {ObjectId} = require("mongodb");
+  { ObjectId } = require("mongodb");
 class Invitation {
   constructor() {
     this.type = "invitation";
     this.target = new Target();
-    this.domain = code.domain
+    this.domain = code.domain;
     this.defaultValidity = 7;
   }
 
@@ -19,103 +20,122 @@ class Invitation {
    * @returns {Promise} Returns expiry and creation time according to SGT notation, and the generated link, as key value pairs
    *  of link,create,exp.
    */
-  generateLink = async (
-    target,
-    data,
-    validdays = this.defaultValidity
-  ) => {
-    switch(target){
-      case this.target.teacher:{
-        const instdoc = await Institute.findOne({"_id":ObjectId(data.instID)},{projection:{"invite":1}});
-        if (instdoc.invite[target].active == true) {
-          if (this.isActive(this.checkTimingValidity(
-            instdoc.invite[target].createdAt,
-            instdoc.invite[target].expiresAt,
-            instdoc.invite[target].createdAt
-            ))) {
+  generateLink = async (target, data, validdays = this.defaultValidity) => {
+    switch (target) {
+      case this.target.teacher:
+        {
+          const instdoc = await Institute.findOne(
+            { _id: ObjectId(data.instID) },
+            { projection: { invite: 1 } }
+          );
+          if (instdoc.invite[target].active == true) {
+            if (
+              this.isActive(
+                this.checkTimingValidity(
+                  instdoc.invite[target].createdAt,
+                  instdoc.invite[target].expiresAt,
+                  instdoc.invite[target].createdAt
+                )
+              )
+            ) {
               clog("already active");
-            let link = this.getTemplateLink(
-              target,
-              data,
-              instdoc.invite[target].createdAt
-            );
-            clog("templated");
-            clog(link);
-            clog("returning existing link");
-            return {
-              event: code.invite.LINK_EXISTS,
-              link: link,
-              exp: instdoc.invite[target].expiresAt,
-            };
+              let link = this.getTemplateLink(
+                target,
+                data,
+                instdoc.invite[target].createdAt
+              );
+              clog("templated");
+              clog(link);
+              clog("returning existing link");
+              return {
+                event: code.invite.LINK_EXISTS,
+                link: link,
+                exp: instdoc.invite[target].expiresAt,
+              };
+            }
           }
         }
-      }break;
-      case this.target.student:{
-        const classdoc = await Institute.findOne({"_id":ObjectId(data.instID),"users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}},{
-          projection:{"users.classes.$.invite":1}
-        });
-        if(!classdoc) return code.inst.CLASS_NOT_FOUND;
-        const Class = classdoc.users.classes[0];
-        if(Class.invite[target].active == true){
-          if(this.isActive(this.checkTimingValidity(
-            Class.invite[target].createdAt,
-            Class.invite[target].expiresAt,
-            Class.invite[target].createdAt
-          ))){
-            let link = this.getTemplateLink(
-              target,
-              data,
-              Class.invite[target].createdAt
-            );
-            clog("templated");
-            clog(link);
-            clog("returning existing link");
-            return {
-              event: code.invite.LINK_EXISTS,
-              link: link,
-              exp: Class.invite[target].expiresAt,
-            };
+        break;
+      case this.target.student:
+        {
+          const classdoc = await Institute.findOne(
+            {
+              _id: ObjectId(data.instID),
+              "users.classes": { $elemMatch: { _id: ObjectId(data.cid) } },
+            },
+            {
+              projection: { "users.classes.$.invite": 1 },
+            }
+          );
+          if (!classdoc) return code.inst.CLASS_NOT_FOUND;
+          const Class = classdoc.users.classes[0];
+          if (Class.invite[target].active == true) {
+            if (
+              this.isActive(
+                this.checkTimingValidity(
+                  Class.invite[target].createdAt,
+                  Class.invite[target].expiresAt,
+                  Class.invite[target].createdAt
+                )
+              )
+            ) {
+              let link = this.getTemplateLink(
+                target,
+                data,
+                Class.invite[target].createdAt
+              );
+              clog("templated");
+              clog(link);
+              clog("returning existing link");
+              return {
+                event: code.invite.LINK_EXISTS,
+                link: link,
+                exp: Class.invite[target].expiresAt,
+              };
+            }
           }
         }
-      }break;
+        break;
     }
     const creationTime = time.getTheMoment(false);
     const expiryTime = time.getTheMoment(false, validdays);
     let link;
     switch (target) {
-      case this.target.teacher: {
-        const path = `invite.${target}`;
-        const document = await Institute.findOneAndUpdate(
-          { "_id": ObjectId(data.instID) },
-          {
-            $set: {
-              [path]: {
-                active: true,
-                createdAt: creationTime,
-                expiresAt: expiryTime,
+      case this.target.teacher:
+        {
+          const path = `invite.${target}`;
+          const document = await Institute.findOneAndUpdate(
+            { _id: ObjectId(data.instID) },
+            {
+              $set: {
+                [path]: {
+                  active: true,
+                  createdAt: creationTime,
+                  expiresAt: expiryTime,
+                },
               },
-            },
-          }
-        );
-        link = this.getTemplateLink(
-          target,
-          data,
-          creationTime
-        );
-        clog("generated");
-        clog(document);
-        clog(link);
-        return document.value
-        ? {
-          event: code.invite.LINK_CREATED,
-          link: link,
-          exp: expiryTime,
-        }: code.event(code.invite.LINK_CREATION_FAILED);
-      }break;
-      case this.target.student:{
+            }
+          );
+          link = this.getTemplateLink(target, data, creationTime);
+          clog("generated");
+          clog(document);
+          clog(link);
+          return document.value
+            ? {
+                event: code.invite.LINK_CREATED,
+                link: link,
+                exp: expiryTime,
+              }
+            : code.event(code.invite.LINK_CREATION_FAILED);
+        }
+        break;
+      case this.target.student: {
         const path = `users.classes.$.invite.student`;
         const document = await Institute.updateOne(
-          { "_id": ObjectId(data.instID) , "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}},
+          {
+            _id: ObjectId(data.instID),
+            "users.classes": { $elemMatch: { _id: ObjectId(data.cid) } },
+          },
           {
             $set: {
               [path]: {
@@ -126,30 +146,27 @@ class Invitation {
             },
           }
         );
-        link = this.getTemplateLink(
-          target,
-          data,
-          creationTime
-        );
+        link = this.getTemplateLink(target, data, creationTime);
         clog("generated");
         clog(document.result);
         clog(link);
         return document.result.nModified
-        ? {
-          event: code.invite.LINK_CREATED,
-          link: link,
-          exp: expiryTime,
-        }: code.event(code.invite.LINK_CREATION_FAILED);
+          ? {
+              event: code.invite.LINK_CREATED,
+              link: link,
+              exp: expiryTime,
+            }
+          : code.event(code.invite.LINK_CREATION_FAILED);
       }
     }
   };
 
-  async disableInvitation(target,data){
-    switch(target){
-      case this.target.teacher:{
+  async disableInvitation(target, data) {
+    switch (target) {
+      case this.target.teacher: {
         const path = `invite.${target}`;
         const doc = await Institute.findOneAndUpdate(
-          { "_id": ObjectId(data.instID) },
+          { _id: ObjectId(data.instID) },
           {
             $set: {
               [path]: {
@@ -165,10 +182,13 @@ class Invitation {
           ? code.event(code.invite.LINK_DISABLED)
           : code.event(code.invite.LINK_DISABLE_FAILED);
       }
-      case this.target.student:{
+      case this.target.student: {
         const path = `users.classes.$.invite.student`;
         const doc = await Institute.findOneAndUpdate(
-          { "_id": ObjectId(data.instID),"users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}} },
+          {
+            _id: ObjectId(data.instID),
+            "users.classes": { $elemMatch: { _id: ObjectId(data.cid) } },
+          },
           {
             $set: {
               [path]: {
@@ -183,6 +203,98 @@ class Invitation {
         return doc.value
           ? code.event(code.invite.LINK_DISABLED)
           : code.event(code.invite.LINK_DISABLE_FAILED);
+      }
+    }
+  }
+
+  async handleInvitation(query, target) {
+    switch (target) {
+      case this.target.teacher: {
+        if (!(query.in && query.t)) return false;
+        const inst = await Institute.findOne(
+          { _id: ObjectId(query.in) },
+          { projection: { "invite.teacher": 1, default: 1, uiid: 1 } }
+        );
+        if (!inst) return false;
+        if (!inst.invite.teacher.active)
+          return {
+            invite: {
+              valid: false,
+              uiid: inst.uiid,
+              adminemail: inst.default.admin.email,
+              adminName: inst.default.admin.username,
+              expireAt: inst.invite.teacher.expiresAt,
+              instname: inst.default.institute.instituteName,
+              target: this.target.teacher,
+            },
+          };
+
+        const expires = inst.invite.teacher.expiresAt;
+        const validity = this.checkTimingValidity(
+          inst.invite.teacher.createdAt,
+          expires,
+          query.t
+        );
+        if (this.isInvalid(validity)) return false;
+        clog(this.isActive(validity));
+        return {
+          invite: {
+            valid: this.isActive(validity),
+            uiid: inst.uiid,
+            invitorID: inst.default.admin.email,
+            invitorName: inst.default.admin.username,
+            instname: inst.default.institute.instituteName,
+            expireAt: expires,
+            target: this.target.teacher,
+          },
+        };
+      }break;
+      case this.target.student:{
+        if(!(query.in && query.c && query.t)) return false;
+        const classdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.classes":{$elemMatch:{"_id":ObjectId(query.c)}}},{
+          projection:{uiid:1,"users.classes.$":1,default:1}
+        });
+        if(!classdoc) return false;
+        const Class = classdoc.users.classes[0];
+        if(!Class) return false;
+        const teacherdoc = await Institute.findOne({uiid:classdoc.uiid,"users.teachers":{$elemMatch:{"teacherID":Class.inchargeID}}},{
+          projection:{"users.teachers.$":1}
+        });
+        if(!teacherdoc) return false;
+        const incharge = share.getTeacherShareData(teacherdoc.users.teachers[0]);
+        const expires = Class.invite.student.expiresAt;
+        if(!Class.invite.student.active)
+          return {
+            invite:{
+              valid:false,
+              uiid: classdoc.uiid,
+              classname:Class.classname,
+              invitorID: incharge.id,
+              invitorName: incharge.username,
+              expireAt: expires,
+              instname: classdoc.default.institute.instituteName,
+              target: this.target.student, 
+            }
+          }
+        
+        const validity = this.checkTimingValidity(
+          Class.invite.student.createdAt,
+          expires,
+          query.t
+        );
+        if (this.isInvalid(validity)) return false;
+        return {
+          invite: {
+            valid: this.isActive(validity),
+            uiid: classdoc.uiid,
+            invitorID: incharge.id,
+            invitorName: incharge.username,
+            classname:Class.classname,
+            instname: classdoc.default.institute.instituteName,
+            expireAt: expires,
+            target: this.target.student,
+          },
+        };
       }
     }
   }
@@ -195,8 +307,8 @@ class Invitation {
    * @returns {String} The produced link identical to actual invitation link.
    * @note This method does not generate an actual invitation link. For invitation purposes, see generateLink() method of Invitation class.
    */
-  getTemplateLink(target,data, createdAt) {
-    switch(target){
+  getTemplateLink(target, data, createdAt) {
+    switch (target) {
       case this.target.teacher:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&ad=${data.uid}&t=${createdAt}`;
       case this.target.student:

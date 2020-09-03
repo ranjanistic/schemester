@@ -14,7 +14,7 @@ class Verification {
   constructor() {
     this.type = "verification";
     this.target = new Target();
-    this.domain = "http://localhost:3000";
+    this.domain = code.domain;
     this.defaultValidity = 15; //min
   }
 
