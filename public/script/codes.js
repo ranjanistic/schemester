@@ -1,7 +1,7 @@
 class Codes {
   constructor() {
-    this.domain = "http://localhost:3000";
-    // this.domain = "https://schemester.herokuapp.com";
+    // this.domain = "http://localhost:3000";
+    this.domain = "https://schemester.herokuapp.com";
     this.OK = "OK/true";
     this.NO = "NO/false";
     class Servercodes {
