@@ -41,7 +41,7 @@
                     </label>
                 </span>
             </div>
-            <div class="fmt-row" style="margin-top: 70px;">
+            <div class="fmt-row fmt-padding" style="margin-top: 70px;">
                 <div class="fmt-col fmt-quarter fmt-padding">
                 </div>
                 <div class="fmt-col fmt-half container">
@@ -50,6 +50,29 @@
                     <div class="questrial">
                         Hey <%= student.username %>,<br/>
                         Your request is waiting for the class incharge to accept.
+                    </div>
+                    <br/>
+                    <div class="fmt-row group-heading questrial">Account</div>
+                    <div class="caption">Logged in as</div>
+                    <div class="fmt-col fmt-half">
+                        <div class="fmt-row" id="studentnameview">
+                            <span class=" positive questrial" id="studentname"><%= student.username %></span>
+                            <span class="caption" style="font-size:12px" id="editstudentname"><img width="20" src="/graphic/elements/editicon.svg"/></span>
+                        </div>
+                        <div id="studentnameeditor">
+                        <fieldset class="text-field questrial" style="margin:0" id="studentnamefield">
+                            <legend class="field-caption questrial">Change your name</legend>
+                            <input class="text-input questrial" style="font-size:16px" required value="<%= student.username %>" placeholder="Visible in <%=  %>" type="text" id="studentnameinput" name="studentname" >
+                            <span class="fmt-right error-caption"  id="studentnameerror"></span>
+                        </fieldset>
+                        <button class="positive-button caption" id="savestudentname">Save</button>
+                        <button class="neutral-button caption" id="cancelstudentname">Cancel</button>
+                        </div>
+                        <div class="active questrial caption">
+                            <%= student.id %><span id="resetemail" class="fmt-padding"><img width="20" src="/graphic/elements/editicon.svg"/></span>
+                        </div>
+                        <button class="warning-button" id="forgotpass">Forgot password</button>
+                        <button class="negative-button fmt-center" id="logout">Logout</button>
                     </div>
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding">
@@ -82,7 +105,7 @@
             </button>
         </div>
         <% } %>
-        <div id="dialogView" class="dialog fmt-animate-bottom">
+        <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>

@@ -33,9 +33,9 @@
                             
                             <div class="fmt-row" id="studentnameview">
                                 <span class=" positive questrial" id="studentname"><%= student.username %></span>
-                                <span class="caption" style="font-size:12px" id="editstudentname">✒️</span>
+                                <span class="caption" style="font-size:12px" id="editstudentname"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                             </div>
-                        <div id="studentnameeditor">
+                            <div id="studentnameeditor">
                             <fieldset class="text-field questrial" style="margin:0" id="studentnamefield">
                                 <legend class="field-caption questrial">Change your name</legend>
                                 <input class="text-input questrial" style="font-size:16px" required value="<%= student.username %>" placeholder="Visible in <%=  %>" type="text" id="studentnameinput" name="studentname" >
@@ -43,10 +43,10 @@
                             </fieldset>
                             <button class="positive-button caption" id="savestudentname">Save</button>
                             <button class="neutral-button caption" id="cancelstudentname">Cancel</button>
-                        </div>
-                        <div class="active questrial caption">
-                            <%= student.id %>
-                        </div>
+                            </div>
+                            <div class="active questrial caption">
+                                <%= student.id %>
+                            </div>
                         </div>
                         <div class="fmt-col fmt-half">
                             <button class="negative-button fmt-center wide" id="logout">Logout</button>
@@ -63,7 +63,7 @@
                     </div>
                     
                     <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
-                        Change email address <span class="fmt-right">✒️</span>
+                        Change email address <span class="fmt-right"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                     </div>
                     <div class="fmt-row fmt-center tab-container b-neutral">
                         <div class="fmt-col fmt-half ">
@@ -127,7 +127,7 @@
             <% } %>
         </div>
 
-        <div id="dialogView" class="dialog fmt-animate-top">
+        <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>

@@ -141,6 +141,7 @@ class TeacherFiller {
       }
       const data = {
         dayIndex:Number(dayindex),
+        absent:false,
         period:periods
       }
       postJsonData(post.teacher.schedule,{
@@ -173,10 +174,11 @@ class TeacherFiller {
       }
       const data = {
         dayIndex:Number(dayindex),
+        absent:false,
         period:periods
       }
       postJsonData(post.admin.schedule,{
-        action:'upload',
+        action:post.admin.action.upload,
         target:'teacher',
         teacherID:sessionStorage.getItem('teacherID'),
         data:data

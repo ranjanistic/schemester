@@ -4,7 +4,6 @@ if (localStorage.getItem("theme")) {
     localStorage.getItem("theme")
   );
 }
-
 const code = new Codes();
 const client = new Client();
 const value = new Constant();
@@ -670,18 +669,18 @@ class Dialog extends DialogID {
     });
     return invalid?true:false;
   }
-  isValid(inputFieldIndex = Number) {
+  isValid(inputFieldIndex = 0) {
     return stringIsValid(
       this.getInputValue(inputFieldIndex),
       this.getInputType(inputFieldIndex)
     );
   }
-  validate(inputFieldIndex = Number, validateAction = _=>{}) {
+  validate(inputFieldIndex = 0, validateAction = _=>{}) {
     this.inputField[inputFieldIndex].validate((_) => {
       validateAction();
     });
   }
-  validateNow(inputFieldIndex = Number, validateAction = _=>{}) {
+  validateNow(inputFieldIndex = 0, validateAction = _=>{}) {
     this.inputField[inputFieldIndex].validateNow((_) => {
       validateAction();
     });
@@ -772,6 +771,9 @@ class Dialog extends DialogID {
   }
   setBackgroundColorType(type = bodyType.positive) {
     setDefaultBackground(this.view, type);
+  }
+  transparent(){
+    this.view.style.backgroundColor = colors.transparent;
   }
   setBackgroundColor(color = colors.base) {
     this.view.style.backgroundColor = color;
