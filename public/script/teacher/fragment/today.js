@@ -1,3 +1,4 @@
+parent.window.scrollTo(0, 0);
 class TeacherToday{
     constructor(){
         this.data = new ReceiveData();
@@ -101,18 +102,20 @@ class TeacherToday{
 
     todayactions(show = true){
         let options = new Dialog();
-        options.setBackgroundColor(colors.transparent);
+        options.transparent();
         options.setBoxHTML(`
-        <div class="fmt-row group-heading positive fmt-center">
+        <div class="fmt-row group-heading positive">
                     Options
                 </div>
                 <div class="fmt-row questrial">
                     <div class="fmt-row fmt-padding fmt-center">
-                        <label class="check-container" id="rememberuiidcontainer">
-                            <span id="rememberuiidtext">Absent today</span>
-                            <input type="checkbox" id="rememberuiidcheck">
-                            <span class="tickmark-negative"></span>
-                        </label>
+                    <div>
+                    Absent today
+                    <label class="switch-container">
+                        <input type="checkbox" id="absenttoday">
+                        <span class="switch-negative"></span>
+                    </label>
+                    </div>
                     </div>
                 </div>
         `)

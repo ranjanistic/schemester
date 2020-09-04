@@ -39,7 +39,7 @@
                     </label>
                 </span>
             </div>
-            <div class="fmt-row" style="margin-top: 70px;">
+            <div class="fmt-row fmt-padding" style="margin-top: 70px;">
                 <div class="fmt-col fmt-quarter fmt-padding">
                 </div>
                 <div class="fmt-col fmt-half container">
@@ -48,6 +48,32 @@
                     <div class="questrial">
                         Hey <%= teacher.username %>,<br/>
                         Your request is waiting for the administrator to accept.
+                    </div>
+                    <br/>
+                    <div class="fmt-row">
+                        <div class="fmt-row group-heading questrial">Account</div>
+                        <div class="caption">Logged in as</div>
+
+                        <div class="fmt-row" id="teachernameview">
+                            <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
+                            <span class="pointer" id="editteachername"><img width="20" src="/graphic/elements/editicon.svg"/></span>
+                        </div>
+                        <div id="teachernameeditor">
+                            <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
+                                <legend class="field-caption questrial">Change your name</legend>
+                                <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
+                                <span class="fmt-right error-caption"  id="teachernameerror"></span>
+                            </fieldset>
+                            <button class="positive-button caption" id="saveteachername">Save</button>
+                            <button class="neutral-button caption" id="cancelteachername">Cancel</button>
+                        </div>
+                        <div class="active questrial caption">
+                            <%= teacher.id %><span class="pointer fmt-padding"><img id="resetemail" width="20" src="/graphic/elements/editicon.svg"/></span>
+                        </div>
+                        <div class="fmt-row fmt-center tab-container b-neutral">
+                        <button class=" tab-container warning-button" id="forgotpass">Forgot password</button>
+                        <button class="negative-button fmt-center " id="logout">Logout</button>
+                        </div>
                     </div>
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding">
@@ -58,7 +84,7 @@
             </div>
         <% } else { %>
             <div class="fmt-row " style="padding:0">
-                <iframe style="width:100%;border:0;height:16cm;overflow-y: scroll;" id="frame">
+                <iframe style="width:100%;border:0;height:30cm;" id="frame">
                 </iframe>
             </div>
             <div class="fmt-row bottom-tab fmt-center fmt-animate-bottom">
@@ -80,6 +106,10 @@
                 </button>
             </div>
         <% } %>
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
         <div id="snackBar" class="fmt-animate-bottom">
             <span id="snackText"></span>
             <button id="snackButton"></button>

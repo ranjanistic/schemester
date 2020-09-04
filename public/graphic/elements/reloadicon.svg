@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="40mm"
+   height="40mm"
+   viewBox="0 0 40 40"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="reloadicon.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.4400708"
+     inkscape:cx="117.35785"
+     inkscape:cy="103.58207"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="745"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-257)">
+    <g
+       id="g4256" />
+    <g
+       id="g4270"
+       transform="translate(-1.5875,-1.0583333)">
+      <path
+         d="M 35.340831,278.20804 A 14.999999,14.999999 0 0 1 22.172058,293.09584 14.999999,14.999999 0 0 1 5.7879513,281.8431 14.999999,14.999999 0 0 1 14.956323,264.20779 14.999999,14.999999 0 0 1 33.579012,271.15463"
+         sodipodi:open="true"
+         sodipodi:end="5.7936371"
+         sodipodi:start="0"
+         sodipodi:ry="14.999999"
+         sodipodi:rx="14.999999"
+         sodipodi:cy="278.20804"
+         sodipodi:cx="20.340832"
+         sodipodi:type="arc"
+         id="path3431"
+         style="opacity:1;fill:#216bf3;fill-opacity:0;fill-rule:nonzero;stroke:#216bf3;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />
+      <g
+         transform="rotate(-3.5340957,34.402188,280.84878)"
+         id="g4260">
+        <rect
+           transform="rotate(55.855176)"
+           ry="2.0060039"
+           y="125.01223"
+           x="248.11893"
+           height="9.9758034"
+           width="4.0120077"
+           id="rect4235"
+           style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#0000ff;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />
+        <rect
+           transform="matrix(-0.87278655,0.48810208,0.48810208,0.87278655,0,0)"
+           ry="2.0060039"
+           y="258.20071"
+           x="102.76981"
+           height="9.9758034"
+           width="4.0120077"
+           id="rect4235-6"
+           style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#0000ff;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />
+      </g>
+      <ellipse
+         ry="1.845692"
+         rx="2.02215"
+         cy="271.10013"
+         cx="33.552692"
+         id="path4252"
+         style="opacity:1;fill:#216bf3;fill-opacity:1;fill-rule:nonzero;stroke:#216bf3;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:24.1307621;stroke-opacity:1;paint-order:markers stroke fill" />
+    </g>
+  </g>
+</svg>

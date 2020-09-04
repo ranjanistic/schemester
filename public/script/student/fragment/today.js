@@ -1,3 +1,4 @@
+parent.window.scrollTo(0, 0);
 class StudentToday{
     constructor(){
         this.data = new ReceiveData();
@@ -8,14 +9,14 @@ class StudentToday{
         } else {
             this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
             this.periodview = Array();
-            this.periodExpand = Array();
+            // this.periodExpand = Array();
             this.periodTime = Array();
             this.periodActions = Array();
             this.actionYes = Array();
             this.actionNo = Array();
             for(let i = 0;i<this.data.totalperiods;i++){
                 this.periodview.push(getElement(`periodview${i}`));
-                this.periodExpand.push(getElement(`showactions${i}`));
+                // this.periodExpand.push(getElement(`showactions${i}`));
                 this.periodTime.push(getElement(`timing${i}`));
                 this.periodActions.push(getElement(`action${i}`));
                 this.actionYes.push(getElement(`present${i}`));
@@ -33,14 +34,14 @@ class StudentToday{
         hideElement(this.periodActions);
         this.periodview.forEach((view,pindex)=>{
             this.periodTime[pindex].innerHTML = pindex;//todo: show timing
-            this.periodExpand[pindex].onclick=_=>{
-                show(this.periodActions[pindex]);
-                let shower = this.periodExpand[pindex].onclick;
-                this.periodExpand[pindex].onclick=_=>{
-                    hide(this.periodActions[pindex]);
-                    this.periodExpand[pindex].onclick = shower;
-                }
-            };
+            // this.periodExpand[pindex].onclick=_=>{
+            //     show(this.periodActions[pindex]);
+            //     let shower = this.periodExpand[pindex].onclick;
+            //     this.periodExpand[pindex].onclick=_=>{
+            //         hide(this.periodActions[pindex]);
+            //         this.periodExpand[pindex].onclick = shower;
+            //     }
+            // };
         })
     }
     startTimers= async()=>{

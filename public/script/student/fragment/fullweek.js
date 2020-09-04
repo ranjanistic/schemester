@@ -1,3 +1,4 @@
+parent.window.scrollTo(0, 0);
 class FullSchedule{
     constructor(){
         this.data = new ReceiveData();

@@ -1,3 +1,5 @@
+
+parent.window.scrollTo(0, 0);
 class Classroom {
   constructor() {
     this.data = new ReceiveData();
