@@ -1,3 +1,4 @@
+parent.window.scrollTo(0, 0);
 class TeacherAbout {
   constructor() {
     this.darkmode = new Switch("darkmode");

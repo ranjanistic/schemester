@@ -2,7 +2,7 @@
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -54,7 +54,7 @@
             </div>
             <br/>
             <div>
-            <% if (!schedule && !timings.daysInWeek.length) { %>
+            <% if (schedule && timings.daysInWeek.length) { %>
                 <% for( let i = 0; i < schedule.length; i++ ) { %>
                     <div class="fmt-col fmt-half fmt-padding-small">
                         <div class="fmt-row tab-container b-neutral" style="color:var(--secondary-text);" id="dayBox<%= schedule[i].dayIndex %>">

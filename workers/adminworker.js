@@ -12,6 +12,8 @@ const Admin = require("../config/db").getAdmin(),
 
 class AdminWorker {
   constructor() {
+    this.today = new Today();
+
     this.self = new Self();
     this.default = new Default();
     this.users = new Users();
@@ -47,6 +49,75 @@ class AdminWorker {
   async getInstitute(user){
     const inst = await Institute.findOne({uiid:user.uiid});
     return inst?inst:code.event(code.NO);
+  }
+}
+
+class Today{
+  constructor(){}
+  async handlerequest(user,body){
+    switch(body.action){
+      case "fetch":{
+        switch(body.specific){
+          default: {
+            const today = new Date().getDay();
+            clog(today);
+            const instdoc = await Institute.findOne({uiid:user.uiid},{
+              projection:{
+                "_id":1,
+                "default.timings":1,
+                "schedule":1,
+                "vacations":1,
+              }
+            });
+            if(!instdoc) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+            let teachers = [];
+            instdoc.schedule.teachers.forEach((teacher)=>{
+              teacher.days.forEach((day)=>{
+                if(day.dayIndex == today){
+                  teachers.push({
+                    teacherID:teacher.teacherID,
+                    absent:teacher.absent,
+                    periods:day.period,
+                  });
+                }
+              })
+            });
+            let classes = [];
+            instdoc.schedule.classes.forEach((Class)=>{
+              Class.days.forEach((day)=>{
+                if(day.dayIndex == today){
+                  day.period.forEach((period)=>{
+                    clog(classes);
+                    clog(period);
+                    if(!classes.includes({
+                      classname:Class.classname,
+                      periods:day.period
+                    })){
+                      if(period&&!period.temp){
+                        classes.push({
+                          classname:Class.classname,
+                          periods:day.period,
+                        });
+                      }
+                    }
+                  })
+                }
+              })
+            });
+            return {
+              instID:instdoc._id,
+              timings:instdoc.default.timings,
+              teachers:teachers,
+              classes:classes,
+              vacations:instdoc.vacations
+            };
+          }
+        }
+      }break;
+      case "update":{
+
+      }
+    }
   }
 }
 

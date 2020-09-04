@@ -2,7 +2,7 @@
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -55,7 +55,7 @@
                                 <span id="durationdisplay"></span>
                             </div>
                             <div class="fmt-col fourth">
-                                <span class="fmt-right" id="showactions<%= i %>">✒️</span>
+                                <span class="fmt-right" id="showactions<%= i %>"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                             </div>
                             <div class="fmt-row">
                                 <div class="fmt-col third fmt-padding fmt-center" style="margin:12px 0" id="timing<%= i %>">
@@ -67,8 +67,7 @@
                             </div>
                             <div class="fmt-row fmt-right" id="action<%= i %>">
                                 <br/>
-                                <button class="positive-button" id="present<%= i %>">Present</button>
-                                <button class="negative-button" id="absent<%= i %>">Absent</button>
+                                <button class="negative-button" id="absent<%= i %>">Mark absent</button>
                             </div>
                         </div>
                     <% } %>

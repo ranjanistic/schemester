@@ -1,116 +1,69 @@
 //For student session view with bottom navigation tabs.
 
+class Tabs{
+    constructor(){
+        this.todayload = getElement("todayload");
+        this.today = getElement("todaytab");
+        this.fullweek = getElement("fulltab");
+        this.classroom = getElement("classtab");
+        this.settings = getElement("settingstab");
+        this.weekload = getElement("weekload");
+        this.classload = getElement("classload");
+        this.settingload = getElement("aboutload");       
+    }
+}
+
+let tabs;
+
+
 class StudentDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;
-
         this.frame = getElement("frame");
         this.viewload = getElement('viewload');
-        this.today = getElement("todaytab");
-        this.todayload = getElement("todayload");
-        this.fullweek = getElement("fulltab");
-        this.weekload = getElement("weekload");
-        this.classroom = getElement("classtab")
-        this.classload = getElement("classload");
-        this.settings = getElement("settingstab");
-        this.settingload = getElement("aboutload");
-        this.today.onclick =_=>{
-            this.showLoader(this.todayload);
-            sessionStorage.setItem('fragment',locate.student.target.fragment.today);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
-            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.today});
-            this.frame.onload=_=>{
-                this.hideLoader(this.todayload)
-            }
-        }
-        this.fullweek.onclick =_=>{
-            this.showLoader(this.weekload);
-            sessionStorage.setItem('fragment',locate.student.target.fragment.fullweek);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
-            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.fullweek});
-            this.frame.onload=_=>{
-                this.hideLoader(this.weekload)
-            }
-        }
-        this.classroom.onclick =_=>{
-            this.showLoader(this.classload);
-            sessionStorage.setItem('fragment',locate.student.target.fragment.classroom);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected");
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected",false);
-            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.classroom});
-            this.frame.onload=_=>{
-                this.hideLoader(this.classload)
-            }
-        }
-        this.settings.onclick =_=>{
-            this.showLoader(this.settingload);
-            sessionStorage.setItem('fragment',locate.student.target.fragment.settings);
-            replaceClass(this.today,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.fullweek,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.classroom,"bottom-tab-section","bottom-tab-section-selected",false);
-            replaceClass(this.settings,"bottom-tab-section","bottom-tab-section-selected");
-            this.frame.src = locate.student.fragment + getRequestBody({fragment:locate.student.target.fragment.settings});
-            this.frame.onload=_=>{
-                this.hideLoader(this.settingload)
-            }
-        }
+        tabs = new Tabs();
+        this.tabs = [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings];
+        this.tabloaders = [tabs.todayload,tabs.weekload,tabs.classload,tabs.settingload];
+        this.tabicons = ['/graphic/elements/todayicon.svg','/graphic/elements/weekicon.svg','/graphic/elements/classicon.svg','/graphic/elements/settingicon.svg'];
+        this.fragpath = [locate.student.target.fragment.today,locate.student.target.fragment.fullweek,locate.student.target.fragment.classroom,locate.student.target.fragment.settings]
 
-        this.setview(this.frag);
+        this.tabs.forEach((tab,t)=>{
+            tab.onclick=_=>{
+                this.showLoader(tab);
+                sessionStorage.setItem('fragment',this.fragpath[t]);
+                this.selectTab(tab);
+                this.frame.src = locate.student.fragment + getRequestBody({fragment:this.fragpath[t]});
+                this.frame.onload=_=>{
+                    this.hideLoader(tab)
+                }
+            }
+        });
+        this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem('fragment'))?this.fragpath.indexOf(sessionStorage.getItem('fragment')):0].click();
         this.clearAllLoaders();
     }
+    selectTab(tab){
+        this.tabs.forEach((Tab)=>{
+            replaceClass(Tab,"bottom-tab-section","bottom-tab-section-selected",tab == Tab);
+        });
+    }
     showAllLoaders(){
-        [this.todayload,this.weekload,this.classload,this.settingload].forEach((load)=>{
-            this.showLoader(load);
+        this.tabs.forEach((tab)=>{
+            this.showLoader(tab);
         });
     }
     clearAllLoaders(){
-        [this.todayload,this.weekload,this.classload,this.settingload].forEach((load)=>{
-            this.hideLoader(load);
+        this.tabs.forEach((tab)=>{
+            this.hideLoader(tab);
         });
     }
-    hideLoader(tabload = this.todayload){
-        let iconpath;
-        switch(tabload){
-            case tabs.weekload:iconpath = '/graphic/elements/weekicon.svg';break;
-            case tabs.classload:iconpath = '/graphic/elements/classicon.svg';break;
-            case tabs.settingload:iconpath = '/graphic/elements/settingicon.svg';break;
-            default:iconpath = '/graphic/elements/todayicon.svg';break;
-        }
-        tabload.src = iconpath;
-        tabload.classList.remove('fmt-spin-fast');
+    hideLoader(tab){
+        this.tabloaders[this.tabs.indexOf(tab)].src = this.tabicons[this.tabs.indexOf(tab)];
+        this.tabloaders[this.tabs.indexOf(tab)].classList.remove('fmt-spin-fast');
     }
-    showLoader(tabload = this.todayload){
-        tabload.src = '/graphic/blueLoader.svg';
-        tabload.classList.add('fmt-spin-fast');
+    showLoader(tab){
+        this.tabloaders[this.tabs.indexOf(tab)].src = '/graphic/blueLoader.svg';
+        this.tabloaders[this.tabs.indexOf(tab)].classList.add('fmt-spin-fast');
     }
-    setview(frag){
-        const frags = [locate.student.target.fragment.today,locate.student.target.fragment.fullweek,locate.student.target.fragment.classroom,locate.student.target.fragment.settings];
-        switch(frag){
-            case locate.student.target.fragment.fullweek:{
-                this.fullweek.click();
-            }break;
-            case locate.student.target.fragment.settings:{
-                this.settings.click();
-            }break;
-            case locate.student.target.fragment.classroom:{
-                this.classroom.click();
-            }break;
-            case locate.student.target.fragment.today:{
-                this.today.click();
-            }break;
-            default:{
-                this.setview(frags.includes(sessionStorage.getItem('fragment'))?sessionStorage.getItem('fragment'):locate.student.target.fragment.today)
-            }
-        }
-    }    
 }
 async function linkSender(){
     clog("showing");
@@ -131,7 +84,7 @@ async function linkSender(){
   }
   function snackbar(
     text = String(),
-    actionText = String(),
+    actionText = 'OK',
     isNormal = actionType.positive,
     action = () => {
       new Snackbar().hide();
@@ -162,17 +115,104 @@ class Pseudostudent{
                 });
             });
         }
-    }
+        this.logout = getElement("logout");
+        this.logout.onclick = (_) => {
+        finishSession((_) => {
+            relocateParent(locate.teacher.login, {
+            email: localStorage.getItem("id"),
+            });
+        });
+        };
+        this.name = new Editable(
+            "studentnameview",
+            "studentnameeditor",
+            new TextInput(
+              "studentnamefield",
+              "studentnameinput",
+              "studentnameerror",
+              validType.name
+            ),
+            "editstudentname",
+            "studentname",
+            "savestudentname",
+            "cancelstudentname"
+          );
+          this.name.onSave((_) => {
+            this.name.validateInputNow();
+            if (!this.name.isValidInput()) return;
+            this.name.disableInput();
+            if (this.name.getInputValue().trim() == this.name.displayText()) {
+              return this.name.clickCancel();
+            }
+            postJsonData(post.student.self, {
+              target: "account",
+              action: code.action.CHANGE_NAME,
+              newname: this.name.getInputValue().trim(),
+            }).then((resp) => {
+              if (resp.event == code.OK) {
+                this.name.setDisplayText(this.name.getInputValue());
+                this.name.display();
+              } else {
+                parent.snackbar("Unable to save");
+              }
+            });
+          });
+          this.resetmail = getElement("resetemail");
+          this.forgotpass = getElement("forgotpass");
+          this.resetmail.onclick = (_) => {
+            changeEmailBox(client.student);
+          };
+          if (Number(sessionStorage.getItem("linkin")) > 0) {
+            opacityOf(this.forgotpass, 0.5);
+            let time = Number(sessionStorage.getItem("linkin"));
+            const timer = setInterval(() => {
+              time--;
+              sessionStorage.setItem("linkin", time);
+              this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
+              if (Number(sessionStorage.getItem("linkin")) == 0) {
+                clearInterval(timer);
+                this.forgotpass.innerHTML = "Forgot password";
+                opacityOf(this.forgotpass, 1);
+                this.forgotpass.onclick = (_) => {
+                  this.sendForgotLink()
+                };
+              }
+            }, 1000);
+          } else {
+            this.forgotpass.onclick = (_) => {
+              this.sendForgotLink()
+            };
+          }
+        }
+        sendForgotLink(){
+          linkSender().then(done=>{
+            if(done){
+              opacityOf(this.forgotPassword, 0.4);
+              this.forgotPassword.onclick = (_) => {};
+              let time = 120;
+              sessionStorage.setItem("linkin", time);
+              const timer = setInterval(() => {
+                time--;
+                sessionStorage.setItem("linkin", time);
+                this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
+                if (Number(sessionStorage.getItem("linkin")) == 0) {
+                  clearInterval(timer);
+                  this.forgotPassword.innerHTML = "Forgot password";
+                  opacityOf(this.forgotPassword, 1);
+                  this.forgotPassword.onclick = (_) => {this.linkSender()};
+                }
+              }, 1000);
+            }
+          })
+        }
 }
-
-let fragment;
 
 window.onload=_=>{
     clog("dahsloaded")
      try{
-        fragment = new StudentDash();
+        new StudentDash();
     }catch{
-        fragment = new Pseudostudent()
+        new Pseudostudent()
     }
 
 }

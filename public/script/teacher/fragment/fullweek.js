@@ -1,8 +1,9 @@
+parent.window.scrollTo(0, 0);
 class FullSchedule{
     constructor(){
         this.data = new ReceiveData();
         this.rawdata = new ReceiveData(true);
-        if(!this.data.schedule){
+        if(this.data.schedule){
             this.dayBox = Array();
             this.dayBoxExpand = Array();
             this.periodsView = Array();
@@ -64,6 +65,7 @@ class ReceiveData{
             this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
         }
         this.schedule = getElement("schedule").innerHTML == 'false'?false:true;
+        clog(this.schedule);
         this.periodduration = Number(getElement("periodDuration").innerHTML);
         this.breakduration = Number(getElement("breakDuration").innerHTML);
         this.totalperiods = Number(getElement("periodsInDay").innerHTML);
