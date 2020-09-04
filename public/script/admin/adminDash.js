@@ -6,16 +6,174 @@
 class Dashboard {
   constructor() {
     this.data = new ReceiveData()
-    this.dayInput = getElement("dayinput");
-    this.dayDropdown = getElement("daydropdown");
-    this.teacherChipToday = getElement("teacherRadioToday");
-    this.classChipToday = getElement("classRadioToday");
-    this.workboxtoday = getElement("workSectionToday");
-    this.teacherBoxToday = getElement("teacherSectionToday");
-    this.classBoxToday = getElement("classSectionToday");
-    this.teacherSearchInput = getElement("teachersearchinput");
-    this.teacherDropdown = getElement("teacherDropdown");
-    
+    const todayview = getElement("todayview");
+    class Today{
+      constructor(){
+        this.view = todayview;
+        this.todayrefresh = getElement("todayrefresh")
+        this.todaywork = getElement("todayworkview");
+        this.todayteachers = getElement("todayteachersview");
+        this.todayclasses = getElement("todayclassesview");
+        // this.loader();
+        this.todayrefresh.onclick=_=>{
+          this.loader();
+          new Today();
+        };
+        clog("posting");
+        postJsonData(post.admin.dashboard,{
+          target:post.admin.target.today,
+          action:post.admin.action.fetch,
+        }).then(response=>{
+          clog(response);
+          this.loader(false);
+          if(response.timings.daysInWeek.includes(new Date().getDay())){
+            const teachers = response.teachers;
+            this.todaywork.innerHTML = 
+            `<div class="fmt-row" id="todayclassesview" >
+            <span class=" positive questrial">Classes affected
+            <button class="active-button caption fmt-right" id="autoarrange">Auto arrange</button>
+            </span>
+            <div id="classlist">
+            </div>
+          </div>
+            <div class="fmt-row" id="todayteachersview" >
+              <span class=" positive questrial">Absent teachers</span>
+              <div id="teacherlist">
+              </div>
+            </div>
+            `;
+            let teacherlist = constant.nothing;
+            let classeslist = teacherlist;
+            let affectedclasses = [];
+            teachers.forEach((teacher)=>{
+              let absentperiods = [];
+              teacher.periods.forEach((period,p)=>{
+                if(teacher.absent){
+                  period['p'] = p;
+                  affectedclasses.push(period);
+                }else if(!period.hold){
+                  absentperiods.push(p);
+                  period['p'] = p;
+                  affectedclasses.push(period);
+                }
+              });
+              if(teacher.absent){
+                teacherlist +=`
+                <div class="fmt-row neutral-button" style="margin:4px 0">
+                  ${teacher.teacherID} is absent today.
+                </div>`
+              }
+              if(absentperiods.length){
+                if(!teacher.absent){
+                  teacherlist +=`
+                  <div class="fmt-row neutral-button" style="margin:4px 0">
+                    ${teacher.teacherID} is absent for ${absentperiods.length} periods.
+                  </div>`;
+                }
+              }
+            });
+            if(!affectedclasses.length){
+              return this.noproblems();
+            }else {
+              getElement("teacherlist").innerHTML=teacherlist;
+              let arranges = [];
+              affectedclasses.forEach((period,p)=>{
+                  classeslist+= `
+                  <div class="fmt-row neutral-button" style="margin:4px 0">
+                    ${addNumberSuffixHTML(period.p+1)} period of ${period.classname} is vacant.
+                    <button class="positive-button caption fmt-right" id="arrange${p}">Arrange</button>
+                  </div>
+                  `;
+                  arranges.push({
+                    period:period.p,
+                    classname:period.classname
+                  });
+              });
+              getElement("classlist").innerHTML=classeslist;
+              let arrangebuttons = []
+              affectedclasses.forEach((_,p)=>{
+                arrangebuttons.push(getElement(`arrange${p}`));
+                arrangebuttons[p].onclick=_=>{
+                  const adialog = new Dialog();
+                  adialog.setDisplay('',`Substitute for ${addNumberSuffixHTML(arranges[p].period+1)} period of class ${arranges[p].classname}`);
+                  adialog.createInputs(Array('Substitute name or ID'),Array('This teacher will hold the class today'),Array('text'),Array(validType.nonempty));
+                  adialog.createActions(['Set','Cancel'],[actionType.positive,actionType.neutral]);
+                  adialog.transparent();
+                  adialog.onButtonClick(Array(_=>{
+                    if(!adialog.isValid()) return adialog.validateNow();
+                    adialog.loader();
+                    postJsonData(post.admin.dashboard,{
+                      target:post.admin.target.today,
+                      action:post.admin.action.update,
+                      arrange:arranges[p]
+                    }).then(resp=>{
+                      if(resp.event == code.OK){
+                        return adialog.hide();
+                      }
+                      adialog.loader(false);
+                      switch(resp.event){
+                        case code.auth.USER_NOT_EXIST:return adialog.inputField[0].showError('No such teacher',true);
+                        default:snackBar('An error occurred','Report');
+                      }
+                    });
+                  },_=>{
+                    adialog.hide();
+                  }));
+                  adialog.show();
+                }
+              });
+              getElement("autoarrange").onclick=_=>{
+                const autodialog = new Dialog();
+                autodialog.setDisplay('Auto arrange?','Are you sure you want schemester to arrange substitutes for you? This feature is experimental, and might fail to arrange.');
+                autodialog.createActions(['Go ahead','Abort'],[actionType.positive,actionType.neutral]);
+                autodialog.onButtonClick([_=>{
+                  autodialog.loader();
+                  snackBar('Please wait');
+                  autodialog.setDisplay('Arranging...','Finding and assigning substitutes for today...');
+                  //autoarrange;
+                },_=>{
+                  autodialog.hide();
+                }]);
+                autodialog.transparent();
+                autodialog.show();
+              };
+            }
+          }else {
+            this.noschedule();
+          }
+        }).catch(e=>{
+          this.loader(false);
+          this.errorview(navigator.onLine?e:'Check you connection');
+        });
+      }
+      loader(show = true){
+        this.todaywork.innerHTML = show?`<div class="fmt-row fmt-center fmt-spin-fast" id="todayloader" >
+        <img src="/graphic/blueLoader.svg"/>
+      </div>`:constant.nothing;
+      }
+      noproblems(){
+        this.todaywork.innerHTML = `<div class="fmt-row fmt-center group-text">
+          <br/>
+          <img src="/graphic/elements/okicon.svg" width="70"/><br/><br/>
+          Everyone is present today!
+        </div>`;
+      }
+      noschedule(){
+        this.todaywork.innerHTML = `<div class="fmt-row fmt-center group-text">
+          <br/>
+          <img src="/graphic/elements/okicon.svg" width="70"/><br/><br/>
+          No schedule for today.
+        </div>`;
+      }
+      errorview(e){
+        this.todaywork.innerHTML = `<div class="fmt-row fmt-center group-text">
+        <br/>
+        <img src="/graphic/elements/warnicon.svg" width="70"/><br/><br/>
+          ${e}.
+        </div>`;
+      }
+    }
+    this.today = new Today();
   };
 };
 

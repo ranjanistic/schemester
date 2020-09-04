@@ -2,7 +2,7 @@
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/checkbox.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -41,7 +41,7 @@
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
                     <button class="fmt-right circle-button" id="todayOptions">
-                        <img width="30" src="/graphic/blueLoader.svg"/>
+                        <img width="30" src="/graphic/elements/settings.svg"/>
                     </button>
                 </div>
             </div>
@@ -54,9 +54,6 @@
                                 <%= addNumberSuffixHTML(i+1) %>
                                 <span id="durationdisplay"></span>
                             </div>
-                            <div class="fmt-col fourth">
-                                <span class="fmt-right" id="showactions<%= i %>">✒️</span>
-                            </div>
                             <div class="fmt-row">
                                 <div class="fmt-col third fmt-padding fmt-center" style="margin:12px 0" id="timing<%= i %>">
                                 </div>
@@ -66,9 +63,6 @@
                                 </div>
                             </div>
                             <div class="fmt-row fmt-right" id="action<%= i %>">
-                                <br/>
-                                <button class="positive-button" id="present<%= i %>">Present</button>
-                                <button class="negative-button" id="absent<%= i %>">Absent</button>
                             </div>
                         </div>
                     <% } %>

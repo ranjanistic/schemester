@@ -234,7 +234,6 @@ class Password{
     }).then(response=>{
       clog(response);
       this.handleAuthResult(response);
-      this.loader(false);
     }).catch(e=>{
       snackBar(e,null,false);
     })
@@ -288,13 +287,12 @@ class Password{
   handleAuthResult=(result)=>{
     switch (result.event) {
       case code.auth.AUTH_SUCCESS:{
-        showLoader();
         saveDataLocally(result.user);
-        relocate(locate.teacher.session,{
+        return relocate(locate.teacher.session,{
           u:result.user.uid,
           target:result.target
         });
-      }break;
+      };
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);

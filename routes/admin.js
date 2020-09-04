@@ -95,6 +95,13 @@ admin.get("/session*", (req, res) => {
                 section: data.section,
               });
             }
+            case view.admin.target.classes:{
+              clog(inst.users.classes);
+              return res.render(view.admin.getViewByTarget(data.target),{
+                classes:inst.users.classes,
+                defaults:inst.default,
+              });
+            }
             case view.admin.target.viewschedule:{
                 clog(data);
                 if (data.type == "teacher") {
@@ -509,6 +516,23 @@ admin.post("/receivedata",async(req,res)=>{
     }
   })
 })
+
+admin.post("/dashboard",async(req,res)=>{
+  session.verify(req, sessionsecret).catch((error) => {
+    clog(error);
+    return res.json({
+      result: code.eventmsg(code.auth.AUTH_FAILED, error),
+    });
+  }).then(async (response) => {
+    if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+    const body = req.body;
+    clog(body);
+    switch(body.target){  
+      case "today":case "today": return res.json({result:await worker.today.handlerequest(response.user,body)});
+      
+    }
+  });
+});
 
 admin.post("/manage", async (req, res) => { //for settings
   clog("in post manage");

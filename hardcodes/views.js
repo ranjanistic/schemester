@@ -26,6 +26,8 @@ class AdminView{
         this.registration = 'admin/edit_detail.ejs';
         this.addTeacher = 'admin/teacher_filler.ejs';
         this.scheduleview = 'admin/schedule_view.ejs';
+        this.classrooms = 'admin/classrooms.ejs';
+
         class Target{
             constructor(){
               this.dashboard = 'dashboard';
@@ -33,6 +35,7 @@ class AdminView{
               this.viewschedule = 'viewschedule';
               this.manage = 'manage';
               this.register = 'registration';
+              this.classes = 'classrooms';
             }
         }
         this.target = new Target();
@@ -55,6 +58,7 @@ class AdminView{
             case this.target.dashboard:return this.dash;
             case this.target.register:return this.registration;
             case this.target.viewschedule:return this.scheduleview;
+            case this.target.classes:return this.classrooms;
             default:return this.getViewByTarget();
         }
     }
