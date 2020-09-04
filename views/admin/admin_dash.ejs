@@ -37,8 +37,26 @@
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
             <span id="instname" class="pointer"><%= inst.default.institute.instituteName %></span>
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <section class="fmt-padding active fmt-center">
+                        <%= adata.username %>
+                        <%= adata.id %>
+                    </section>
+                    <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
+                        <img src="/graphic/elements/classicon.svg" width="25" /> Classrooms
+                    </div>
+                    <div class="" id="settingsAdminButton">
+                        <img src="/graphic/elements/settings.svg" width="25" /> Settings
+                    </div>
+                    <div class="negative" id="logoutAdminButton">
+                        ❌ Logout
+                    </div>
+                </div>
+            </span >
             <span class="menu fmt-right">
-                <button class="neutral-button" id="notificationbutton">🔔</button>
+                <button class="neutral-button-togg" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" /></button>
                 <div class="menubox" id="notifications">
                     <section class="fmt-padding positive fmt-center">
                         Notifications
@@ -69,91 +87,24 @@
                     <% } %>
                 </div>
             </span>
-            <span  class="menu fmt-right">
-                <img class="positive-button" src="/graphic/menudotsvertical.svg" width="50" id="settingsmenubutton">
-                <div class="menubox" id="settingsmenu">
-                    <section class="fmt-padding active fmt-center">
-                        <%= adata.username %>
-                        <%= adata.id %>
-                    </section>
-                    <div class="" id="settingsAdminButton">
-                        ⚙ Settings
-                    </div>
-                    <div class="negative" id="logoutAdminButton">
-                        ❌ Logout
-                    </div>
-                </div>
-            </span >
-            <button class="neutral-button fmt-right" id="refresh">🔁</button>
+            <button class="neutral-button fmt-right" id="refresh"><img src="/graphic/elements/reloadicon.svg" width="25"/></button>
             <input type="text" class="fmt-right searcher" name="search"/>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            
             <% if (inst.schedule.classes.length) { %>
                 <% if (inst.preferences.active) { %>
             <div class="fmt-col fmt-half fmt-padding-small">
-                <div class="container fmt-animate-left" id="today" style="margin-bottom: 10px;">
+                <div class="container fmt-animate-left" id="todayview" style="margin-bottom: 10px;">
                     <div class="fmt-row">
-                        <span class=" heading"><%= inst.users.teachers.length %></span>
-                        <button class="fmt-right positive-button" style="background-color: #40a556;">Auto-assign</button>
+                        <span class="sub-heading positive">Today</span>
+                        <button class="circle-button fmt-padding-small fmt-right" id="todayrefresh"><img src="/graphic/elements/reloadicon.svg" width="25"/></button>
                     </div>
-                    <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Teachers absent · <span style="color: red;" id="absentees">2</span></legend>
-                        <!--This division contains list of absentee teachers/assignees-->
-
-                        <div class="fmt-row" id="absenteelist">
-                            <!--This division contains absentee details, for each absentee-->
-                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
-                                <div class="fmt-twothird">
-                                    <span class="fmt-row" style="color:#216bf3">Dr. Teacher Sharma</span>
-                                    <span class="group-text">4,5,6</span>
-                                    <span class="group-text"> · 8A,10B</span>
-                                </div>
-                                <div class="fmt-third">
-                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
-                                    <span class="fmt-row"></span>
-                                </div>
-                            </div>
-                            <div class="fmt-row sub-container" id="absentee1" style="margin:4px">
-                                <div class="fmt-third">
-                                    <span class="fmt-row" style="color:#216bf3">Mr. Example Singh</span>
-                                    <span class="group-text">Day off</span>
-                                    <span class="group-text"> · 9A,12C</span>
-                                </div>
-                                <div class="fmt-twothird">
-                                    <button class="fmt-row positive-button fmt-right">Edit</button><br/>
-                                    <span class="fmt-row"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Classes affected · <span style="color: red;" id="absentees">6</span></legend>
-                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
-                        <div class="fmt-row" id="classAffectedlist">
-                            <!--This division contains absentee details, for each absentee-->
-                            <div class="fmt-row" id="affectedClass1">
-                                <span class="fmt-half">Class</span>
-                                <span class="fmt-half">Period(s)</span>
-                            </div>
-                        </div>
-                    </fieldset>
-                    <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Free teachers · <span style="color: green;" id="absentees">5</span></legend>
-                        <!--This division contains list of affected classes due to absentee teachers/assignees-->
-                        <div class="fmt-row" id="freeAssigneeList">
-                            <!--This division contains absentee details, for each absentee-->
-                            <div class="fmt-row" id="freeAssignee1">
-                                <span class="fmt-half">Free teacher's name</span>
-                                <span class="fmt-half">Free periods</span>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-
-                <div class="container fmt-animate-left" id="summary" style="margin-bottom: 10px;">
-                    <span class="fmt-row heading">Weekly</span>
+                    <div id="todayworkview">
+                        <div class="fmt-row fmt-center fmt-spin-fast" id="todayloader" >
+                            <img src="/graphic/blueLoader.svg"/>
+                          </div>
+                    </div>
                 </div>
             </div>
             <div class="fmt-col fmt-half fmt-padding-small">

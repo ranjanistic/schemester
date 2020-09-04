@@ -1,4 +1,4 @@
-<html style="padding-bottom:20px">
+<html style="padding-bottom:40px">
     <head>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
@@ -29,7 +29,7 @@
                         <div class="fmt-col fmt-threequarter">
                             <div class="fmt-row" id="teachernameview">
                                 <span class=" positive questrial" id="teachername"><%= teacher.username %></span>
-                                <span class="caption" style="font-size:12px" id="editteachername">✒️</span>
+                                <span class="caption" style="font-size:12px" id="editteachername"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                             </div>
                             <div id="teachernameeditor">
                                 <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
@@ -68,7 +68,7 @@
                         </span>
                     </div>
                     <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
-                        Change email address <span class="fmt-right">✒️</span>
+                        Change email address <span class="fmt-right"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                     </div>
                     <div class="fmt-row fmt-center tab-container b-neutral">
                         <div class="fmt-col fmt-half ">
@@ -130,8 +130,8 @@
             <% } %>
         </div>
 
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+        <div id="dialogView" class="dialog fmt-animate-top">
+            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>
         <div id="snackBar" class="snack-positive fmt-animate-bottom">

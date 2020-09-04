@@ -299,6 +299,7 @@ class Locations {
             this.addteacher = "addteacher";
             this.register = "registration";
             this.viewschedule = "viewschedule";
+            this.classes = "classrooms"
           }
         }
         this.target = new Target();
@@ -381,20 +382,30 @@ class Posts {
         this.signup = `${root}/auth/signup`;
 
         this.auth = `${root}/auth`;
-        this.self = `${root}/self `;
-        this.default = `${root}/default `;
+        this.self = `${root}/self`;
+        this.default = `${root}/default`;
         this.sessionValidate = `${root}/session/validate`;
-        this.manage = `${root}/manage `;
+        this.manage = `${root}/manage`;
         this.register = `${root}/session/registerinstitution`;
-        this.schedule = `${root}/schedule `;
-        this.receivedata = `${root}/receivedata `;
-        this.pseudousers = `${root}/pseudousers `;
+        this.schedule = `${root}/schedule`;
+        this.receivedata = `${root}/receivedata`;
+        this.pseudousers = `${root}/pseudousers`;
+        this.dashboard = `${root}/dashboard`;
+
+        class Target{
+          constructor(){
+            this.today = "today";
+          }
+        }
+        this.target = new Target();
         class Action {
           constructor() {
             this.registerInstitute = "registerinstitute";
             this.login = "login";
             this.logout = "logout";
             this.signup = "signup";
+            this.fetch = "fetch";
+            this.update = "update";
           }
         }
         this.action = new Action();
@@ -477,7 +488,6 @@ class Theme {
   }
   setTheme(theme = this.light) {
     localStorage.setItem(this.key, theme);
-    // document.getElementById('themecolor').setAttribute('content',theme == this.dark?'#739dec':'#216bf3');
     window.parent.document.getElementById('themecolor').setAttribute('content',theme == this.dark?'#739dec':'#216bf3')
     document.documentElement.setAttribute("data-theme", theme);
     window.parent.document.documentElement.setAttribute("data-theme", theme);
