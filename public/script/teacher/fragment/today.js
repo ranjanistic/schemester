@@ -1,4 +1,7 @@
 parent.window.scrollTo(0, 0);
+if(sessionStorage.getItem('fragment')!=locate.teacher.target.fragment.today){
+    parent.clickTab(0);
+  }
 class TeacherToday{
     constructor(){
         this.data = new ReceiveData();

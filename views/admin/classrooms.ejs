@@ -17,7 +17,7 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
-        <!-- <script src="/script/admin/schedule.js"></script> -->
+        <script src="/script/admin/classrooms.js"></script>
     </head>
     
     <body>
@@ -30,7 +30,15 @@
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="fmt-row fmt-padding-small">
                 <div class="sub-heading fmt-col half positive">
-                    <%= classes.length %> classes
+                    <span id="totalclasses"><%= classes.length %></span> classrooms ·
+                    <span id="totalstudents" class="group-heading positive">
+                        <% var totalstuds = 0 %>
+                        <% classes.forEach((Class)=> { %>
+                            <% totalstuds+=Class.students.length %>
+                        <% }) %>
+                        <%= totalstuds %> students
+                    </span>
+
                 </div>
                 <div class="fmt-col half">
                     <button class="fmt-right positive-button">Add class</button>
@@ -38,20 +46,24 @@
                 </div>
             </div>
             <div class="fmt-row">
-            <% classes.forEach((Class)=> {%>
+            <% classes.forEach((Class,c)=> {%>
                 <div class="fmt-col fmt-third fmt-padding">
                     <div class="fmt-col container fmt-padding">
                         <div class="fmt-row positive group-heading fmt-left">
+                            <span id="classid<%= c %>" hidden><%= Class._id %></span>
                             <%= Class.classname %>
                         </div>
-                        <div class="fmt-row questrial positive caption" style="text-align:left">
+                        <a class="fmt-right caption active fmt-padding" id="viewschedule<%= c %>">Schedule</a>
+                        <div class="fmt-row questrial positive " style="text-align:left">
                             <%= Class.students.length %> students
                         </div>
                         <div class="fmt-row questrial caption break" style="text-align:left">
                             <% if(Class.inchargeID){ %>
-                                Incharge <a onclick="refer(locate.admin.session,{target:locate.admin.target.viewschedule })"><%= Class.inchargeID %></a>
+                                Incharge <br/>                       
+                                <div class="group-text" id="inchargename<%= c %>"><%= Class.inchargeID %></div>
+                                <a id="inchargeid<%= c %>"><%= Class.inchargeID %></a>
                             <%} else {%>
-                                <a class="active">Set incharge</a>
+                                <a class="active" id="setincharge<%= c %>">Set incharge</a>
                             <%}%>
                         </div>
                     </div>

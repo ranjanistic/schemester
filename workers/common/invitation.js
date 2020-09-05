@@ -64,7 +64,7 @@ class Invitation {
               "users.classes": { $elemMatch: { _id: ObjectId(data.cid) } },
             },
             {
-              projection: { "users.classes.$.invite": 1 },
+              projection: { "users.classes.$": 1 },
             }
           );
           if (!classdoc) return code.inst.CLASS_NOT_FOUND;

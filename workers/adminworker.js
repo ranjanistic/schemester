@@ -82,33 +82,10 @@ class Today{
                 }
               })
             });
-            let classes = [];
-            instdoc.schedule.classes.forEach((Class)=>{
-              Class.days.forEach((day)=>{
-                if(day.dayIndex == today){
-                  day.period.forEach((period)=>{
-                    clog(classes);
-                    clog(period);
-                    if(!classes.includes({
-                      classname:Class.classname,
-                      periods:day.period
-                    })){
-                      if(period&&!period.temp){
-                        classes.push({
-                          classname:Class.classname,
-                          periods:day.period,
-                        });
-                      }
-                    }
-                  })
-                }
-              })
-            });
             return {
               instID:instdoc._id,
               timings:instdoc.default.timings,
               teachers:teachers,
-              classes:classes,
               vacations:instdoc.vacations
             };
           }
@@ -936,22 +913,6 @@ class Schedule {
                     ],
                   }
                 );
-                if(!inst.schedule.classes.length){
-                  clog(tscheduledoc.value);
-                  return code.event(tscheduledoc.value ? code.OK : code.NO);
-                }
-                if(!tscheduledoc.value) return code.event(code.NO);
-                clog("updating given teacherid classname with given teacherid");
-                //change in class accordingly
-                const path1 = `schedule.classes.$[outer].days.$[outer2].period.${body.period}.teacherID`;
-                let classdoc = await Institute.updateOne({uiid:user.uiid},{
-                  $set:{
-                    [path1]:body.teacherID,
-                  }
-                },{
-                  arrayFilters:[{"outer.classname":body.newclassname},{"outer2.dayIndex":body.dayIndex}]
-                });
-                return code.event(classdoc.result.nModified?code.OK:code.NO);
               } else {
                 //todo: change in classname of all teachers (correction type)
                 clog(body);
@@ -1011,20 +972,6 @@ class Schedule {
                   }
                 );
                 clog(instdoc);
-                if(inst.schedule.classes.length){
-                  const cpath =  `schedule.classes.$[outer].days.$[outer1].period.${body.period}.subject`;
-                  const cdoc = await Institute.findOneAndUpdate({
-                    uiid:user.uiid,
-                  },{
-                    $set:{
-                      [cpath]:body.newsubject
-                    }
-                  },{
-                    arrayFilters:[{"outer.classname":body.classname},{"outer1.dayIndex":body.dayIndex}]
-                  });
-                  clog(cdoc);
-                  return code.event(cdoc.value?code.OK:code.NO);
-                }
                 return code.event(instdoc.value?code.OK:code.NO);
               } else {
 
@@ -1063,45 +1010,12 @@ class Schedule {
                 clog(daysinweek);
                 clog(result);
                 if(!result) throw result;
-                
-                if(inst.schedule.classes.length){
-                  result = await Promise.all(inst.schedule.classes.map(async(Class, c) => {
-                    return await Promise.all(Class.days.map(async(d, dindex) => {
-                      return await Promise.all(body.days.map(async (day) => {
-                        if (!(day.new < 0) && day.new != null && day.new != "") {
-                          if (day.old == d.dayIndex) {
-                            const path = `schedule.classes.${c}.days.${dindex}.dayIndex`;
-                            const doc = await Institute.findOneAndUpdate(
-                              { uiid: inst.uiid },
-                              {
-                                $set: { [path]: day.new },
-                              }
-                            );
-                            //todo: doc return
-                            clog(doc);
-                            return code.event(doc ? code.OK : code.NO);
-                          }
-                        }
-                      }));
-                    }));
-                  }));
-                  clog(body.days);
-                  clog(daysinweek);
-                  clog(result);
-                  if(!result) throw result;
-                  if (daysinweek.length == body.days) {
-                    return await defaults.timings.setDaysInWeek(user, {
-                      daysinweek,
-                    });
-                  }
-                }
                 if (daysinweek.length > 0) {
                   return await defaults.timings.setDaysInWeek(user, {
                     daysinweek,
                   });
                 } 
               }catch(e){
-                clog(e);
                 return code.eventmsg(code.NO,e);
               }
             }
@@ -1111,8 +1025,7 @@ class Schedule {
       }
       async scheduleRemove(user, inst, body) {
         switch (body.specific) {
-          case "weekday":
-            {
+          case "weekday":{
               const promises = inst.schedule.teachers.map(
                 async (teacher, tindex) => {
                   if (!(body.removeday < 0) && !isNaN(body.removeday)) {
@@ -1141,37 +1054,69 @@ class Schedule {
     const teacher = new TeacherAction();
     class ClassAction {
       constructor() {}
-      async scheduleReceive(user,inst, body) {
+      async scheduleReceive(user, body) {
         if(body.classname){
-          const scheduledoc = await Institute.findOne({uiid:user.uiid,"schedule.classes":{$elemMatch:{"classname":body.classname}}},
-          { projection:{"schedule.classes.$":1}});
-          if(!scheduledoc) return code.event(code.NO);
+          const classdoc = await Institute.findOne({uiid: user.uiid,},{
+            projection: {
+              _id: 0,
+              default: 1,
+              "schedule.teachers": 1,
+            }
+          });
+          const timings = classdoc.default.timings;
+          let days = Array(timings.daysInWeek.length);
+          classdoc.schedule.teachers.some((teacher) => {
+            teacher.days.forEach((day, d) => {
+              try {
+                if (days[d].dayIndex != day.dayIndex) {
+                  days.push({
+                    dayIndex: day.dayIndex,
+                    period: Array(timings.periodsInDay),
+                  });
+                }
+              } catch {
+                days[d] = {
+                  dayIndex: day.dayIndex,
+                  period: Array(timings.periodsInDay),
+                };
+              }
+              if(days[d].period.includes(undefined)){
+              day.period.forEach((period, p) => {
+                if (period.classname == body.classname) {
+                  days[d]["period"][p] = {
+                    teacherID: teacher.teacherID,
+                    subject: period.subject,
+                    hold: period.hold,
+                  };
+                }
+              });}
+            });
+            let done = days.some((day) => {
+              return day.period.includes(undefined);
+            });
+            return !done;
+          });
+          clog(days[0].period[1]);
           return {
             event:code.OK,
-            schedule:scheduledoc.schedule.classes[0]
-          }
+            schedule:{
+              classname:body.classname,
+              days:days
+            }
+          };
         } else {
-          const scheduledoc = await Institute.findOne({uiid:user.uiid},
-          { projection:{"schedule.classes":1}});
-          if(!scheduledoc) return code.event(code.NO);
-          return {
-            event:code.OK,
-            classes:scheduledoc.schedule.classes
-          }
+
         }
       }
       async scheduleUpdate(user,inst, body) {
         switch(body.specific){
           case "createclasses":{  //bulk
-            const classes = body.classes;
             body.classes.forEach((Class)=>{
               Class['_id'] = new ObjectId()
             })
             clog(body.classes);
             let doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
-              $set:{
-                "users.classes":body.classes
-              }
+              $set:{"users.classes":body.classes}
             });
             if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
             let onlyclasses = Array();
@@ -1186,53 +1131,7 @@ class Schedule {
                 "pseudousers.classes":onlyclasses
               }
             });
-            if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
-            classes.forEach((Class,c)=>{  //generating every class' schedule from teachers;
-              Class['days'] = Array();
-              delete Class['_id'];
-              delete Class['inchargeID'];
-              delete Class['students'];
-              inst.default.timings.daysInWeek.forEach((dw)=>{
-                Class.days.push({
-                  dayIndex:dw,
-                  period:Array(inst.default.timings.periodsInDay)
-                });
-              });
-              inst.schedule.teachers.forEach((teacher,t)=>{
-                teacher.days.forEach((day,d)=>{
-                  day.period.forEach((period,p)=>{
-                    if(period.classname==Class.classname){
-                      const found = Class.days.some((cday)=>{
-                        if(cday.dayIndex == day.dayIndex){
-                          cday.period[p] = {
-                            teacherID:teacher.teacherID,
-                            subject:period.subject,
-                            hold:true,
-                          };
-                          return true;
-                        }
-                      });
-                      if(!found){   //new day
-                        Class.days[d]={
-                          dayIndex:day.dayIndex,
-                          period:[{
-                            teacherID:teacher.teacherID,
-                            subject:period.subject,
-                            hold:true,
-                          }]
-                        };
-                      };
-                    };
-                  });
-                });
-              });
-            });
-            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in schedule.
-              $set:{
-                "schedule.classes":classes
-              }
-            });
-            return code.event(doc?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);
+            return code.event(doc.value?code.inst.CLASSES_CREATED:code.inst.CLASSES_CREATION_FAILED);
           }
           case "renameclasses":{
             
@@ -1258,7 +1157,7 @@ class Schedule {
               clog("clashed 1");
               if(res.clash.id != body.oldteacherID) return res;    //must be clashed with old teacher ID classname
               let newschedoc = await Institute.findOne({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":body.newteacherID}}},
-              {projection:{"schedule.teachers.$.days":1}});
+              {projection:{"schedule.teachers.$":1}});
               //getting new teacher's classname at given day,period.
               let newclassname;
               let found = newschedoc.schedule.teachers[0].days.some((day)=>{
@@ -1309,18 +1208,8 @@ class Schedule {
                 return code.event(oldoc.value?code.NO:code.server.DATABASE_ERROR);
               }
               clog("new & old teacher classname updated, updating old classname teacher to new teacher");
-              //teachers schedule swapped, new teacher's class swapped, now swap their classes' schedule.
-              const path2 = `schedule.classes.$[outer1].days.$[outer2].period.${body.period}.classname`;
-              let classdoc = await Institute.updateOne({uiid:user.uiid},{
-                $set:{
-                  [path2]:body.oldteacherID
-                }
-              },{
-                arrayFilters:[{"outer2.dayIndex":body.dayIndex},{"outer1.classname":newclassname}]
-              });
-              clog("returning");
-              clog(classdoc.result);
-              return code.event(classdoc.result.nModified?code.OK:code.NO);
+              //teachers schedule swapped, new teacher's class swapped.
+              return code.event(code.OK);
             } else {  //not clashed, teacher of given classname already updated, or some other error for given day,period.
               clog("no clashes");
               return res;
@@ -1358,7 +1247,7 @@ class Schedule {
     clog(body.action);
     switch (body.action) {
       case "receive":
-        return await this.classes.scheduleReceive(user,inst, body);
+        return await this.classes.scheduleReceive(user, body);
       case "update":
         return await this.classes.scheduleUpdate(user,inst, body);
       default:

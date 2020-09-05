@@ -14,7 +14,6 @@ class Dashboard {
         this.todaywork = getElement("todayworkview");
         this.todayteachers = getElement("todayteachersview");
         this.todayclasses = getElement("todayclassesview");
-        // this.loader();
         this.todayrefresh.onclick=_=>{
           this.loader();
           new Today();
@@ -30,12 +29,11 @@ class Dashboard {
             const teachers = response.teachers;
             this.todaywork.innerHTML = 
             `<div class="fmt-row" id="todayclassesview" >
-            <span class=" positive questrial">Classes affected
-            <button class="active-button caption fmt-right" id="autoarrange">Auto arrange</button>
-            </span>
-            <div id="classlist">
+              <span class=" positive questrial">Classes affected</span>
+              <button class="active-button caption fmt-right" id="autoarrange">Auto arrange</button>
+              <div id="classlist">
+              </div>
             </div>
-          </div>
             <div class="fmt-row" id="todayteachersview" >
               <span class=" positive questrial">Absent teachers</span>
               <div id="teacherlist">

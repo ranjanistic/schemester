@@ -1,4 +1,7 @@
 parent.window.scrollTo(0, 0);
+if(sessionStorage.getItem('fragment')!=locate.student.target.fragment.today){
+    parent.clickTab(0);
+}
 class StudentToday{
     constructor(){
         this.data = new ReceiveData();
@@ -144,7 +147,7 @@ class ReceiveData{
             this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
         }
         this.today = getElement("today").innerHTML == 'false'?false:true;
-        clog(this.today);
+        clog(getElement("today").innerHTML);
         if(this.today){
             this.classname = Array();
             this.subject = Array();

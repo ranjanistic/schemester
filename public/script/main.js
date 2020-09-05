@@ -199,8 +199,8 @@ class Editable{
   isValidInput(){
     return this.textInput.isValid();
   }
-  getInputValue(){
-    return this.textInput.getInput();
+  getInputValue(trim = true){
+    return trim?this.textInput.getInput().trim():this.textInput.getInput();
   }
   displayText(){
     return this.textView.innerHTML;
@@ -795,6 +795,13 @@ class Dialog extends DialogID {
   }
   hide() {
     this.existence(false);
+  }
+  hideOnClickAnywhere(canhideifclickedoutside = false){
+    if(canhideifclickedoutside){
+      this.view.onclick=_=>{
+        this.hide();
+      }
+    }
   }
   existence(show = true) {
     value.backbluecovered = show;

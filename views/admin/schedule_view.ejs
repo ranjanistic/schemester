@@ -46,7 +46,19 @@
                     <% if (group.teacher) { %>
                         <%= teacher.username %>
                     <% } else if(group.Class) { %>
-                        Classroom <%= Class.classname %>
+                        <div  id="classnameview">
+                            <span id="classname"><%= Class.classname %></span><button class="neutral-button caption" style="margin:0px 12px" id="editclassname"><img width="20" src="/graphic/elements/editicon.svg"/></button>
+                        </div>
+                        <div class="wide" id="classnameeditor">
+                            <fieldset style="margin:0" class="text-field questrial"  id="classnamefield">
+                                <legend class="field-caption">Replace <%= Class.classname %></legend>
+                                <input class="text-input" style="font-size:18px" required value="<%= Class.classname %>" placeholder="Rename for whole institution" type="text" id="classnameinput" name="classname" >
+                                <span class="fmt-right error-caption"  id="classnameerror"></span>
+                            </fieldset>
+                            <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="classnameloader"/>
+                            <button class="positive-button caption" id="saveclassname">Rename</button>
+                            <button class="negative-button caption" id="cancelclassname">Cancel</button>
+                        </div>
                     <% } else { %>
                         U/A
                     <% } %>
@@ -55,15 +67,20 @@
                         <% if (group.teacher) { %>
                             <%= teacher.teacherID %>
                         <% } else if(group.Class) { %>
-                            Incharge <a><%= Class.inchargeID %></a>
+                            Incharge <a id="inchargeid"><%= Class.inchargeID %></a>
                         <% } %>
                     </div>
                 </div>
                 <div class="fmt-col fmt-half " id="actions">
                     <div class="fmt-row fmt-right">
-                        <button class="active-button">Email</button>
-                        <button class="positive-button">Setup</button>
-                        <button class="negative-button">Actions</button>
+                    <% if (group.teacher) { %>
+                        <button class="positive-button" id="makeincharge">Make incharge</button>
+                        <button class="warning-button" id="deleteschedule">Delete schedule</button>
+                        <button class="negative-button" id="deleteaccount">Remove Teacher</button>
+                    <% } else if(group.Class) { %>
+                        <button class="warning-button" id="deleteschedule">Change Incharge</button>
+                        <button class="negative-button" id="deleteaccount">Remove Class</button>
+                    <% } %>
                     </div>
                 </div>
             </div>

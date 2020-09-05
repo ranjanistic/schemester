@@ -92,80 +92,33 @@
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
-            <% if (inst.schedule.classes.length) { %>
+            <% if (inst.users.classes.length) { %>
                 <% if (inst.preferences.active) { %>
-            <div class="fmt-col fmt-half fmt-padding-small">
-                <div class="container fmt-animate-left" id="todayview" style="margin-bottom: 10px;">
-                    <div class="fmt-row">
-                        <span class="sub-heading positive">Today</span>
-                        <button class="circle-button fmt-padding-small fmt-right" id="todayrefresh"><img src="/graphic/elements/reloadicon.svg" width="25"/></button>
-                    </div>
-                    <div id="todayworkview">
-                        <div class="fmt-row fmt-center fmt-spin-fast" id="todayloader" >
-                            <img src="/graphic/blueLoader.svg"/>
-                          </div>
-                    </div>
-                </div>
-            </div>
-            <div class="fmt-col fmt-half fmt-padding-small">
-                <div class="container fmt-animate-right" id="actions">
-                    <span class="fmt-row heading">Everyday</span>
-                    <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Edit day schedule</legend>
-
-                        <div class="fmt-row" id="todayScheduleChoices">
-                            <span class="">
-                                <label class="radio-container">
-                                    Teacher
-                                <input type="radio" name="todaySelection"  id="teacherRadioToday">
-                                <span class="checkmark"></span>
-                                </label>
-                                <label class="radio-container">
-                                    Class
-                                <input type="radio" name="todaySelection"  id="classRadioToday">
-                                <span class="checkmark"></span>
-                                </label>
-                            </span>
-                            <input type="text" class="dropdown-input fmt-half fmt-right" placeholder="" id="dayinput" style="width:fit-content"/>
-                            <div id="daydropdown" class="dropdown-content" style="display: none;right:0">
-                                <a id="sun">Sunday</a>
-                                <a id="mon">Monday</a>
-                                <a id="tue">Tuesday</a>
-                                <a id="wed">Wednesday</a>
-                                <a id="thu">Thursday</a>
-                                <a id="fri">Friday</a>
-                                <a id="sat">Saturday</a>
-                            </div>    
-                        </div>
-                        <div id="workSectionToday" style="margin-top:22px">
-                            <div class="fmt-row" id="teacherSectionToday">
-                                <input type="text" class="dropdown-input fmt-right" placeholder="Search teacher" id="teacherInputToday" style="width:100%"/>
+                    <div class="fmt-col fmt-half fmt-padding-small">
+                        <div class="container fmt-animate-left" id="todayview" style="margin-bottom: 10px;">
+                            <div class="fmt-row">
+                                <span class="sub-heading positive">Today</span>
+                                <button class="circle-button fmt-padding-small fmt-right" id="todayrefresh"><img src="/graphic/elements/reloadicon.svg" width="25"/></button>
                             </div>
-                            <div class="fmt-row" id="classSectionToday">
-                                <input type="text" class="dropdown-input fmt-right" placeholder="Search class" id="classInputToday" style="width:100%"/>
+                            <div id="todayworkview">
+                                <div class="fmt-row fmt-center fmt-spin-fast" id="todayloader" >
+                                    <img src="/graphic/blueLoader.svg"/>
+                                </div>
                             </div>
                         </div>
-                    </fieldset>
-                    <br/>
-                    <fieldset class="fmt-row box-field">
-                        <legend class="field-caption">Full schedule</legend>
-                        <div class="fmt-row" id="fullschedulechoices">
-                            <span class="">
-                                <label class="radio-container">
-                                    Teacher
-                                    <input type="radio" name="weekSelection" id="teacherRadioWeek">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <label class="radio-container" >
-                                    Class
-                                <input type="radio" name="weekSelection" id="classRadioWeek" >
-                                <span class="checkmark"></span>
-                                </label>
-                            </span>
+                    </div>
+                    <div class="fmt-col fmt-half fmt-padding-small">
+                        <div class="fmt-row container fmt-animate-right" id="actions">
+                            <span class="fmt-row sub-heading positive">Everyday</span>
+                            <div class="fmt-col fmt-padding-small">
+                                <div class="fmt-row">
+                                    <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
+                                </div>
+                                <br/>
+                                <div class="fmt-row" id="teacherList"></div>
+                            </div>
                         </div>
-                    </fieldset>
-                </div>
-            </div>
+                    </div>
                 <% } else { %>
                     <div class="fmt-row fmt-center">
                         <div class="fmt-padding fmt-quarter">
@@ -175,7 +128,7 @@
                             <br/><br/>
                             <span class="questrial group-text fmt-left">Students are unable to see their schedule.</span>
                             <br/>
-                            <span class="questrial group-text fmt-left">Teachers are unable access shit.</span>
+                            <span class="questrial group-text fmt-left">Teachers are unable access schedule.</span>
                             <br/><br/>
                             <button class="active-button" id="resumeschedule">Resume Scheduling</button>
                         </div>

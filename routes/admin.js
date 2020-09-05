@@ -197,18 +197,10 @@ admin.get("/session*", (req, res) => {
                     clog(classdoc);
                     if(!classdoc) return res.render(view.notfound);  //no class for data.c (_id).
                     const Class = classdoc.users.classes[0];
-                    const scheduledoc = await Institute.findOne({
-                      uiid: response.user.uiid,
-                      "schedule.classes": {
-                        $elemMatch: { "classname": Class.classname },
-                      },
-                    },{
-                      projection: {
-                        _id: 0,
-                        "schedule.classes.$": 1,
-                      },
-                    });
-                    if(!scheduledoc){ //class exists:true, schedule:false
+
+                    const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :Class.classname})
+                    clog("here");
+                    if(!scheduleresp.schedule.days){ //class exists:true, schedule:false
                       return res.render(view.admin.scheduleview, {
                         group: { Class: true },
                         Class: Class,
@@ -220,7 +212,7 @@ admin.get("/session*", (req, res) => {
                     return res.render(view.admin.scheduleview, { //both account and schedule
                       group: { Class: true },
                       Class: Class,
-                      schedule: scheduledoc.schedule.classes[0],
+                      schedule: scheduleresp.schedule,
                       inst,
                     });
                   } else {  //class considered not exists.
@@ -240,24 +232,15 @@ admin.get("/session*", (req, res) => {
                       data['c'] = classdoc.users.classes[0]._id;
                       return res.redirect(worker.toSession(data.u,data))
                     }
-                    const classScheduleInst = await Institute.findOne({ //finding schedule with classname
-                      uiid: response.user.uiid,
-                      "schedule.classes": {
-                        $elemMatch: { "classname": data.classname},
-                      },
-                    },{
-                      projection: {
-                        _id: 0,
-                        "schedule.classes.$": 1,
-                      },
-                    });
-                    if(!classScheduleInst)//no schedule found, so 404, as only schedule was requested.
+                    const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :data.classname})
+
+                    if(!scheduleresp.schedule.days)//no schedule found, so 404, as only schedule was requested.
                       return res.render(view.notfound);
 
                     return res.render(view.admin.scheduleview, {  //class not found, so only schedule.
                       group: { Class: false },
                       Class:false,
-                      schedule: classScheduleInst.schedule.classes[0],
+                      schedule: scheduleresp.schedule,
                       inst,
                     });
                   }

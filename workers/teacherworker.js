@@ -63,11 +63,11 @@ class Self {
           { uiid: uiid },
           {
             $push: {
-              [this.path]: newteacher,
+              [path]: newteacher,
             },
           }
         );
-        return code.event(doc ? code.OK : code.NO);
+        return code.event(doc.value ? code.OK : code.NO);
       }
 
       /**
@@ -82,11 +82,11 @@ class Self {
           },
           {
             $push: {
-              [this.pseudopath]: pseudoteacher,
+              [pseudopath]: pseudoteacher,
             },
           }
         );
-        return code.event(doc ? code.OK : code.NO);
+        return code.event(doc.value ? code.OK : code.NO);
       }
 
       /**
@@ -568,7 +568,7 @@ class Classroom {
       case "update":
         return await this.updateClassroom(user, teacher, body, classroom);
       case "receive":
-        return await this.getClassroom(user, teacher);
+        return await this.getClassroom(user, teacher,body);
       case "manage":
         return await this.manage.handleSettings(user, body, teacher, classroom);
     }
@@ -620,8 +620,8 @@ class Classroom {
     }
   }
 
-  async getClassroom(user, teacher) {
-    const classdoc = await Institute.findOne({
+  async getClassroom(user, teacher, body) {
+    let classdoc = await Institute.findOne({
         uiid: user.uiid,
         "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
       },
@@ -636,9 +636,34 @@ class Classroom {
       },
       { projection: { "pseudousers.classes.$": 1 } }
     );
+    let pseudostudents = pclassdoc.pseudousers.classes[0].students;
+    pseudostudents.forEach((stud,s)=>{
+      pseudostudents[s] = share.getStudentShareData(stud);
+    });
+    let classroom = classdoc.users.classes[0];
+    let todayschedule = await new Schedule().getSchedule(user);
+    let otherclasses = [];
+    todayschedule.schedule.forEach(day=>{
+      day.period.forEach((period)=>{
+        if(!otherclasses.includes(period.classname)){
+          otherclasses.push(period.classname);
+        }
+      });
+    });
+    if(body&&otherclasses.includes(body.otherclass)){//a specific classes needed
+      classdoc = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.otherclass}}},{
+        projection:{"users.classes.$":1}
+      });
+      classroom = classdoc?classdoc.users.classes[0]:classroom;
+    }
+    classroom.students.forEach((stud,s)=>{
+      classroom.students[s] = share.getStudentShareData(stud);
+    });
+    clog(classroom);
     return {
-      classroom: classdoc.users.classes[0],
-      pseudostudents: pclassdoc.pseudousers.classes[0].students,
+      classroom: classroom,
+      pseudostudents: pseudostudents,
+      otherclasses:otherclasses
     };
   }
 
@@ -673,7 +698,7 @@ class PseudoUsers {
         $elemMatch: { inchargeID: teacher.teacherID },
       }
     },{
-      projection: { "users.classes.$.classname": 1 } 
+      projection: { "users.classes.$": 1 } 
     });
     if(!classdoc) return code.event(code.NO);
     switch (body.action) {

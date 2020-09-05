@@ -196,6 +196,7 @@ student.get("/fragment*", (req, res) => {
                   today: false,
                   timings: scheduleresponse.timings,
                 });
+              clog(scheduleresponse.schedule);
               return res.render(view.student.getViewByTarget(query.fragment), {
                 today: scheduleresponse.schedule.period,
                 timings: scheduleresponse.timings,

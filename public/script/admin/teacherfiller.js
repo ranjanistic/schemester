@@ -47,9 +47,9 @@ class TeacherFiller {
         );
         this.teacherfreeswitch[i] = new Switch(`teacherperiodfreecheck${i}`,`teacherperiodfreelabel${i}`);
         this.teacherfreeswitch[i].onTurnChange(_=>{
-          this.teacherClass[i].setInput('Free');
+          this.teacherClass[i].setInput(code.free);
           this.teacherClass[i].disableInput();
-          this.teacherSubject[i].setInput('Free');
+          this.teacherSubject[i].setInput(code.free);
           this.teacherSubject[i].disableInput();
           this.teacherClass[i].normalize();
           this.teacherSubject[i].normalize();
@@ -99,9 +99,9 @@ class TeacherFiller {
             this.uploadScheduleByAdmin(this.data.totalDays[this.dayCount]);
           } else if(this.data.isTeacher){
             this.uploadScheduleByTeacher(this.data.totalDays[this.dayCount]);
-          } else {
-            alert("illegal");
-          }
+          }else {
+            return location.reload();
+          };
         })
       }
       this.next2.onclick = this.next.onclick;
@@ -180,7 +180,7 @@ class TeacherFiller {
       postJsonData(post.admin.schedule,{
         action:post.admin.action.upload,
         target:'teacher',
-        teacherID:sessionStorage.getItem('teacherID'),
+        teacherID:sessionStorage.getItem('teacherID').trim(),
         data:data
       }).then(response=>{
         clog(response);
@@ -321,14 +321,14 @@ class ScheduleComplete{
     }
   }
   content(id){
-    return `<div class="fmt-center">
-      <div class="heading">Schedule Added.</div>
-      <div class="questrial">You have successfully created a full week schedule for <b>${id}</b>. An email has been sent to them for confirmation.
-      <br>We will notify you as soon as they accept your schedule invitation. Cheers!</div>
+    return `<div class="fmt-row fmt-center">
+      <div class="fmt-row heading">Schedule Added.</div>
+      <div class="fmt-row questrial">You have successfully created a full week schedule for <b>${id}</b>. An email has been sent to them for confirmation.
+      <br>They will be able to access their schedule, after joining.</div>
       <br>
-      <div>
+      <div class="fmt-row">
           <button class="positive-button" id="addAnother">Add another teacher</button>
-          Or
+            Or
           <button class="neutral-button" id="exitadder">Return to dashboard</button>
       </div>
     </div>`;

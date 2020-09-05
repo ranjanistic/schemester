@@ -1,4 +1,7 @@
 parent.window.scrollTo(0, 0);
+if(sessionStorage.getItem('fragment')!=locate.teacher.target.fragment.about){
+  parent.clickTab(3);
+}
 class TeacherAbout {
   constructor() {
     this.darkmode = new Switch("darkmode");

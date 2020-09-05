@@ -81,7 +81,7 @@ class Verification {
             "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
           },{
             projection:{
-              "users.classes.$.classname":1
+              "users.classes.$":1
             }
           });
           const pseudodoc = await Institute.updateOne({

@@ -40,6 +40,9 @@ function showClassroom(){
         show(tabs.classroom);
     }, 340);
 }
+function clickTab(index){
+  [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings][index].click();
+}
 class TeacherDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;

@@ -4,6 +4,7 @@ class Codes {
     // this.domain = "https://schemester.herokuapp.com";
     this.OK = "OK/true";
     this.NO = "NO/false";
+    this.free = "Free";
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";

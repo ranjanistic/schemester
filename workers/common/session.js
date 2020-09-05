@@ -330,8 +330,9 @@ class Session {
           {projection:{"users.classes.$":1}});
           if(!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);
           let found = classdoc.users.classes[0].students.some((stud)=>{
-            return stud.studentID == email;
+            return (stud.studentID == email);
           });
+          if(found) return code.event(code.auth.USER_EXIST);
           let pclassdoc = await Institute.findOne({uiid:uiid, "pseudousers.classes":{$elemMatch:{classname:classname}}},
             {projection:{"pseudousers.classes.$":1}});
           if(!pclassdoc) return code.event(code.auth.CLASS_NOT_EXIST);
@@ -339,7 +340,7 @@ class Session {
             return stud.studentID == email;
           });
           if(found||pfound) return code.event(code.auth.USER_EXIST);
-          clog("checks cleared");
+          clog("checks cleared student");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
           const result = pseudo?await studentworker.self.account.createPseudoAccount(uiid,classname,{

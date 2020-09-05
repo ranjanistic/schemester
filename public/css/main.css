@@ -349,9 +349,9 @@ img{vertical-align:middle}
 }
 .tab-button{
     border-width: 0 0 4px 0;
-    background-color: #ddd;
+    background-color: var(--base);
     border-radius:4px 4px 0 0;
-    color:#161616a1;
+    color:var(--base-text);
     font-weight: lighter;
     cursor:pointer;
 }
@@ -1011,10 +1011,11 @@ img{vertical-align:middle}
 .dropdown-input{
     outline:none;
     border: 0px solid;
-    border-radius:8px;
+    border-radius:4px;
     background-color: var(--base);
     color:var(--tertiary-text);
-    border:2px solid var(--base-text);
+    border:2px solid var(--positive);
+    font-family: 'Questrial';
     padding:4px 8px;
     font-size: 18px;
     transition:0.2s ease;

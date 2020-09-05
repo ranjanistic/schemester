@@ -15,6 +15,9 @@ class Tabs{
 
 let tabs;
 
+function clickTab(index){
+  [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings][index].click();
+}
 
 class StudentDash{
     constructor(){

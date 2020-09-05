@@ -241,27 +241,18 @@ teacher.get("/fragment*", (req, res) => {
           worker.classroom.getClassroom(response.user,teacher)
             .then((resp) => {
               clog(resp);
-              if(resp.pseudostudents){
-                resp.pseudostudents.forEach((pstud,s)=>{
-                  resp.pseudostudents[s] = share.getPseudoStudentShareData(pstud);
-                });
-              }
-              if(resp.classroom){
-                resp.classroom.students.forEach((stud,s)=>{
-                  resp.classroom.students[s] = share.getStudentShareData(stud);
-                });
-              }
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 classroom: resp.classroom,
                 pseudostudents:resp.pseudostudents,
                 teacher:share.getTeacherShareData(teacher),
+                otherclasses:resp.otherclasses
               });
             })
             .catch((e) => {
               clog(e);
+              return res.render(view.notfound);
             });
-          return;
-        }
+        }break;
         case view.teacher.target.fragment.about: {
           clog("about");
           const teacherdoc = await Institute.findOne({
@@ -274,7 +265,8 @@ teacher.get("/fragment*", (req, res) => {
             adminphonevisible:admindoc?admindoc.prefs.showphonetoteacher:false,
             adminemailvisible:admindoc?admindoc.prefs.showemailtoteacher:false
           });
-        }
+        }break;
+        default:return res.render(view.notfound);
       }
     });
 });

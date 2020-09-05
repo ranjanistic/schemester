@@ -122,7 +122,7 @@ class Teacher{
                     ${addNumberSuffixHTML(p+1)} period
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameview${p}">
-                    <span id="classname${p}">${period.classname}</span> <button class="neutral-button caption" id="editclassname${p}">✒️</button>
+                    <span id="classname${p}">${period.classname}</span> <button class="neutral-button caption" id="editclassname${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
 
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameeditor${p}">
@@ -137,7 +137,7 @@ class Teacher{
                 </div>
 
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${p}">
-                    <span id="subject${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${p}">✒️</button>
+                    <span id="subject${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${p}">
                     <fieldset style="margin:0" class="text-field questrial" id="subjectfield${p}">
@@ -204,6 +204,13 @@ class Teacher{
                                 });
                             }
                         }
+                        case code.inst.CLASS_NOT_FOUND:{
+                            return snackBar('No such classroom exists. You can create a new class in classrooms view.','Show classrooms',bodyType.warning,_=>{
+                                refer(locate.admin.session,{
+                                    target:locate.admin.target.classes
+                                });
+                            });
+                        }
                         default:return this.classeditable[p].textInput.showError('Error');
                     }
                 }).catch(err=>{
@@ -259,6 +266,36 @@ class Teacher{
 class Class{
     constructor(){
         this.data = new ReceiveData();
+        this.changeIncharge = getElement("changeincharge");
+        this.removeclass = getElement("removeclass");
+        this.classname = new Editable('classnameview','classnameeditor',
+            new TextInput('classnamefield','classnameinput','classnameerror',validType.nonempty,'classnamecaption'),
+            'editclassname','classname','saveclassname','cancelclassname','classnameloader'
+        );
+        this.classname.validateInput();
+        this.classname.onSave(_=>{
+            if(!this.classname.isValidInput()) return this.classname.validateInputNow();
+            if(this.classname.getInputValue().trim() == this.classname.displayText()){
+                return this.classname.display();
+            };
+            this.classname.load();
+            postJsonData(post.admin.manage,{
+                //todo rename classfunction
+            }).then(resp=>{
+                if(resp.event == code.OK){
+                    snackBar(`Class ${this.classname.displayText()} is now called ${this.classname.getInputValue()}.`,'Undo',true,_=>{
+
+                    });
+                    this.classname.setDisplayText(this.classname.getInputValue());
+                    return this.classname.display();
+                }
+                this.classname.load(false);
+                switch(resp.event){
+                    case code.inst.CLASS_EXISTS:return this.classname.textInput.showError('Class already exists');
+                    case code.schedule.SCHEDULE_CLASHED:return this.classname.textInput.showError('Clashed');
+                }
+            })
+        })
         this.daytabsview = getElement("dayTabs");
         this.dayscheduleView = getElement("dayscheduleview");
         let tabs = String();
@@ -285,8 +322,8 @@ class Class{
             }
         });
         this.schedule = null;
-        this.setDataForDindex();
-        setClass(this.daytabs[0],'fmt-col tab-button-selected');
+        this.setDataForDindex(Number(this.data.weekdays.includes(String(new Date().getDay()))?new Date().getDay():this.data.weekdays[0]));
+        setClass(this.daytabs[Number(this.data.weekdays.includes(String(new Date().getDay()))?this.data.weekdays.indexOf(String(new Date().getDay())):0)],'fmt-col tab-button-selected');
     }
     setDataForDindex(dayIndex = Number(this.data.weekdays[0])){
         if(!this.schedule){
@@ -348,13 +385,13 @@ class Class{
                     ${addNumberSuffixHTML(p+1)} period
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${p}">
-                    <span id="subject${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${p}">✒️</button>
+                    <span id="subject${p}">${period?period.subject:'Not set'}</span> <button class="neutral-button caption" id="editsubject${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
 
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${p}">
                     <fieldset style="margin:0" class="text-field questrial"  id="subjectfield${p}">
-                        <legend class="field-caption">Replace ${period.subject}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period.subject}" placeholder="New class" type="text" id="subjectinput${p}" name="subject" >
+                        <legend class="field-caption">Replace ${period?period.subject:''}</legend>
+                        <input class="text-input" style="font-size:18px" required value="${period?period.subject:''}" placeholder="New subject" type="text" id="subjectinput${p}" name="subject" >
                         <span class="fmt-right error-caption"  id="subjecterror${p}"></span>
                     </fieldset>
                     <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${p}"/>
@@ -363,17 +400,17 @@ class Class{
                 </div>
 
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="teacherIDview${p}">
-                    <span id="teacherID${p}">${period.teacherID}</span> <button class="neutral-button caption" id="editteacherID${p}">✒️</button>
+                    <span class="" id="teachername${p}">${period?period.teacherID:'Not set'}</span><br/>
+                    <span class="group-text" id="teacherID${p}">${period?period.teacherID:'Not set'}</span> <button class="neutral-button caption" id="editteacherID${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
                 <div class="fmt-col fmt-quarter fmt-padding-small positive" id="teacherIDeditor${p}">
                     <fieldset style="margin:0" class="text-field questrial" id="teacherIDfield${p}">
-                        <legend class="field-caption">Replace ${period.teacherID}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period.teacherID}" placeholder="New teacherID" type="text" id="teacherIDinput${p}" name="teacherID" >
+                        <legend class="field-caption">Replace ${period?period.teacherID:''}</legend>
+                        <input class="text-input" style="font-size:18px" required value="${period?period.teacherID:''}" placeholder="New teacherID" type="text" id="teacherIDinput${p}" name="teacherID" >
                         <span class="fmt-right error-caption"  id="teacherIDerror${p}"></span>
                     </fieldset>
                     <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="teacherIDloader${p}"/>
-                    <button class="positive-button caption" id="saveteacherID${p}">Save</button>
-                    <button class="negative-button caption" id="cancelteacherID${p}">Cancel</button>
+                    <button class="positive-button caption" id="saveteacherID${p}">Save</button><button class="negative-button caption" id="cancelteacherID${p}">Cancel</button>
                 </div>
 
 

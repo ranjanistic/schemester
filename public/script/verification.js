@@ -191,13 +191,7 @@ class Verified {
     this.continuesession = getElement("continueSession");
     this.explore = getElement("explore");
     this.continuesession.onclick = (_) => {
-        if(data.client == client.admin){
-            relocate(locate.admin.session);
-        } else if(data.client == client.teacher){
-            relocate(locate.teacher.session);
-        } else if(data.client == client.student){
-            //todo: relocate()
-        }
+      relocate(data.client==client.admin?locate.admin.session:data.client==client.teacher?locate.teacher.session:data.client == client.student?locate.student.session:locate.root);
     };
     this.explore.onclick = (_) => {
       relocate(locate.homepage);
