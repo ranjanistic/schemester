@@ -5,8 +5,29 @@
 class Schedule{
     constructor(){
         this.data = new ReceiveData();
+        sessionStorage.removeItem('switchclash');
         this.back = getElement("back");
         this.back.onclick=_=>{window.history.back()}
+        this.editmodeview = getElement("editmodeview");
+        this.editmode = new Switch('editmode');
+        this.editmode.onTurnChange(_=>{
+            sessionStorage.setItem('switchclash',true);
+            this.editmodeview.innerHTML=`Edit mode: Switch`;
+            snackBar('Any change will be switched if clashed with someone.','Means?',bodyType.warning,_=>{
+                infoDialog('Edit modes',`The edit mode type tells schemester how to respond if any change made by you results in any kind of conflict.<br/>
+                    <ul>
+                        <li><b>Clash check</b>: The default mode. If any change in classname, or incharge at a certain period of day made by you results in conflict with some other class or teacher, the change will not take place, and conflict details will be displayed.</li>
+                        <br/>
+                        <li><b>Switch</b>: If any change in classname, or incharge at a certain period of day made by you results in conflict with some other class or teacher, schemester will try to resolve conflict by exchanging details with the affected class or teacher, and will make your desired change.
+                        You'll be notified about which other information has been modified in order to apply your current change.</li>
+                    </ul>
+                `,'/graphic/elements/editicon.svg');
+            });
+        },_=>{
+            sessionStorage.removeItem('switchclash');
+            this.editmodeview.innerHTML=`Edit mode: Clash Check`;
+            snackBar('Changes will not be applied if conflicted');
+        })
         try{
             window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
         }catch{
@@ -31,6 +52,71 @@ class NoSchedule{
 class Teacher{
     constructor(){
         this.data = new ReceiveData();
+
+        this.deleteschedule = getElement("deleteschedule");
+        this.removeteacher = getElement("removeteacher");
+        this.removeteacher.onclick=_=>{
+            // const confdial = new Dialog();
+            confirmDialog('Remove teacher?',`Are you sure you want to remove ${this.data.teachername} (${this.data.teacherID}) from your institution?
+             Their schedule will not be affected, but they won't be
+            able to login to your institution. They'll have to join again if needed.`,null,_=>{},true,_=>{new Dialog().hide();snackBar(`${this.data.teachername}'s account is safe.`)});
+        }
+        this.deleteschedule.onclick=_=>{
+            const confirmdialog = new Dialog();
+            confirmdialog.setDisplay('Delete schedule?',`Are you sure you want to delete ${this.data.teachername}'s schedule permanently? This might affect schedule of several classes too.`);
+            confirmdialog.createActions(['Check affected classes','Delete anyway','Abort'],[actionType.positive,actionType.negative,actionType.neutral]);
+            confirmdialog.transparent();
+            confirmdialog.onButtonClick([_=>{
+                confirmdialog.loader();
+                postJsonData(post.admin.receivedata,{
+                    target:'classroom',
+                    specific:'teacherclasses',
+                    teacherID:this.data.teacherID
+                }).then(resp=>{
+                    if(resp.event==code.OK){
+                        let classlist = `<div class="fmt-row fmt-center">`;
+                        resp.classes.forEach((Class,c)=>{
+                            classlist+=`<div class="fmt-row group-heading positive" id="class${c}">
+                                <div class="fmt-col third">
+                                    ${Class}
+                                </div>
+                                <div class="fmt-col third">
+                                    <button class="positive-button caption" id="editclass${c}">Edit schedule</button>
+                                </div>
+                            </div>`;
+                        });
+                        confirmdialog.setDisplay('Affected classes',`Deleting ${this.data.teachername}'s schedule will affect following classes.<br/>
+                        ${classlist}<div>`);
+                        const editclasses = [];
+                        resp.classes.forEach((Class,c)=>{
+                            editclasses.push(getElement(`editclass${c}`));
+                            editclasses[c].onclick=_=>{
+                                referTab(locate.admin.session,{
+                                    target:'viewschedule',
+                                    type:client.student,
+                                    classname:Class
+                                });
+                            }
+                        })
+                        confirmdialog.createActions(['Delete schedule now','Abort'],[actionType.negative,actionType.neutral]);
+                        confirmdialog.onButtonClick([_=>{
+
+                        },_=>{
+                            confirmdialog.hide();
+                        }]);
+                        confirmdialog.loader(false);
+                    }
+                }).catch(e=>{
+                    clog(e);
+                });
+            },_=>{
+                
+            },_=>{
+                confirmdialog.hide();
+            }]);
+            confirmdialog.show();
+        }
+
         this.daytabsview = getElement("dayTabs");
         this.dayscheduleView = getElement("dayscheduleview");
         let tabs = String();
@@ -177,6 +263,7 @@ class Teacher{
                     target:client.teacher,
                     action:"update",
                     specific:"renameclass",
+                    switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
                     dayIndex:Number(this.currentdayIndex),
                     period:p,
@@ -186,8 +273,8 @@ class Teacher{
                     this.classeditable[p].load(false);
                     clog(response);
                     if(response.event == code.OK){
-                        this.classeditable[p].setDisplayText(this.classeditable[p].getInputValue());
-                        this.classeditable[p].display();
+                        this.schedule = null;
+                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -235,6 +322,7 @@ class Teacher{
                     target:client.teacher,
                     action:"update",
                     specific:"renamesubject",
+                    switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
                     classname:this.classeditable[p].displayText(),
                     dayIndex:Number(this.currentdayIndex),
@@ -245,8 +333,8 @@ class Teacher{
                     this.subjecteditable[p].load(false);
                     clog(response);
                     if(response.event == code.OK){
-                        this.subjecteditable[p].setDisplayText(this.subjecteditable[p].getInputValue());
-                        this.subjecteditable[p].display();
+                        this.schedule = null;
+                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -268,6 +356,22 @@ class Class{
         this.data = new ReceiveData();
         this.changeIncharge = getElement("changeincharge");
         this.removeclass = getElement("removeclass");
+        this.removeclass.onclick=_=>{
+            confirmDialog('Remove classroom?',`Removing ${this.data.classname} will also remove all its students and their accounts in the class, and unset the incharge too.
+            Also, the teachers having periods in this class in their schedule, will be set as free on those periods of their schedule.`,null,_=>{
+                postJsonData(post.admin.users,{
+                    target:client.student,
+                    action:'remove',
+                    specific:'removeclass',
+                    oldclassname:this.data.classname,
+                }).then(resp=>{
+                    if(resp.event == code.OK){
+                        location.reload();
+                    }
+                })
+            },true);
+
+        }
         this.classname = new Editable('classnameview','classnameeditor',
             new TextInput('classnamefield','classnameinput','classnameerror',validType.nonempty,'classnamecaption'),
             'editclassname','classname','saveclassname','cancelclassname','classnameloader'
@@ -279,15 +383,25 @@ class Class{
                 return this.classname.display();
             };
             this.classname.load();
-            postJsonData(post.admin.manage,{
-                //todo rename classfunction
+            postJsonData(post.admin.users,{
+                target:client.student,
+                action:'update',
+                specific:'renameclasses',
+                switchclash:sessionStorage.getItem('switchclash'),
+                oldclassname:this.classname.displayText(),
+                newclassname:this.classname.getInputValue()
             }).then(resp=>{
                 if(resp.event == code.OK){
-                    snackBar(`Class ${this.classname.displayText()} is now called ${this.classname.getInputValue()}.`,'Undo',true,_=>{
-
-                    });
+                    if(resp.msg == code.inst.CLASS_EXISTS){
+                        snackBar(`Class ${this.classname.displayText()} has been replaced with ${this.classname.getInputValue()}, and the latter one is the former now.`,'Undo',true,_=>{
+                            this.classname.saveButton.click();
+                        });
+                    } else {
+                    snackBar(`Class ${this.classname.displayText()} is renamed as ${this.classname.getInputValue()}.`,'Undo',true,_=>{
+                        this.classname.saveButton.click();
+                    });}
                     this.classname.setDisplayText(this.classname.getInputValue());
-                    return this.classname.display();
+                    this.classname.display();
                 }
                 this.classname.load(false);
                 switch(resp.event){
@@ -439,8 +553,8 @@ class Class{
                 postJsonData(post.admin.schedule,{
                     target:client.student,
                     action:"update",
-                    specific:"renameclass",
-                    teacherID:this.data.teacherID,
+                    specific:"renamesubject",
+                    switchclash:sessionStorage.getItem('switchclash'),
                     dayIndex:Number(this.currentdayIndex),
                     period:p,
                     oldsubject:this.subjecteditable[p].displayText(),
@@ -449,8 +563,8 @@ class Class{
                     this.subjecteditable[p].load(false);
                     clog(response);
                     if(response.event == code.OK){
-                        this.subjecteditable[p].setDisplayText(this.subjecteditable[p].getInputValue());
-                        this.subjecteditable[p].display();
+                        this.schedule = null;
+                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -492,6 +606,7 @@ class Class{
                     target:client.student,
                     action:"update",
                     specific:"switchteacher",
+                    switchclash:sessionStorage.getItem('switchclash'),
                     classname:this.data.classname,
                     dayIndex:Number(this.currentdayIndex),
                     period:p,
@@ -501,8 +616,8 @@ class Class{
                     clog(response);
                     this.teachereditable[p].load(false);
                     if(response.event == code.OK){
-                        this.teachereditable[p].setDisplayText(this.teachereditable[p].getInputValue());
-                        this.teachereditable[p].display();
+                        this.schedule = null;
+                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){

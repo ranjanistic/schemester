@@ -18,6 +18,7 @@ class AdminWorker {
     this.default = new Default();
     this.users = new Users();
     this.schedule = new Schedule();
+    this.classroom = new Classroom();
     this.invite = new Invite();
     this.pseudo = new PseudoUsers();
     this.vacation = new Vacations();
@@ -639,6 +640,14 @@ class Users {
           classes: classes,
         };
       };
+
+      async updateClass(user,body,inst){
+        switch(body.specific){
+          case "renameclasses":{
+            return await new Schedule().classes.scheduleUpdate(user,body,inst);
+          }
+        }
+      }
     }
     this.teachers = new TeacherAction();
     this.classes = new ClassAction();
@@ -657,12 +666,14 @@ class Users {
         return await this.classes.searchClass(inst, body);
     }
   };
-  handleTeacherAction = async (inst, body) => {
+  handleTeacherAction = async (user, body) => {
     switch (body.action) {
     }
   };
-  handleClassAction = async (inst, body) => {
+  handleClassAction = async (user, body) => {
+    const inst = await Institute.findOne({uiid:user.uiid});
     switch (body.action) {
+      case 'update':return await this.classes.updateClass(user,body,inst);
     }
   };
 }
@@ -913,6 +924,7 @@ class Schedule {
                     ],
                   }
                 );
+                return code.event(tscheduledoc.value?code.OK:code.NO);
               } else {
                 //todo: change in classname of all teachers (correction type)
                 clog(body);
@@ -1108,14 +1120,14 @@ class Schedule {
 
         }
       }
-      async scheduleUpdate(user,inst, body) {
+      async scheduleUpdate(user, body,inst) {
         switch(body.specific){
           case "createclasses":{  //bulk
             body.classes.forEach((Class)=>{
               Class['_id'] = new ObjectId()
             })
             clog(body.classes);
-            let doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes in users
+            let doc = await Institute.findOneAndUpdate({uiid:user.uiid},{ //creating classes in users
               $set:{"users.classes":body.classes}
             });
             if(!doc) return code.event(code.inst.CLASSES_CREATION_FAILED);
@@ -1126,7 +1138,7 @@ class Schedule {
                 students:[]
               });
             });
-            doc = await Institute.findOneAndUpdate({uiid:inst.uiid},{ //creating classes for pseudousers
+            doc = await Institute.findOneAndUpdate({uiid:user.uiid},{ //creating classes for pseudousers
               $set:{
                 "pseudousers.classes":onlyclasses
               }
@@ -1134,7 +1146,43 @@ class Schedule {
             return code.event(doc.value?code.inst.CLASSES_CREATED:code.inst.CLASSES_CREATION_FAILED);
           }
           case "renameclasses":{
-            
+            //already a class exists
+            let classes = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.newclassname}}});
+            if(classes) {
+              if(!body.switchclash) return code.event(code.inst.CLASS_EXISTS);
+              //switch with conflicting class.
+              classes = await Institute.findOneAndUpdate({uiid:user.uiid},{
+                $set:{
+                  "users.classes.$[older].classname":body.newclassname,
+                  "users.classes.$[newer].classname":body.oldclassname,
+                }
+              },{
+                arrayFilters:[{"older.classname":body.oldclassname},{"newer.classname":body.newclassname}]
+              });
+              if(!classes.value) return code.eventmsg(code.NO,code.inst.CLASS_EXISTS);
+              let result = await teacher.scheduleUpdate(user,inst,{
+                specific:"renameclass",
+                oldclassname:body.oldclassname,
+                newclassname:body.newclassname
+              });
+              clog("clashclassswitched");
+              result['msg'] = code.inst.CLASS_EXISTS;
+              clog(result);
+              return result;
+            }
+            //teachers classes first.
+            let result = await teacher.scheduleUpdate(user,inst,{
+              specific:"renameclass",
+              oldclassname:body.oldclassname,
+              newclassname:body.newclassname
+            });
+            if(result.event != code.OK) return result;
+            const classdoc = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.oldclassname}}},{
+              $set:{
+                "users.classes.$.classname":body.newclassname
+              }
+            });
+            return code.event(classdoc.value?code.OK:code.NO);
           }break;
           /**
            * Switches teacher id of given classname with given teacherID. Will directly set new teacher id for classname, and classname for 
@@ -1144,7 +1192,7 @@ class Schedule {
           case "switchteacher":{ //specific
             clog("switching start");
             clog(body);
-            //new teacher classname update with current classname (must clash with old teacher id classname)
+            //new teacher classname update with current classname (probable clash with old teacher id classname)
             let res = await teacher.scheduleUpdate(user,inst,{
               specific:"renameclass",
               teacherID:body.newteacherID,
@@ -1186,8 +1234,8 @@ class Schedule {
               clog("force updated old teacher classname");
               //re-run new teacher classname update with current classname (should not clash)
               clog("re updating new teacher classname");
-              inst = await Institute.findOne({uiid:user.uiid});
-              res = await teacher.scheduleUpdate(user,inst,{
+              let newinst = await Institute.findOne({uiid:user.uiid});
+              res = await teacher.scheduleUpdate(user,newinst,{
                 specific:"renameclass",
                 teacherID:body.newteacherID,
                 dayIndex:body.dayIndex,
@@ -1249,11 +1297,39 @@ class Schedule {
       case "receive":
         return await this.classes.scheduleReceive(user, body);
       case "update":
-        return await this.classes.scheduleUpdate(user,inst, body);
+        return await this.classes.scheduleUpdate(user, body,inst);
       default:
         return code.event(code.server.DATABASE_ERROR);
     }
   };
+}
+
+class Classroom{
+  constructor(){}
+  async getClasses(user,body){
+    switch(body.specific){
+      case 'teacherclasses':{
+        const inst = await Institute.findOne({uiid:user.uiid});
+        let uniqueclasses = [];
+        let found = inst.schedule.teachers.some((teacher) => {
+          if(teacher.teacherID == body.teacherID){
+            teacher.days.forEach((day) => {
+              day.period.forEach((period) => {
+                if (!uniqueclasses.includes(period.classname) && period.classname != code.schedule.FREE) {
+                  uniqueclasses.push(period.classname);
+                }
+              });
+            });
+            return true;
+          }
+        });
+        return found?{
+          event: code.OK,
+          classes: uniqueclasses,
+        }:code.event(code.auth.USER_NOT_EXIST);
+      }
+    }
+  }
 }
 
 class Invite {

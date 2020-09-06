@@ -387,6 +387,7 @@ class Posts {
         this.default = `${root}/default`;
         this.sessionValidate = `${root}/session/validate`;
         this.manage = `${root}/manage`;
+        this.users = `${root}/users`;
         this.register = `${root}/session/registerinstitution`;
         this.schedule = `${root}/schedule`;
         this.receivedata = `${root}/receivedata`;

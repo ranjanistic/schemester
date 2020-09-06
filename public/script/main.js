@@ -1668,6 +1668,33 @@ const loadingBox = (
   load.existence(visible);
 };
 
+const confirmDialog=(heading,body,imgsrc,yesaction=_=>{}, serious = false,noaction)=>{
+  const confdialog = new Dialog();
+  confdialog.setDisplay(heading,body,imgsrc?imgsrc:serious?'/graphic/elements/warnicon.svg':null);
+  confdialog.transparent();
+  if(serious){
+    confdialog.setHeadingColor(colors.negative);
+  }
+  confdialog.createActions(['Proceed','Abort'],[serious?actionType.negative:actionType.positive,actionType.neutral]);
+  confdialog.onButtonClick([_=>{
+    yesaction();
+  },_=>{
+    noaction?noaction():confdialog.hide();
+  }]);
+  confdialog.show();
+}
+
+const infoDialog=(heading,body,imgsrc,action)=>{
+  const infodialog = new Dialog();
+  infodialog.setDisplay(heading,body,imgsrc);
+  infodialog.transparent();
+  infodialog.createActions(['Got it'],[actionType.neutral]);
+  infodialog.onButtonClick([_=>{
+    action?action():infodialog.hide();
+  }]);
+  infodialog.show();
+}
+
 let checkSessionValidation = (
   clientType = null,
   validAction = null,
@@ -1797,6 +1824,8 @@ let checkSessionValidation = (
     }
   }
 };
+
+
 
 const receiveSessionData = (
   validAction = _=>{},
@@ -2276,10 +2305,18 @@ const refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.location.href = href;
 };
+const referTab = (href, data = null) => {
+  href += data != null ? getRequestBody(data) : constant.nothing;
+  window.open(href);
+};
 
 const referParent = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.parent.location.href = href;
+};
+const referParentTab = (href, data = null) => {
+  href += data != null ? getRequestBody(data) : constant.nothing;
+  window.parent.open(href);
 };
 
 /**

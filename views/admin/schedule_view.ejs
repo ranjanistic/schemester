@@ -13,6 +13,7 @@
         <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -36,8 +37,13 @@
                     <div class="fmt-padding" id="logoutAdmin">Logout</div>
                 </div>
             </span>
+            <span class="fmt-padding caption neutral fmt-right">
+                <span id="editmodeview">Edit mode: Clash Check</span>&#160; <label class="switch-container">
+                    <input type="checkbox" id="editmode">
+                    <span class="switch-warning"></span>
+                </label>
+            </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="fmt-row fmt-padding">
@@ -76,10 +82,10 @@
                     <% if (group.teacher) { %>
                         <button class="positive-button" id="makeincharge">Make incharge</button>
                         <button class="warning-button" id="deleteschedule">Delete schedule</button>
-                        <button class="negative-button" id="deleteaccount">Remove Teacher</button>
+                        <button class="negative-button" id="removeteacher">Remove Teacher</button>
                     <% } else if(group.Class) { %>
                         <button class="warning-button" id="deleteschedule">Change Incharge</button>
-                        <button class="negative-button" id="deleteaccount">Remove Class</button>
+                        <button class="negative-button" id="removeclass">Remove Class</button>
                     <% } %>
                     </div>
                 </div>
@@ -122,6 +128,10 @@
                     <button class="positive-button" id="addschedule">Add schedule</button>
                 </div>
             <% } %>
+        </div>
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+            </div>
         </div>
         <div id="snackBar" class="fmt-animate-bottom">
             <span id="snackText"></span>

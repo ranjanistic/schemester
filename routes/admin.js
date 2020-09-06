@@ -260,13 +260,12 @@ admin.get("/session*", (req, res) => {
         }
       } catch (e) {
         clog(e);
-        return res.render(view.servererror);
+        return res.render(view.servererror,{error:e});
       }
     });
 });
-function authFail(e){
-  return {result:code.eventmsg(code.auth.AUTH_FAILED,e)}
-}
+const authFail=(e)=>({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+
 /**
  * For self account subdoc (Admin collection).
  */
@@ -431,8 +430,8 @@ admin.post("/users",async (req,res)=>{
       if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
       const body = req.body;
       switch(body.target){
-        case "teachers":return res.json({result: await worker.users.handleTeacherAction(inst,body)});
-        case "student":return res.json({result: await worker.users.handleClassAction(inst,body)});
+        case "teachers":return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
+        case "student":return res.json({result: await worker.users.handleClassAction(response.user,body)});
       }
     });
 });
@@ -491,6 +490,7 @@ admin.post("/receivedata",async(req,res)=>{
       case "default":return res.json({result:await worker.default.getDefaults(response.user)});
       case "users":return res.json({result:await worker.users.getUsers(response.user)});
       case "schedule":return res.json({result:await worker.schedule.getSchedule(response.user)});
+      case "classroom":return res.json({result:await worker.classroom.getClasses(response.user,body)});
       case "pseudousers":return res.json({result:await worker.pseudo.getPseudoUsers(response.user,body)});
       case "vacations":return res.json({result:await worker.vacation.getVacations(response.user)});
       case "preferences":return res.json({result:await worker.prefs.getPreferences(response.user)});
