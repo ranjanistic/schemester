@@ -485,7 +485,7 @@ class ConfirmClasses {
               postJsonData(post.admin.schedule, {
                 target: client.student,
                 action: "update",
-                specific:"createclasses",
+                specific:code.action.CREATE_CLASSES,
                 classes:data,
               }).then((response) => {
                 clog(response);
@@ -589,7 +589,7 @@ class ConfirmClasses {
             postJsonData(post.admin.schedule, {
               target: client.teacher,
               action: "update",
-              specific: "renameclass",
+              specific: code.action.RENAME_CLASS,
               oldclassname: this.classeditables[c].displayText(),
               newclassname: this.classeditables[c].getInputValue().trim(),
             }).then((response) => {

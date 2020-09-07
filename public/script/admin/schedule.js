@@ -1,4 +1,3 @@
-
 /**
  * Script for admin/schedule_view, for individual schedule view w.r.t administrator.
  */
@@ -262,7 +261,7 @@ class Teacher{
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
                     action:"update",
-                    specific:"renameclass",
+                    specific:code.action.RENAME_CLASS,
                     switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
                     dayIndex:Number(this.currentdayIndex),
@@ -321,7 +320,7 @@ class Teacher{
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
                     action:"update",
-                    specific:"renamesubject",
+                    specific:code.action.RENAME_SUBJECT,
                     switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
                     classname:this.classeditable[p].displayText(),
@@ -386,7 +385,7 @@ class Class{
             postJsonData(post.admin.schedule,{
                 target:client.student,
                 action:'update',
-                specific:'renameclasses',
+                specific:code.action.RENAME_CLASS,
                 switchclash:sessionStorage.getItem('switchclash'),
                 oldclassname:this.classname.displayText(),
                 newclassname:this.classname.getInputValue()
@@ -549,11 +548,12 @@ class Class{
                 if(this.subjecteditable[p].getInputValue() == this.subjecteditable[p].displayText()){
                     return this.subjecteditable[p].clickCancel();
                 }
+                
                 this.subjecteditable[p].load();
                 postJsonData(post.admin.schedule,{
                     target:client.student,
                     action:"update",
-                    specific:"renamesubject",
+                    specific:code.action.RENAME_SUBJECT,
                     switchclash:sessionStorage.getItem('switchclash'),
                     dayIndex:Number(this.currentdayIndex),
                     period:p,

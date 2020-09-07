@@ -132,8 +132,11 @@ class Codes {
         this.CHANGE_TOTAL_PERIODS = "action/timing-change-periods";
         this.CHANGE_WORKING_DAYS = "action/timing-change-working-days";
 
+        this.CREATE_CLASSES = 'action/create-multiple-classes';
+        this.CREATE_NEW_CLASS = 'action/create-new-class';
         this.RENAME_CLASS = "action/rename-classroom";
-        this.RENAME_SUBJECT = "action.rename-subject";
+        this.RENAME_SUBJECT = "action/rename-subject";
+        this.SET_INCHARGE = "action/set-class-incharge"
       }
     }
     class InvitationCodes {
@@ -804,8 +807,19 @@ class ViewType {
 const click = "click",
   change = "change",
   input = "input";
+const code = new Codes();
+const client = new Client();
+const value = new Constant();
+const constant = new Constant();
+const locate = new Locations();
+const theme = new Theme();
+const post = new Posts();
+const colors = new Colors();
+const validType = new InputType();
+const actionType = new ViewType();
+const bodyType = new ViewType();
 try {
   module.exports = {code:new Codes(),client:new Client(),view:new View(),clog(msg){console.log(msg)}};
 } catch {
-
+  
 }

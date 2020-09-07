@@ -4,17 +4,6 @@ if (localStorage.getItem("theme")) {
     localStorage.getItem("theme")
   );
 }
-const code = new Codes();
-const client = new Client();
-const value = new Constant();
-const constant = new Constant();
-const locate = new Locations();
-const theme = new Theme();
-const post = new Posts();
-const colors = new Colors();
-const validType = new InputType();
-const actionType = new ViewType();
-const bodyType = new ViewType();
 
 class TextInput {
   constructor(

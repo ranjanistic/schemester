@@ -41,7 +41,7 @@
 
                 </div>
                 <div class="fmt-col half">
-                    <button class="fmt-right positive-button">Add class</button>
+                    <button class="fmt-right positive-button" id="createclass">Create classroom</button>
                     <input type="search" class=" searcher b-positive fmt-right" name="search">
                 </div>
             </div>
@@ -51,7 +51,7 @@
                     <div class="fmt-col container fmt-padding">
                         <div class="fmt-row positive group-heading fmt-left">
                             <span id="classid<%= c %>" hidden><%= Class._id %></span>
-                            <%= Class.classname %>
+                            <span id="classname<%= c %>" ><%= Class.classname %></span>
                         </div>
                         <a class="fmt-right caption active fmt-padding" id="viewschedule<%= c %>">Schedule</a>
                         <div class="fmt-row questrial positive " style="text-align:left">

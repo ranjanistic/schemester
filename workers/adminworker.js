@@ -1185,13 +1185,13 @@ class Schedule {
       }
       /**
        * To perform schedule level create operations for classrooms.
-       * @case createclasses: To create new classes, only at the time of registration and schedule intitation. 
+       * @case createclasses: To create new classes, only at the time of registration or schedule re-intitation. 
        *  Otherwise, will overwrite any existing classes.
        * @case newclass: To push a new class in institution, with it's schedule.
        */
       async scheduleCreate(user,body){
         switch(body.specific){
-          case "createclasses":{ 
+          case code.action.CREATE_CLASSES:{ 
             const userclasslist = [],pseudoclasslist = [];
             body.classes.forEach((Class)=>{
               userclasslist.push({
@@ -1217,7 +1217,7 @@ class Schedule {
           /**
            * To push a single new class in users.classes.
            */
-          case "newclass":{
+          case code.action.CREATE_NEW_CLASS:{
             let cresult = await new Users().classes.createClass(user,body);
             if(cresult.event!=code.inst.CLASSES_CREATED) return cresult;
           }break;

@@ -633,10 +633,13 @@ class Classroom {
       },
       { projection: { "pseudousers.classes.$": 1 } }
     );
-    let pseudostudents = pclassdoc.pseudousers.classes[0].students;
-    pseudostudents.forEach((stud,s)=>{
-      pseudostudents[s] = share.getStudentShareData(stud);
-    });
+    let pseudostudents = [];
+    if(pclassdoc){
+      pseudostudents = pclassdoc.pseudousers.classes[0].students;
+      pseudostudents.forEach((stud,s)=>{
+        pseudostudents[s] = share.getStudentShareData(stud);
+      })
+    }
     let classroom = classdoc.users.classes[0];
     let todayschedule = await new Schedule().getSchedule(user);
     let otherclasses = [];

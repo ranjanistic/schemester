@@ -437,7 +437,7 @@ admin.post("/users",async (req,res)=>{
       const body = req.body;
       switch(body.target){
         case client.teacher:return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
-        case client.student:return res.json({result: await worker.users.handleClassAction(response.user,body)});
+        case client.student:return res.json({result: await worker.users.handleClassAction(response.user,body,inst)});
       }
     });
 });
