@@ -1,4 +1,4 @@
-const code = require("../../public/script/codes"),
+const {code,client,clog}= require("../../public/script/codes"),
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),
@@ -8,7 +8,6 @@ const code = require("../../public/script/codes"),
 class PasswordReset {
   constructor() {
     this.type = "resetpassword";
-    this.target = new Target();
     this.domain = code.domain;
     this.defaultValidity = 15; //min
   }
@@ -16,7 +15,7 @@ class PasswordReset {
     const exp = time.getTheMomentMinute(validity);
     let link = String();
     switch (target) {
-      case this.target.admin:{
+      case client.admin:{
           const admin = await Admin.findOneAndUpdate(
             { _id: ObjectId(data.uid) },
             {
@@ -29,7 +28,7 @@ class PasswordReset {
           link = `${this.domain}/${target}/external?type=${this.type}&u=${data.uid}&exp=${exp}`;
       }
         break;
-        case this.target.teacher:{
+        case client.teacher:{
           const teacherdoc = await Institute.findOneAndUpdate({_id:ObjectId(data.instID),"users.teachers":{$elemMatch:{"_id":ObjectId(data.uid)}}},{
             $set:{
               "users.teachers.$.rlinkexp":exp
@@ -48,7 +47,7 @@ class PasswordReset {
           }
           link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}`;
         }break;
-        case this.target.student:{
+        case client.student:{
           clog("hersdfe");
           clog(data);
           const studdoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
@@ -89,7 +88,7 @@ class PasswordReset {
   
   handlePasswordResetLink = async (query, clientType) => {
     switch (clientType) {
-      case this.target.admin: {
+      case client.admin: {
         if (!query.u && !query.exp) return false;
         try {
           const admin = await Admin.findOne({ '_id': ObjectId(query.u) });
@@ -104,7 +103,7 @@ class PasswordReset {
             return false;
         }
       }break;
-      case this.target.teacher: {
+      case client.teacher: {
         if (!(query.u && query.in)) return false;
         try {
             let teacherdoc = await Institute.findOne(
@@ -146,7 +145,7 @@ class PasswordReset {
             return false;
         }
       } break;
-      case this.target.student:{
+      case client.student:{
         if (!(query.u && query.in && query.c)) return false;
         try {
             let studclass = await Institute.findOne({
@@ -198,16 +197,4 @@ class PasswordReset {
   };
 }  
 
-/**
- * For target groups in different methods of verification purposes.
- */
-class Target {
-  constructor() {
-    this.admin = "admin";
-    this.teacher = "teacher";
-    this.student = "student";
-  }
-}
-
 module.exports = new PasswordReset();
-const clog =(m)=>console.log(m);

@@ -86,6 +86,7 @@ class Active {
       username: this.nameField.getInput().trim(),
       email: this.emailField.getInput().trim(),
       password: this.passField.getInput().trim(),
+      pseudo:true,  //ensuring no spam via invitation link.
       uiid: data.uiid,
       classname:data.classname
     }).then((response) => {

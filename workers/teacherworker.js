@@ -1,8 +1,8 @@
 const Institute = require("../config/db").getInstitute(),
-  view = require("../hardcodes/views"),
-  code = require("../public/script/codes"),
+  {code,client,view,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
+  mailer = require("./common/mailer"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
@@ -15,7 +15,7 @@ class TeacherWorker {
     this.pseudo = new PseudoUsers();
   }
   toSession = (u, query = { target: view.teacher.target.dash }) => {
-    let path = `/teacher/session?u=${u}`;
+    let path = `/${client.teacher}/session?u=${u}`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
         path = `${path}&${key}=${query[key]}`;
@@ -25,13 +25,12 @@ class TeacherWorker {
   };
   toLogin = (query = { target: view.teacher.target.dash }) => {
     let i = 0;
-    let path = "/teacher/auth/login";
+    let path = `/${client.teacher}/auth/login`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
-        path =
-          i > 0
-            ? `${path}&${key}=${query[key]}`
-            : `${path}?${key}=${query[key]}`;
+        path = i > 0
+          ? `${path}&${key}=${query[key]}`
+          : `${path}?${key}=${query[key]}`;
         i++;
       }
     }
@@ -303,15 +302,13 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
-        const linkdata = await verify.generateLink(verify.target.teacher, {
+        const linkdata = await verify.generateLink(client.teacher, {
           uid: user.id,
           instID: body.instID,
         });
         clog(linkdata);
-        //todo: send email then return.
-        return code.event(
-          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-        );
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendVerificationEmail(linkdata);
       }
       case "check": {
         const teacherdoc = await Institute.findOne(
@@ -390,7 +387,7 @@ class Self {
             );
           }
           clog(user);
-          const linkdata = await reset.generateLink(reset.target.teacher, {
+          const linkdata = await reset.generateLink(client.teacher, {
             uid: user.id,
             instID: body.instID,
           });
@@ -671,13 +668,13 @@ class Classroom {
     clog(body);
     switch (body.action) {
       case "create":{
-        return await invite.generateLink(invite.target.student,{
+        return await invite.generateLink(client.student,{
           cid:classroom._id,
           instID:instID
         });
       }break;
       case "disable":{
-        return await invite.disableInvitation(invite.target.student,{
+        return await invite.disableInvitation(client.student,{
           cid:classroom._id,
           instID:instID
         });
@@ -782,8 +779,6 @@ class PseudoUsers {
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
 }
-
-const clog = (m) => console.log(m);
 module.exports = new TeacherWorker();
 
 async function getTeacherById(uiid,id,pseudo = false){

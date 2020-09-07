@@ -1,6 +1,5 @@
-const { ObjectId } = require("mongodb");
-
-const code = require("../../public/script/codes"),
+const { ObjectId } = require("mongodb"),
+ {code,clog} = require("../../public/script/codes"),
   jwt = require("../../node_modules/jsonwebtoken"),
   bcrypt = require("../../node_modules/bcryptjs"),
   Institute = require("../../config/db").getInstitute(),
@@ -480,5 +479,3 @@ class Session {
 }
 
 module.exports = new Session();
-
-let clog = (msg) => console.log(msg);

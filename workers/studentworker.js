@@ -1,9 +1,9 @@
 const Institute = require("../config/db").getInstitute(),
-  view = require("../hardcodes/views"),
-  code = require("../public/script/codes"),
+  {code,client,view,clog} = require("../public/script/codes"),
   verify = require("./common/verification"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
+  mailer = require("./common/mailer"),
   share = require("./common/sharedata"),
   { ObjectId } = require("mongodb");
 
@@ -13,7 +13,7 @@ class StudentWorker {
     this.schedule = new Schedule();
   }
   toSession = (u, query = { target: view.student.target.dash }) => {
-    let path = `/student/session?u=${u}`;
+    let path = `/${client.student}/session?u=${u}`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
         path = `${path}&${key}=${query[key]}`;
@@ -23,7 +23,7 @@ class StudentWorker {
   };
   toLogin = (query = { target: view.student.target.dash }) => {
     let i = 0;
-    let path = "/student/auth/login";
+    let path = `/${client.student}/auth/login`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
         path =
@@ -295,16 +295,14 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
-        const linkdata = await verify.generateLink(verify.target.student, {
+        const linkdata = await verify.generateLink(client.student, {
           uid: user.id,
           cid: body.cid,
           instID: body.instID,
         });
         clog(linkdata);
-        //todo: send email then return.
-        return code.event(
-          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-        );
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendVerificationEmail(linkdata);
       }
       case "check": {
         let classdoc = await Institute.findOne(
@@ -405,7 +403,7 @@ class Self {
           }
           clog("gotcha");
           clog(user);
-          const linkdata = await reset.generateLink(reset.target.student, {
+          const linkdata = await reset.generateLink(client.student, {
             uid: user.id,
             cid: body.cid,
             instID: body.instID,
@@ -495,7 +493,7 @@ class Schedule {
 }
 
 module.exports = new StudentWorker();
-const clog = (m) => console.log(m);
+
 async function getStudentById(uiid, classname, id, pseudo = false) {
   let path = pseudo ? "pseudousers.classes" : "users.classes";
   let getpath = pseudo ? "pseudousers.classes.$" : "users.classes.$";

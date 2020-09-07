@@ -463,11 +463,11 @@ const snackBar = (
       });
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min(Array(text.length*3,10))*1000); //lengthwise timer.
+      }, min(Array(text.length*3,15))*1000); //lengthwise timer.
     } else {
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min(Array(text.length*(3/2),10))*1000); //lengthwise timer for non action snackbar.
+      }, min(Array(text.length*(3/2),15))*1000); //lengthwise timer for non action snackbar.
     }
     snack.displayType(isNormal);
   }
@@ -2344,8 +2344,16 @@ const getRequestBody = (data = {}, isPost = false) => {
 };
 
 const sendEmail = async (to, subject, body, cc, bcc) => {
-  //todo: send emails from here.
-  return code.mail.MAIL_SENT;
+  postJsonData('/admin/mail',{
+    to:to,
+    subject:subject,
+    html:body
+  }).then(res=>{
+    clog(res);
+  }).catch(e=>{
+    clog(e)
+  })
+  // return code.mail.MAIL_SENT;
 };
 
 const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constant.nothing,bcc=constant.nothing) => refer(`mailto:${to}`,{

@@ -1,29 +1,60 @@
-const nodeoutlook = require("nodejs-nodemailer-outlook"),
-    code = require("../../public/script/codes"),
-    testhtml =  '<div style=\"background-color:#216bf3;text-size:44px; text-align:center;width:100%;color:white\">Hey there</div><div style=\"background-color:white;color:black\"><p>This is a test verification email to check the functioning of nodemailer.</p><br/><p>Regards<br/>Schemester Devs.</p></div>';
+const nodemailer = require("nodemailer"),
+    ejs = require("ejs"),
+    path = require("path"),
+    { code, client, clog } = require("../../public/script/codes");
 
-module.exports = sendMail = (receipent,type)=>{
-    switch(type){
-        case code.mail.ACCOUNT_VERIFICATION:{
-            
-            return true;
+class Mailer {
+  constructor() {
+  }
+  async sendVerificationEmail(body) {
+    let data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/verification.ejs"), { username: body.username,email:body.to,link:body.link });
+    return await Promise.resolve(sendEmail(body.to,'Schemester Account Verification',data));
+  }
+  sendInvitationEmail(invitee, data) {
+    switch (invitee) {
+      case client.admin:{
         }
-        default:return code.mail.ERROR_MAIL_NOTSENT;
+        break;
+      case client.teacher:{
+        }
+        break;
+      case client.student:{
+        }
+        break;
     }
+  }
 }
 
-nodemailSend = (receiver,subject,htmlbody,attachment = null)=>{
-    nodeoutlook.sendEmail({
+async function sendEmail(to, subject, html) {
+  var transporter = nodemailer.createTransport({
+    host: "smtp.office365.com",
+    secureConnection: false,
+    port: 587,
     auth: {
-        user: "schemester@outlook.in",
-        pass: "********",
+      user: "schemester@outlook.in",
+      pass: "#schememail<outlook.web.password/>",
     },
-    from: "schemester@outlook.com",
-    to: [receiver],
-    subject: [subject],
-    html: [htmlbody],
-    replyTo: "schemester@outlook.in",
-    onError: (e) => console.log(e),
-    onSuccess: (i) => console.log(i),
-    });
+    starttls: {
+      ciphers: "SSLv3",
+    },
+  });
+
+  var mailOptions = {
+    from: "schemester@outlook.in",
+    to: to,
+    subject: subject,
+    html: html,
+  };
+
+  let doc = transporter.sendMail(mailOptions).then(info=>{
+    console.log("Email sent: " + info.response);
+    return code.event(code.mail.MAIL_SENT);
+  }).catch(error=>{
+    console.log(error);
+    return code.event(code.mail.ERROR_MAIL_NOTSENT);
+  });
+  clog(doc);
+  return doc;
 }
+
+module.exports = new Mailer();

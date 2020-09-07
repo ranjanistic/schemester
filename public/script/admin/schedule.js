@@ -383,7 +383,7 @@ class Class{
                 return this.classname.display();
             };
             this.classname.load();
-            postJsonData(post.admin.users,{
+            postJsonData(post.admin.schedule,{
                 target:client.student,
                 action:'update',
                 specific:'renameclasses',
@@ -639,8 +639,8 @@ class Class{
           }).then((resp) => {
             if (resp.event == code.OK) {
               if(resp.teachers.length>0){
-                snackBar(`${resp.teachers[0].teacherID}?`,'Yes',true,_=>{
-                    textInput.normalize();
+                snackBar(`${resp.teachers[0].teachername} (${resp.teachers[0].teacherID})?`,'Yes',true,_=>{
+                  textInput.normalize();
                   textInput.setInput(resp.teachers[0].teacherID);
                 });
               }

@@ -1,45 +1,47 @@
 const express = require("express"),
   bodyParser = require("body-parser"),
-  view = require("./hardcodes/views"),
-  app = express();
-
+  {client,view,clog} = require("./public/script/codes"),
+  server = express();
 const mongo = require('./config/db');
-const clog = (msg) => console.log(msg);
-app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.static("public"));
+server.set("view engine", "ejs");
+server.use(express.static("public"));
+server.use(bodyParser.urlencoded({ extended: true }));
+server.use(bodyParser.json());
 
+// const clog = (msg) => console.log(msg);
 
 mongo.connectToServer(( err )=>{
   if (err) console.log(err);
   clog(`Connected to ${mongo.getDb().databaseName}`);
-  app.use("/admin", require("./routes/admin"));
-  app.use("/teacher", require("./routes/teacher"));
-  app.use("/student", require("./routes/student"));
-  app.get("/", (req, res) => {
+  server.use(`/${client.admin}`, require("./routes/admin"));
+  server.use(`/${client.teacher}`, require("./routes/teacher"));
+  server.use(`/${client.student}`, require("./routes/student"));
+
+  server.get("/", (req, res) => {
     res.render(view.loader, { data:{ client: req.query.client ? req.query.client : null }});
   });
-
-  app.get("/home", (_req, res) => {
+  server.get("/testmail*",(_,res)=>{
+    res.render("mail/verification.ejs",{link:"/auth",username:"ranjanistc",email:"email@te"});
+  })
+  server.get("/home", (_req, res) => {
     res.render(view.homepage);
   });
 
-  app.get("/plans", (_request, res) => {
+  server.get("/plans", (_request, res) => {
     res.render(view.plans);
   });
 
-  app.get("/404", (_req, _res, next) => {
+  server.get("/404", (_req, _res, next) => {
     next();
   });
-  app.get("/403", (_req, _res, next) => {
+  server.get("/403", (_req, _res, next) => {
     next();
   });
-  app.get("/500", (req, res, next) => {
+  server.get("/500", (req, res, next) => {
     next();
   });
 
-  app.use((req, res, next) => {
+  server.use((req, res, next) => {
     res.status(404);
     res.format({
       html: function () {
@@ -54,12 +56,11 @@ mongo.connectToServer(( err )=>{
     });
   });
 
-  app.use((err, req, res) => {
+  server.use((err, req, res) => {
     res.status(err.status || 500);
     res.render(view.servererror, { error: err });
   });
-  var server_port = process.env.PORT|| 3000 || 80;
-  var server_host = '0.0.0.0' || 'localhost';
-
-  app.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`)})
+  const server_port = process.env.PORT|| 3000 || 80;
+  const server_host = '0.0.0.0' || 'localhost';
+  server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`)})
 });

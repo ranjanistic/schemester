@@ -4,8 +4,7 @@ const express = require("express"),
   teacher = express.Router(),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
-  code = require("../public/script/codes"),
-  view = require("../hardcodes/views"),
+  {code,client,view} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
@@ -361,7 +360,7 @@ teacher.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:{  //invitation link
-      invite.handleInvitation(query,invite.target.teacher).then((resp)=>{
+      invite.handleInvitation(query,client.teacher).then((resp)=>{
         if(!resp) return res.render(view.notfound);
         return res.render(view.userinvitaion,{invite:resp.invite});
       }).catch(e=>{
@@ -369,7 +368,7 @@ teacher.get("/external*", async (req, res) => {
       });
     }break;
     case verify.type: { //verification link
-      verify.handleVerification(query,verify.target.teacher).then((resp) => {
+      verify.handleVerification(query,client.teacher).then((resp) => {
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
       }).catch((e) => {
@@ -378,7 +377,7 @@ teacher.get("/external*", async (req, res) => {
       });
     }break;
     case reset.type:{ //password reset link
-      reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,client.teacher).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
       }).catch(e=>{

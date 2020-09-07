@@ -162,7 +162,7 @@ class Verification {
       });
     } else {
       this.load(false);
-      snackBar(`Link sent to ${this.data.email}.`);
+      snackBar(`Link sent to ${this.data.email}. Check your spam folder too!`);
       show(this.check);
       let t = 60;
       this.sendlink.innerHTML = `Retry in ${t} seconds`;

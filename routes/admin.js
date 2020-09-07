@@ -3,22 +3,28 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  code = require("../public/script/codes"),
-  view = require("../hardcodes/views"),
+  {code,client,view} = require("../public/script/codes"),
+  // view = require("../hardcodes/views"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
   share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
+  mailer = require("../workers/common/mailer"),
   worker = require("../workers/adminworker"),
   Admin = require("../config/db").getAdmin(),
-  Institute = require("../config/db").getInstitute();
-  const sessionsecret = session.adminsessionsecret;
+  Institute = require("../config/db").getInstitute(),
+  sessionsecret = session.adminsessionsecret;
 
 admin.use(cookieParser(sessionsecret));
 
-admin.get("/", function (_, res) {
+admin.get("/", (_, res)=>{
   res.redirect(worker.toLogin());
+});
+
+admin.post("/mail",(req,res)=>{
+  clog(req.body);
+  return res.json({re:mailer.sendVerificationEmail(req.body)});
 });
 
 admin.get("/auth/login*", (req, res) => {
@@ -104,7 +110,7 @@ admin.get("/session*", (req, res) => {
             }
             case view.admin.target.viewschedule:{
                 clog(data);
-                if (data.type == "teacher") {
+                if (data.type == client.teacher) {
                   if(data.t){ //if teacher _id is provided, means required teacher account considered exists.
                     const teacherInst = await Institute.findOne({
                       uiid: response.user.uiid,
@@ -181,7 +187,7 @@ admin.get("/session*", (req, res) => {
                       inst,
                     });
                   }
-                } else if (data.type == "student") {  //class schedule
+                } else if (data.type == client.student) {  //class schedule
                   if(data.c){ //if class _id is provided, means required class considered exists.
                     const classdoc = await Institute.findOne({
                       uiid: response.user.uiid,
@@ -430,8 +436,8 @@ admin.post("/users",async (req,res)=>{
       if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
       const body = req.body;
       switch(body.target){
-        case "teachers":return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
-        case "student":return res.json({result: await worker.users.handleClassAction(response.user,body)});
+        case client.teacher:return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
+        case client.student:return res.json({result: await worker.users.handleClassAction(response.user,body)});
       }
     });
 });
@@ -471,8 +477,8 @@ admin.post("/schedule", async (req, res) => {
     const body = req.body;
     clog(body);
     switch (body.target) {
-      case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,inst,body)});
-      case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,inst,body)});
+      case client.teacher: return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,body,inst)});
+      case client.student: return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,body,inst)});
     }
   }); 
 });
@@ -560,7 +566,7 @@ admin.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case verify.type:{
-      verify.handleVerification(query, verify.target.admin).then(async(resp) => {
+      verify.handleVerification(query, client.admin).then(async(resp) => {
         if (!resp)
           return res.render(view.notfound);
         return res.render(view.verification, { user: resp.user });
@@ -570,7 +576,7 @@ admin.get("/external*", async (req, res) => {
       });
     }break;
     case reset.type:{
-      reset.handlePasswordResetLink(query,reset.target.admin).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,client.admin).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user });
       }).catch(e=>{
