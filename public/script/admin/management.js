@@ -13,7 +13,7 @@ class Management {
     );
     this.displayIndex = this.sectionsArray.indexOf(this.sectionreq)<0?0:this.sectionsArray.indexOf(this.sectionreq);
     clog(this.displayIndex);
-
+    this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
     this.tabs = Array(
       getElement("adminTab"),
       getElement("institutionTab"),
@@ -354,7 +354,6 @@ class Institution {
         this.allowteacherschedule = new Switch('teachereditschedule');
         this.scheduleActive = new Switch('scheduleactive');
         this.darkmode = new Switch('darkmode');
-
         this.darkmode.turn(theme.isDark());
         this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
 

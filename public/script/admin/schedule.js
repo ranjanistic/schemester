@@ -1,12 +1,18 @@
+// const { clog } = require("../codes");
+
 /**
  * Script for admin/schedule_view, for individual schedule view w.r.t administrator.
  */
 class Schedule{
     constructor(){
         this.data = new ReceiveData();
+        this.darkmode = new Switch('darkmode');
+        this.darkmode.turn(theme.isDark());
+        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
         sessionStorage.removeItem('switchclash');
         this.back = getElement("back");
         this.back.onclick=_=>{window.history.back()}
+        this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
         this.editmodeview = getElement("editmodeview");
         this.editmode = new Switch('editmode');
         this.editmode.onTurnChange(_=>{
@@ -27,11 +33,11 @@ class Schedule{
             this.editmodeview.innerHTML=`Edit mode: Clash Check`;
             snackBar('Changes will not be applied if conflicted');
         })
-        try{
+        // try{
             window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
-        }catch{
-            new NoSchedule();
-        }
+        // }catch{
+        //     new NoSchedule();
+        // }
     }
 }
 
@@ -117,33 +123,65 @@ class Teacher{
         }
 
         this.daytabsview = getElement("dayTabs");
-        this.dayscheduleView = getElement("dayscheduleview");
         let tabs = String();
-        this.daytabs = Array(this.data.weekdays.length);
+        this.dayboxes = [];
+        this.daynames = [];
+        this.dayshows = [];
+        this.periodsView = [];
         this.data.weekdays.forEach((dindex,index)=>{
-            tabs += `<div class="fmt-col tab-button" style="width:${100/this.data.weekdays.length}%" id="daytab${dindex}">${constant.weekdays[dindex]}</div>`;
+            tabs += `<div class="fmt-col fmt-half fmt-padding-small">
+            <div class="fmt-row tab-container b-neutral" id="dayBox${dindex}">
+                <div class="fmt-row fmt-padding-small   ">
+                    <div class="fmt-col  fmt-twothird  group-heading questrial" style="text-align:left;color:var(--secondary-text)" id="dayname${dindex}">
+                        ${constant.weekdays[dindex]}
+                    </div>
+                    <div class="fmt-col fmt-third">
+                        <button class="fmt-right positive-button-togg  questrial" id="dayexpander${dindex}">Show</button>
+                    </div>
+                </div>
+                <div class="fmt-row"  id="periodsview${dindex}">
+                    <!-- periods -->
+                </div>
+            </div>
+        </div>`;
         });
-        this.currentdayIndex = this.data.weekdays[0];
-        clog(this.currentdayIndex);
         this.daytabsview.innerHTML = tabs;
+        this.currentdayIndex = this.data.weekdays[0];
         this.data.weekdays.forEach((dindex,index)=>{
-            this.daytabs[index] = getElement(`daytab${dindex}`);
-            this.daytabs[index].onclick=_=>{
-                this.daytabs.forEach((tab,i)=>{
-                    if(i==index){
-                        this.currentdayIndex = dindex;
-                        clog(this.currentdayIndex);
-                        setClass(this.daytabs[i],'fmt-col tab-button-selected');
-                    } else {
-                        setClass(this.daytabs[i],'fmt-col tab-button');
-                    }
-                });
+            this.dayboxes.push(getElement(`dayBox${dindex}`));
+            this.daynames.push(getElement(`dayname${dindex}`));
+            this.dayshows.push(getElement(`dayexpander${dindex}`));
+            this.periodsView.push(getElement(`periodsview${dindex}`));
+            const isToday = new Date().getDay()==dindex;
+            isToday?this.setActive(index):hide(this.periodsView[index]);
+            this.dayshows[index].innerHTML = isToday?'Hide':'Show';    //replace by rotated icon;
+            this.dayshows[index].onclick=_=>{
+                isToday?hide(this.periodsView[index]):show(this.periodsView[index]);
+                let shower = this.dayshows[index].onclick;
+                this.dayshows[index].innerHTML = isToday?'Show':'Hide';    //replace by rotated icon;
+                this.dayshows[index].onclick=_=>{
+                    isToday?show(this.periodsView[index]):hide(this.periodsView[index]);
+                    this.dayshows[index].innerHTML = isToday?'Hide':'Show';    //replace by rotated icon;
+                    this.dayshows[index].onclick = shower;
+                }
                 this.setDataForDindex(Number(dindex));
             }
         });
         this.schedule = null;
-        this.setDataForDindex();
-        setClass(this.daytabs[0],'fmt-col tab-button-selected');
+        this.setDataForDindex(Number(this.data.weekdays.includes(String(new Date().getDay()))?new Date().getDay():this.data.weekdays[0]));
+        Promise.resolve(this.startTimers());
+    }
+    async startTimers(){
+        setInterval(() => {
+            this.data.weekdays.forEach((dindex,index)=>{
+                new Date().getDay()==dindex?this.setActive(index):_=>{};
+            });
+        }, 1);
+    }
+    setActive(index){
+        this.dayboxes[index].style.backgroundColor ="24f36b34";
+        this.dayboxes[index].style.border = `4px solid ${colors.positive}`;
+        this.daynames[index].style.color = colors.positive;
     }
     setDataForDindex(dayIndex = Number(this.data.weekdays[0])){
         if(!this.schedule){
@@ -157,22 +195,10 @@ class Teacher{
         }).then(response=>{
             clog(response);
             if(response.event == code.OK){
-                clog("OK");
                 this.schedule = response.schedule;
-                let theday;
                 clog(this.schedule);
-                let found = this.schedule.days.some((day,index)=>{
-                    if(day.dayIndex == dayIndex){
-                        clog(day);
-                        clog("setting");
-                        theday = day;
-                        clog([theday.period][0]);
-                        return true
-                    }
-                });
-                if(found){
-                    this.setPeriodsView([theday.period][0]);
-                } 
+                this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
+                this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
             } else {
                 this.schedule == null;
             }
@@ -181,74 +207,63 @@ class Teacher{
         });
         } else {
             clog("from memory");
-            this.theday;
-            let found = this.schedule.days.some((day,index)=>{
-                if(day.dayIndex == dayIndex){
-                    clog(day);
-                    clog("setting");
-                    this.theday = day;
-                    clog([this.theday.period][0]);
-                    return true
-                }
-            });
-            if(found){
-                this.setPeriodsView([this.theday.period][0]);
-            }
+            this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
+            this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
         }
     }
-    setPeriodsView(periods){
+    setPeriodsView(periods,index){
         clog("period settter");
         let rows = constant.nothing;
         
         periods.forEach((period,p)=>{
-            rows += `
-            <div class="fmt-row tab-container fmt-center fmt-padding" id="period${p}">
-                <div class="fmt-col fmt-quarter fmt-padding-small active">
-                    ${addNumberSuffixHTML(p+1)} period
+            rows += `<div class="fmt-row break" id="period${index}${p}">
+                <div class="fmt-col sixth fmt-padding-small active">
+                    ${addNumberSuffixHTML(p+1)}
                 </div>
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameview${p}">
-                    <span id="classname${p}">${period.classname}</span> <button class="neutral-button caption" id="editclassname${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameview${index}${p}">
+                    <span id="classname${index}${p}">${period.classname}</span> <button class="neutral-button caption" id="editclassname${index}${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
-
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameeditor${p}">
-                    <fieldset style="margin:0" class="text-field questrial"  id="classnamefield${p}">
+                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="classnameeditor${index}${p}">
+                    <fieldset style="margin:0" class="text-field questrial"  id="classnamefield${index}${p}">
                         <legend class="field-caption">Replace ${period.classname}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period.classname}" placeholder="New class" type="text" id="classnameinput${p}" name="classname" >
-                        <span class="fmt-right error-caption"  id="classnameerror${p}"></span>
+                        <input class="text-input" style="font-size:18px" required value="${period.classname}" placeholder="New class" type="text" id="classnameinput${index}${p}" name="classname" >
+                        <span class="fmt-right error-caption"  id="classnameerror${index}${p}"></span>
                     </fieldset>
-                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="classnameloader${p}"/>
-                    <button class="positive-button caption" id="saveclassname${p}">Save</button>
-                    <button class="negative-button caption" id="cancelclassname${p}">Cancel</button>
+                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="classnameloader${index}${p}"/>
+                    <button class="positive-button caption" id="saveclassname${index}${p}">Save</button>
+                    <button class="negative-button caption" id="cancelclassname${index}${p}">Cancel</button>
                 </div>
 
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${p}">
-                    <span id="subject${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
+                <div class="fmt-col fmt-half fmt-padding-small positive" id="subjectview${index}${p}">
+                    <span id="subject${index}${p}">${period.subject}</span> <button class="neutral-button caption" id="editsubject${index}${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
                 </div>
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${p}">
-                    <fieldset style="margin:0" class="text-field questrial" id="subjectfield${p}">
+                <div class="fmt-col fmt-half fmt-padding-small positive" id="subjecteditor${index}${p}">
+                    <fieldset style="margin:0" class="text-field questrial" id="subjectfield${index}${p}">
                         <legend class="field-caption">Replace ${period.subject}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period.subject}" placeholder="New subject" type="text" id="subjectinput${p}" name="subject" >
-                        <span class="fmt-right error-caption"  id="subjecterror${p}"></span>
+                        <input class="text-input" style="font-size:18px" required value="${period.subject}" placeholder="New subject" type="text" id="subjectinput${index}${p}" name="subject" >
+                        <span class="fmt-right error-caption"  id="subjecterror${index}${p}"></span>
                     </fieldset>
-                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${p}"/>
-                    <button class="positive-button caption" id="savesubject${p}">Save</button>
-                    <button class="negative-button caption" id="cancelsubject${p}">Cancel</button>
-                </div>
-
-
-                <div class="fmt-col fmt-quarter fmt-padding-small positive">
-                    <button class="positive-button">Action</button>
+                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${index}${p}"/>
+                    <div class="fmt-col third fmt-center">
+                        <button class="positive-button caption" id="savesubject${index}${p}">Save</button>
+                    </div>
+                    <div class="fmt-col third fmt-center">
+                        <button class="negative-button caption" id="cancelsubject${index}${p}">Cancel</button>
+                    </div>
                 </div>
             </div>`;
         });
-        this.dayscheduleView.innerHTML = rows;
+        this.periodsView[index].innerHTML = rows;
         //to handle renaming of fields
-        this.classeditable = new Array();
-        this.subjecteditable = Array();
+        this.dayperiods = [];
+        this.classeditable = [];
+        this.subjecteditable = [];
+        
         periods.forEach((period,p)=>{
-            this.classeditable.push(new Editable(`classnameview${p}`,`classnameeditor${p}`,
-                new TextInput(`classnamefield${p}`,`classnameinput${p}`,`classnameerror${p}`,validType.nonempty),
-                `editclassname${p}`,`classname${p}`,`saveclassname${p}`,`cancelclassname${p}`,`classnameloader${p}`
+            this.dayperiods.push(getElement(`period${index}${p}`));
+            this.classeditable.push(new Editable(`classnameview${index}${p}`,`classnameeditor${index}${p}`,
+                new TextInput(`classnamefield${index}${p}`,`classnameinput${index}${p}`,`classnameerror${index}${p}`,validType.nonempty),
+                `editclassname${index}${p}`,`classname${index}${p}`,`saveclassname${index}${p}`,`cancelclassname${index}${p}`,`classnameloader${index}${p}`
             ));
             this.classeditable[p].onSave(_=>{
                 this.classeditable[p].validateInputNow();
@@ -273,7 +288,7 @@ class Teacher{
                     clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
-                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
+                        this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -304,9 +319,9 @@ class Teacher{
                 });
                 
             })
-            this.subjecteditable.push(new Editable(`subjectview${p}`,`subjecteditor${p}`,
-                new TextInput(`subjectfield${p}`,`subjectinput${p}`,`subjecterror${p}`,validType.nonempty),
-                `editsubject${p}`,`subject${p}`,`savesubject${p}`,`cancelsubject${p}`,`subjectloader${p}`
+            this.subjecteditable.push(new Editable(`subjectview${index}${p}`,`subjecteditor${index}${p}`,
+                new TextInput(`subjectfield${index}${p}`,`subjectinput${index}${p}`,`subjecterror${index}${p}`,validType.nonempty),
+                `editsubject${index}${p}`,`subject${index}${p}`,`savesubject${index}${p}`,`cancelsubject${index}${p}`,`subjectloader${index}${p}`
             ));
             this.subjecteditable[p].onSave(_=>{
                 this.subjecteditable[p].validateInputNow();
@@ -333,7 +348,7 @@ class Teacher{
                     clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
-                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
+                        this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -344,6 +359,24 @@ class Teacher{
                 });
             })
         })
+        this.startPeriodTimers(index);
+    }
+    startPeriodTimers= async(index)=>{
+        const gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
+        clog(gap);
+        const indicator = setInterval(async ()=>{
+            const date = new Date();
+            for(let p=0;p<this.data.totalperiods;p++){
+                if(this.data.weekdays[index] == date.getDay()){
+                    const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
+                    const day = this.schedule.days.find(day=>day.dayIndex == date.getDay());
+                    if(this.data.start+(p*gap) <= hrsnow && hrsnow < this.data.start+((p+1)*gap)){
+                        //in the schedule duration
+                        day.period[p].hold?setActive(this.dayperiods[p]):setNegativeActive(this.dayperiods[p]);
+                    }
+                }
+            }
+        }, 1);
     }
 }
 
@@ -409,34 +442,67 @@ class Class{
                 }
             })
         })
-        this.daytabsview = getElement("dayTabs");
-        this.dayscheduleView = getElement("dayscheduleview");
+        this.dayboxesview = getElement("dayTabs");
         let tabs = String();
-        this.daytabs = Array(this.data.weekdays.length);
+        this.dayboxes = [];
+        this.daynames = [];
+        this.dayshows = [];
+        this.periodsView = [];
         this.data.weekdays.forEach((dindex,index)=>{
-            tabs += `<div class="fmt-col tab-button" style="width:${100/this.data.weekdays.length}%" id="daytab${dindex}">${constant.weekdays[dindex]}</div>`;
+            tabs +=`
+            <div class="fmt-col fmt-half fmt-padding-small">
+                <div class="fmt-row tab-container b-neutral" id="dayBox${dindex}">
+                    <div class="fmt-row fmt-padding-small   ">
+                        <div class="fmt-col  fmt-twothird  group-heading questrial" style="text-align:left;color:var(--secondary-text)" id="dayname${dindex}">
+                            ${constant.weekdays[dindex]}
+                        </div>
+                        <div class="fmt-col fmt-third">
+                            <button class="fmt-right positive-button-togg  questrial" id="dayexpander${dindex}">Show</button>
+                        </div>
+                    </div>
+                    <div class="fmt-row"  id="periodsview${dindex}">
+                        <!-- periods -->
+                    </div>
+                </div>
+            </div>`
         });
+        this.dayboxesview.innerHTML = tabs;
         this.currentdayIndex = this.data.weekdays[0];
-        clog(this.currentdayIndex);
-        this.daytabsview.innerHTML = tabs;
         this.data.weekdays.forEach((dindex,index)=>{
-            this.daytabs[index] = getElement(`daytab${dindex}`);
-            this.daytabs[index].onclick=_=>{
-                this.daytabs.forEach((tab,i)=>{
-                    if(i==index){
-                        this.currentdayIndex = dindex;
-                        clog(this.currentdayIndex);
-                        setClass(this.daytabs[i],'fmt-col tab-button-selected');
-                    } else {
-                        setClass(this.daytabs[i],'fmt-col tab-button');
-                    }
-                });
+            this.dayboxes.push(getElement(`dayBox${dindex}`));
+            this.daynames.push(getElement(`dayname${dindex}`));
+            this.dayshows.push(getElement(`dayexpander${dindex}`));
+            this.periodsView.push(getElement(`periodsview${dindex}`));
+            const isToday = new Date().getDay()==dindex;
+            isToday?this.setActive(index):hide(this.periodsView[index]);
+            this.dayshows[index].innerHTML = isToday?'Hide':'Show';    //replace by rotated icon;
+            this.dayshows[index].onclick=_=>{
+                isToday?hide(this.periodsView[index]):show(this.periodsView[index]);
+                let shower = this.dayshows[index].onclick;
+                this.dayshows[index].innerHTML = isToday?'Show':'Hide';    //replace by rotated icon;
+                this.dayshows[index].onclick=_=>{
+                    isToday?show(this.periodsView[index]):hide(this.periodsView[index]);
+                    this.dayshows[index].innerHTML = isToday?'Hide':'Show';    //replace by rotated icon;
+                    this.dayshows[index].onclick = shower;
+                }
                 this.setDataForDindex(Number(dindex));
             }
         });
         this.schedule = null;
         this.setDataForDindex(Number(this.data.weekdays.includes(String(new Date().getDay()))?new Date().getDay():this.data.weekdays[0]));
-        setClass(this.daytabs[Number(this.data.weekdays.includes(String(new Date().getDay()))?this.data.weekdays.indexOf(String(new Date().getDay())):0)],'fmt-col tab-button-selected');
+        this.startDayTimers();
+    }
+    async startDayTimers(){
+        setInterval(() => {
+            this.data.weekdays.forEach((dindex,index)=>{
+                new Date().getDay()==dindex?this.setActive(index):_=>{};
+            });
+        }, 1);
+    }
+    setActive(index){
+        this.dayboxes[index].style.backgroundColor ="24f36b34";
+        this.dayboxes[index].style.border = `4px solid ${colors.positive}`;
+        this.daynames[index].style.color = colors.positive;
     }
     setDataForDindex(dayIndex = Number(this.data.weekdays[0])){
         if(!this.schedule){
@@ -449,22 +515,10 @@ class Class{
         }).then(response=>{
             clog(response);
             if(response.event == code.OK){
-                clog("OK");
                 this.schedule = response.schedule;
-                let theday;
                 clog(this.schedule);
-                let found = this.schedule.days.some((day,index)=>{
-                    if(day.dayIndex == dayIndex){
-                        clog(day);
-                        clog("setting");
-                        theday = day;
-                        clog([theday.period][0]);
-                        return true
-                    }
-                });
-                if(found){
-                    this.setPeriodsView([theday.period][0]);
-                } 
+                this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
+                this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
             } else {
                 this.schedule == null;
             }
@@ -473,73 +527,71 @@ class Class{
         });
         } else {
             clog("from memory");
-            this.theday;
-            let found = this.schedule.days.some((day,index)=>{
-                if(day.dayIndex == dayIndex){
-                    clog(day);
-                    clog("setting");
-                    this.theday = day;
-                    clog([this.theday.period][0]);
-                    return true
-                }
-            });
-            if(found){
-                this.setPeriodsView([this.theday.period][0]);
-            }
+            this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
+            this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
         }
     }
-    setPeriodsView(periods){
+
+    setPeriodsView(periods,index){
         clog("period settter");
         let rows = constant.nothing;
         periods.forEach((period,p)=>{
-            rows += `
-            <div class="fmt-row tab-container fmt-center fmt-padding" id="period${p}">
-                <div class="fmt-col fmt-quarter fmt-padding-small active">
-                    ${addNumberSuffixHTML(p+1)} period
-                </div>
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${p}">
-                    <span id="subject${p}">${period?period.subject:'Not set'}</span> <button class="neutral-button caption" id="editsubject${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
-                </div>
+            rows+=                    
+                `<br/>
+                <div class="fmt-row break" id="period${index}${p}">
+                    <div class="fmt-col sixth fmt-padding-small active">
+                        ${addNumberSuffixHTML(p+1)}
+                    </div>
+                    <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjectview${index}${p}">
+                        <span id="subject${index}${p}">${period?period.subject:'Not set'}</span> <button class="neutral-button caption" id="editsubject${index}${p}">${editIcon(15)}</button>
+                    </div>
+                    <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${index}${p}">
+                        <fieldset style="margin:0" class="text-field questrial"  id="subjectfield${index}${p}">
+                            <legend class="field-caption">Replace ${period?period.subject:''}</legend>
+                            <input class="text-input" style="font-size:18px" required value="${period?period.subject:''}" placeholder="New subject" type="text" id="subjectinput${index}${p}" name="subject" >
+                            <span class="fmt-right error-caption"  id="subjecterror${index}${p}"></span>
+                        </fieldset>
+                        <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${index}${p}"/>
+                        <div class="fmt-col">
+                            <button class="positive-button caption" id="savesubject${index}${p}">✔</button>
+                        </div>
+                        <div class="fmt-col">
+                            <button class="negative-button caption" id="cancelsubject${index}${p}">❌</button>
+                        </div>
+                    </div>
 
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="subjecteditor${p}">
-                    <fieldset style="margin:0" class="text-field questrial"  id="subjectfield${p}">
-                        <legend class="field-caption">Replace ${period?period.subject:''}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period?period.subject:''}" placeholder="New subject" type="text" id="subjectinput${p}" name="subject" >
-                        <span class="fmt-right error-caption"  id="subjecterror${p}"></span>
-                    </fieldset>
-                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="subjectloader${p}"/>
-                    <button class="positive-button caption" id="savesubject${p}">Save</button>
-                    <button class="negative-button caption" id="cancelsubject${p}">Cancel</button>
-                </div>
-
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="teacherIDview${p}">
-                    <span class="" id="teachername${p}">${period?period.teacherID:'Not set'}</span><br/>
-                    <span class="group-text" id="teacherID${p}">${period?period.teacherID:'Not set'}</span> <button class="neutral-button caption" id="editteacherID${p}"><img width="20" src="/graphic/elements/editicon.svg"/></button>
-                </div>
-                <div class="fmt-col fmt-quarter fmt-padding-small positive" id="teacherIDeditor${p}">
-                    <fieldset style="margin:0" class="text-field questrial" id="teacherIDfield${p}">
-                        <legend class="field-caption">Replace ${period?period.teacherID:''}</legend>
-                        <input class="text-input" style="font-size:18px" required value="${period?period.teacherID:''}" placeholder="New teacherID" type="text" id="teacherIDinput${p}" name="teacherID" >
-                        <span class="fmt-right error-caption"  id="teacherIDerror${p}"></span>
-                    </fieldset>
-                    <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="teacherIDloader${p}"/>
-                    <button class="positive-button caption" id="saveteacherID${p}">Save</button><button class="negative-button caption" id="cancelteacherID${p}">Cancel</button>
-                </div>
-
-
-                <div class="fmt-col fmt-quarter fmt-padding-small positive">
-                    <button class="positive-button">Action</button>
-                </div>
-            </div>`;
-        });
-        this.dayscheduleView.innerHTML = rows;
+                    <div class="fmt-col fmt-half fmt-padding-small positive" id="teacherIDview${index}${p}">
+                        <span class="" id="teachername${index}${p}">${period?period.teacherID:'Not set'}</span><button class="neutral-button caption" id="editteacherID${index}${p}">${editIcon(15)}</button>
+                        <br/>
+                        <span class="group-text" id="teacherID${index}${p}">${period?period.teacherID:'Not set'}</span>
+                    </div>
+                    <div class="fmt-col fmt-half fmt-padding-small positive" id="teacherIDeditor${index}${p}">
+                        <fieldset style="margin:0" class="text-field questrial fmt-third" id="teacherIDfield${index}${p}">
+                            <legend class="field-caption">Replace ${period?period.teacherID:''}</legend>
+                            <input class="text-input" style="font-size:18px" required value="${period?period.teacherID:''}" placeholder="New teacherID" type="text" id="teacherIDinput${index}${p}" name="teacherID" >
+                            <span class="fmt-right error-caption"  id="teacherIDerror${index}${p}"></span>
+                        </fieldset>
+                        <img class="fmt-spin-fast" style="display:none" width="25" src="/graphic/blueLoader.svg" id="teacherIDloader${index}${p}"/>
+                        <div class="fmt-col third fmt-center">
+                            <button class="positive-button caption" id="saveteacherID${index}${p}">Save</button>
+                        </div>
+                        <div class="fmt-col third fmt-center">
+                            <button class="negative-button caption" id="cancelteacherID${index}${p}">Cancel</button>
+                        </div>
+                    </div>
+                </div>`
+        })
+        
+        this.periodsView[index].innerHTML = rows;
         //to handle renaming of fields
-        this.subjecteditable = new Array();
-        this.teachereditable = Array();
+        this.dayperiods = [];
+        this.subjecteditable = [];
+        this.teachereditable = [];
         periods.forEach((period,p)=>{
-            this.subjecteditable.push(new Editable(`subjectview${p}`,`subjecteditor${p}`,
-                new TextInput(`subjectfield${p}`,`subjectinput${p}`,`subjecterror${p}`,validType.nonempty),
-                `editsubject${p}`,`subject${p}`,`savesubject${p}`,`cancelsubject${p}`,`subjectloader${p}`
+            this.dayperiods.push(getElement(`period${index}${p}`));
+            this.subjecteditable.push(new Editable(`subjectview${index}${p}`,`subjecteditor${index}${p}`,
+                new TextInput(`subjectfield${index}${p}`,`subjectinput${index}${p}`,`subjecterror${index}${p}`,validType.nonempty),
+                `editsubject${index}${p}`,`subject${index}${p}`,`savesubject${index}${p}`,`cancelsubject${index}${p}`,`subjectloader${index}${p}`
             ));
             this.subjecteditable[p].onSave(_=>{
                 this.subjecteditable[p].validateInputNow();
@@ -564,7 +616,7 @@ class Class{
                     clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
-                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
+                        this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -588,9 +640,9 @@ class Class{
                 });
                 
             })
-            this.teachereditable.push(new Editable(`teacherIDview${p}`,`teacherIDeditor${p}`,
-                new TextInput(`teacherIDfield${p}`,`teacherIDinput${p}`,`teacherIDerror${p}`,validType.email),
-                `editteacherID${p}`,`teacherID${p}`,`saveteacherID${p}`,`cancelteacherID${p}`,`teacherIDloader${p}`
+            this.teachereditable.push(new Editable(`teacherIDview${index}${p}`,`teacherIDeditor${index}${p}`,
+                new TextInput(`teacherIDfield${index}${p}`,`teacherIDinput${index}${p}`,`teacherIDerror${index}${p}`,validType.email),
+                `editteacherID${index}${p}`,`teacherID${index}${p}`,`saveteacherID${index}${p}`,`cancelteacherID${index}${p}`,`teacherIDloader${index}${p}`
             ));
             this.teachereditable[p].textInput.onTextInput(_=>{this.teacherpredictor(this.teachereditable[p].getInputValue().trim(),this.teachereditable[p].textInput)});
             this.teachereditable[p].onSave(_=>{
@@ -617,7 +669,7 @@ class Class{
                     this.teachereditable[p].load(false);
                     if(response.event == code.OK){
                         this.schedule = null;
-                        this.daytabs[this.data.weekdays.indexOf(this.currentdayIndex)].click();
+                        this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
                         return;
                     }
                     switch(response.event){
@@ -628,7 +680,25 @@ class Class{
                     snackBar(err,'Report');
                 });
             })
-        })
+        });
+        this.startPeriodTimers(index);
+    }
+    startPeriodTimers= async(index)=>{
+        const gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
+        clog(gap);
+        const indicator = setInterval(async ()=>{
+            const date = new Date();
+            for(let p=0;p<this.data.totalperiods;p++){
+                if(this.data.weekdays[index] == date.getDay()){
+                    const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
+                    const day = this.schedule.days.find(day=>day.dayIndex == date.getDay());
+                    if(this.data.start+(p*gap) <= hrsnow && hrsnow < this.data.start+((p+1)*gap)){
+                        //in the schedule duration
+                        day.period[p].hold?setActive(this.dayperiods[p]):setNegativeActive(this.dayperiods[p]);
+                    }
+                }
+            }
+        }, 1);
     }
     teacherpredictor(c, textInput){
         if (c && c!='@' && c!='.' && c != constant.nothing) {
@@ -639,7 +709,7 @@ class Class{
           }).then((resp) => {
             if (resp.event == code.OK) {
               if(resp.teachers.length>0){
-                snackBar(`${resp.teachers[0].teachername} (${resp.teachers[0].teacherID})?`,'Yes',true,_=>{
+                snackBar(`${resp.teachers[0].username} (${resp.teachers[0].teacherID})?`,'Yes',true,_=>{
                   textInput.normalize();
                   textInput.setInput(resp.teachers[0].teacherID);
                 });
@@ -650,6 +720,21 @@ class Class{
           new Snackbar().hide();
         }
       }
+}
+
+function setActive(element = new HTMLElement){
+    element.style.backgroundColor ="#12653423";
+    element.style.borderRadius = "8px";
+}
+
+
+function setNegativeActive(element){
+    element.style.backgroundColor ="#45123423";
+    element.style.borderRadius = "8px";
+}
+
+function setNone(element){
+    element.style.backgroundColor ="#00000000";
 }
 
 class ReceiveData{
@@ -670,6 +755,11 @@ class ReceiveData{
                 this.classUID = getElement("classUID").innerHTML;
             }
         }
+        this.start = getNumericTime(getElement("startTime").innerHTML);
+        this.end = getNumericTime(getElement("endTime").innerHTML);
+        this.breakstart = getNumericTime(getElement("breakTime").innerHTML);
+        this.periodduration = Number(getElement("periodDuration").innerHTML);
+        this.breakduration = Number(getElement("breakDuration").innerHTML);
         this.weekdays = String(getElement("daysinweek").innerHTML).split(',');
         this.totalperiods = Number(getElement("periodcount").innerHTML);
     }

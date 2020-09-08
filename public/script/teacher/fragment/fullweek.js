@@ -24,7 +24,7 @@ class FullSchedule{
     controlVisibility(){
         hideElement(this.periodsView);
         this.data.totaldays.forEach((dindex,d)=>{
-            new Date().getDay()==this.data.totaldays[d]?this.setActive(this.dayBox[d]):nothing();
+            new Date().getDay()==this.data.totaldays[d]?this.setActive(this.dayBox[d]):_=>{};
             this.dayBoxExpand[d].onclick=_=>{
                 show(this.periodsView[d]);
                 let shower = this.dayBoxExpand[d].onclick;

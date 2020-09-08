@@ -99,7 +99,7 @@ class Invitation {
     const expiryTime = time.getTheMoment(false, validdays);
     let link;
     switch (target) {
-      case client.student:
+      case client.teacher:
         {
           const path = `invite.${target}`;
           const document = await Institute.findOneAndUpdate(
@@ -161,7 +161,7 @@ class Invitation {
 
   async disableInvitation(target, data) {
     switch (target) {
-      case client.student: {
+      case client.teacher: {
         const path = `invite.${target}`;
         const doc = await Institute.findOneAndUpdate(
           { _id: ObjectId(data.instID) },
@@ -207,7 +207,7 @@ class Invitation {
 
   async handleInvitation(query, target) {
     switch (target) {
-      case client.student: {
+      case client.teacher: {
         if (!(query.in && query.t)) return false;
         const inst = await Institute.findOne(
           { _id: ObjectId(query.in) },
@@ -223,7 +223,7 @@ class Invitation {
               adminName: inst.default.admin.username,
               expireAt: inst.invite.teacher.expiresAt,
               instname: inst.default.institute.instituteName,
-              target: client.student,
+              target: target,
             },
           };
 
@@ -243,7 +243,7 @@ class Invitation {
             invitorName: inst.default.admin.username,
             instname: inst.default.institute.instituteName,
             expireAt: expires,
-            target: client.student,
+            target: target,
           },
         };
       }break;
@@ -307,7 +307,7 @@ class Invitation {
    */
   getTemplateLink(target, data, createdAt) {
     switch (target) {
-      case client.student:
+      case client.teacher:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&ad=${data.uid}&t=${createdAt}`;
       case client.student:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&t=${createdAt}`;

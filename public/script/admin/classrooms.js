@@ -1,5 +1,9 @@
 class Classrooms{
     constructor(){
+        this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
+        this.darkmode = new Switch('darkmode');
+        this.darkmode.turn(theme.isDark());
+        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
         this.totalclasses = Number(getElement('totalclasses').innerHTML);
         this.createclass = getElement("createclass");
         this.createclass.onclick=_=>{
@@ -70,9 +74,28 @@ class Classrooms{
                         target:client.student,
                         action:code.action.SET_INCHARGE,
                         cid:classtab.classID,
-                        inchargeID:setincharge.getInputValue(1).trim()
+                        newinchargeID:setincharge.getInputValue(0).trim()
                     }).then(resp=>{
                         clog(resp);
+                        if(resp.event == code.OK){
+                            return location.reload();
+                        }
+                        switch(resp.event){
+                            case code.inst.INCHARGE_OCCUPIED:return snackBar(`${resp.inchargename} (${resp.inchargeID}) is already an incharge of ${resp.iclassname}`,'Switch Incharge',true,_=>{
+                                postJsonData(post.admin.users,{
+                                    target:client.student,
+                                    action:code.action.SET_INCHARGE,
+                                    switchclash:true,
+                                    cid:classtab.classID,
+                                    newinchargeID:resp.inchargeID
+                                }).then(resp=>{
+                                    clog(resp);
+                                    if(resp.event == code.OK){
+                                        return location.reload();
+                                    }
+                                });
+                            });
+                        }
                     });
 
                 },_=>{
@@ -117,7 +140,7 @@ class Classrooms{
 class Classes{
     constructor(viewschedule,classid,classname,inchargeID,setincharge){
         this.view = viewschedule;
-        this.classID = classid;
+        this.classID = classid.innerHTML;
         this.classname = classname.innerHTML;
         this.inchargeID = inchargeID;
         this.setincharge = setincharge;

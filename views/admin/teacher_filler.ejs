@@ -57,15 +57,25 @@
                 <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="back">
                 <span id="greeting">Create schedule</span>
             <% } %>
-            <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <span class="fmt-row fmt-center">
+                        <label class="switch-container ">
+                            <input type="checkbox" id="darkmode">
+                            <span class="switch-positive"></span>
+                        </label>
+                    </span>
                     <% if (user.isAdmin) { %>
-                    <div class="fmt-padding" id="settingsButton">Settings</div>
+                        <div class="" id="settingsAdminButton">
+                            <img src="/graphic/elements/settings.svg" width="25" /> Settings
+                        </div>
                     <% } %>
-                    <div class="fmt-padding" id="logout">Logout</div>
+                    <div class="negative" id="logout">
+                        ❌ Logout
+                    </div>
                 </div>
-            </span>
+            </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <input type="text" class="searcher fmt-right" name="search">
         </div>

@@ -100,6 +100,9 @@ class Codes {
         this.CLASS_NOT_FOUND = "inst/class-not-found";
         this.CLASSES_CREATED = "inst/classes-creation-success";
         this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
+        this.INCHARGE_EXISTS = 'inst/class-incharge-found';
+        this.INCHARGE_OCCUPIED = 'inst/incharge-assigned-another-class';
+        
       }
     }
 
@@ -306,9 +309,9 @@ class Locations {
     this.planspage = "/plans";
     class Admin {
       constructor() {
-        this.session = "/admin/session";
-        this.login = "/admin/auth/login";
-
+        const root = '/admin';
+        this.session = `${root}/session`;
+        this.login = `${root}/auth/login`;
         class Target {
           constructor() {
             this.settings = "manage";
@@ -339,9 +342,10 @@ class Locations {
 
     class Teacher {
       constructor() {
-        this.session = "/teacher/session";
-        this.login = "/teacher/auth/login";
-        this.fragment = "/teacher/fragment";
+        const root = '/teacher';
+        this.session = `${root}/session`;
+        this.login = `${root}/auth/login`;
+        this.fragment = `${root}/fragment`;
         class Target {
           constructor() {
             this.dash = "dash";
@@ -421,28 +425,8 @@ class AdminView{
       this.scheduleview = 'admin/schedule_view.ejs';
       this.classrooms = 'admin/classrooms.ejs';
 
-      class Target{
-          constructor(){
-            this.dashboard = 'dashboard';
-            this.addteacher = 'addteacher';
-            this.viewschedule = 'viewschedule';
-            this.manage = 'manage';
-            this.register = 'registration';
-            this.classes = 'classrooms';
-          }
-      }
-      this.target = new Target();
-      class Section{
-          constructor(){
-              this.account = 'setting/account';
-              this.institute = 'setting/institute';
-              this.schedule = 'setting/schedule';
-              this.users = 'setting/users';
-              this.security = 'settting/security';
-              this.about = 'setting/about';
-          }
-      }
-      this.section = new Section();
+      this.target = new Locations().admin.target;
+      this.section = new Locations().admin.section;
   }
   getViewByTarget(target = this.target.dashboard){
       switch(target){
@@ -472,23 +456,7 @@ class TeacherView{
           }
       }
       this.fragment = new FragmentView();
-      class Target {
-          constructor() {
-            this.dash = "dashboard";
-            this.addschedule = 'addschedule';
-            this.settings = 'settings';
-            class Fragment{
-              constructor(){
-                  this.today = "today";
-                  this.fullweek = "fullschedule";
-                  this.classroom =  "classroom";
-                  this.about = "about";
-              }
-            }
-            this.fragment = new Fragment()
-          }
-      }
-      this.target = new Target();
+      this.target = new Locations().teacher.target;
   }
   getViewByTarget(target = this.target.dash){
       switch(target){
@@ -518,22 +486,7 @@ class StudentView{
           }
       }
       this.fragment = new FragmentView();
-      class Target {
-          constructor() {
-            this.dash = "dashboard";
-            class Fragment{
-              constructor(){
-                  this.today = "today";
-                  this.fullweek = "fullschedule";
-                  this.classroom = "classroom";
-                  this.settings = "settings";
-
-              }
-            }
-            this.fragment = new Fragment()
-          }
-      }
-      this.target = new Target();
+      this.target = new Locations().student.target;
   }
   getViewByTarget(target = this.target.dash){
       switch(target){
@@ -549,8 +502,24 @@ class StudentView{
 
 
 
+class Gets{
+  constructor(){
+    const locate = new Locations();
+    this.root = locate.root;
+    this.home = locate.homepage;
+    this.authlogin = '/auth/login*';
+    this.session = '/session*';
+    this.external = '/external*';
+    this.fragment = '/fragment*';
+    this.notfound = '/404';
+    this.servererror = '/500';
+    this.forbidder = '/403';
+  }
+}
+
 class Posts {
   constructor() {
+    this.logout = '/logout';
     class Admin {
       constructor() {
         const root = "/admin"
@@ -615,16 +584,11 @@ class Posts {
     class Student {
       constructor() {
         const root = '/student';
-        this.login = "/student/auth/login";
-        this.logout = "/student/auth/logout";
-        this.signup = "/student/auth/signup";
-
         this.auth = `${root}/auth`;
         this.sessionValidate = `${root}/session/validate`;
         this.schedule = `${root}/schedule`;
         this.self = `${root}/self`;
         this.manage = `${root}/manage`;
-
         class Action {
           constructor() {
             this.login = "login";
@@ -634,7 +598,6 @@ class Posts {
         }
         this.action = new Action();
       }
-
     }
     this.student = new Student();
   }
@@ -819,7 +782,7 @@ const validType = new InputType();
 const actionType = new ViewType();
 const bodyType = new ViewType();
 try {
-  module.exports = {code:new Codes(),client:new Client(),view:new View(),clog(msg){console.log(msg)}};
+  module.exports = {code:new Codes(),client:new Client(),view:new View(),get:new Gets(),isOK(val){return String(val)==String(code.OK)},clog(msg){console.log(msg)}};
 } catch {
   
 }

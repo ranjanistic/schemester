@@ -4,7 +4,7 @@ const express = require("express"),
   teacher = express.Router(),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view} = require("../public/script/codes"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
@@ -20,11 +20,11 @@ teacher.use(cookieParser(sessionsecret));
 const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
   authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
-teacher.get("/", (req, res) => {
+teacher.get(get.root, (req, res) => {
   res.redirect(worker.toLogin());
 });
 
-teacher.get("/auth/login*", (req, res) => {
+teacher.get(get.authlogin, (req, res) => {
   session.verify(req, sessionsecret)
     .catch((error) => {
       return res.render(view.servererror, { error });
@@ -180,7 +180,7 @@ teacher.get("/session*", async (req, res) => {
 });
 
 //for teacher session fragments.
-teacher.get("/fragment*", (req, res) => {
+teacher.get(get.fragment, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {

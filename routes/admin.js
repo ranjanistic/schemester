@@ -3,31 +3,25 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view} = require("../public/script/codes"),
-  // view = require("../hardcodes/views"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
   share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
-  mailer = require("../workers/common/mailer"),
   worker = require("../workers/adminworker"),
   Admin = require("../config/db").getAdmin(),
   Institute = require("../config/db").getInstitute(),
   sessionsecret = session.adminsessionsecret;
-
+const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
+  authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 admin.use(cookieParser(sessionsecret));
 
-admin.get("/", (_, res)=>{
+admin.get(get.root, (_, res)=>{
   res.redirect(worker.toLogin());
 });
 
-admin.post("/mail",(req,res)=>{
-  clog(req.body);
-  return res.json({re:mailer.sendVerificationEmail(req.body)});
-});
-
-admin.get("/auth/login*", (req, res) => {
+admin.get(get.authlogin, (req, res) => {
   clog("admin login get");
   session
     .verify(req, sessionsecret)
@@ -44,7 +38,42 @@ admin.get("/auth/login*", (req, res) => {
     });
 });
 
-admin.get("/session*", (req, res) => {
+
+admin.post('/auth',async (req,res)=>{
+  const body = req.body;
+  clog(body);
+  switch(body.action){
+    case "login":{session.login(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        return res.json(authreqfailed(error));
+      });
+    }break;
+    case "logout":{
+      session.finish(res).then((response) => {
+        return res.json({ result: response });
+      }); 
+    }break;
+    case "signup":{
+      session.signup(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        clog(error);
+        return res.json({
+          result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+        });
+      });
+    }break;
+    default:res.sendStatus(500);
+  }
+});
+
+
+admin.get(get.session, (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
@@ -326,61 +355,6 @@ admin.post("/session/validate", (req, res) => {
       });
   }
 });
-
-admin.post(
-  "/auth/signup",
-  [
-    check("username", code.auth.NAME_INVALID).not().isEmpty(),
-    check("email", code.auth.EMAIL_INVALID).isEmail(),
-    check("password", code.auth.PASSWORD_INVALID)
-      .isAlphanumeric()
-      .isLength({ min: 6 }),
-    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.json({ result:{ event: errors.array()[0].msg }});
-    session.signup(req, res, sessionsecret)
-    .catch((error) => {
-      clog(error);
-      return res.json({ result:{ event: code.auth.ACCOUNT_CREATION_FAILED, msg: error } });
-    })
-    .then((response) => {
-      clog(response);
-      return res.json({ result:response });
-    });
-  }
-);
-
-/**
- * Logout admin.
- */
-admin.post("/auth/logout", (_, res) => {
-  session.finish(res).then((response) => {
-    return res.json({ result:response });
-  });
-});
-
-admin.post( "/auth/login",
-  [
-    check("email", code.auth.EMAIL_INVALID).isEmail(),
-    check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
-    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.json({ result:{ event: errors.array()[0].msg } });
-    session.login(req, res, sessionsecret)
-      .catch((error) => {
-        clog(error);
-        return res.json({ result:code.eventmsg(code.auth.AUTH_REQ_FAILED,error) });
-      })
-      .then((response) => { return res.json({ result:response }) });
-  }
-);
-
 /**
  * For current session account related requests.
  */
@@ -562,7 +536,7 @@ admin.post("/manage", async (req, res) => { //for settings
 /**
  * For external links, not requiring valid session.
  */
-admin.get("/external*", async (req, res) => {
+admin.get(get.external, async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case verify.type:{

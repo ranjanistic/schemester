@@ -6,7 +6,10 @@ class Register {
     this.saveExit = getElement("saveandexit");
     this.settings = getElement("settingsButton");
     this.logout = getElement("logoutAdminButton");
-
+    this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
+    this.darkmode = new Switch('darkmode');
+    this.darkmode.turn(theme.isDark());
+    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
     this.finalize = getElement("registrationComplete");
     this.stage1Loader = getElement("stage1load");
     this.stage2Loader = getElement("stage2load");

@@ -1,6 +1,6 @@
 const express = require("express"),
   bodyParser = require("body-parser"),
-  {client,view,clog} = require("./public/script/codes"),
+  {client,view,clog,get} = require("./public/script/codes"),
   server = express();
 const mongo = require('./config/db');
 server.set("view engine", "ejs");
@@ -17,27 +17,22 @@ mongo.connectToServer(( err )=>{
   server.use(`/${client.teacher}`, require("./routes/teacher"));
   server.use(`/${client.student}`, require("./routes/student"));
 
-  server.get("/", (req, res) => {
+  server.get(get.root, (req, res) => {
     res.render(view.loader, { data:{ client: req.query.client ? req.query.client : null }});
   });
-  server.get("/testmail*",(_,res)=>{
-    res.render("mail/verification.ejs",{link:"/auth",username:"ranjanistc",email:"email@te"});
-  })
-  server.get("/home", (_req, res) => {
+  server.get(get.home, (_req, res) => {
     res.render(view.homepage);
   });
-
   server.get("/plans", (_request, res) => {
     res.render(view.plans);
   });
-
-  server.get("/404", (_req, _res, next) => {
+  server.get(get.notfound, (_req, _res, next) => {
     next();
   });
-  server.get("/403", (_req, _res, next) => {
+  server.get(get.forbidder, (_req, _res, next) => {
     next();
   });
-  server.get("/500", (req, res, next) => {
+  server.get(get.servererror, (req, res, next) => {
     next();
   });
 

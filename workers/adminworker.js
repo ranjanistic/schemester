@@ -1,7 +1,7 @@
 const Admin = require("../config/db").getAdmin(),
   Institute = require("../config/db").getInstitute(),
   bcrypt = require("bcryptjs"),
-  {code,client,view,clog} = require("../public/script/codes"),
+  {code,client,view,isOK,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
@@ -585,7 +585,7 @@ class Default {
  */
 class Users {
   constructor() {
-    class TeacherAction {
+    class Teachers {
       constructor() {}
       searchTeacher = async (inst, body) => {
         let teachers = Array();
@@ -612,11 +612,97 @@ class Users {
         };
       };
     }
-    class ClassAction {
-      constructor() {}
-      searchClass = async (inst, body) => {
+    class Classes {
+      constructor() {
+        this.path = 'users.classes';
+        this.operatorpath = `${this.path}.$`;
+        this._id = '_id';
+        this._idpath = `${this.operatorpath}.${this._id}`;
+        this.classname = 'classname';
+        this.classnamepath = `${this.operatorpath}.${this.classname}`;
+        this.inchargeID = 'inchargeID';
+        this.inchargeIDpath = `${this.operatorpath}.${this.inchargeID}`;
+        this.inchargename = 'inchargename';
+        this.inchargenamepath = `${this.operatorpath}.${this.inchargename}`;
+        this.students = 'students';
+        this.studentspath = `${this.operatorpath}.${this.students}`;
+      }
+      /**
+       * Checks whether a classname exists in classes.
+       * @param {JSON} user The session user object.
+       * @param {String} classname The classname to be searched.
+       * @returns {Promise} classroom object if exists, else false.
+       */
+      async getClassByClassname(user,classname){
+        const classdoc = await Institute.findOne({uiid:user.uiid,[this.path]:{$elemMatch:{[this.classname]:classname}}},{projection:{[this.operatorpath]:1}});
+        return classdoc?classdoc.users.classes[0]:false;
+      }
+
+      async getClassBy_id(user,_id){
+        const classdoc = await Institute.findOne({uiid:user.uiid,[this.path]:{$elemMatch:{[this._id]:ObjectId(_id)}}},{projection:{[this.operatorpath]:1}});
+        return classdoc?classdoc.users.classes[0]:false;
+      }
+
+      async getClassByIncharge(user,inchargeID){
+        const classdoc = await Institute.findOneAndUpdate({uiid:user.uiid,[this.path]:{$elemMatch:{[this.inchargeID]:inchargeID}}},{
+          projection:{
+            [this.operatorpath]:1
+          }
+        });
+        return classdoc?classdoc.users.classes[0]:false;
+      }
+      
+      async setClassname(user,oldclassname,newclassname){
+        const classdoc = await Institute.findOneAndUpdate({uiid:user.uiid,[this.path]:{$elemMatch:{[this.classname]:oldclassname}}},{
+          $set:{
+            [this.classnamepath]:newclassname
+          }
+        });
+        return code.event(classdoc.value?code.OK:code.NO);
+      }
+
+      async setIncharge(user,classname,inchargename,inchargeID){
+        const classdoc = await Institute.findOneAndUpdate({uiid:user.uiid,[this.path]:{$elemMatch:{[this.classname]:classname}}},{
+          $set:{
+            [this.inchargeIDpath]:inchargeID,
+            [this.inchargenamepath]:inchargename,
+          }
+        });
+        return code.event(classdoc.value?code.OK:code.NO);
+      }
+
+      async switchClassnames(user,classname1,classname2){
+        const doc = await Institute.updateOne({uiid:user.uiid},{
+          $set:{
+            "users.classes.$[older].classname":classname1,
+            "users.classes.$[newer].classname":classname2,
+          }
+        },{
+          arrayFilters:[{"older.classname":classname2},{"newer.classname":classname1}]
+        });
+        return code.event(doc.result.nModified?code.OK:code.NO);
+      }
+
+      async switchIncharges(user,classname1,classname2){
+        const class1 = await this.getClassByClassname(user,classname1);
+        const class2 = await this.getClassByClassname(user,classname2);
+        if(!(class1&&class2)) return code.event(code.NO);
+        const doc = await Institute.updateOne({uiid:user.uiid},{
+          $set:{
+            "users.classes.$[newer].inchargeID":class1.inchargeID,
+            "users.classes.$[newer].inchargename":class1.inchargename,
+            "users.classes.$[older].inchargeID":class2.inchargeID,
+            "users.classes.$[older].inchargename":class2.inchargename
+          }
+        },{
+          arrayFilters:[{"newer.classname":class2.classname},{"older.classname":class1.classname}]
+        });
+        return code.event(doc.result.nModified?code.OK:code.NO);
+      }
+
+      async searchClass(inst, body){
         let classes = Array();
-        inst.users.classes.forEach((Class, t) => {
+        inst.users.classes.forEach((Class) => {
           if (
             String(Class.classname)
               .toLowerCase()
@@ -639,16 +725,23 @@ class Users {
         };
       };
 
-      async createClass(user,body){
-        let doc = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.newclass.classname}}});
-        if(doc) return code.event(code.inst.CLASS_EXISTS);
-        newclass['_id'] = new ObjectId();
-        doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+
+      /**
+       * Pushes a single classroom element in users.classes array.
+       * @param {JSON} user The session user object.
+       * @param {JSON} body The JSONobject containing necessary classroom details.
+       * @returns {Promise} A code, indicating operation success or failure.
+       */
+      async pushClassroom(user,body){
+        let classroom = await this.getClassByClassname(user,body.newclass.classname);
+        if(isOK(classroom)) return code.event(code.inst.CLASS_EXISTS);
+        newclass[this._id] = new ObjectId();
+        classroom = await Institute.findOneAndUpdate({uiid:user.uiid},{
           $push:{
-            "users.classes" : body.newclass
+            [this.path] : body.newclass
           }
         });
-        return code.event(doc.value?code.inst.CLASSES_CREATED:code.inst.CLASSES_CREATION_FAILED);
+        return code.event(classroom.value?code.OK:code.NO);
       }
 
       /**
@@ -666,33 +759,38 @@ class Users {
       async updateClass(user,body,inst){
         switch(body.specific){
           case code.action.RENAME_CLASS:{
-            let classes = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.newclassname}}});
-            if(classes) {//already a newclassname class exists
+            let classroom = await this.getClassByClassname(user,body.newclassname);
+            if(classroom) {//already a newclassname class exists
               if(!body.switchclash) return code.event(code.inst.CLASS_EXISTS);
               //switch with conflicting class.
-              classes = await Institute.findOneAndUpdate({uiid:user.uiid},{
-                $set:{
-                  "users.classes.$[older].classname":body.newclassname,
-                  "users.classes.$[newer].classname":body.oldclassname,
-                }
-              },{
-                arrayFilters:[{"older.classname":body.oldclassname},{"newer.classname":body.newclassname}]
-              });
-              return code.event(classes.value?code.OK:code.NO);
+              return await this.switchClassnames(user,body.oldclassname,body.newclassname);
+              
             }
-            //no duplicates of newclassname.
-            let doc = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.oldclassname}}},{
-              $set:{
-                "users.classes.$.classname":body.newclassname
+            //no conflicts.
+            return await this.setClassname(user,body.oldclassname,body.newclassname);
+          }
+          case code.action.SET_INCHARGE:{
+            let classroom = body.classname?await this.getClassByClassname(user,body.classname):await this.getClassBy_id(user,body.cid);
+            if(!classroom) return code.event(code.inst.CLASS_NOT_FOUND);
+            if(classroom.inchargeID == body.newinchargeID) return code.event(code.OK);
+            let iclassroom = await this.getClassByIncharge(user,body.newinchargeID);
+            if(iclassroom){
+              if(!body.switchclash) return {
+                event:code.inst.INCHARGE_OCCUPIED,
+                iclassname:iclassroom.classname,
+                inchargename:iclassroom.inchargename,
+                inchargeID:iclassroom.inchargeID,
               }
-            });
-            return code.event(doc.value?code.OK:code.NO);
+              return await this.switchIncharges(user,classroom.classname,iclassroom.classname);
+            }
+            //no conflicts.
+            return await this.setIncharge(user,classroom.classname,body.newinchargename,body.newinchargeID);
           }
         }
       }
     }
-    this.teachers = new TeacherAction();
-    this.classes = new ClassAction();
+    this.teachers = new Teachers();
+    this.classes = new Classes();
 
   }
   async getUsers(user){
@@ -854,7 +952,7 @@ class Schedule {
        * @param {JSON} body
        * @returns {Promise} success event,unique classes
        */
-      async scheduleReceive( body,inst) {
+      async scheduleReceive(body,inst) {
         let filter, options;
         console.log(body);
         switch (body.specific) {
@@ -1218,7 +1316,7 @@ class Schedule {
            * To push a single new class in users.classes.
            */
           case code.action.CREATE_NEW_CLASS:{
-            let cresult = await new Users().classes.createClass(user,body);
+            let cresult = await new Users().classes.pushClassroom(user,body);
             if(cresult.event!=code.inst.CLASSES_CREATED) return cresult;
           }break;
         }
@@ -1361,6 +1459,7 @@ class Invite {
           },
           body.daysvalid
         );
+        clog(result);
         return result;
       };
       inviteLinkDisable = async (inst, body) => {

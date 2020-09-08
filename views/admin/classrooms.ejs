@@ -13,6 +13,7 @@
         <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
         <link href="/font/Jost.css" rel="stylesheet">
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
@@ -24,6 +25,23 @@
         <div id="topBar">
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back" onclick="window.history.back()">
             <span id="greeting">Classes of <%= defaults.institute.instituteName %> </span>
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <span class="fmt-row fmt-center">
+                        <label class="switch-container ">
+                            <input type="checkbox" id="darkmode">
+                            <span class="switch-positive"></span>
+                        </label>
+                    </span>
+                    <div class="" id="settingsAdminButton">
+                        <img src="/graphic/elements/settings.svg" width="25" /> Teachers
+                    </div>
+                    <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                        ❌ Logout
+                    </div>
+                </div>
+            </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <input type="text" class="searcher fmt-right" name="search">
         </div>
@@ -42,24 +60,23 @@
                 </div>
                 <div class="fmt-col half">
                     <button class="fmt-right positive-button" id="createclass">Create classroom</button>
-                    <input type="search" class=" searcher b-positive fmt-right" name="search">
                 </div>
             </div>
             <div class="fmt-row">
             <% classes.forEach((Class,c)=> {%>
                 <div class="fmt-col fmt-third fmt-padding">
                     <div class="fmt-col container fmt-padding">
-                        <div class="fmt-row positive group-heading fmt-left">
+                        <div class="fmt-row positive group-heading fmt-left break">
                             <span id="classid<%= c %>" hidden><%= Class._id %></span>
                             <span id="classname<%= c %>" ><%= Class.classname %></span>
                         </div>
-                        <a class="fmt-right caption active fmt-padding" id="viewschedule<%= c %>">Schedule</a>
-                        <div class="fmt-row questrial positive " style="text-align:left">
+                        <button class="fmt-right caption positive-button questrial" id="viewschedule<%= c %>">More</button>
+                        <div class="fmt-row questrial " style="text-align:left">
                             <%= Class.students.length %> students
                         </div>
                         <div class="fmt-row questrial caption break" style="text-align:left">
                             <% if(Class.inchargeID){ %>
-                                Incharge <br/>                       
+                                Incharge <br/>              
                                 <div class="group-text" id="inchargename<%= c %>"><%= Class.inchargeID %></div>
                                 <a id="inchargeid<%= c %>"><%= Class.inchargeID %></a>
                             <%} else {%>

@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Schedule View · Schemester</title>
+        <title>
+            <% if (group.teacher) { %>
+                <%= teacher.username %>
+            <% } else if(group.Class) { %>
+                <%= Class.classname %>
+            <% } %>
+            · Schemester</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -31,14 +37,22 @@
                     Class
                 <% } %>
             </span>
-            <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
-                    <div class="fmt-padding" id="logoutAdmin">Logout</div>
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <span class="fmt-row fmt-center">
+                        <label class="switch-container ">
+                            <input type="checkbox" id="darkmode">
+                            <span class="switch-positive"></span>
+                        </label>
+                    </span>
+                    <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                        ❌ Logout
+                    </div>
                 </div>
-            </span>
+            </span >
             <span class="fmt-padding caption neutral fmt-right">
-                <span id="editmodeview">Edit mode: Clash Check</span>&#160; <label class="switch-container">
+                <span id="editmodeview">Edit mode: Clash Check</span>&#160;&#160;<label class="switch-container">
                     <input type="checkbox" id="editmode">
                     <span class="switch-warning"></span>
                 </label>
@@ -93,33 +107,7 @@
             <br/>
             <% if(schedule && schedule.days.length) { %>
                 <div class="fmt-row fmt-center" id="dayTabs">
-                </div>
-                <div class="fmt-row tab-view">
-                    <div class="fmt-row fmt-center fmt-padding active fmt-hide-small" id="period0">
-                        <div class="fmt-col fmt-quarter">
-                            Period
-                        </div>
-                        <div class="fmt-col fmt-quarter">
-                            <% if (group.teacher) { %>
-                                Class
-                            <% } else { %>
-                                Subject
-                            <% } %>
-                        </div>
-                        <div class="fmt-col fmt-quarter">
-                            <% if (group.teacher) { %>
-                                Subject
-                            <% } else { %>
-                                Teacher
-                            <% } %>
-                        </div>
-                        <div class="fmt-col fmt-quarter">
-                            Action
-                        </div>
-                    </div>
-                    <div id="dayscheduleview">
-                        <!-- schedule view -->
-                    </div>
+                    <!-- schedule view -->
                 </div>
             <% } else { %>
                 <div class="fmt-center">
@@ -151,7 +139,12 @@
                 <span id="teachername"><%= teacher.username %></span>
                 <span id="teacherverified"><%= teacher.verified %></span>
             <% } %>
-            <span id="schedule"><%= schedule %></span>  
+            <span id="schedule"><%= schedule %></span>
+            <span id="startTime"><%= inst.default.timings.startTime %></span>
+            <span id="endTime"><%= inst.default.timings.endTime %></span>
+            <span id="breakTime"><%= inst.default.timings.breakStartTime %></span>
+            <span id="periodDuration"><%= inst.default.timings.periodMinutes %></span>
+            <span id="breakDuration"><%= inst.default.timings.breakMinutes %></span>
             <span id="daysinweek"><%= inst.default.timings.daysInWeek %></span>
             <span id="periodcount"><%= inst.default.timings.periodsInDay %></span>
         </span>

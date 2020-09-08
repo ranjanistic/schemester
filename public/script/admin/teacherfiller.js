@@ -1,6 +1,10 @@
 
 class TeacherFiller {
     constructor() {
+      this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
+    this.darkmode = new Switch('darkmode');
+    this.darkmode.turn(theme.isDark());
+    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
       sessionStorage.clear();
       this.data = new ReceiveData();
       this.view = getElement("workbox");
@@ -310,7 +314,6 @@ class ScheduleComplete{
     this.view.innerHTML = data.isAdmin?this.content(sessionStorage.getItem('teacherID')):data.teacherName;
     this.addAnother = getElement("addAnother");
     this.exit = getElement("exitadder");
-
     this.addAnother.onclick =_=>{
       relocate(locate.adminDashPage,{
         target:'addteacher'

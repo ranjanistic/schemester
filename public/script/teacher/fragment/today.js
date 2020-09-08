@@ -139,9 +139,9 @@ class ReceiveData{
                 this.end = getElement("endTime").innerHTML;
                 this.breakstart = getElement("breakTime").innerHTML;
             }else {
-                this.start = this.getNumericTime(getElement("startTime").innerHTML);
-                this.end = this.getNumericTime(getElement("endTime").innerHTML);
-                this.breakstart = this.getNumericTime(getElement("breakTime").innerHTML);
+                this.start = getNumericTime(getElement("startTime").innerHTML);
+                this.end = getNumericTime(getElement("endTime").innerHTML);
+                this.breakstart = getNumericTime(getElement("breakTime").innerHTML);
             }
             this.periodduration = Number(getElement("periodDuration").innerHTML);
             this.breakduration = Number(getElement("breakDuration").innerHTML);
@@ -151,18 +151,15 @@ class ReceiveData{
         this.today = getElement("today").innerHTML == 'false'?false:true;
         clog(this.today);
         if(this.today){
-            this.classname = Array();
-            this.subject = Array();
-            this.hold = Array();
+            this.classname = [];
+            this.subject = [];
+            this.hold = [];
             for(let i = 0;i<this.totalperiods;i++){
                 this.classname.push(getElement(`classname${i}`).innerHTML);
                 this.subject.push(getElement(`subject${i}`).innerHTML);
                 this.hold.push(getElement(`hold${i}`).innerHTML == 'true');
             }
         }
-    }
-    getNumericTime(time){
-        return Number(String(time).replace(':',constant.nothing));
     }
 }
 

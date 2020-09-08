@@ -3,7 +3,7 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view} = require("../public/script/codes"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   share = require("../workers/common/sharedata"),
@@ -18,12 +18,12 @@ student.use(cookieParser(sessionsecret));
 const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
   authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
-student.get("/", (req, res) => {
+student.get(get.root, (req, res) => {
   res.redirect(worker.toLogin());
 });
 
 
-student.get("/auth/login*", (req, res) => {
+student.get(get.authlogin, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((error) => {
@@ -72,7 +72,7 @@ student.post("/auth",async(req,res)=>{
   }
 });
 
-student.get("/session*", async (req, res) => {
+student.get(get.session, async (req, res) => {
   let data = req.query;
   clog(data);
   session.verify(req, sessionsecret)
@@ -167,7 +167,7 @@ student.get("/session*", async (req, res) => {
     });
 });
 
-student.get("/fragment*", (req, res) => {
+student.get(get.fragment, (req, res) => {
   //for student session fragments.
   session
     .verify(req, sessionsecret)
@@ -326,7 +326,7 @@ student.post("/session/validate", async (req, res) => {
     });
 });
 
-student.get("/external*", async (req, res) => {
+student.get(get.external, async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:{

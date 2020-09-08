@@ -100,7 +100,8 @@ class AdminLogin{
       this.emailField.normalize();
       this.passField.normalize();
       this.uiidField.normalize();
-      postData(post.admin.login,{
+      postJsonData(post.admin.auth,{
+        action:'login',
         email:String(this.emailField.getInput()).trim(),
         password:this.passField.getInput(),
         uiid:String(this.uiidField.getInput()).trim(),

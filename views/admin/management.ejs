@@ -34,13 +34,14 @@
         <div id="topBar">
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backFromSettings">
             <span>Settings</span>
-            <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
-                    <div class="fmt-padding" id="settingsButton">Upgrade</div>
-                    <div class="fmt-padding" id="logoutAdmin">Logout</div>
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <div class="negative" id="logoutAdmin">
+                        ❌ Logout
+                    </div>
                 </div>
-            </span>
+            </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
             <input type="text" class="searcher fmt-right" name="search">
         </div>
@@ -366,7 +367,7 @@
                             <div class="fmt-col fmt-padding-small<% if(countObjects(inst.users.classes)>0) {%> fmt-half<% } %>">
                                 <div class="fmt-row">
                                     <span class="sub-heading">Teachers</span>
-                                    <button class="fmt-right neutral-button" id="inviteUsers">➕</button>
+                                    <button class="fmt-right neutral-button" id="inviteUsers">🔗</button>
                                 </div>
                                 <div class="fmt-row">
                                     <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
@@ -378,7 +379,9 @@
                             <% if(countObjects(inst.users.classes)>0) {%>
                                 <div class="fmt-col fmt-half fmt-padding-small">
                                     <span class="sub-heading">Classes</span>
+                                    <button class="fmt-right neutral-button" id="allclasses" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})"><img src="/graphic/elements/classicon.svg" width="25" /></button>
                                     <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.classes)%> classes" id="classSearch" style="width:100%"/>
+                                    <br/>
                                     <br/>
                                     <div class="fmt-row" id="classList">
                                         

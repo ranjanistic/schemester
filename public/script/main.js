@@ -1972,7 +1972,9 @@ const finishSession = (
     relocate(locate.root);
   }
 ) => {
-  postData(post.admin.logout).then((res) => {
+  postData(post.admin.auth,{
+    action:'logout',
+  }).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       sessionStorage.clear();
       afterfinish();
@@ -2424,6 +2426,10 @@ const getProperDate = (dateTillMillis = String) => {
   )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
 };
 
+function getNumericTime(time){
+  return Number(String(time).replace(':',constant.nothing));
+}
+
 const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
 const getRadioChip = (labelID, label, radioID) =>
@@ -2439,4 +2445,5 @@ const getDialogButton = (buttonClass, buttonID, label) =>
   `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
 const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
+const editIcon=(size)=>`<img width="${size}" src="/graphic/elements/editicon.svg"/>`
 const jstr = (obj) => JSON.stringify(obj);
