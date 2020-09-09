@@ -51,9 +51,10 @@ teacher.post("/auth",async(req,res)=>{
       })
     }break;
     case "logout":{
+      clog("finishing session");
       session.finish(res).then((response) => {
         return res.json({ result: response });
-      }); 
+      });
     }break;
     case "signup":{
       session.signup(req, res, sessionsecret,body.pseudo)
@@ -285,8 +286,8 @@ teacher.post("/self", async (req, res) => {
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-    clog(body);
     switch (body.target) {
+      case "receive": return res.json({result:await worker.self.account.getAccount(response.user)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});

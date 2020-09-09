@@ -273,6 +273,7 @@ student.post("/self", async (req, res) => {
     if (!session.valid(response)) return res.json(invalidsession);
     clog(response);
     switch (body.target) {
+      case "receive": return res.json({result:await worker.self.account.getAccount(response.user)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});

@@ -120,7 +120,7 @@ class Pseudostudent{
         }
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
-        finishSession((_) => {
+        finishSession(client.student,(_) => {
             relocateParent(locate.teacher.login, {
             email: localStorage.getItem("id"),
             });

@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Classrooms · Schemester</title>
+        <title>
+            <%= client == 'teacher'?'Teachers':'Classrooms'%> · Schemester
+        </title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -18,13 +20,15 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
-        <script src="/script/admin/classrooms.js"></script>
+        <script src="/script/admin/users.js"></script>
+        <script src="/script/admin/admin.js"></script>
     </head>
     
     <body>
         <div id="topBar">
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back" onclick="window.history.back()">
-            <span id="greeting">Classes of <%= defaults.institute.instituteName %> </span>
+            <span id="greeting">
+                <%= client == 'teacher'?'Teachers':'Classes'%> of <%= defaults.institute.instituteName %> </span>
             <span  class="menu fmt-right">
                 <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
                 <div class="menubox" id="settingsmenu">
@@ -34,8 +38,14 @@
                             <span class="switch-positive"></span>
                         </label>
                     </span>
-                    <div class="" id="settingsAdminButton">
-                        <img src="/graphic/elements/settings.svg" width="25" /> Teachers
+                    <div class="" id="users">
+                        <% if(client == 'teacher') {%>
+                            <img src="/graphic/elements/settings.svg" width="25" />
+                            Classrooms
+                            <% } else { %>
+                            <img src="/graphic/elements/settings.svg" width="25" />
+                            Teachers
+                        <% } %>
                     </div>
                     <div class="negative" id="logoutAdminButton" onclick="finishSession()">
                         ❌ Logout
@@ -48,46 +58,81 @@
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="fmt-row fmt-padding-small">
                 <div class="sub-heading fmt-col half positive">
-                    <span id="totalclasses"><%= classes.length %></span> classrooms ·
-                    <span id="totalstudents" class="group-heading positive">
+                    <span id="totalusers"><%= users.length %></span> 
+                    <%= client == 'teacher'?'teachers':'classrooms'%>
+                    <% if(client == 'student') {%>
+                        ·
+                        <span id="totalstudents" class="group-heading positive">
                         <% var totalstuds = 0 %>
-                        <% classes.forEach((Class)=> { %>
+                        <% users.forEach((Class)=> { %>
                             <% totalstuds+=Class.students.length %>
                         <% }) %>
                         <%= totalstuds %> students
                     </span>
-
+                    <% } %>
                 </div>
                 <div class="fmt-col half">
-                    <button class="fmt-right positive-button" id="createclass">Create classroom</button>
+                    <button class="fmt-right positive-button" id="adduser">
+                        <%= client == 'teacher'?'Add teacher':'Create classroom'%>
+                    </button>
+                    <% if(client == 'teacher') {%>
+                        <button class="fmt-right active-button" id="inviteteacher">
+                            Invite teachers
+                        </button>
+                    <% } %>
                 </div>
             </div>
             <div class="fmt-row">
-            <% classes.forEach((Class,c)=> {%>
+            <% users.forEach((user,c)=> {%>
                 <div class="fmt-col fmt-third fmt-padding">
                     <div class="fmt-col container fmt-padding">
                         <div class="fmt-row positive group-heading fmt-left break">
-                            <span id="classid<%= c %>" hidden><%= Class._id %></span>
-                            <span id="classname<%= c %>" ><%= Class.classname %></span>
+                            <% if(client == 'teacher') {%>
+                                <span id="teacheruid<%= c %>" hidden><%= user._id %></span>
+                                <span id="teachername<%= c %>" ><%= user.username %></span>
+                            <% } else { %>
+                                <span id="classid<%= c %>" hidden><%= user._id %></span>
+                                <span id="classname<%= c %>" ><%= user.classname %></span>
+                            <% } %>
                         </div>
                         <button class="fmt-right caption positive-button questrial" id="viewschedule<%= c %>">More</button>
                         <div class="fmt-row questrial " style="text-align:left">
-                            <%= Class.students.length %> students
+                            <% if(client == 'teacher') {%>
+                                <span id="teacherid<%= c %>" class="group-text"><%= user.teacherID %></span>
+                            <% } else { %>
+                                <%= user.students.length %> students
+                            <% } %>
                         </div>
                         <div class="fmt-row questrial caption break" style="text-align:left">
-                            <% if(Class.inchargeID){ %>
-                                Incharge <br/>              
-                                <div class="group-text" id="inchargename<%= c %>"><%= Class.inchargeID %></div>
-                                <a id="inchargeid<%= c %>"><%= Class.inchargeID %></a>
-                            <%} else {%>
-                                <a class="active" id="setincharge<%= c %>">Set incharge</a>
-                            <%}%>
+                            <% if(client == 'teacher') {%>
+                                <% const found =  classes.some(Class => { %>
+                                    <% if(Class.inchargeID == user.teacherID){ %>
+                                        <a class="positive" id="class<%= c %>">Incharge of&#160;<span id="inchargeof<%= c %>"><%= Class.classname %></span></a>
+                                        <% return true %> 
+                                    <% } %>
+                                <% }) %>
+                                <% if(!found) {%> 
+                                    <a class="active" id="setinchargeof<%= c %>">Make incharge</a>
+                                <%}%>
+                            <% } else { %>
+                                <% if(user.inchargeID){ %>
+                                    Incharge <br/>              
+                                    <div class="group-text" id="inchargename<%= c %>"><%= user.inchargeID %></div>
+                                    <a id="inchargeid<%= c %>"><%= user.inchargeID %></a>
+                                <%} else {%>
+                                    <a class="active" id="setincharge<%= c %>">Set incharge</a>
+                                <%}%>
+                            <% } %>
                         </div>
                     </div>
                 </div>
             <%})%>
             </div>
         </div>
+        <span hidden>
+            <span id="client"><%= client %></span>
+        </span>
+
         <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
             </div>

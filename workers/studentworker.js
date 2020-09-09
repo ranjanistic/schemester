@@ -71,6 +71,41 @@ class Self {
       }
       //send feedback emails
 
+      async getAccount(user){
+        let studentdoc = await Institute.findOne({
+          uiid:user.uiid,
+          "users.classes":{
+            $elemMatch:{"classname":user.classname}
+          }
+        },{
+          projection:{
+            "_id":0,
+            "users.classes.$":1
+          }
+        });
+        let student;
+        if(studentdoc){
+          student = share.getStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(user.id)),user.uiid);
+        }
+        if(!student){
+          studentdoc = await Institute.findOne({
+            uiid:user.uiid,
+            "pseudousers.classes":{
+              $elemMatch:{"classname":user.classname}
+            }
+          },{
+            projection:{
+              "_id":0,
+              "pseudousers.classes.$":1
+            }
+          });
+          if(studentdoc){
+            student = share.getPseudoStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(user.id)),user.uiid);
+          }
+          return studentdoc?student:code.event(code.auth.USER_NOT_EXIST); //if no class then obiviously no student.
+        }
+        return studentdoc?student:code.event(code.auth.USER_NOT_EXIST);
+      }
       async createAccount(uiid, classname, newstudent) {
         clog("og");
         const doc = await Institute.findOneAndUpdate(
@@ -312,17 +347,11 @@ class Self {
           },
           { projection: { "users.classes.$": 1 } }
         );
-        let student;
         if (!classdoc) {
           return false;
         }
-        let found = classdoc.users.classes[0].students.some((stud) => {
-          if (String(stud._id) == String(user.id)) {
-            student = stud;
-            return true;
-          }
-        });
-        if (!found) {
+        let student = classdoc.users.classes[0].students.find((stud) => String(stud._id) == String(user.id));
+        if (!student) {
           classdoc = await Institute.findOne(
             {
               uiid: user.uiid,
@@ -332,13 +361,8 @@ class Self {
             },
             { projection: { "pseudousers.classes.$": 1 } }
           );
-          found = classdoc.pseudousers.classes[0].students.some((stud) => {
-            if (String(stud._id) == String(user.id)) {
-              student = stud;
-              return true;
-            }
-          });
-          if (!found) return false;
+          student = classdoc.pseudousers.classes[0].students.find((stud) => String(stud._id) == String(user.id));
+          if (!student) return false;
           return code.event(
             student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
           );
@@ -351,30 +375,21 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":
-        {
+      case "send":{
           clog("insend");
           clog(body);
-          clog(user ? true : false);
           if (!user) {
             //user not logged in
-            const classdoc = await Institute.findOne(
-              {
+            const classdoc = await Institute.findOne({
                 uiid: body.uiid,
                 "users.classes": { $elemMatch: { classname: body.classname } },
               },
               { projection: { _id: 1, "users.classes.$": 1 } }
             );
-            if (!classdoc) code.event(code.inst.CLASS_NOT_FOUND);
-            let student;
-            let found = classdoc.users.classes[0].students.some((stud) => {
-              if (stud.studentID == body.email) {
-                student = share.getStudentShareData(stud);
-                return true;
-              }
-            });
             clog(classdoc);
-            if (!found) {
+            if (!classdoc) code.event(code.inst.CLASS_NOT_FOUND);
+            let student = share.getStudentShareData(classdoc.users.classes[0].students.find((stud) =>stud.studentID == body.email));
+            if (!student) {
               const pseudodoc = await Institute.findOne(
                 {
                   uiid: body.uiid,
@@ -386,14 +401,13 @@ class Self {
               );
               clog(pseudodoc);
               if (!pseudodoc) return code.event(code.inst.CLASS_NOT_FOUND); //don't tell if user not exists, while sending reset email.
-              found = classdoc.users.classes[0].students.some((stud) => {
-                if (stud.studentID == body.email) {
-                  student = share.getPseudoStudentShareData(stud);
-                  return true;
-                }
-              });
-              clog(found);
-              if (!found) return code.event(code.OK);
+              student = share.getPseudoStudentShareData(pseudodoc.pseudousers.classes[0].students.find((stud) =>stud.studentID == body.email));
+              clog(student);
+              if (!student) return code.event(code.OK);
+              body["instID"] = pseudodoc._id;
+              body["cid"] = pseudodoc.pseudousers.classes[0]._id;
+              clog(body);
+              return await this.handlePassReset({ id: student.uid }, body);  
             }
             body["instID"] = classdoc._id;
             body["cid"] = classdoc.users.classes[0]._id;
@@ -409,12 +423,9 @@ class Self {
             instID: body.instID,
           });
           clog(linkdata);
-          //todo: send email then return.
-          return code.event(
-            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-          );
+          if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+          return await mailer.sendPasswordResetEmail(linkdata);
         }
-        break;
     }
   };
 }
@@ -482,9 +493,7 @@ class Schedule {
             }
           });}
         });
-        let done = days.some((day) => {
-          return day.period.includes(undefined);
-        });
+        let done = !days.find((day) => day.period.includes(undefined))?true:false;
         return !done;
       });
       return { schedule: days, timings: timings };
@@ -506,25 +515,14 @@ async function getStudentById(uiid, classname, id, pseudo = false) {
     }
   );
   if (!cdoc) return false;
-  let student;
-  let found = pseudo
-    ? cdoc.pseudousers.classes[0].students.some((stud) => {
-        if (String(stud._id) == String(id)) {
-          student = stud;
-          return true;
-        }
-      })
-    : cdoc.users.classes[0].students.some((stud) => {
-        if (String(stud._id) == String(id)) {
-          student = stud;
-          return true;
-        }
-      });
-  return found ? student : false;
+  let student = pseudo
+    ? cdoc.pseudousers.classes[0].students.find((stud) =>String(stud._id) == String(id))
+    : cdoc.users.classes[0].students.find((stud) => String(stud._id) == String(id));
+  return student ? student : false;
 }
 async function getStudentByEmail(uiid, classname, email, pseudo = false) {
-  let path = pseudo ? "pseudousers.classes" : "users.classes";
-  let getpath = pseudo ? "pseudousers.classes.$" : "users.classes.$";
+  const path = pseudo ? "pseudousers.classes" : "users.classes";
+  const getpath = pseudo ? "pseudousers.classes.$" : "users.classes.$";
   const cdoc = await Institute.findOne(
     { uiid: uiid, [path]: { $elemMatch: { classname: classname } } },
     {
@@ -534,19 +532,8 @@ async function getStudentByEmail(uiid, classname, email, pseudo = false) {
     }
   );
   if (!cdoc) return false;
-  let student;
-  let found = pseudo
-    ? cdoc.pseudousers.classes[0].students.some((stud) => {
-        if (stud.studentID == email) {
-          student = stud;
-          return true;
-        }
-      })
-    : cdoc.users.classes[0].students.some((stud) => {
-        if (stud.studentID == email) {
-          student = stud;
-          return true;
-        }
-      });
-  return found ? student : false;
+  const student = pseudo
+    ? cdoc.pseudousers.classes[0].students.find((stud) => stud.studentID == email)
+    : cdoc.users.classes[0].students.find((stud) => stud.studentID == email);
+  return student ? student : false;
 }

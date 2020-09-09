@@ -330,18 +330,14 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":
-        {
-          const linkdata = await reset.generateLink(client.admin, {
-            uid: user.id,
-          });
-          clog(linkdata);
-          //todo: send email then return.
-          return code.event(
-            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-          );
-        }
-        break;
+      case "send":{
+        const linkdata = await reset.generateLink(client.admin, {
+          uid: user.id,
+        });
+        clog(linkdata);
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendPasswordResetEmail(linkdata);
+      }
     }
   };
 }

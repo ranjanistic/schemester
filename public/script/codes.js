@@ -320,7 +320,8 @@ class Locations {
             this.addteacher = "addteacher";
             this.register = "registration";
             this.viewschedule = "viewschedule";
-            this.classes = "classrooms"
+            this.classes = "classrooms";
+            this.teachers = "teachers";
           }
         }
         this.target = new Target();
@@ -423,7 +424,7 @@ class AdminView{
       this.registration = 'admin/edit_detail.ejs';
       this.addTeacher = 'admin/teacher_filler.ejs';
       this.scheduleview = 'admin/schedule_view.ejs';
-      this.classrooms = 'admin/classrooms.ejs';
+      this.users = 'admin/users.ejs';
 
       this.target = new Locations().admin.target;
       this.section = new Locations().admin.section;
@@ -435,7 +436,8 @@ class AdminView{
           case this.target.dashboard:return this.dash;
           case this.target.register:return this.registration;
           case this.target.viewschedule:return this.scheduleview;
-          case this.target.classes:return this.classrooms;
+          case this.target.classes:return this.users;
+          case this.target.teachers:return this.users;
           default:return this.getViewByTarget();
       }
   }

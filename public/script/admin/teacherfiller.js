@@ -78,7 +78,7 @@ class TeacherFiller {
         });
       }
       this.logout.onclick =_=>{
-        finishSession(_=>{
+        finishSession(this.data.isAdmin?client.admin:client.teacher, (_) => {
           if(this.data.isAdmin){
             relocate(locate.admin.login,{target:locate.admin.target.addteacher})
           }else if(this.data.isTeacher){

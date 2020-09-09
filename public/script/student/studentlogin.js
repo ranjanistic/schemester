@@ -325,6 +325,8 @@ class Password{
   linkSender(){
     if(!stringIsValid(this.getEmail(),validType.email)){ this.previous.click(); return snackBar('Provide your valid email address');}
     snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
+      this.forgotPassword.onclick = (_) => {};
+      snackBar(`Sending link to ${this.getEmail()}`);
       postJsonData(post.student.manage,{
         external:true,
         type:"resetpassword",
@@ -334,13 +336,13 @@ class Password{
         email:this.getEmail()
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
           return snackBar('An error occurred','Report');
         }
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
         opacityOf(this.forgotPassword, 0.4);
-        this.forgotPassword.onclick = (_) => {};
         let time = 120;
         sessionStorage.setItem("linkin", time);
         const timer = setInterval(() => {
@@ -348,10 +350,10 @@ class Password{
           sessionStorage.setItem("linkin", time);
           this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
           if (Number(sessionStorage.getItem("linkin")) == 0) {
-            clearInterval(timer);
-            this.forgotPassword.innerHTML = "Forget password";
+            this.forgotPassword.innerHTML = "Forgot password";
             opacityOf(this.forgotPassword, 1);
             this.forgotPassword.onclick = (_) => {this.linkSender()};
+            clearInterval(timer);
           }
         }, 1000);
       })

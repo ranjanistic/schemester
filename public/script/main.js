@@ -1010,430 +1010,6 @@ const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType
   });
 };
 
-const registrationDialog = (isShowing = true, email = null, uiid = null) => {
-  loadingBox();
-  receiveSessionData(
-    (_) => {
-      var confirmLogout = new Dialog();
-      var data;
-      getUserLocally().then((adata) => {
-        data = adata;
-        confirmLogout.setDisplay(
-          "Already Logged In.",
-          `You are currently logged in as <b>${data.id}</b>.
-         You need to log out before creating a new account. Confirm log out?`
-        );
-        confirmLogout.createActions(
-          Array("Stay logged in", "Log out"),
-          Array(actionType.positive, actionType.negative)
-        );
-        confirmLogout.onButtonClick(
-          Array(
-            () => {
-              confirmLogout.hide();
-            },
-            () => {
-              confirmLogout.loader();
-              finishSession((_) => {
-                registrationDialog(true);
-              });
-            }
-          )
-        );
-        confirmLogout.show();
-      });
-    },
-    (_) => {
-      var regDial = new Dialog();
-      regDial.setDisplay(
-        "Create Admin Account",
-        "Create a new account with a working email address (individual or institution)."
-      );
-      regDial.createActions(
-        Array("Next", "Cancel"),
-        Array(actionType.positive, actionType.negative)
-      );
-      regDial.createInputs(
-        Array(
-          "Your name",
-          "Email Address",
-          "New Password",
-          "Unique Institution ID - UIID"
-        ),
-        Array(
-          "Shravan Kumar, or something?",
-          "youremail@example.domain",
-          "Strong password",
-          "A unique ID for your institution"
-        ),
-        Array("text", "email", "password", "text"),
-        Array(
-          validType.name,
-          validType.email,
-          validType.password,
-          validType.username
-        ),
-        Array(null, email, null, uiid),
-        Array("name", "email", "new-password", "username"),
-        Array(true, false, false, false),
-        Array("words", "off", "off", "off")
-      );
-
-      regDial.validate(0, (_) => {
-        regDial.getInput(1).focus();
-      });
-      regDial.validate(1, (_) => {
-        regDial.getInput(2).focus();
-      });
-      regDial.validate(2, (_) => {
-        regDial.getInput(3).focus();
-      });
-      regDial.validate(3);
-
-      regDial.onButtonClick(
-        Array(
-          () => {
-            if (
-              !(
-                stringIsValid(regDial.getInputValue(0), validType.name) &&
-                stringIsValid(regDial.getInputValue(1), validType.email) &&
-                stringIsValid(regDial.getInputValue(2), validType.password) &&
-                stringIsValid(regDial.getInputValue(3), validType.username)
-              )
-            ) {
-              regDial.validateNow(0, (_) => {
-                regDial.getInput(1).focus();
-              });
-              regDial.validateNow(1, (_) => {
-                regDial.getInput(2).focus();
-              });
-              regDial.validateNow(2, (_) => {
-                regDial.getInput(3).focus();
-              });
-              regDial.validateNow(3);
-            } else {
-              regDial.normalize();
-              regDial.loader();
-              createAccount(
-                regDial,
-                String(regDial.getInputValue(0)).trim(),
-                String(regDial.getInputValue(1)).trim(),
-                regDial.getInputValue(2),
-                String(regDial.getInputValue(3)).trim()
-              );
-            }
-          },
-          () => {
-            regDial.hide();
-          }
-        )
-      );
-      regDial.existence(isShowing);
-    }
-  );
-};
-
-const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
-  const teachdialog = new Dialog();
-  teachdialog.setDisplay(
-    "Registration",
-    "Provide your details, including the unique ID of your institute (UIID)."
-  );
-  teachdialog.createInputs(
-    Array(
-      "UIID",
-      "Your email address",
-      "Your name",
-      "Create password"
-    ),
-    Array(
-      "Your institution's unique ID",
-      "youremail@example.domain",
-      "Sunaina Kapoor, or something.",
-      "A strong password."
-    ),
-    Array("text", "email", "text", "password"),
-    Array(
-      validType.nonempty,
-      validType.email,
-      validType.name,
-      validType.password
-    ),
-    Array(uiid, email, null, null),
-    Array(null,"email","name","newpassword")
-  );
-
-  teachdialog.validate(0, (_) => {
-    teachdialog.getInput(1).focus();
-  });
-  teachdialog.validate(1, (_) => {
-    teachdialog.getInput(2).focus();
-  });
-  teachdialog.validate(2, (_) => {
-    teachdialog.getInput(3).focus();
-  });
-  teachdialog.validate(3);
-  
-  teachdialog.createActions(
-    Array("Register as Teacher", "Abort"),
-    Array(bodyType.positive, bodyType.neutral)
-  );
-  teachdialog.onButtonClick(
-    Array(
-      (_) => {
-        if (
-          !(
-            teachdialog.isValid(0) &&
-            teachdialog.isValid(1) &&
-            teachdialog.isValid(2) &&
-            teachdialog.isValid(3)
-          )
-        ) {
-          clog("invalid");
-          teachdialog.validateNow(0, (_) => {
-            teachdialog.getInput(1).focus();
-          });
-          teachdialog.validateNow(1, (_) => {
-            teachdialog.getInput(2).focus();
-          });
-          teachdialog.validateNow(2, (_) => {
-            teachdialog.getInput(3).focus();
-          });
-          teachdialog.validateNow(3);
-        } else {
-          teachdialog.loader();
-          clog("posting");
-          postData(post.teacher.auth,{
-            action:post.teacher.action.signup,
-            pseudo:true,
-            uiid: teachdialog.getInputValue(0),
-            email: teachdialog.getInputValue(1),
-            username: teachdialog.getInputValue(2),
-            password: teachdialog.getInputValue(3),
-          }).then((response) => {
-              clog(response);
-              switch (response.event) {
-                case code.auth.ACCOUNT_CREATED:{
-                  clog(response.user);
-                  saveDataLocally(response.user);
-                  relocate(locate.teacher.session,{
-                    u:response.user.uid,
-                    target:locate.teacher.target.dash
-                  });
-                }break;
-                case code.auth.USER_EXIST:{
-                  teachdialog.inputField[1].showError(
-                    "Account already exists."
-                  );
-                  snackBar("Try signing in?", "Login", true, (_) => {
-                    refer(locate.teacher.login, {
-                      email: teachdialog.getInputValue(1),
-                      uiid: teachdialog.getInputValue(0),
-                    });
-                  });
-                }break;
-                case code.inst.INSTITUTION_NOT_EXISTS:{
-                  teachdialog.inputField[0].showError(
-                    "No institution with this UIID found."
-                  );
-                }break;
-                case code.auth.EMAIL_INVALID:{
-                    teachdialog.inputField[1].showError("Invalid email address.");
-                }break;
-                case code.auth.PASSWORD_INVALID:{
-                    //todo: check invalidity and show suggesstions
-                    teachdialog.inputField[3].showError(
-                      "Weak password, try something better."
-                    );
-                }break;
-                case code.auth.NAME_INVALID:{
-                  teachdialog.inputField[3].showError(
-                    "This doesn't seem like a name."
-                  );
-                }
-                  break;
-                default: {
-                  clog("in default");
-                  teachdialog.hide();
-                  snackBar(`${response.event}:${response.msg}`, "Report");
-                }
-              }
-              teachdialog.loader(false);
-            })
-            .catch((e) => {
-              snackBar(e, "Report");
-              teachdialog.hide();
-            });
-        }
-      },
-      (_) => {
-        teachdialog.hide();
-      }
-    )
-  );
-  teachdialog.existence(visible);
-};
-
-const showStudentRegistration = (visible = true, email = null, uiid = null,classname = null) => {
-  const studialog = new Dialog();
-  studialog.setDisplay(
-    "Registration",
-    "Provide your details, including the unique ID of your institute (UIID)."
-  );
-  studialog.createInputs(
-    Array(
-      "UIID",
-      "Your class's name",
-      "Your email address",
-      "Your name",
-      "Create password"
-    ),
-    Array(
-      "Your institution's unique ID",
-      "Type in the format of your institute.",
-      "youremail@example.domain",
-      "Sunaina Kapoor, or something.",
-      "A strong password."
-    ),
-    Array("text", "text", "email", "text", "password"),
-    Array(
-      validType.nonempty,
-      validType.nonempty,
-      validType.email,
-      validType.name,
-      validType.password
-    ),
-    Array(uiid, classname, email, null, null)
-  );
-
-  studialog.validate(0, (_) => {
-    studialog.getInput(1).focus();
-  });
-  studialog.validate(1, (_) => {
-    studialog.getInput(2).focus();
-  });
-  studialog.validate(2, (_) => {
-    studialog.getInput(3).focus();
-  });
-  studialog.validate(3);
-  
-  studialog.createActions(
-    Array("Register as Student", "Abort"),
-    Array(bodyType.positive, bodyType.neutral)
-  );
-  studialog.onButtonClick(
-    Array(
-      (_) => {
-        if (!(studialog.allValid())) {
-          studialog.validateNow(0, (_) => {
-            studialog.getInput(1).focus();
-          });
-          studialog.validateNow(1, (_) => {
-            studialog.getInput(2).focus();
-          });
-          studialog.validateNow(2, (_) => {
-            studialog.getInput(3).focus();
-          });
-          studialog.validateNow(3, (_) => {
-            studialog.getInput(4).focus();
-          });
-          studialog.validateNow(4);
-        } else {
-          studialog.loader();
-          clog("posting");
-          postJsonData(post.student.auth, {
-            action:post.student.action.signup,
-            pseudo:true,
-            uiid: studialog.getInputValue(0),
-            classname: studialog.getInputValue(1),
-            email: studialog.getInputValue(2),
-            username: studialog.getInputValue(3),
-            password: studialog.getInputValue(4),
-          })
-            .then((response) => {
-              clog(response);
-              switch (response.event) {
-                case code.auth.ACCOUNT_CREATED:{
-                    clog(response.user);
-                    saveDataLocally(response.user);
-                    relocate(locate.student.session,{
-                      u:response.user.uid,
-                      target:locate.student.target.dash
-                    });
-                }break;
-                case code.auth.CLASS_NOT_EXIST:{
-                  studialog.inputField[1].showError(
-                    "No such classroom found."
-                  );
-                }break;
-                case code.auth.USER_EXIST:{
-                    studialog.inputField[2].showError(
-                      "Account already exists."
-                    );
-                    snackBar("Try signing in?", "Login", true, (_) => {
-                      refer(locate.student.login, {
-                        email: studialog.getInputValue(2),
-                        uiid: studialog.getInputValue(0),
-                      });
-                    });
-                  }
-                  break;
-                case code.inst.INSTITUTION_NOT_EXISTS:
-                  {
-                    studialog.inputField[0].showError(
-                      "No institution with this UIID found."
-                    );
-                  }
-                  break;
-                case code.schedule.BATCH_NOT_FOUND:
-                  {
-                    studialog.inputField[1].showError(
-                      "No such class. Don't use any special charecters."
-                    );
-                  }
-                  break;
-                case code.auth.EMAIL_INVALID:
-                  {
-                    studialog.inputField[2].showError("Invalid email address.");
-                  }
-                  break;
-                case code.auth.PASSWORD_INVALID:
-                  {
-                    //todo: check invalidity and show suggesstions
-                    studialog.inputField[4].showError(
-                      "Weak password, try something better."
-                    );
-                  }
-                  break;
-                case code.auth.NAME_INVALID:
-                  {
-                    studialog.inputField[3].showError(
-                      "This doesn't seem like a name."
-                    );
-                  }
-                  break;
-                default: {
-                  clog("in default");
-                  studialog.hide();
-                  snackBar(`${response.event}:${response.msg}`, "Report");
-                }
-              }
-              studialog.loader(false);
-            })
-            .catch((e) => {
-              snackBar(e, "Report");
-              studialog.hide();
-            });
-        }
-      },
-      (_) => {
-        studialog.hide();
-      }
-    )
-  );
-  studialog.existence(visible);
-};
-
 const saveDataLocally = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
@@ -1452,6 +1028,7 @@ const hasAnyKeyNull = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
       if (data[key] == null || data[key] == constant.nothing) {
+        clog(key);
         return true;
       }
     }
@@ -1459,108 +1036,40 @@ const hasAnyKeyNull = (data = {}) => {
   return false;
 };
 
-const getUserLocally = async () => {
+const getSessionUserData = async(clientType) => {
   let data = {
     [constant.sessionID]: localStorage.getItem(constant.sessionID),
     [constant.sessionUID]: localStorage.getItem(constant.sessionUID),
     username: localStorage.getItem("username"),
-    uiid: localStorage.getItem("uiid"),
+    uiid: localStorage.getItem("uiid")=='null'?false:localStorage.getItem("uiid"),
     createdAt: localStorage.getItem("createdAt"),
   };
-  clog("the data");
+  clog("nullcheck");
   clog(data);
-  if (!hasAnyKeyNull(data)) {
-    clog("here nonull key");
-    clog(data);
-    return data;
+  clog(hasAnyKeyNull(data));
+  if(hasAnyKeyNull(data)){
+    let postpath;
+    clog(clientType);
+    switch(clientType){
+      case client.admin:postpath = post.admin.self;break;
+      case client.teacher:postpath = post.teacher.self;break;
+      case client.student:postpath = post.student.self;break;
+    }
+    clog(postpath);
+    let result = await postJsonData(postpath, {
+      target:'receive',
+    });
+    clog(result);
+    if(result.event == code.auth.SESSION_INVALID){
+      return false;
+    }
+    saveDataLocally(result);
+    return await getSessionUserData(clientType);
   } else {
-    clog("locally esle post");
-    postData(post.admin.sessionValidate, {
-      getuser: true,
-    })
-      .then((response) => {
-        clog("the response");
-        clog(response);
-        if (response.event == code.auth.SESSION_INVALID) {
-          finishSession((_) => {
-            relocate(locate.root);
-          });
-        } else {
-          data = response;
-          saveDataLocally(data);
-        }
-        return data;
-      })
-      .finally((data) => {
-        return data;
-      });
+    return data;
   }
 };
 
-const createAccount = (dialog, adminname, email, password, uiid) => {
-  postData(post.admin.signup, {
-    username: adminname,
-    email: email,
-    password: password,
-    uiid: uiid,
-  })
-    .then((result) => {
-      dialog.loader(false);
-      switch (result.event) {
-        case code.auth.ACCOUNT_CREATED:
-          {
-            clog(result.user);
-            saveDataLocally(result.user);
-            relocate(locate.admin.session, {
-              target: locate.admin.target.register,
-            });
-          }
-          break;
-        case code.auth.USER_EXIST:
-          {
-            dialog.inputField[1].showError("Account already exists.");
-            snackBar("Try signing in?", "Login", true, (_) => {
-              refer(locate.admin.login, { email: email, uiid: uiid });
-            });
-          }
-          break;
-        case code.server.UIID_TAKEN:
-          {
-            dialog.inputField[3].showError(
-              "This UIID is not available. Try something different."
-            );
-          }
-          break;
-        case code.auth.EMAIL_INVALID:
-          {
-            dialog.inputField[1].showError("Invalid email address.");
-          }
-          break;
-        case code.auth.PASSWORD_INVALID:
-          {
-            //todo: check invalidity and show suggesstions
-            dialog.inputField[2].showError(
-              "Weak password, try something better."
-            );
-          }
-          break;
-        case code.auth.NAME_INVALID:
-          {
-            dialog.inputField[0].showError("This doesn't seem like a name.");
-          }
-          break;
-        default: {
-          clog("in default");
-          dialog.hide();
-          snackBar(`${result.event}:${result.msg}`, "Report");
-        }
-      }
-    })
-    .catch((error) => {
-      clog(error);
-      snackBar(error, "Report");
-    });
-};
 
 const feedBackBox = (
   isShowing = true,
@@ -1689,10 +1198,8 @@ let checkSessionValidation = (
   validAction = null,
   invalidAction = (_) => relocate(locate.homepage)
 ) => {
-  clog(validAction);
   switch (clientType) {
-    case client.admin:
-      {
+    case client.admin:{
         postData(post.admin.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
@@ -1816,63 +1323,27 @@ let checkSessionValidation = (
 
 
 
-const receiveSessionData = (
+const onSessionStatus = (
+  clientType,
   validAction = _=>{},
   invalidAction = _=>{}
 ) => {
-  postData(post.admin.sessionValidate, {
-    getuser: true,
-  })
-    .then((result) => {
-      console.log(result);
-      if (result.event == code.auth.SESSION_INVALID) {
-        invalidAction();
-      } else {
-        if (result == getUserLocally()) {
-          clog("match");
-        } else {
-          saveDataLocally(result);
-        }
-        validAction();
-      }
-    })
-    .catch((error) => {
-      clog("in catch sessionvalidation:" + error);
-      clog(navigator.onLine);
-      if (navigator.onLine) {
-        postData(post.admin.sessionValidate).then((response) => {
-          if (response.event == code.auth.SESSION_INVALID) {
-            invalidAction();
-          } else {
-            validAction();
-          }
-        });
-      } else {
-        let data = getUserLocally();
-        if (hasAnyKeyNull(data)) {
-          clog("haskeynull");
-          snackBar(
-            "Couldn't connect to the network",
-            "Try again",
-            false,
-            (_) => {
-              receiveSessionData(
-                (_) => {
-                  validAction();
-                },
-                (_) => {
-                  invalidAction();
-                }
-              );
-            }
-          );
-        } else {
-          clog("haskeynullnot");
-          validAction();
-        }
-        clog("locally:" + jstr(data));
-      }
-    });
+  clog("onsessi");
+  getSessionUserData(clientType).then(data=>{
+    clog("thedata");
+    clog(data);
+    if(!data){
+      invalidAction();
+    }else {
+      validAction(); 
+    }
+  }).catch(error=>{
+    if(!navigator.onLine){
+      snackBar("Couldn't connect to the network",null,false);
+    } else {
+      snackBar(error,'Report');
+    }
+  });
 };
 
 const validateTextField = (
@@ -1968,22 +1439,34 @@ const validateTextField = (
 };
 
 const finishSession = (
+  clientType,
   afterfinish = () => {
     relocate(locate.root);
   }
 ) => {
-  postData(post.admin.auth,{
+  let postpath;
+  switch(clientType){
+    case client.admin:postpath = post.admin.auth;break;
+    case client.teacher:postpath = post.teacher.auth;break;
+    case client.student:postpath = post.student.auth;break;
+  }
+  postData(postpath,{
     action:'logout',
   }).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       sessionStorage.clear();
-      afterfinish();
       clearLocalData();
-    } else {
-      snackBar("Failed to logout", "Try again", false, (_) => {
-        finishSession();
-      });
+      afterfinish();
+      return;
     }
+    snackBar("Failed to logout", "Try again", false, (_) => {
+      finishSession(clientType,_=>{afterfinish()});
+    });
+  }).catch(e=>{
+    clog(e);
+    snackBar("Failed to logout", "Try again", false, (_) => {
+      finishSession(clientType,_=>{afterfinish()});
+    });
   });
 };
 

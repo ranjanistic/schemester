@@ -184,20 +184,16 @@ class NoDataView {
     this.data = new ReceiveData();
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
-    this.addTeacher.addEventListener(click, (_) => {
-      relocate(locate.admin.session, { target: "addteacher" });
-    });
-    this.inviteTeacher.addEventListener(click, (_) => {
-      this.linkGenerator("teacher");
-    });
+    this.addTeacher.onclick= (_) => {
+      relocate(locate.admin.session, { target: locate.admin.target.addteacher });
+    };
+    this.inviteTeacher.onclick=(_) => {
+      linkGenerator(client.teacher);
+    };
     if (this.data.hasTeacherSchedule) {
       this.startSchedule = getElement("startScheduling");
       this.startSchedule.onclick = (_) => {
-        loadingBox(
-          true,
-          "Extracting classes",
-          "Finding unique classes among schedule of teachers..."
-        );
+        loadingBox(true,"Extracting classes","Finding unique classes among schedule of teachers...");
         postJsonData(post.admin.schedule, {
           target: client.teacher,
           action: "receive",
@@ -212,175 +208,6 @@ class NoDataView {
           });
       };
     }
-  }
-
-  linkGenerator = (target) => {
-    clog("link generator");
-    loadingBox(
-      true,
-      "Generating Link",
-      `A link is being created for your to share with ${target}s of ${localStorage.getItem(
-        "uiid"
-      )} institute`
-    );
-    postData(post.admin.manage, {
-      type: "invitation",
-      action: "create",
-      target: target,
-    })
-      .then((response) => {
-        clog("link generate response");
-        clog(response);
-        if (
-          response.event == code.invite.LINK_EXISTS ||
-          response.event == code.invite.LINK_CREATED
-        ) {
-          clog("link generated box");
-          let linkdialog = new Dialog();
-          linkdialog.setDisplay(
-            "Invitation Link",
-            `<center><a href="${response.link}">${response.link}</a>
-            <br/>This Link will automatically expire on <b>${getProperDate(
-              String(response.exp)
-            )}</b><br/><br/>
-            <div class="switch-view" id="teachereditschedulecontainer">
-              <span class="switch-text positive">Allow new teachers to add schedule?</span>
-              <label class="switch-container">
-                <input type="checkbox" id="teachereditschedule">
-                <span class="switch-positive" id="teachereditscheduleview"></span>
-              </label>
-          </div>
-          </center>`
-          );
-          this.allowteacherschedule = new Switch("teachereditschedule");
-          postJsonData(post.admin.manage, {
-            type: "preferences",
-            action: "get",
-            specific: "allowTeacherAddSchedule",
-          }).then((allowTeacherAddSchedule) => {
-            clog(allowTeacherAddSchedule);
-            this.allowteacherschedule.turn(allowTeacherAddSchedule);
-          });
-          this.allowteacherschedule.onTurnChange(
-            (_) => {
-              postJsonData(post.admin.manage, {
-                type: "preferences",
-                action: "set",
-                specific: "allowTeacherAddSchedule",
-                allow: true,
-              }).then((resp) => {
-                this.allowteacherschedule.turn(resp.event == code.OK);
-              });
-            },
-            (_) => {
-              postJsonData(post.admin.manage, {
-                type: "preferences",
-                action: "set",
-                specific: "allowTeacherAddSchedule",
-                allow: false,
-              }).then((resp) => {
-                this.allowteacherschedule.turn(resp.event != code.OK);
-              });
-            }
-          );
-          linkdialog.createActions(
-            Array("Disable Link", "Copy", "Done"),
-            Array(actionType.negative, actionType.positive, actionType.neutral)
-          );
-          linkdialog.onButtonClick(
-            Array(
-              (_) => {
-                this.revokeLink(target);
-              },
-              (_) => {
-                navigator.clipboard
-                  .writeText(response.link)
-                  .then((_) => {
-                    snackBar("Link copied to clipboard.");
-                  })
-                  .catch((err) => {
-                    snackBar(
-                      "Failed to copy, please do it manually.",
-                      null,
-                      false
-                    );
-                  });
-              },
-              (_) => {
-                linkdialog.hide();
-              }
-            )
-          );
-          linkdialog.show();
-        }
-        switch (response.event) {
-          case code.invite.LINK_EXISTS:
-            return snackBar("This link already exists and can be shared.");
-          case code.invite.LINK_CREATED:
-            return snackBar("Share this with teachers of your institution.");
-          case code.invite.LINK_CREATION_FAILED:
-            return snackBar(
-              `Unable to generate link:${response.msg}`,
-              "Report"
-            );
-          default:
-            return snackBar(
-              `Error:${response.event}:${response.msg}`,
-              "Report"
-            );
-        }
-      })
-      .catch((error) => {
-        clog(error);
-        snackBar(error);
-      });
-  };
-
-  revokeLink(target) {
-    clog("revoke link");
-    postData(post.admin.manage, {
-      type: "invitation",
-      action: "disable",
-      target: target,
-    })
-      .then((response) => {
-        if (response.event == code.invite.LINK_DISABLED) {
-          clog("link disabled");
-          snackBar("All links are inactive now.", null, false);
-          let nolinkdialog = new Dialog();
-          nolinkdialog.setDisplay(
-            "Generate Link",
-            `Create a link to share with ${target}s of ${localStorage.getItem(
-              "uiid"
-            )} institute, 
-          so that they can access and take part in schedule management.`
-          );
-          nolinkdialog.createActions(
-            Array("Create Link", "Abort"),
-            Array(actionType.positive, actionType.negative)
-          );
-          nolinkdialog.onButtonClick(
-            Array(
-              (_) => {
-                nolinkdialog.hide();
-                this.linkGenerator(target);
-              },
-              (_) => {
-                nolinkdialog.hide();
-              }
-            )
-          );
-          nolinkdialog.show();
-        } else {
-          clog("disabled:false");
-          snackBar(`Link couldn't be disabled.`, "Try again", false, (_) => {
-            this.revokeLink(target);
-          });
-        }
-      })
-      .catch((error) => {
-        snackBar(error);
-      });
   }
 }
 
@@ -668,26 +495,26 @@ class BaseView {
     this.logOut = getElement("logoutAdminButton");
     this.dateTime = getElement("todayDateTime");
     this.settings = getElement("settingsAdminButton");
-    this.logOut.addEventListener(click, (_) => {
+    this.logOut.onclick =  (_) => {
       showLoader();
-      let email = localStorage.getItem(constant.sessionID);
-      let uiid = localStorage.getItem("uiid");
-      finishSession((_) => {
+      const email = localStorage.getItem(constant.sessionID);
+      const uiid = localStorage.getItem("uiid");
+      finishSession(client.admin, (_) => {
         relocate(locate.admin.login, {
           email: email,
           uiid: uiid,
           target: locate.admin.target.dashboard,
         });
       });
-    });
-    this.settings.addEventListener(click, (_) => {
+    };
+    this.settings.onclick = (_) => {
       showLoader();
       refer(locate.admin.session, {
         u: localStorage.getItem(constant.sessionUID),
         target: locate.admin.target.settings,
         section: locate.admin.section.account,
       });
-    });
+    };
 
     this.teacherrequests = getElement("teacherrequests");
     if(this.data.requstees){

@@ -439,7 +439,8 @@ class Stage2 {
           clog(response);
           switch (response.event) {
             case code.auth.SESSION_INVALID: {
-              return relocate(locate.admin.login, {
+              return relocate(locate.admin.auth, {
+                action:'login',
                 target: locate.admin.target.register,
               });
             }
@@ -455,8 +456,7 @@ class Stage2 {
               );
               return;
             }
-            case code.inst.INSTITUTION_CREATED:
-              {
+            case code.inst.INSTITUTION_CREATED:{
                 loadingBox(false);
                 const finish = new Dialog();
                 finish.setDisplay(
@@ -524,9 +524,9 @@ class Stage2 {
 }
 
 window.onload = (_) => {
-  let app = new Register();
-  let s1 = new Stage1();
-  let s2 = new Stage2();
+  const app = new Register();
+  const s1 = new Stage1();
+  const s2 = new Stage2();
   show(s1.view);
   hide(s2.view);
 
@@ -549,19 +549,10 @@ window.onload = (_) => {
     sessionStorage.setItem("startTimeField", s2.startTimeField.getInput());
     sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
     sessionStorage.setItem("day1Field", s2.day1Field.getInput());
-    sessionStorage.setItem(
-      "eachDurationField",
-      s2.eachDurationField.getInput()
-    );
+    sessionStorage.setItem("eachDurationField",s2.eachDurationField.getInput());
     sessionStorage.setItem("totalDaysField", s2.totalDaysField.getInput());
-    sessionStorage.setItem(
-      "totalPeriodsField",
-      s2.totalPeriodsField.getInput()
-    );
-    sessionStorage.setItem(
-      "breakDurationField",
-      s2.breakDurationField.getInput()
-    );
+    sessionStorage.setItem("totalPeriodsField",s2.totalPeriodsField.getInput());
+    sessionStorage.setItem("breakDurationField",s2.breakDurationField.getInput());
     relocate(locate.homepage);
   };
 };

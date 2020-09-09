@@ -21,6 +21,7 @@
         <script src="/script/codes.js"></script>
         <script type="text/javascript" src="/script/main.js"></script>
         <script type="text/javascript" src="/script/admin/adminDash.js"></script>
+        <script src="/script/admin/admin.js"></script>
     </head>
     <%countObjects = function(object){
             let i = 0;
@@ -44,6 +45,9 @@
                         <%= adata.username %>
                         <%= adata.id %>
                     </section>
+                    <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})">
+                        <img src="/graphic/elements/classicon.svg" width="25" /> Teachers
+                    </div>
                     <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Classrooms
                     </div>
@@ -109,10 +113,13 @@
                     </div>
                     <div class="fmt-col fmt-half fmt-padding-small">
                         <div class="fmt-row container fmt-animate-right" id="actions">
-                            <span class="fmt-row sub-heading positive">Everyday</span>
+                            <span class="fmt-row sub-heading positive">Locate</span>
                             <div class="fmt-col fmt-padding-small">
                                 <div class="fmt-row">
-                                    <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.teachers)%> teachers" id="teacherSearch" style="width:100%"/>
+                                    <input type="text" class="dropdown-input fmt-padding-small" placeholder="Find anyone as per schedule" id="teacherSearch" style="width:100%"/>
+                                    <datalist>
+                                        sfd
+                                    </datalist>
                                 </div>
                                 <br/>
                                 <div class="fmt-row" id="teacherList"></div>

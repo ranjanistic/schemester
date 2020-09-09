@@ -29,7 +29,7 @@ class TeacherAbout {
 
     this.logout = getElement("logout");
     this.logout.onclick = (_) => {
-      finishSession((_) => {
+      finishSession(client.teacher,(_) => {
         relocateParent(locate.teacher.login, {
           email: localStorage.getItem("id"),
         });

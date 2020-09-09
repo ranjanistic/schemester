@@ -4,19 +4,20 @@ const nodemailer = require("nodemailer"),
     { code, client, clog } = require("../../public/script/codes");
 
 class Mailer {
-  constructor() {
-  }
+  constructor() {}
   async sendVerificationEmail(body) {
     let data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/verification.ejs"), { username: body.username,email:body.to,link:body.link });
     return await Promise.resolve(sendEmail(body.to,'Schemester Account Verification',data));
   }
+  async sendPasswordResetEmail(body){
+    let data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/passreset.ejs"), { username: body.username,email:body.to,link:body.link });
+    return await Promise.resolve(sendEmail(body.to,'Schemester Password Reset',data));
+  }
   sendInvitationEmail(invitee, data) {
     switch (invitee) {
-      case client.admin:{
-        }
-        break;
-      case client.teacher:{
-        }
+      case client.admin:{}
+      break;
+      case client.teacher:{}
         break;
       case client.student:{
         }
@@ -26,7 +27,7 @@ class Mailer {
 }
 
 async function sendEmail(to, subject, html) {
-  var transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: "smtp.office365.com",
     secureConnection: false,
     port: 587,
@@ -39,18 +40,18 @@ async function sendEmail(to, subject, html) {
     },
   });
 
-  var mailOptions = {
+  const mailOptions = {
     from: "schemester@outlook.in",
     to: to,
     subject: subject,
     html: html,
   };
 
-  let doc = transporter.sendMail(mailOptions).then(info=>{
-    console.log("Email sent: " + info.response);
+  const doc = transporter.sendMail(mailOptions).then(info=>{
+    clog("Email sent: " + info.response);
     return code.event(code.mail.MAIL_SENT);
   }).catch(error=>{
-    console.log(error);
+    clog(error);
     return code.event(code.mail.ERROR_MAIL_NOTSENT);
   });
   clog(doc);

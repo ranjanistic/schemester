@@ -55,14 +55,6 @@ class Verification {
           returnOriginal:false
         });
         clog(teacherdoc);
-        if(teacherdoc.value){
-          teacherdoc.value.users.teachers.some((teacher)=>{
-            if(String(teacher._id) == String(data.uid)){
-              to = teacher.teacherID;
-              username = teacher.username;
-            }
-          })
-        }
         if(!teacherdoc.value){
           const pseudodoc = await Institute.findOneAndUpdate({_id:ObjectId(data.instID),"pseudousers.teachers":{$elemMatch:{"_id":ObjectId(data.uid)}}},{
             $set:{
@@ -74,14 +66,15 @@ class Verification {
           clog("pseduo");
           clog(pseudodoc);
           if(!pseudodoc.value) return false;
-          pseudodoc.value.pseudousers.teachers.some((teacher)=>{
-            if(String(teacher._id) == String(data.uid)){
-              to = teacher.teacherID;
-              username = teacher.username;
-            }
-          })
+          const teacher = pseudodoc.value.pseudousers.teachers.find((teacher)=>String(teacher._id)==String(data.uid));
+          to = teacher.teacherID;
+          username = teacher.username;
+        } else{
+          const teacher = teacherdoc.value.users.teachers.find((teacher)=>String(teacher._id)==String(data.uid));
+          to = teacher.teacherID;
+          username = teacher.username;
         }
-        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}`;
+        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}&exp=${exp}`;
       }break;
       case client.student:{
         clog(data);
@@ -102,48 +95,30 @@ class Verification {
           const doc = await Institute.findOne({_id:ObjectId(data.instID),
             "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
           },{projection:{"users.classes.$":1}});
-          doc.users.classes[0].students.some((stud)=>{
-            if(String(stud._id)==String(data.uid)){
-              to = stud.studentID;
-              username = stud.username;
-              return true;
-            }
-          })
-        }
-        if(!studdoc.result.nModified){
-          const classdoc = await Institute.findOne({
-            _id:ObjectId(data.instID),
-            "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
-          },{
-            projection:{
-              "users.classes.$":1
-            }
-          });
+          const student = doc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
+          to = student.studentID;
+          username = student.username;
+        } else {
           const pseudodoc = await Institute.updateOne({
             _id:ObjectId(data.instID),
-            "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}
           },{
             $set:{
-              "pseudousers.classes.$.students.$[outer1].vlinkexp":exp
+              "pseudousers.classes.$[outer].students.$[outer1].vlinkexp":exp
             }
           },{
-            arrayFilters:[{"outer1._id":ObjectId(data.uid)}]
+            arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
           });
           clog("pseudo");
           clog(pseudodoc.result);
           if(!pseudodoc.result.nModified) return false;
           const doc = await Institute.findOne({_id:ObjectId(data.instID),
-            "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}
+            "pseudousers.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
           },{projection:{"pseudousers.classes.$":1}});
-          doc.pseudousers.classes[0].students.some((stud)=>{
-            if(String(stud._id)==String(data.uid)){
-              to = stud.studentID;
-              username = stud.username;
-              return true;
-            }
-          })
+          const student = doc.pseudousers.classes[0].students.some((stud)=>String(stud._id)==String(data.uid));
+          to = student.studentID;
+          username = student.username;
         }
-        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&u=${data.uid}`;
+        link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&u=${data.uid}&exp=${exp}`;
       }break;
     }
     return {
@@ -174,10 +149,10 @@ class Verification {
     switch (clientType) {
       case client.admin:
         {
-          if (!query.u) return false;
+          if (!(query.u&&query.exp)) return false;
           try {
             const admin = await Admin.findOne({ _id: ObjectId(query.u) });
-            if (!admin || !admin.vlinkexp) return false;
+            if (!admin || !admin.vlinkexp|| Number(admin.vlinkexp)!=Number(query.exp)) return false;
             if (!this.isValidTime(admin.vlinkexp))
               return { user: { expired: true } };
             const doc = await Admin.findOneAndUpdate(
@@ -186,7 +161,7 @@ class Verification {
               { returnOriginal: false }
             );
             clog(doc);
-            if (!doc) return false;
+            if (!doc.value) return false;
             return { user: share.getAdminShareData(doc.value) };
           } catch (e) {
             clog(e);
@@ -195,7 +170,7 @@ class Verification {
         }
         break;
       case client.teacher:{
-          if (!(query.u && query.in)) return false;
+          if (!(query.u && query.in && query.exp)) return false;
           try {
             clog("in teacher vtry");
             let teacherdoc = await Institute.findOne(
@@ -225,7 +200,7 @@ class Verification {
               );
               if(!pseudodoc) return false;
               let teacher = pseudodoc.pseudousers.teachers[0];
-              if(!teacher || !teacher.vlinkexp) return false;
+              if(!teacher || !teacher.vlinkexp || Number(teacher.vlinkexp)!=Number(query.exp)) return false;
               if (!this.isValidTime(teacher.vlinkexp)) return { user: { expired: true } };
               clog("valid tiime");
               const doc = await Institute.findOneAndUpdate(
@@ -242,7 +217,7 @@ class Verification {
                   },
                 }
               );
-              if (!doc) return false;
+              if (!doc.value) return false;
               teacherdoc = await Institute.findOne({
                   _id: ObjectId(query.in),
                   "pseudousers.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
@@ -251,11 +226,10 @@ class Verification {
                   "pseudousers.teachers.$": 1,
                 },
               });
-              if (!teacherdoc) return false;
-              return { user: share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0]) };
+              return teacherdoc?{ user: share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0]) }:false;
             };
             const teacher = teacherdoc.users.teachers[0];
-            if (!teacher || !teacher.vlinkexp) return false;
+            if (!teacher || !teacher.vlinkexp || Number(teacher.vlinkexp)!=Number(query.exp)) return false;
             clog("found vlinkexp");
             if (!this.isValidTime(teacher.vlinkexp))
               return { user: { expired: true } };
@@ -274,7 +248,7 @@ class Verification {
                 },
               }
             );
-            if (!doc) return false;
+            if (!doc.value) return false;
             teacherdoc = await Institute.findOne(
               {
                 _id: ObjectId(query.in),
@@ -286,8 +260,7 @@ class Verification {
                 },
               }
             );
-            if (!teacherdoc) return false;
-            return { user: share.getTeacherShareData(teacherdoc.users.teachers[0]) };
+            return teacherdoc?{ user: share.getTeacherShareData(teacherdoc.users.teachers[0])}:false;
           } catch (e) {
             clog(e);
             return false;
@@ -295,7 +268,7 @@ class Verification {
         }
         break;
       case client.student: {
-        if (!(query.u && query.in && query.c)) return false;
+        if (!(query.u && query.in && query.c && query.exp)) return false;
         clog("link honest");
         try {
           let classdoc = await Institute.findOne({
@@ -309,14 +282,8 @@ class Verification {
           });
           clog(classdoc);
           if (!classdoc) return false;
-          let student;
-          let found = classdoc.users.classes[0].students.some((stud) => {
-            if(String(stud._id) == String(query.u)){
-              student = stud;
-              return true;
-            }
-          });
-          if (!found){  //pseudo
+          let student = classdoc.users.classes[0].students.find((stud) =>String(stud._id) == String(query.u));
+          if (!student){  //pseudo
             let pclassdoc = await Institute.findOne({
                 _id: ObjectId(query.in),
                 "pseudousers.classes": { $elemMatch: { classname: classdoc.users.classes[0].classname } },
@@ -328,14 +295,8 @@ class Verification {
             });
             clog(pclassdoc);
             if (!pclassdoc) return false;
-            let found = pclassdoc.pseudousers.classes[0].students.some((stud) => {
-              if(String(stud._id) == String(query.u)){
-                student = stud;
-                return true;
-              }
-            });
-            clog(found)
-            if(!found) return false;
+            student = pclassdoc.pseudousers.classes[0].students.find((stud) =>String(stud._id) == String(query.u));
+            if(!student || !student.vlinkexp || Number(student.vlinkexp)!=Number(query.exp)) return false;
             if (!this.isValidTime(student.vlinkexp)) return { user: { expired: true } };
             clog("valid time");
             const doc = await Institute.updateOne({
@@ -363,18 +324,11 @@ class Verification {
             });
             clog(pclassdoc);
             if (!pclassdoc) return false;
-            found = pclassdoc.pseudousers.classes[0].students.some((stud) => {
-              if(String(stud._id) == String(query.u)){
-                student = share.getPseudoStudentShareData(stud);
-                return true;
-              }
-            });
-            clog(found);
-            return found ? { user: student } : false;
+            student = pclassdoc.pseudousers.classes[0].students.find((stud) =>String(stud._id) == String(query.u));
+            return student ? { user: share.getPseudoStudentShareData(student) } : false;
           }
-          if (!this.isValidTime(student.vlinkexp))
-            return { user: { expired: true } };
-
+          if(!student || !student.vlinkexp || Number(student.vlinkexp)!=Number(query.exp)) return false;
+          if (!this.isValidTime(student.vlinkexp)) return { user: { expired: true } };
           const doc = await Institute.updateOne({
               _id: ObjectId(query.in),
               "users.classes": { $elemMatch: { _id: ObjectId(query.c) } },
@@ -400,13 +354,8 @@ class Verification {
             }
           );
           if (!classdoc) return false;
-          found = classdoc.users.classes[0].students.some((stud) => {
-            if(String(stud._id) == String(query.u)){
-              student = share.getStudentShareData(stud);
-              return true;
-            }
-          });
-          return found ? { user: student } : false;
+          student = classdoc.users.classes[0].students.some((stud) => String(stud._id) == String(query.u));
+          return student ? { user: share.getStudentShareData(student) } : false;
         } catch {
           clog("catched");
           return false;

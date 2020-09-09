@@ -14,17 +14,20 @@ class PasswordReset {
   generateLink = async(target, data = {}, validity = this.defaultValidity)=>{
     const exp = time.getTheMomentMinute(validity);
     let link = String();
+    let to;
+    let username;
     switch (target) {
       case client.admin:{
-          const admin = await Admin.findOneAndUpdate(
-            { _id: ObjectId(data.uid) },
-            {
-              $set: {
-                rlinkexp: exp,
-              },
+          const admin = await Admin.findOneAndUpdate({ _id: ObjectId(data.uid) },{
+            $set: {
+              rlinkexp: exp,
             }
-          );
-          if(!admin) return false;
+          },{
+            returnOriginal:false
+          });
+          if(!admin.value) return false;
+          username = admin.value.username;
+          to = admin.value.email;
           link = `${this.domain}/${target}/external?type=${this.type}&u=${data.uid}&exp=${exp}`;
       }
         break;
@@ -33,19 +36,27 @@ class PasswordReset {
             $set:{
               "users.teachers.$.rlinkexp":exp
             }
+          },{
+            returnOriginal:false
           });
           clog(teacherdoc);
           if(!teacherdoc.value){
             const pseudodoc = await Institute.findOneAndUpdate({_id:ObjectId(data.instID),"pseudousers.teachers":{$elemMatch:{"_id":ObjectId(data.uid)}}},{
-              $set:{
-                "pseudousers.teachers.$.rlinkexp":exp
-              }
-            });
+              $set:{"pseudousers.teachers.$.rlinkexp":exp}
+              },{returnOriginal:false}
+            );
             clog("pseduo");
             clog(pseudodoc);
             if(!pseudodoc.value) return false;
+            const teacher = pseudodoc.value.pseudousers.teachers.find((teacher)=>String(teacher._id)==String(data.uid));
+            to = teacher.teacherID;
+            username = teacher.username;
+          } else {
+            const teacher = teacherdoc.value.users.teachers.find((teacher)=>String(teacher._id)==String(data.uid));
+            to = teacher.teacherID;
+            username = teacher.username;
           }
-          link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}`;
+          link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}&exp=${exp}`;
         }break;
         case client.student:{
           clog("hersdfe");
@@ -58,7 +69,14 @@ class PasswordReset {
             arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
           });
           clog(studdoc.result);
-          if(!studdoc.result.nModified){
+          if(studdoc.result.nModified){
+            const doc = await Institute.findOne({_id:ObjectId(data.instID),
+              "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+            },{projection:{"users.classes.$":1}});
+            const student = doc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
+            to = student.studentID;
+            username = student.username;
+          }else{
             const pseudodoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
               $set:{
                 "pseudousers.classes.$[outer].students.$[outer1].rlinkexp":exp
@@ -68,15 +86,21 @@ class PasswordReset {
             });
             clog(pseudodoc.result);
             if(!pseudodoc.result.nModified) return false;
+            const doc = await Institute.findOne({_id:ObjectId(data.instID),
+              "pseudousers.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+            },{projection:{"pseudousers.classes.$":1}});
+            const student = doc.pseudousers.classes[0].students.some((stud)=>String(stud._id)==String(data.uid));
+            to = student.studentID;
+            username = student.username;
           }
-          link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&u=${data.uid}`;
-          clog(link);
+          link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&u=${data.uid}&exp=${exp}`;
         }break;
     }
-    clog(link);
     return {
       exp: exp,
       link: link,
+      to:to,
+      username:username
     };
   }
   /**
@@ -104,22 +128,19 @@ class PasswordReset {
         }
       }break;
       case client.teacher: {
-        if (!(query.u && query.in)) return false;
+        if (!(query.u && query.in && query.exp)) return false;
         try {
-            let teacherdoc = await Institute.findOne(
-              {
+            let teacherdoc = await Institute.findOne({
                 "_id": ObjectId(query.in),
                 "users.teachers": { $elemMatch: { "_id": ObjectId(query.u) } },
-              },
-              {
+            },{
                 projection: {
                   "_id":0,
                   "uiid":1,
                   "users.teachers.$": 1,
                 },
-              }
-              );
-              if (!teacherdoc){
+            });
+            if (!teacherdoc){
               const pseudodoc = await Institute.findOne({
                   _id: ObjectId(query.in),
                   "pseudousers.teachers": { $elemMatch: { _id: ObjectId(query.u) } },
@@ -132,12 +153,12 @@ class PasswordReset {
               });
               if(!pseudodoc) return false;
               let teacher = pseudodoc.pseudousers.teachers[0];
-              if(!teacher || !teacher.rlinkexp) return false;
+              if(!teacher || !teacher.rlinkexp || Number(teacher.rlinkexp)!=Number(query.exp)) return false;
               if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
               return { user: share.getPseudoTeacherShareData(teacher) , uiid:pseudodoc.uiid};
             }
             const teacher = teacherdoc.users.teachers[0];
-            if (!teacher || !teacher.rlinkexp) return false;
+            if (!teacher || !teacher.rlinkexp || Number(teacher.rlinkexp)!=Number(query.exp)) return false;
             if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
             return {user:share.getTeacherShareData(teacher),uiid:teacherdoc.uiid};
         } catch (e) {
@@ -146,7 +167,7 @@ class PasswordReset {
         }
       } break;
       case client.student:{
-        if (!(query.u && query.in && query.c)) return false;
+        if (!(query.u && query.in && query.c && query.exp)) return false;
         try {
             let studclass = await Institute.findOne({
               '_id':ObjectId(query.in),
@@ -159,14 +180,8 @@ class PasswordReset {
               }
             });
             if(!studclass) return false;
-            let student;
-            let found = studclass.users.classes[0].students.some((stud)=>{
-              if(String(stud._id) == String(query.u)){
-                student = stud
-                return true
-              }
-            });
-            if(!found){
+            let student = studclass.users.classes[0].students.find((stud)=>String(stud._id) == String(query.u));
+            if(!student){
               studclass = await Institute.findOne({
                 '_id':ObjectId(query.in),
                 'pseudousers.classes':{$elemMatch:{'classname':studclass.users.classes[0].classname}}
@@ -177,19 +192,16 @@ class PasswordReset {
                   'users.classes.$':1
                 }
               });
-              found = studclass.users.classes[0].students.some((stud)=>{
-                if(String(stud._id) == String(query.u)){
-                  student = stud
-                  return true
-                }
-              });
-              if(!found) return false;
+              student = studclass.users.classes[0].students.find((stud)=>String(stud._id) == String(query.u));
+              if(!student || !student.rlinkexp||Number(student.rlinkexp)!=Number(query.exp)) return false;
               if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};
               return {user:share.getPseudoStudentShareData(student),uiid:studclass.uiid,classname:studclass.users.classes[0].classname};
             }
+            if(!student || !student.rlinkexp||Number(student.rlinkexp)!=Number(query.exp)) return false;
             if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};
             return {user:share.getStudentShareData(student),uiid:studclass.uiid,classname:studclass.users.classes[0].classname};
-        }catch{
+        }catch(e){
+          clog(e);
           return false;
         }
       }

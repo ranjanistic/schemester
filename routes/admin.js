@@ -131,8 +131,16 @@ admin.get(get.session, (req, res) => {
               });
             }
             case view.admin.target.classes:{
-              clog(inst.users.classes);
               return res.render(view.admin.getViewByTarget(data.target),{
+                client:client.student,
+                users:inst.users.classes,
+                defaults:inst.default,
+              });
+            }
+            case view.admin.target.teachers:{
+              return res.render(view.admin.getViewByTarget(data.target),{
+                client:client.teacher,
+                users:inst.users.teachers,
                 classes:inst.users.classes,
                 defaults:inst.default,
               });
@@ -317,11 +325,15 @@ admin.post("/self", async (req, res) => {
     return authFail(e);
   })
   .then(async (response) => {
+    clog(response);
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
     clog(body);
+    clog("here");
     const admin = await Admin.findOne({'_id':ObjectId(response.user.id)});
     if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+    clog(share.getAdminShareData(admin));
     switch (body.target) {
+      case "receive": return res.json({result:share.getAdminShareData(admin)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body,admin)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});

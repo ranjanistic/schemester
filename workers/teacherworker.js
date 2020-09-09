@@ -1,6 +1,7 @@
 const Institute = require("../config/db").getInstitute(),
   {code,client,view,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
+  session = require("./common/session"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
   bcrypt = require("bcryptjs"),
@@ -56,6 +57,36 @@ class Self {
         this.rlinkexp = "rlinkexp";
       }
       //send feedback emails
+
+      async getAccount(user){
+        let teacherdoc = await Institute.findOne({
+          uiid:user.uiid,
+          "users.teachers":{
+            $elemMatch:{"_id":ObjectId(user.id)}
+          }
+        },{
+          projection:{
+            "_id":0,
+            "users.teachers.$":1
+          }
+        });
+        if(!teacherdoc){
+          teacherdoc = await Institute.findOne({
+            uiid:user.uiid,
+            "pseudousers.teachers":{
+              $elemMatch:{"_id":ObjectId(user.id)}
+            }
+          },{
+            projection:{
+              "_id":0,
+              "pseudousers.teachers.$":1
+            }
+          });
+          clog(share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid));
+          return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+        }
+        return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+      }
 
       async createAccount(uiid, newteacher) {
         const doc = await Institute.findOneAndUpdate(
@@ -190,7 +221,6 @@ class Self {
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const path = pseudo?pseudopath:this.path;
-
         const deluser = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -352,8 +382,7 @@ class Self {
       case "send":{
           if (!user) {
             //user not logged in
-            const userdoc = await Institute.findOne(
-              {
+            const userdoc = await Institute.findOne({
                 uiid: body.uiid,
                 "users.teachers": { $elemMatch: { teacherID: body.email } },
               },
@@ -371,8 +400,7 @@ class Self {
               );
               if (!pseudodoc) return { result: code.event(code.OK) }; //don't tell if user not exists, while sending reset email.
               body["instID"] = pseudodoc._id;
-              return await this.handlePassReset(
-                {
+              return await this.handlePassReset({
                   id: share.getPseudoTeacherShareData(
                     pseudodoc.pseudousers.teachers[0]
                   ).uid,
@@ -391,12 +419,10 @@ class Self {
             uid: user.id,
             instID: body.instID,
           });
-          clog(linkdata);
-          //todo: send email then return.
-          return code.event(
-            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-          );
-        }
+          if(!linkdata) return 
+          clog(linkdata); code.event(code.mail.ERROR_MAIL_NOTSENT);
+          return await mailer.sendPasswordResetEmail(linkdata);
+      }
         break;
     }
   };
@@ -785,6 +811,7 @@ class PseudoUsers {
 module.exports = new TeacherWorker();
 
 async function getTeacherById(uiid,id,pseudo = false){
+  clog(pseudo);
   let path = pseudo?"pseudousers.teachers":"users.teachers";
   let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
   const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"_id":ObjectId(id)}}},{
@@ -792,7 +819,7 @@ async function getTeacherById(uiid,id,pseudo = false){
       [getpath]:1
     }
   });
-  return tdoc?tdoc.users.teachers[0]:false;
+  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
 }
 async function getTeacherByEmail(uiid,email,pseudo = false){
   let path = pseudo?"pseudousers.teachers":"users.teachers";
@@ -802,5 +829,5 @@ async function getTeacherByEmail(uiid,email,pseudo = false){
       [getpath]:1
     }
   });
-  return tdoc?tdoc.users.teachers[0]:false;
+  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
 }

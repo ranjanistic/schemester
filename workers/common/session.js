@@ -395,17 +395,18 @@ class Session {
       return code.event(code.auth.AUTH_REQ_FAILED)
     })
     .then(async response=>{
+      clog(response);
       if(!this.valid(response)) return code.event(code.auth.SESSION_INVALID);
       switch (secret) {
         case this.adminsessionsecret: {
-          const admin = await Admin.findOne({ _id:response.user.id});
+          const admin = await Admin.findOne({ _id:ObjectId(response.user.id)});
           return admin?share.getAdminShareData(admin):code.event(code.auth.USER_NOT_EXIST);
         }
         case this.teachersessionsecret: {
           let teacherdoc = await Institute.findOne({
             uiid:response.user.uiid,
             "users.teachers":{
-              $elemMatch:{"_id":response.user.id}
+              $elemMatch:{"_id":ObjectId(response.user.id)}
             }
           },{
             projection:{
@@ -417,7 +418,7 @@ class Session {
             teacherdoc = await Institute.findOne({
               uiid:response.user.uiid,
               "pseudousers.teachers":{
-                $elemMatch:{"_id":response.user.id}
+                $elemMatch:{"_id":ObjectId(response.user.id)}
               }
             },{
               projection:{
@@ -425,9 +426,10 @@ class Session {
                 "pseudousers.teachers.$":1
               }
             });
-            return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0]):code.event(code.auth.USER_NOT_EXIST);
+            clog(share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],response.user.uiid));
+            return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],response.user.uiid):code.event(code.auth.USER_NOT_EXIST);
           }
-          return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0]):code.event(code.auth.USER_NOT_EXIST);
+          return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0],response.user.uiid):code.event(code.auth.USER_NOT_EXIST);
         }
         case this.studentsessionsecret:{
           let studentdoc = await Institute.findOne({
@@ -442,14 +444,10 @@ class Session {
             }
           });
           let student;
-          let found = false;
           if(studentdoc){
-            found = studentdoc.users.classes[0].students.some((stud)=>{
-              student = share.getStudentShareData(stud);
-              return String(stud._id)==String(response.user.id)
-            })
+            student = share.getStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(response.user.id)),response.user.uiid);
           }
-          if(!found){
+          if(!student){
             studentdoc = await Institute.findOne({
               uiid:response.user.uiid,
               "pseudousers.classes":{
@@ -462,10 +460,7 @@ class Session {
               }
             });
             if(studentdoc){
-              found = studentdoc.users.classes[0].students.some((stud)=>{
-                student = share.getPseudoStudentShareData(stud);
-                return String(stud._id)==String(response.user.id)
-              });
+              student = share.getPseudoStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(response.user.id)),response.user.uiid);
             }
             return studentdoc?student:code.event(code.auth.USER_NOT_EXIST); //if no class then obiviously no student.
           }
