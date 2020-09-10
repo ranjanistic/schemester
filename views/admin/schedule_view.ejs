@@ -3,7 +3,7 @@
     <head>
         <title>
             <% if (group.teacher) { %>
-                <%= teacher.username %>
+                <%= teacher.username?teacher.username:'Pending' %>
             <% } else if(group.Class) { %>
                 <%= Class.classname %>
             <% } %>
@@ -33,6 +33,9 @@
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back">
             <span id="greeting">Schedule · 
                 <% if (group.teacher) { %>
+                    <% if (group.pending) { %>
+                        Pending 
+                    <% } %>
                     Teacher
                 <% } else if(group.Class) { %>
                     Class
@@ -65,7 +68,7 @@
                 <div class="fmt-col fmt-half">
                     <div class="fmt-row group-heading positive fmt-left">
                     <% if (group.teacher) { %>
-                        <%= teacher.username %>
+                        <%= teacher.username?teacher.username:'Pending' %>
                     <% } else if(group.Class) { %>
                         <div  id="classnameview">
                             <span id="classname"><%= Class.classname %></span><button class="neutral-button caption" style="margin:0px 12px" id="editclassname"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -95,9 +98,11 @@
                 <div class="fmt-col fmt-half " id="actions">
                     <div class="fmt-row fmt-right">
                     <% if (group.teacher) { %>
-                        <button class="positive-button" id="makeincharge">Make incharge</button>
                         <button class="warning-button" id="deleteschedule">Delete schedule</button>
-                        <button class="negative-button" id="removeteacher">Remove Teacher</button>
+                        <% if (!group.pending) { %>
+                            <button class="positive-button" id="makeincharge">Make incharge</button>
+                            <button class="negative-button" id="removeteacher">Remove Teacher</button>
+                        <% } %>
                     <% } else if(group.Class) { %>
                         <button class="warning-button" id="deleteschedule">Change Incharge</button>
                         <button class="negative-button" id="removeclass">Remove Class</button>
@@ -112,9 +117,15 @@
                 </div>
             <% } else { %>
                 <div class="fmt-center">
-                    <div class="questrial">No schedule present for <%= teacher.username %>.</div>
-                    <br/>
-                    <button class="positive-button" id="addschedule">Add schedule</button>
+                    <% if(group.Class && group.pending) {%>
+                        <div class="questrial">Scheduling hasn't started yet.</div>
+                        <br/>
+                        <button class="positive-button" onclick="relocate(locate.root,{client:client.admin})">Dashboard</button>
+                    <% } else { %>
+                        <div class="questrial">No schedule present for <%= teacher.username %>.</div>
+                        <br/>
+                        <button class="positive-button" id="addschedule">Add schedule</button>
+                    <% } %>
                 </div>
             <% } %>
         </div>
@@ -127,18 +138,22 @@
             <button id="snackButton"></button>
         </div>
         <span hidden>
+            <span id="pending"><%= group.pending %></span>
             <% if (group.Class) { %>
                 <span id="client">student</span>
                 <span id="classname"><%= Class.classname %></span>
-                <span id="classUID"><% Class._id %></span>
-                <span id="inchargeID"><% null %></span>
-            <% } %>
-            <% if(group.teacher) {%>
+                <% if (!group.pending) { %>
+                    <span id="classUID"><% Class._id %></span>
+                    <span id="inchargeID"><% Class.inchargeID %></span>
+                <% } %>
+            <% } else if(group.teacher) {%>
                 <span id="client">teacher</span>
-                <span id="teacherUID"><%= teacher._id %></span>
                 <span id="teacherID"><%= teacher.teacherID %></span>
-                <span id="teachername"><%= teacher.username %></span>
-                <span id="teacherverified"><%= teacher.verified %></span>
+                <% if (!group.pending) { %>
+                    <span id="teacherUID"><%= teacher._id %></span>
+                    <span id="teachername"><%= teacher.username %></span>
+                    <span id="teacherverified"><%= teacher.verified %></span>
+                <% } %>
             <% } %>
             <span id="schedule"><%= schedule %></span>
             <span id="startTime"><%= inst.default.timings.startTime %></span>

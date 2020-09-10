@@ -1817,18 +1817,6 @@ const getRequestBody = (data = {}, isPost = false) => {
   return body;
 };
 
-const sendEmail = async (to, subject, body, cc, bcc) => {
-  postJsonData('/admin/mail',{
-    to:to,
-    subject:subject,
-    html:body
-  }).then(res=>{
-    clog(res);
-  }).catch(e=>{
-    clog(e)
-  })
-  // return code.mail.MAIL_SENT;
-};
 
 const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constant.nothing,bcc=constant.nothing) => refer(`mailto:${to}`,{
   subject: subject,

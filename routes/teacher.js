@@ -368,6 +368,14 @@ teacher.get("/external*", async (req, res) => {
         return res.render(view.notfound);
       });
     }break;
+    case invite.personalType:{
+      invite.handlePersonalInvitation(query,client.teacher).then(resp=>{
+        if(!resp) return res.render(view.notfound);
+        return res.render(view.userinvitaion,{invite:resp.invite});
+      }).catch(e=>{
+        return res.render(view.notfound);
+      });
+    }break;
     case verify.type: { //verification link
       verify.handleVerification(query,client.teacher).then((resp) => {
           if (!resp) return res.render(view.notfound);

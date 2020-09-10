@@ -6,22 +6,21 @@ const nodemailer = require("nodemailer"),
 class Mailer {
   constructor() {}
   async sendVerificationEmail(body) {
-    let data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/verification.ejs"), { username: body.username,email:body.to,link:body.link });
+    const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/verification.ejs"), { username: body.username,email:body.to,link:body.link });
     return await Promise.resolve(sendEmail(body.to,'Schemester Account Verification',data));
   }
   async sendPasswordResetEmail(body){
-    let data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/passreset.ejs"), { username: body.username,email:body.to,link:body.link });
+    const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/passreset.ejs"), { username: body.username,email:body.to,link:body.link });
     return await Promise.resolve(sendEmail(body.to,'Schemester Password Reset',data));
   }
-  sendInvitationEmail(invitee, data) {
+  async sendInvitationEmail(invitee, body) {
     switch (invitee) {
-      case client.admin:{}
-      break;
-      case client.teacher:{}
-        break;
-      case client.student:{
-        }
-        break;
+      case client.teacher:{
+        const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/invitation.ejs"), { institute:body.institute, invitor:body.invitor, email:body.to,link:body.link,usertype:invitee });
+        return await Promise.resolve(sendEmail(body.to,`${body.institute} Teacher Invitation | Schemester`,data));
+      }break;
+      case client.student:{}break;
+      case client.admin:{}break;
     }
   }
 }

@@ -340,7 +340,7 @@ class ConfirmClasses {
           }).then((resp) => {
             if (resp.event == code.OK) {
               if(resp.teachers.length>0){
-                snackBar(`${resp.teachers[0].teacherID}?`,'Yes',true,_=>{
+                snackBar(`${resp.teachers[0].username} (${resp.teachers[0].teacherID})?`,'Yes',true,_=>{
                   this.inchargeeditables[c].textInput.setInput(resp.teachers[0].teacherID);
                 });
               }
@@ -522,14 +522,16 @@ class BaseView {
       loadingBox('Getting requests');
       postJsonData(post.admin.receivedata,{
         target:"pseudousers",
-        specific:"teachers",
+        specific:client.teacher,
       }).then(teachers=>{
         if(teachers.event != code.NO){
           const requestDialog  = new Dialog();
-          requestDialog.createActions(Array('Hide'),Array(bodyType.neutral));
-          requestDialog.onButtonClick(Array(_=>{requestDialog.hide()}));
+          requestDialog.createActions(['Hide'],[bodyType.neutral]);
+          requestDialog.onButtonClick([_=>{requestDialog.hide()}]);
+          requestDialog.transparent();
           let bodytext = `<center>${this.data.requstees} people have requested to join ${this.data.instname} as teacher.</center><br/>`;
           teachers.forEach((teacher,t)=>{
+            clog(teacher);
             if(teacher.verified){
               bodytext += `
               <div class="fmt-row tab-view" id="request${t}">
@@ -547,15 +549,15 @@ class BaseView {
           })
           bodytext += `</div>`;
           requestDialog.setDisplay('Teacher requests',bodytext);
-          const rejects = Array();
-          const accepts = Array();
+          const rejects = [];
+          const accepts = [];
           teachers.forEach((teacher,t)=>{
             rejects.push(getElement(`reject${t}`));
             accepts.push(getElement(`accept${t}`));
             rejects[t].onclick=_=>{
               requestDialog.loader();
               postJsonData(post.admin.pseudousers,{
-                target:"teachers",
+                target:client.teacher,
                 action:"reject",
                 teacherID:teacher.id
               }).then(resp=>{
@@ -569,7 +571,7 @@ class BaseView {
             accepts[t].onclick=_=>{
               requestDialog.loader();
               postJsonData(post.admin.pseudousers,{
-                target:"teachers",
+                target:client.teacher,
                 action:"accept",
                 teacherID:teacher.id
               }).then(resp=>{

@@ -81,12 +81,12 @@ class Active {
       posturl = post.student.auth;
       postaction = post.student.action.signup;
     }
-    postData(posturl, {
+    postJsonData(posturl, {
       action: postaction,
       username: this.nameField.getInput().trim(),
       email: this.emailField.getInput().trim(),
       password: this.passField.getInput().trim(),
-      pseudo:true,  //ensuring no spam via invitation link.
+      pseudo:!data.personal,
       uiid: data.uiid,
       classname:data.classname
     }).then((response) => {
@@ -126,39 +126,14 @@ class Active {
   }
 
   rejectInvitation(data) {
+    const previoushtml = getElement("inputview").innerHTML;
     getElement("inputview").innerHTML = `<div class="fmt-center fmt-padding">
             <button class="positive-button" id="continueinvite">See details</button>
         </div>`;
     getElement("continueinvite").onclick = (_) => {
       getElement(
         "inputview"
-      ).innerHTML = `<div class="caption fmt-center questrial positive">Provide your details before accepting.</div>
-      <fieldset class="text-field fmt-row" id="usernamefield">
-            <legend class="field-caption" >Your name</legend>
-            <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at ${data.instName}" type="text" id="username" name="username">
-            <span class="fmt-right error-caption" id="usernameerror"></span>
-        </fieldset>
-        <fieldset class="text-field fmt-row" id="usermailfield">
-            <legend class="field-caption" >Your email address</legend>
-            <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail">
-            <span class="fmt-right error-caption" id="usermailerror"></span>
-        </fieldset>
-        <fieldset class="text-field fmt-row" id="userpassfield">
-            <legend class="field-caption" >Create your password</legend>
-            <input class="text-input" required autocomplete="new-password" placeholder="A strong password" type="password" id="userpass" name="userpassword">
-            <span class="fmt-right error-caption" id="userpasserror"></span>
-        </fieldset>
-        <fieldset class="text-field fmt-row" id="userpassconffield">
-            <legend class="field-caption" >Type again to confirm</legend>
-            <input class="text-input" required autocomplete="new-password" placeholder="Confirm password" type="password" id="userconfpass" name="confuserpassword">
-            <span class="fmt-right error-caption" id="userconfpasserror"></span>
-        </fieldset>
-        <br/>
-        <div class="fmt-row">
-            <button class="active-button fmt-right" id="acceptInvitation">Accept & Join</button>
-            <button class="negative-button fmt-right" id="rejectInvitation">Reject Invitation</button>
-            <img class="fmt-spin-fast fmt-right" width="50" style="display:none" src="/graphic/blueLoader.svg" id="inviteloader"/>
-        </div>`;
+      ).innerHTML = previoushtml;
       new Active(data);
     };
   }
@@ -186,6 +161,7 @@ class Expired {
 
 class ReceivedInfo {
   constructor() {
+    this.personal = getElement("personal").innerHTML?true:false;
     this.invitor = getElement("invitorName").innerHTML;
     this.invitorID = getElement("invitorID").innerHTML;
     this.uiid = getElement("uiid").innerHTML;
@@ -195,7 +171,9 @@ class ReceivedInfo {
       if(this.target == 'student') this.classname = getElement("classname").innerHTML;
       this.expiresAt = getElement("expireat").innerHTML;
       getElement("expireat").innerHTML = getProperDate(String(this.expiresAt));
-    }catch{}
+    }catch{
+
+    }
   }
 }
 

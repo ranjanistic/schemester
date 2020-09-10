@@ -95,10 +95,10 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
               regDial.loader();
               createAccount(
                 regDial,
-                String(regDial.getInputValue(0)).trim(),
-                String(regDial.getInputValue(1)).trim(),
+                regDial.getInputValue(0).trim(),
+                regDial.getInputValue(1).trim(),
                 regDial.getInputValue(2),
-                String(regDial.getInputValue(3)).trim()
+                regDial.getInputValue(3).trim()
               );
             }
           },
@@ -114,7 +114,7 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
 
 const createAccount = (dialog, adminname, email, password, uiid) => {
   postJsonData(post.admin.auth, {
-    target: "signup",
+    action: "signup",
     username: adminname,
     email: email,
     password: password,

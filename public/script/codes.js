@@ -535,6 +535,7 @@ class Posts {
         this.sessionValidate = `${root}/session/validate`;
         this.manage = `${root}/manage`;
         this.users = `${root}/users`;
+        this.email = `${root}/mail`;
         this.register = `${root}/session/registerinstitution`;
         this.schedule = `${root}/schedule`;
         this.receivedata = `${root}/receivedata`;

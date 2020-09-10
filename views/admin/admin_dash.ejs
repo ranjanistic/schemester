@@ -41,16 +41,19 @@
             <span  class="menu fmt-right">
                 <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
                 <div class="menubox" id="settingsmenu">
-                    <section class="fmt-padding active fmt-center">
+                    <section class="fmt-padding group-text fmt-center">
                         <%= adata.username %>
                         <%= adata.id %>
                     </section>
                     <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Teachers
                     </div>
+                    <% if (inst.users.classes.length) { %>
                     <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Classrooms
                     </div>
+                    <% } %> 
+                    <div class="" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" />Notifications</div>
                     <div class="" id="settingsAdminButton">
                         <img src="/graphic/elements/settings.svg" width="25" /> Settings
                     </div>
@@ -59,8 +62,7 @@
                     </div>
                 </div>
             </span >
-            <span class="menu fmt-right">
-                <button class="neutral-button-togg" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" /></button>
+            <span class="fmt-right menu" style="margin:0">
                 <div class="menubox" id="notifications">
                     <section class="fmt-padding positive fmt-center">
                         Notifications
@@ -92,7 +94,6 @@
                 </div>
             </span>
             <button class="neutral-button fmt-right" id="refresh"><img src="/graphic/elements/reloadicon.svg" width="25"/></button>
-            <input type="text" class="fmt-right searcher" name="search"/>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">

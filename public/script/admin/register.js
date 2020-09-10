@@ -362,7 +362,7 @@ class Stage2 {
       }
       confirm.setDisplay(
         "Confirmation",
-        `<center >Proceed to create schedule for <b>${sessionStorage.getItem(
+        `<center >Proceed to create <b>${sessionStorage.getItem(
           "instname"
         )}</b>?</center>
         <br/>

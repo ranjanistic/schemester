@@ -144,7 +144,144 @@ class Classes{
 
 class Teachers{
     constructor(){
-        this.totalteachers = Number(getElement('totalusers').innerHTML);;
+        this.totalteachers = Number(getElement('totalusers').innerHTML);
+        this.pendinginvites = getElement("invites");
+        this.pendingrequests = getElement("requests");
+
+        this.pendinginvites.onclick=_=>{
+          const pending = new Dialog();
+          pending.createActions(['Hide'],[actionType.neutral]);
+          pending.onButtonClick([_=>{pending.hide()}]);
+          pending.transparent();
+          pending.loader();
+          postJsonData(post.admin.schedule,{
+            target:client.teacher,
+            action:'receive',
+            specific:'nonusers',
+          }).then(resp=>{
+            pending.loader(false);
+            if(resp.event != code.NO){
+                if(!resp.nonusers.length){
+                    return pending.setDisplay('Pending invites',`<center>No user has been requested to join.</center>`);
+                }
+              let viewbody = '<div>';
+              resp.nonusers.forEach((nonuser,p)=>{
+                viewbody+=`
+                <div class="fmt-row tab-view">
+                  <div class="fmt-col fmt-half">
+                    <span class="positive">${nonuser}</span>
+                  </div>
+                  <div class="fmt-col fmt-half">
+                  <button class="neutral-button fmt-right caption" id="viewschedule${p}">View</button>
+                    <button class="positive-button fmt-right caption" id="request${p}">Request again</button>
+                  </div>
+                </div>
+                `
+              });
+              pending.setDisplay('Pending invites',`<center>The following users have still not accepted your invitation.</center><br/>${viewbody}</div>`);
+              const requests = [],views = [];
+              resp.nonusers.forEach((nonuser,p)=>{
+                views.push(getElement(`viewschedule${p}`));
+                requests.push(getElement(`request${p}`));
+                views[p].onclick=_=>{
+                  referTab(locate.admin.session,{
+                    target:locate.admin.target.viewschedule,
+                    type:client.teacher,
+                    teacherID:nonuser
+                  });
+                }
+                requests[p].onclick=_=>{
+                  opacityOf(requests[p],0.5);
+                  postJsonData(post.admin.email,{
+                    to:nonuser,
+                    target:client.teacher,
+                    type:'personalinvite'
+                  }).then(res=>{
+                    clog(res);
+                    if(res.event == code.mail.MAIL_SENT){
+                      requests[p].innerHTML = 'Mail sent';
+                      return snackBar(`Request email has been sent to ${nonuser}.`,'OK');
+                    }
+                    throw res;
+                  }).catch(e=>{
+                    clog(e);
+                    snackBar('Failed to send. Try again later.',null,false);
+                  })
+                }
+              });
+            }
+          });
+          pending.show();
+        }
+
+        this.pendingrequests.onclick=_=>{
+            loadingBox('Getting requests');
+      postJsonData(post.admin.receivedata,{
+        target:"pseudousers",
+        specific:client.teacher,
+      }).then(teachers=>{
+        if(teachers.event != code.NO){
+          const requestDialog  = new Dialog();
+          requestDialog.createActions(['Hide'],[bodyType.neutral]);
+          requestDialog.onButtonClick([_=>{requestDialog.hide()}]);
+          requestDialog.transparent();
+          let bodytext = `<center>${teachers.length} people have requested to join as teacher.</center><br/>`;
+          teachers.forEach((teacher,t)=>{
+            clog(teacher);
+            if(teacher.verified){
+              bodytext += `
+              <div class="fmt-row tab-view" id="request${t}">
+                <div class="fmt-col fmt-half group-text">
+                  <div class="positive">${teacher.username}</div>
+                  <div class="questrial">${teacher.id}</div>
+                </div>
+                <div class="fmt-col fmt-half caption">
+                  <button class="fmt-right negative-button" id="reject${t}">Reject</button>
+                  <button class="fmt-right positive-button" id="accept${t}">Accept</button>
+                </div>
+              </div>
+              `;
+            }
+          })
+          bodytext += `</div>`;
+          requestDialog.setDisplay('Teacher requests',bodytext);
+          const rejects = [];
+          const accepts = [];
+          teachers.forEach((teacher,t)=>{
+            rejects.push(getElement(`reject${t}`));
+            accepts.push(getElement(`accept${t}`));
+            rejects[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:client.teacher,
+                action:"reject",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Rejected ${teacher.username} (${teacher.id})`,null,false);
+                }
+                requestDialog.loader(false);
+              });
+            };
+            accepts[t].onclick=_=>{
+              requestDialog.loader();
+              postJsonData(post.admin.pseudousers,{
+                target:client.teacher,
+                action:"accept",
+                teacherID:teacher.id
+              }).then(resp=>{
+                if(resp.event == code.OK){
+                  hide(getElement(`request${t}`));
+                  snackBar(`Accepted ${teacher.username} (${teacher.id})`);
+                }
+                requestDialog.loader(false);
+              });
+            };
+          });
+        };
+      });
+        }
         this.invite = getElement("inviteteacher");
         this.invite.onclick=_=>{
             linkGenerator(client.teacher);

@@ -1,7 +1,7 @@
 const {code,client,clog}= require("../../public/script/codes"),
   time = require("./timer"),
   share = require("./sharedata"),
-  { ObjectId } = require("mongodb"),
+  { ObjectId, Double } = require("mongodb"),
   Institute = require("../../config/db").getInstitute(),
   Admin = require("../../config/db").getAdmin();
 
@@ -116,8 +116,7 @@ class PasswordReset {
         if (!query.u && !query.exp) return false;
         try {
           const admin = await Admin.findOne({ '_id': ObjectId(query.u) });
-          if (!admin || !admin.rlinkexp) return false;
-          if(Number(query.exp) != Number(admin.rlinkexp)) return false;
+          if (!admin || !admin.rlinkexp || String(admin.rlinkexp)!=String(query.exp)) return false;
           if (!this.isValidTime(admin.rlinkexp)){
             const doc = await Admin.findOneAndUpdate({'_id':ObjectId(query.u)},{$unset:{rlinkexp:null}});
             return { user: { expired: true } };
@@ -153,12 +152,12 @@ class PasswordReset {
               });
               if(!pseudodoc) return false;
               let teacher = pseudodoc.pseudousers.teachers[0];
-              if(!teacher || !teacher.rlinkexp || Number(teacher.rlinkexp)!=Number(query.exp)) return false;
+              if(!teacher || !teacher.rlinkexp || String(teacher.rlinkexp)!=String(query.exp)) return false;
               if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
               return { user: share.getPseudoTeacherShareData(teacher) , uiid:pseudodoc.uiid};
             }
             const teacher = teacherdoc.users.teachers[0];
-            if (!teacher || !teacher.rlinkexp || Number(teacher.rlinkexp)!=Number(query.exp)) return false;
+            if (!teacher || !teacher.rlinkexp || String(teacher.rlinkexp)!=String(query.exp)) return false;
             if (!this.isValidTime(teacher.rlinkexp)) return { user: { expired: true } };
             return {user:share.getTeacherShareData(teacher),uiid:teacherdoc.uiid};
         } catch (e) {
@@ -193,11 +192,11 @@ class PasswordReset {
                 }
               });
               student = studclass.users.classes[0].students.find((stud)=>String(stud._id) == String(query.u));
-              if(!student || !student.rlinkexp||Number(student.rlinkexp)!=Number(query.exp)) return false;
+              if(!student || !student.rlinkexp||Number(student.rlinkexp)!=String(query.exp)) return false;
               if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};
               return {user:share.getPseudoStudentShareData(student),uiid:studclass.uiid,classname:studclass.users.classes[0].classname};
             }
-            if(!student || !student.rlinkexp||Number(student.rlinkexp)!=Number(query.exp)) return false;
+            if(!student || !student.rlinkexp||Number(student.rlinkexp)!=String(query.exp)) return false;
             if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};
             return {user:share.getStudentShareData(student),uiid:studclass.uiid,classname:studclass.users.classes[0].classname};
         }catch(e){

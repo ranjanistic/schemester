@@ -237,6 +237,7 @@ class Session {
   signup = async (request, response, secret,pseudo = false) => {
     switch (secret) {
       case this.adminsessionsecret:{
+        clog("sessionsignup");
           const { username, email, password, uiid } = request.body;
           const admin = await Admin.findOne({ email:email });
           if (admin) return code.event(code.auth.USER_EXIST);
@@ -279,30 +280,21 @@ class Session {
           clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
-          let result;
-          if(pseudo){
-            result = await teacherworker.self.account.createPseudoAccount(uiid,{
-              _id: new ObjectId(),
-              username: username,
-              teacherID: email,
-              password: epassword,
-              createdAt: Date.now(),
-              verified:false,
-              vacations:[],
-              prefs:{}
-            });
-          } else {
-            result = await teacherworker.self.account.createAccount(uiid,{
-              _id: new ObjectId(),
-              username: username,
-              teacherID: email,
-              password: epassword,
-              createdAt: Date.now(),
-              verified:false,
-              vacations:[],
-              prefs:{}
-            });
+          const newteacher = {
+            _id: new ObjectId(),
+            username: username,
+            teacherID: email,
+            password: epassword,
+            createdAt: Date.now(),
+            verified:false,
+            vacations:[],
+            prefs:{
+              showemailtostudent:false
+            }
           }
+          let result = pseudo
+            ?await teacherworker.self.account.createPseudoAccount(uiid,newteacher)
+            :await teacherworker.self.account.createAccount(uiid,newteacher);
           if(result.event == code.NO) return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           clog("created?");
           const teacherdoc = pseudo

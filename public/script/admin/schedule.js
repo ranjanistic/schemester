@@ -33,11 +33,11 @@ class Schedule{
             this.editmodeview.innerHTML=`Edit mode: Clash Check`;
             snackBar('Changes will not be applied if conflicted');
         })
-        // try{
+        try{
             window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
-        // }catch{
-        //     new NoSchedule();
-        // }
+        }catch{
+            new NoSchedule();
+        }
     }
 }
 
@@ -57,14 +57,19 @@ class NoSchedule{
 class Teacher{
     constructor(){
         this.data = new ReceiveData();
-
         this.deleteschedule = getElement("deleteschedule");
-        this.removeteacher = getElement("removeteacher");
-        this.removeteacher.onclick=_=>{
-            // const confdial = new Dialog();
-            confirmDialog('Remove teacher?',`Are you sure you want to remove ${this.data.teachername} (${this.data.teacherID}) from your institution?
-             Their schedule will not be affected, but they won't be
-            able to login to your institution. They'll have to join again if needed.`,null,_=>{},true,_=>{new Dialog().hide();snackBar(`${this.data.teachername}'s account is safe.`)});
+        if(!this.data.pending){
+            this.makeincharge = getElement("makeincharge");
+            this.makeincharge.onclick=_=>{
+                //todo
+            }
+            this.removeteacher = getElement("removeteacher");
+            this.removeteacher.onclick=_=>{
+                // const confdial = new Dialog();
+                confirmDialog('Remove teacher?',`Are you sure you want to remove ${this.data.teachername} (${this.data.teacherID}) from your institution?
+                    Their schedule will not be affected, but they won't be
+                able to login to your institution. They'll have to join again if needed.`,null,_=>{},true,_=>{new Dialog().hide();snackBar(`${this.data.teachername}'s account is safe.`)});
+            }
         }
         this.deleteschedule.onclick=_=>{
             const confirmdialog = new Dialog();
@@ -740,19 +745,20 @@ function setNone(element){
 class ReceiveData{
     constructor(){
         this.client = getElement("client").innerHTML;
+        this.pending = getElement("pending").innerHTML=='true'?true:false;
         if(this.isTeacher()){
             this.teacherID = getElement("teacherID").innerHTML == 'null'?null:getElement("teacherID").innerHTML;
-            if(this.teacherID){
+            if(!this.pending){
                 this.teacherUID = getElement("teacherUID").innerHTML;
                 this.teachername = getElement("teachername").innerHTML;
                 this.verified = getElement("teacherverified").innerHTML == 'true'?true:false;
-            } else {
-                this.teacherID = getElement("scheduleteacherID").innerHTML
             }
         } else {
             this.classname = getElement("classname").innerHTML == 'null'?null:getElement("classname").innerHTML;
-            if(this.classname){
+            if(!this.pending){
                 this.classUID = getElement("classUID").innerHTML;
+                this.classinchargeID = getElement("classinchargeID").innerHTML;
+                this.classinchargename = getElement("classinchargename").innerHTML;
             }
         }
         this.start = getNumericTime(getElement("startTime").innerHTML);

@@ -38,14 +38,17 @@
             <div class="container" id="userinvitationactive">
                 <div class="heading fmt-row fmt-center">Invitation</div>
                 <div class="questrial fmt-row">
-                    <b><%= invite.invitorName %></b> has invited you to join
+                    <b><%= invite.invitorName %></b> has invited you <% if(invite.personal){ %>(<%= invite.email %>)<% } %>
+                     to join
                     <% if(invite.classname) {%>
                         <b>classroom <span id="classname"><%= invite.classname %></span></b> of
                     <%}%>
                      <b><%= invite.instname %></b> as a <%= invite.target %>, on <a target="_blank" rel="noreferrer" href="/">Schemester</a>.
                     Fill up your details, create a password, and join, if you are a
                     <%= invite.target %> at <%= invite.instname %> (code name: <b><%= invite.uiid %></b>).<br/><br/>
-                    <center><span class="error-caption">This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</span></center>
+                    <% if(invite.expireAt) {%>
+                        <center><span class="error-caption">This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</span></center>
+                    <%}%>
                 </div>
                 <br/>
                 <div id="inputview">
@@ -57,7 +60,7 @@
                     </fieldset>
                     <fieldset class="text-field fmt-row" id="usermailfield">
                         <legend class="field-caption" >Your email address</legend>
-                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail">
+                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail" <% if(invite.personal){%>value="<%= invite.email %>" disabled<%}%>>
                         <span class="fmt-right error-caption" id="usermailerror"></span>
                     </fieldset>
                     <fieldset class="text-field fmt-row" id="userpassfield">
@@ -96,6 +99,7 @@
         <% } %>
         </div>
         <span hidden>
+            <span id="personal"><%= invite.personal %></span>
             <span id="invitorName"><%= invite.invitorName %></span>
             <span id="invitorID"><%= invite.invitorID %></span>
             <span id="uiid"><%= invite.uiid %></span>

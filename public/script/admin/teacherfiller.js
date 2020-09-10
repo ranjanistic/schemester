@@ -1,333 +1,466 @@
 
 class TeacherFiller {
-    constructor() {
-      this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
-    this.darkmode = new Switch('darkmode');
+  constructor() {
+    sessionStorage.clear();
+    this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
+    this.darkmode = new Switch("darkmode");
     this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
-      sessionStorage.clear();
-      this.data = new ReceiveData();
-      this.view = getElement("workbox");
-      this.back = getElement("back");
-      if(this.data.isAdmin){
-        this.back.onclick =_=>{relocate(locate.admin.session)}
-      }else {
-        this.back.onclick =_=>{relocate(locate.root)}
+    this.darkmode.onTurnChange(
+      (_) => {
+        theme.setDark();
+      },
+      (_) => {
+        theme.setLight();
       }
+    );
+    this.data = new ReceiveData();
+    this.view = getElement("workbox");
+    this.back = getElement("back");
+    if (this.data.isAdmin) {
+      this.back.onclick = (_) => {
+        relocate(locate.admin.session);
+      };
+    } else {
+      this.back.onclick = (_) => {
+        relocate(locate.root);
+      };
+    }
 
-      this.logout = getElement("logout");
-      this.next = getElement("nextSchedule");
-      this.nloader = getElement("nextLoader");
-      this.next2 = getElement("next2");
-      this.nloader2 = getElement("nextloader2");
-      this.load(false);
-      
-      if(this.data.isAdmin){
-        this.teacherIDField = new TextInput("teacherEmailField","teacherEmail","teacherEmailError",validType.email);
-        this.teacherID = getElement("teacherEmailView");
-      }
+    this.logout = getElement("logout");
+    this.next = getElement("nextSchedule");
+    this.previous = getElement("prevSchedule");
+    hide(this.previous);
+    this.nloader = getElement("nextLoader");
+    this.next2 = getElement("next2");
+    this.nloader2 = getElement("nextloader2");
+    this.load(false);
 
-      this.dayCaption = getElement("teacherDayCaption");
-      this.dayView = getElement("teacherDay");
-      this.dayCount = 0;
-      this.setDayCaption();
-      this.setDayView();
+    if (this.data.isAdmin) {
+      this.teacherIDField = new TextInput(
+        "teacherEmailField",
+        "teacherEmail",
+        "teacherEmailError",
+        validType.email
+      );
+      this.teacherID = getElement("teacherEmailView");
+    }
 
-      this.teacherClass = Array(this.data.totalPeriods);
-      this.teacherSubject = Array(this.data.totalPeriods);
-      this.teacherfreeswitch = Array(this.data.totalperiods);
-      for(let i = 0;i<this.data.totalPeriods;i++){
-        this.teacherClass[i] = new TextInput(
-          `teacherClassField${i}`,
-          `teacherClass${i}`,
-          `teacherClassError${i}`,
-          validType.nonempty
-        );
-        this.teacherSubject[i] = new TextInput(
-          `teacherSubjectField${i}`,
-          `teacherSubject${i}`,
-          `teacherSubjectError${i}`,
-          validType.nonempty
-        );
-        this.teacherfreeswitch[i] = new Switch(`teacherperiodfreecheck${i}`,`teacherperiodfreelabel${i}`);
-        this.teacherfreeswitch[i].onTurnChange(_=>{
+    this.dayCaption = getElement("teacherDayCaption");
+    this.dayView = getElement("teacherDay");
+    this.dayCount = 0;
+    this.setDayCaption();
+    this.setDayView();
+
+    this.teacherClass = Array(this.data.totalPeriods);
+    this.teacherSubject = Array(this.data.totalPeriods);
+    this.teacherfreeswitch = Array(this.data.totalperiods);
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      this.teacherClass[i] = new TextInput(
+        `teacherClassField${i}`,
+        `teacherClass${i}`,
+        `teacherClassError${i}`,
+        validType.nonempty
+      );
+      this.teacherSubject[i] = new TextInput(
+        `teacherSubjectField${i}`,
+        `teacherSubject${i}`,
+        `teacherSubjectError${i}`,
+        validType.nonempty
+      );
+      this.teacherfreeswitch[i] = new Switch(
+        `teacherperiodfreecheck${i}`,
+        `teacherperiodfreelabel${i}`
+      );
+      this.teacherfreeswitch[i].onTurnChange(
+        (_) => {
           this.teacherClass[i].setInput(code.free);
           this.teacherClass[i].disableInput();
           this.teacherSubject[i].setInput(code.free);
           this.teacherSubject[i].disableInput();
           this.teacherClass[i].normalize();
           this.teacherSubject[i].normalize();
-        },_=>{
+        },
+        (_) => {
           this.teacherClass[i].clearInput();
           this.teacherClass[i].enableInput();
           this.teacherSubject[i].clearInput();
-          this.teacherSubject[i].enableInput();          
-        });
-      }
+          this.teacherSubject[i].enableInput();
+        }
+      );
+    }
 
-      for(let i = 0;i<this.data.totalPeriods;i++){
-        this.teacherClass[i].validate(_=>{
-          if(i+1!=this.data.totalPeriods){
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      this.teacherClass[i].validate((_) => {
+        if (i + 1 != this.data.totalPeriods) {
+          this.teacherSubject[i].inputFocus();
+        }
+      });
+      this.teacherSubject[i].validate((_) => {
+        if (i + 1 != this.data.totalPeriods) {
+          this.teacherClass[i + 1].inputFocus();
+        }
+      });
+    }
+    this.logout.onclick = (_) => {
+      finishSession(this.data.isAdmin ? client.admin : client.teacher, (_) => {
+        if (this.data.isAdmin) {
+          relocate(locate.admin.login, {
+            target: locate.admin.target.addteacher,
+          });
+        } else if (this.data.isTeacher) {
+          relocate(locate.teacher.login, {
+            target: locate.teacher.target.addschedule,
+          });
+        }
+      });
+    };
+    this.next.onclick = (_) => {
+      new Snackbar().hide();
+      if (this.dayCount == 0) {
+        if (this.data.isAdmin) {
+          if (!this.teacherIDField.isValid()) {
+            return this.teacherIDField.validateNow();
+          }
+          sessionStorage.setItem("teacherID", this.teacherIDField.getInput());
+        } else if (this.data.isTeacher) {
+          sessionStorage.setItem("teacherID", this.data.teacherEmail);
+        }
+      }
+      this.validateDaySchedule((_) => {
+        if (this.data.isAdmin) {
+          this.uploadScheduleByAdmin(this.data.totalDays[this.dayCount]);
+        } else if (this.data.isTeacher) {
+          this.uploadScheduleByTeacher(this.data.totalDays[this.dayCount]);
+        } else {
+          return location.reload();
+        }
+      });
+    };
+    this.next2.onclick = this.next.onclick;
+    this.previous.onclick = (_) => {
+      this.dayCount--;
+      this.setDayCaption();
+      this.setDayView();
+      this.fillFromSession();
+      if (this.data.isAdmin) {
+        this.teacherIDField.setInput(sessionStorage.getItem("teacherID"));
+        this.teacherIDField.disableInput();
+        this.teacherIDField.activate();
+      }
+      if (this.dayCount == 0) {
+        hide(this.previous);
+      }
+    };
+  }
+
+  fillFromSession() {
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      this.teacherClass[i].setInput(
+        sessionStorage.getItem(
+          `${this.data.totalDays[this.dayCount]}classname${i}`
+        )
+      );
+      this.teacherSubject[i].setInput(
+        sessionStorage.getItem(
+          `${this.data.totalDays[this.dayCount]}subject${i}`
+        )
+      );
+      this.teacherClass[i].enableInput();
+      this.teacherSubject[i].enableInput();
+      this.teacherClass[i].normalize();
+      this.teacherSubject[i].normalize();
+      this.teacherfreeswitch[i].off();
+    }
+  }
+  setDayCaption() {
+    this.dayCaption.innerHTML = `Day ${this.dayCount + 1} of ${
+      this.data.totalDays.length
+    }`;
+  }
+  setDayView() {
+    this.dayView.innerHTML =
+      constant.weekdays[Number(this.data.totalDays[this.dayCount])];
+  }
+  load(show = true) {
+    visibilityOf(this.next, !show);
+    visibilityOf(this.nloader, show);
+    visibilityOf(this.next2, !show);
+    visibilityOf(this.nloader2, show);
+  }
+  clearForm() {
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      this.teacherClass[i].setInput(constant.nothing);
+      this.teacherSubject[i].setInput(constant.nothing);
+      this.teacherClass[i].enableInput();
+      this.teacherSubject[i].enableInput();
+      this.teacherClass[i].normalize();
+      this.teacherSubject[i].normalize();
+      this.teacherfreeswitch[i].off();
+    }
+  }
+
+  uploadScheduleByTeacher = (dayindex) => {
+    var periods = Array();
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      periods.push({
+        classname: this.teacherClass[i].getInput(),
+        subject: this.teacherSubject[i].getInput(),
+        hold: true,
+      });
+      sessionStorage.setItem(`${dayindex}classname${i}`, periods[i].classname);
+      sessionStorage.setItem(`${dayindex}subject${i}`, periods[i].subject);
+    }
+    const data = {
+      dayIndex: Number(dayindex),
+      absent: false,
+      period: periods,
+    };
+    postJsonData(post.teacher.schedule, {
+      action: "upload",
+      teachername:this.data.teacherName,
+      teacherID: sessionStorage.getItem("teacherID"),
+      data: data,
+    })
+      .then((response) => {
+        clog(response);
+        this.handleScheduleResponse(response);
+        this.load(false);
+      })
+      .catch((error) => {
+        this.load(false);
+        if (!navigator.onLine) {
+          snackBar(
+            `Network error, Unable to save.`,
+            "Try again",
+            false,
+            (_) => {
+              new Snackbar().hide();
+              this.next.click();
+            }
+          );
+        } else {
+          snackBar(`Error:${error}`, "Report");
+        }
+      });
+  };
+  uploadScheduleByAdmin = (dayindex) => {
+    var periods = Array();
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      periods.push({
+        classname: this.teacherClass[i].getInput(),
+        subject: this.teacherSubject[i].getInput(),
+        hold: true,
+      });
+      sessionStorage.setItem(`${dayindex}classname${i}`, periods[i].classname);
+      sessionStorage.setItem(`${dayindex}subject${i}`, periods[i].subject);
+    }
+    const data = {
+      dayIndex: Number(dayindex),
+      absent: false,
+      period: periods,
+    };
+    postJsonData(post.admin.schedule, {
+      action: "upload",
+      target: "teacher",
+      teacherID: sessionStorage.getItem("teacherID").trim(),
+      data: data,
+    })
+      .then((response) => {
+        clog(response);
+        this.handleScheduleResponse(response);
+        this.load(false);
+      })
+      .catch((error) => {
+        if (!navigator.onLine) {
+          snackBar(
+            `Network error, Unable to save.`,
+            "Try again",
+            false,
+            (_) => {
+              new Snackbar().hide();
+              this.next.click();
+            }
+          );
+        } else {
+          snackBar(`Error:${error}`, "Report");
+        }
+      });
+  };
+  validateDaySchedule = (afterValidate = (_) => {}) => {
+    let valid = true;
+    for (let i = 0; i < this.data.totalPeriods; i++) {
+      if (
+        !(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())
+      ) {
+        this.teacherClass[i].validateNow((_) => {
+          if (i != this.data.totalPeriods) {
             this.teacherSubject[i].inputFocus();
           }
         });
-        this.teacherSubject[i].validate(_=>{
-          if(i+1!=this.data.totalPeriods){
-            this.teacherClass[i+1].inputFocus();
+        this.teacherSubject[i].validateNow((_) => {
+          if (i + 1 != this.data.totalPeriods) {
+            this.teacherClass[i + 1].inputFocus();
           }
         });
+        valid = false;
       }
-      this.logout.onclick =_=>{
-        finishSession(this.data.isAdmin?client.admin:client.teacher, (_) => {
-          if(this.data.isAdmin){
-            relocate(locate.admin.login,{target:locate.admin.target.addteacher})
-          }else if(this.data.isTeacher){
-            relocate(locate.teacher.login,{target:locate.teacher.target.addschedule})
+    }
+    if (valid) {
+      this.load();
+      afterValidate();
+    }
+  };
+  handleScheduleResponse(response) {
+    switch (response.event) {
+      case code.schedule.SCHEDULE_CREATED:
+        {
+          for (let i = 0; i < this.data.totalPeriods; i++) {
+            this.teacherClass[i].activate();
+            this.teacherSubject[i].activate();
           }
-        });
-      }
-      this.next.onclick =_=>{
-        new Snackbar().hide();
-        if(this.dayCount == 0){
-          if(this.data.isAdmin){
-            if(!this.teacherIDField.isValid()){
-              return this.teacherIDField.validateNow();
-            }
-            sessionStorage.setItem('teacherID',this.teacherIDField.getInput());
-          } else if(this.data.isTeacher){
-            sessionStorage.setItem('teacherID',this.data.teacherEmail);
-          }
-        }
-        this.validateDaySchedule(_=>{
-          if(this.data.isAdmin){
-            this.uploadScheduleByAdmin(this.data.totalDays[this.dayCount]);
-          } else if(this.data.isTeacher){
-            this.uploadScheduleByTeacher(this.data.totalDays[this.dayCount]);
-          }else {
-            return location.reload();
-          };
-        })
-      }
-      this.next2.onclick = this.next.onclick;
-    }
-    setDayCaption(){
-      this.dayCaption.innerHTML = `Day ${this.dayCount+1} of ${this.data.totalDays.length}`
-    }
-    setDayView(){
-      this.dayView.innerHTML = constant.weekdays[Number(this.data.totalDays[this.dayCount])]
-    }
-    load(show = true){
-      visibilityOf(this.next,!show);
-      visibilityOf(this.nloader,show);
-      visibilityOf(this.next2,!show);
-      visibilityOf(this.nloader2,show);
-    }
-    clearForm(){
-      for(let i=0;i<this.data.totalPeriods;i++){
-        this.teacherClass[i].setInput(constant.nothing);
-        this.teacherSubject[i].setInput(constant.nothing);
-        this.teacherClass[i].enableInput();
-        this.teacherSubject[i].enableInput();
-        this.teacherClass[i].normalize();
-        this.teacherSubject[i].normalize();
-        this.teacherfreeswitch[i].off();
-      }
-    }
-
-    uploadScheduleByTeacher = (dayindex)=>{
-      var periods = Array();
-      for(let i=0;i<this.data.totalPeriods;i++){
-        periods.push({
-          classname:this.teacherClass[i].getInput(),
-          subject:this.teacherSubject[i].getInput(),
-          hold:true
-        });
-      }
-      const data = {
-        dayIndex:Number(dayindex),
-        absent:false,
-        period:periods
-      }
-      postJsonData(post.teacher.schedule,{
-        action:'upload',
-        teacherID:sessionStorage.getItem('teacherID'),
-        data:data
-      }).then(response=>{
-        clog(response);
-        this.handleScheduleResponse(response);
-        this.load(false);
-      }).catch(error=>{
-        if(!navigator.onLine){
-          snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
-            new Snackbar().hide();
-            this.next.click();
-          });
-        } else {
-          snackBar(`Error:${error}`,'Report');
-        }
-      });
-    }
-    uploadScheduleByAdmin = (dayindex) =>{
-      var periods = Array();
-      for(let i=0;i<this.data.totalPeriods;i++){
-        periods.push({
-          classname:this.teacherClass[i].getInput(),
-          subject:this.teacherSubject[i].getInput(),
-          hold:true
-        });
-      }
-      const data = {
-        dayIndex:Number(dayindex),
-        absent:false,
-        period:periods
-      }
-      postJsonData(post.admin.schedule,{
-        action:post.admin.action.upload,
-        target:'teacher',
-        teacherID:sessionStorage.getItem('teacherID').trim(),
-        data:data
-      }).then(response=>{
-        clog(response);
-        this.handleScheduleResponse(response);
-        this.load(false);
-      }).catch(error=>{
-        if(!navigator.onLine){
-          snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
-            new Snackbar().hide();
-            this.next.click();
-          });
-        } else {
-          snackBar(`Error:${error}`,'Report');
-        }
-      });
-    }
-    validateDaySchedule = (afterValidate =_=>{})=>{
-      let valid = true;
-      for(let i=0;i<this.data.totalPeriods;i++){
-        if(!(this.teacherClass[i].isValid() && this.teacherSubject[i].isValid())){
-          this.teacherClass[i].validateNow(_=>{
-            if(i!=this.data.totalPeriods){
-              this.teacherSubject[i].inputFocus();
-            }
-          });
-          this.teacherSubject[i].validateNow(_=>{
-            if(i+1!=this.data.totalPeriods){
-              this.teacherClass[i+1].inputFocus();
-            }
-          });
-          valid = false;
-        }
-      }
-      if(valid){
-        this.load();
-        for(let i=0;i<this.data.totalPeriods;i++){
-          this.teacherClass[i].activate();
-          this.teacherSubject[i].activate();
-        }
-        afterValidate();
-      }
-    }
-    handleScheduleResponse(response){
-      switch(response.event){
-        case code.schedule.SCHEDULE_CREATED:{
           this.dayCount++;
-          if(this.dayCount<this.data.totalDays.length){
+          show(this.previous);
+          if (this.dayCount < this.data.totalDays.length) {
             this.setDayCaption();
             this.setDayView();
             this.clearForm();
-            if(this.data.isAdmin){
-              this.teacherIDField.setInput(sessionStorage.getItem('teacherID'));
+            this.fillFromSession();
+            if (this.data.isAdmin) {
+              this.teacherIDField.setInput(sessionStorage.getItem("teacherID"));
               this.teacherIDField.disableInput();
               this.teacherIDField.activate();
             }
           } else {
-            if(this.data.isAdmin){
-              new ScheduleComplete(this.data);
-            } else if(this.data.isTeacher){
+            if (this.data.isAdmin) {
+              postJsonData(post.admin.email,{
+                to:sessionStorage.getItem("teacherID"),
+                target:client.teacher,
+                type:'personalinvite'
+              }).then(res=>{
+                clog(res);
+                if(res.event == code.mail.MAIL_SENT){
+                  requests[p].innerHTML = 'Mail sent';
+                  snackBar(`Request email has been sent to ${sessionStorage.getItem("teacherID")}.`,'OK');
+                  return new ScheduleComplete(this.data);
+                }
+                throw res;
+              }).catch(e=>{
+                clog(e);
+                snackBar('Failed to send email. You can resend it from teachers view.',null,false);
+              })
+            } else if (this.data.isTeacher) {
               location.reload();
             }
           }
-        }break;
-        case code.schedule.SCHEDULE_EXISTS:{
-          clog(response)
-          if(this.data.isAdmin){
-            snackBar(`Schedule for ${sessionStorage.getItem('teacherID')} already exists.`,'View',bodyType.warning,_=>{
-              refer(locate.admin.session, {
-                target: locate.admin.target.viewschedule,
-                type: client.teacher,
-                [response.uid?'t':'teacherID']: response.uid?response.uid:response.id,
-              });
-            });
-          }
-        }break;
-        case code.schedule.SCHEDULE_CLASHED:{
-          if(this.data.isAdmin){
-            this.teacherClass[response.clash.period].showError(
-              `This class is already taken at this period by 
-              <a id="clashlink${response.clash.uid}">${response.clash.id}</a>.`);
-              getElement(`clashlink${response.clash.uid}`).onclick=_=>{
-                refer(locate.admin.session, {
+        }
+        break;
+      case code.schedule.SCHEDULE_EXISTS:
+        {
+          clog(response);
+          if (this.data.isAdmin) {
+            snackBar(
+              `Schedule for ${sessionStorage.getItem(
+                "teacherID"
+              )} already exists.`,
+              "View",
+              bodyType.warning,
+              (_) => {
+                referTab(locate.admin.session, {
                   target: locate.admin.target.viewschedule,
                   type: client.teacher,
-                  [response.clash.uid?'t':'teacherID']:response.clash.uid?response.clash.uid:response.clash.id
+                  [response.uid ? "t" : "teacherID"]: response.uid
+                    ? response.uid
+                    : response.id,
                 });
               }
-          } else {
-            this.teacherClass[response.clash.period].showError(`This class is already taken at this period by ${response.clash.clashwith}.`);
+            );
           }
-        }break;
-        default:{
-          if(!navigator.onLine){
-            snackBar(`Network error, Unable to save.`,'Try again',false,_=>{
+        }
+        break;
+      case code.schedule.SCHEDULE_CLASHED:{
+          if (this.data.isAdmin) {
+            this.teacherClass[response.clash.period].showError(
+              `This class is already taken at this period by 
+              <a id="clashlink${response.clash.uid}">${response.clash.id}</a>.`
+            );
+            getElement(`clashlink${response.clash.uid}`).onclick = (_) => {
+              referTab(locate.admin.session, {
+                target: locate.admin.target.viewschedule,
+                type: client.teacher,
+                [response.clash.uid ? "t" : "teacherID"]: response.clash.uid
+                  ? response.clash.uid
+                  : response.clash.id,
+              });
+            };
+          } else {
+            clog(response);
+            this.teacherClass[response.clash.period].showError(
+              `This class is already taken at this period by ${response.clash.clashwith}.`
+            );
+          }
+        }
+        break;
+      default: {
+        if (!navigator.onLine) {
+          snackBar(
+            `Network error, Unable to save.`,
+            "Try again",
+            false,
+            (_) => {
               new Snackbar().hide();
               this.next.click();
-            });
-          } else {
-            snackBar(`An error occurred:${response.event}`,'Report');
-          }
+            }
+          );
+        } else {
+          snackBar(`An error occurred:${response.event}`, "Report");
         }
       }
     }
+  }
 }
 
-class ReceiveData{
-  constructor(){
-    this.isAdmin = getElement("isAdmin").innerHTML?true:false;
+class ReceiveData {
+  constructor() {
+    this.isAdmin = getElement("isAdmin").innerHTML ? true : false;
     this.uiid = getElement("uiid").innerHTML;
-    this.totalDays = String(getElement("daysInWeek").innerHTML).split(',');
+    this.totalDays = String(getElement("daysInWeek").innerHTML).split(",");
     this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
     clog(this.isAdmin);
-    if(!this.isAdmin){
-      this.isTeacher = getElement("isTeacher").innerHTML?true:false;
+    if (!this.isAdmin) {
+      this.isTeacher = getElement("isTeacher").innerHTML ? true : false;
       this.teacherName = getElement("teachername").innerHTML;
       this.teacherEmail = getElement("teacheremail").innerHTML;
-      this.teacherVerified = getElement("teacherverfied").innerHTML=='true';
+      this.teacherVerified = getElement("teacherverfied").innerHTML == "true";
       this.teacherid = getElement("teacherID").innerHTML;
-      this.isTeacherAllowed = getElement("allowTeacherAddSchedule").innerHTML=='true';
+      this.isTeacherAllowed =
+        getElement("allowTeacherAddSchedule").innerHTML == "true";
     }
   }
 }
 
-class ScheduleComplete{
-  constructor(data){
+class ScheduleComplete {
+  constructor(data) {
+    window.onbeforeunload = () => {};
     this.view = getElement("workbox");
-    this.view.innerHTML = data.isAdmin?this.content(sessionStorage.getItem('teacherID')):data.teacherName;
+    this.view.innerHTML = data.isAdmin
+      ? this.content(sessionStorage.getItem("teacherID"))
+      : data.teacherName;
     this.addAnother = getElement("addAnother");
     this.exit = getElement("exitadder");
-    this.addAnother.onclick =_=>{
-      relocate(locate.adminDashPage,{
-        target:'addteacher'
+    this.addAnother.onclick = (_) => {
+      relocate(locate.adminDashPage, {
+        target: "addteacher",
       });
-    }
-    this.exit.onclick =_=>{
+    };
+    this.exit.onclick = (_) => {
       relocate(locate.root);
-    }
+    };
   }
-  content(id){
+  content(id) {
     return `<div class="fmt-row fmt-center">
       <div class="fmt-row heading">Schedule Added.</div>
       <div class="fmt-row questrial">You have successfully created a full week schedule for <b>${id}</b>. An email has been sent to them for confirmation.
-      <br>They will be able to access their schedule, after joining.</div>
+      <br>They will be able to access their schedule, after joining or otherwise.</div>
       <br>
       <div class="fmt-row">
           <button class="positive-button" id="addAnother">Add another teacher</button>
@@ -337,5 +470,9 @@ class ScheduleComplete{
     </div>`;
   }
 }
+window.onbeforeunload = () => {
+  snackBar("Please complete before leaving to avoid data loss.");
+  return "sfd";
+};
 
-window.onload =()=> window.app = new TeacherFiller();
+window.onload = () => (window.app = new TeacherFiller());

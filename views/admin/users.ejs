@@ -28,7 +28,8 @@
         <div id="topBar">
             <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back" onclick="window.history.back()">
             <span id="greeting">
-                <%= client == 'teacher'?'Teachers':'Classes'%> of <%= defaults.institute.instituteName %> </span>
+                <%= client == 'teacher'?'Teachers':'Classes'%> 
+            </span>
             <span  class="menu fmt-right">
                 <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
                 <div class="menubox" id="settingsmenu">
@@ -38,22 +39,30 @@
                             <span class="switch-positive"></span>
                         </label>
                     </span>
-                    <div class="" id="users">
-                        <% if(client == 'teacher') {%>
-                            <img src="/graphic/elements/settings.svg" width="25" />
-                            Classrooms
-                            <% } else { %>
-                            <img src="/graphic/elements/settings.svg" width="25" />
-                            Teachers
-                        <% } %>
+                    <% if(client == 'teacher') {%>
+                    <div class="wide" id="invites">
+                        <img src="/graphic/elements/bellicon.svg" width="25" />Pending invites
                     </div>
+                    <div class="" id="requests">
+                        <img src="/graphic/elements/bellicon.svg" width="25" />
+                        Pending requests
+                    </div>
+                    <div class="" id="users">
+                        <img src="/graphic/elements/classicon.svg" width="25" />
+                        Classrooms
+                    </div>
+                    <% } else { %>
+                    <div class="" id="users">
+                        <img src="/graphic/elements/settings.svg" width="25" />
+                        Teachers
+                    </div>
+                    <% } %>
                     <div class="negative" id="logoutAdminButton" onclick="finishSession()">
                         ❌ Logout
                     </div>
                 </div>
             </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
             <div class="fmt-row fmt-padding-small">

@@ -54,7 +54,7 @@ admin.post('/auth',async (req,res)=>{
     case "logout":{
       session.finish(res).then((response) => {
         return res.json({ result: response });
-      }); 
+      });
     }break;
     case "signup":{
       session.signup(req, res, sessionsecret)
@@ -219,7 +219,8 @@ admin.get(get.session, (req, res) => {
                       return res.render(view.notfound);
 
                     return res.render(view.admin.scheduleview, {  //account not found, so only schedule.
-                      group: { teacher: false },
+                      group: { teacher: true, pending:true },
+                      teacher:{teacherID:data.teacherID},
                       schedule: teacherScheduledoc.schedule.teachers[0],
                       inst,
                     });
@@ -259,7 +260,7 @@ admin.get(get.session, (req, res) => {
                       inst,
                     });
                   } else {  //class considered not exists.
-                    if(!data.classname) return res.render(view.notfound); //so classname must be provided for schedule.
+                    if(!data.classname) return res.render(view.notfound); //at least classname must be provided for schedule.
                     const classdoc = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
                       uiid: response.user.uiid,
                       "users.classes": {
@@ -276,13 +277,19 @@ admin.get(get.session, (req, res) => {
                       return res.redirect(worker.toSession(data.u,data))
                     }
                     const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :data.classname})
-
+                    clog(scheduleresp);
+                    if(scheduleresp.event == code.inst.CLASS_NOT_FOUND) 
+                      return res.render(view.admin.getViewByTarget(data.target),{
+                        group: { Class: true, pending:true },
+                        Class:{classname:data.classname},
+                        schedule:false,
+                        inst,
+                      });
                     if(!scheduleresp.schedule.days)//no schedule found, so 404, as only schedule was requested.
                       return res.render(view.notfound);
-
                     return res.render(view.admin.scheduleview, {  //class not found, so only schedule.
-                      group: { Class: false },
-                      Class:false,
+                      group: { Class: true },
+                      Class:{classname:data.classname},
                       schedule: scheduleresp.schedule,
                       inst,
                     });
@@ -441,8 +448,8 @@ admin.post("/pseudousers",async(req,res)=>{
       if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
       const body = req.body;
       switch(body.target){
-        case "teachers":return res.json({result:await worker.pseudo.handleTeachers(response.user,body)})
-        case "classes": return res.json({result:await worker.pseudo.handleStudents(response.user,body)})
+        case client.teacher:return res.json({result:await worker.pseudo.handleTeachers(response.user,body)})
+        case client.student: return res.json({result:await worker.pseudo.handleStudents(response.user,body)})
       }
     })
 })
@@ -527,8 +534,7 @@ admin.post("/manage", async (req, res) => { //for settings
       return res.json({ result: code.eventmsg(code.auth.AUTH_REQ_FAILED, e) });
     })
     .then(async (response) => {
-      if (!session.valid(response))
-        return res.json({ result: response });
+      if (!session.valid(response))return res.json({ result: response });
       const inst = await Institute.findOne({uiid: response.user.uiid,});
       if (!inst && body.type!=verify.type)
         return res.json({
@@ -544,6 +550,23 @@ admin.post("/manage", async (req, res) => { //for settings
       }
     });
 });
+
+admin.post('/mail',async(req,res)=>{
+  session.verify(req, sessionsecret).catch((e) => {
+    clog(e);
+    return res.json(authreqfailed(e));
+  }).then(async (response) => {
+    if (!session.valid(response))return res.json({ result: response });
+    const body = req.body;
+    switch(body.type){
+      case invite.personalType:{
+        switch(body.target){
+          case client.teacher: return res.json({result:await worker.users.teachers.sendInvitation(response.user,body)});
+        }
+      }break;
+    }
+  })
+})
 
 /**
  * For external links, not requiring valid session.

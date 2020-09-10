@@ -1,4 +1,5 @@
 const {code,client,clog} = require("../../public/script/codes"),
+  Admin = require("../../config/db").getAdmin(),
   Institute = require("../../config/db").getInstitute(),
   share = require("./sharedata"),
   time = require("./timer"),
@@ -7,6 +8,7 @@ const {code,client,clog} = require("../../public/script/codes"),
 class Invitation {
   constructor() {
     this.type = "invitation";
+    this.personalType = "personalinvite";
     this.domain = code.domain;
     this.defaultValidity = 7;
   }
@@ -311,6 +313,51 @@ class Invitation {
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&ad=${data.uid}&t=${createdAt}`;
       case client.student:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&t=${createdAt}`;
+    }
+  }
+  
+  getPersonalInviteLink(target,data){
+    switch (target) {
+      case client.admin:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&ad=${data.uid}&id=${data.to}`;
+      case client.teacher:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&ad=${data.uid}&id=${data.to}`;
+      case client.student:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&c=${data.cid}&id=${data.to}`;
+    }
+  }
+
+  async handlePersonalInvitation(query,target){
+    if(!(query.in&&query.id&&(query.ad||query.c))) return false;
+    switch(target){
+      case client.admin:{};
+      case client.teacher:{
+        const admin = await Admin.findOne({"_id":ObjectId(query.ad)});
+        if(!admin) return false;
+        const inst = await Institute.findOne({"_id":ObjectId(query.in),"schedule.teachers":{$elemMatch:{"teacherID":query.id}}},{
+          projection:{
+            "uiid":1,
+            "default":1,
+          }
+        });
+        if(!inst) return false;
+        const teacherdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.teachers":{$elemMatch:{"teacherID":query.id}}});
+        if(teacherdoc) return false;
+        return {
+          invite:{
+            valid: true,
+            personal:true,
+            email:query.id,
+            uiid: inst.uiid,
+            invitorID: admin.email,
+            invitorName: admin.username,
+            instname: inst.default.institute.instituteName,
+            expireAt: false,
+            target: target,
+          }
+        }
+      }break;
+      case client.student:{};
     }
   }
 
