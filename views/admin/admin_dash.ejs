@@ -169,7 +169,7 @@
                         <span class="heading">Add</span>
                         <% if (!isEmptyObject(inst.schedule.teachers)) { %>
                             <br/>
-                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.users})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
+                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
                             You can add another teacher's schedule.</div> 
                         <% } else { %>
                             <br/>

@@ -363,13 +363,14 @@ class Teachers{
                     makeincharge.show();
                 }
             }catch{
-                teachertab.classlink.onclick=_=>{
+
+                teachertab.classlink?teachertab.classlink.onclick=_=>{
                     refer(locate.admin.session,{
                         target:locate.admin.target.viewschedule,
                         type:client.student,
                         classname:teachertab.classname.innerHTML
                     });
-                }
+                }:_=>{};
             }
         })
     }

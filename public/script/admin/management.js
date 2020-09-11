@@ -11,9 +11,12 @@ class Management {
       locate.admin.section.security,
       locate.admin.section.about
     );
-    this.displayIndex = this.sectionsArray.indexOf(this.sectionreq)<0?0:this.sectionsArray.indexOf(this.sectionreq);
+    this.displayIndex =
+      this.sectionsArray.indexOf(this.sectionreq) < 0
+        ? 0
+        : this.sectionsArray.indexOf(this.sectionreq);
     clog(this.displayIndex);
-    this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
+    this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
     this.tabs = Array(
       getElement("adminTab"),
       getElement("institutionTab"),
@@ -89,9 +92,16 @@ class Management {
     var e = event.currentTarget;
     for (var k = 0; k < clickables.length; k++) {
       var condition = e == clickables[k];
-      if(condition){
+      if (condition) {
         const query = window.location.search;
-        window.history.pushState('object or string','Management',query.replace(query.substr(query.lastIndexOf('=')),`=${this.sectionsArray[k]}`));
+        window.history.pushState(
+          "object or string",
+          "Management",
+          query.replace(
+            query.substr(query.lastIndexOf("=")),
+            `=${this.sectionsArray[k]}`
+          )
+        );
       }
       visibilityOf(showables[k], condition);
       if (showClass != null && hideClass != null) {
@@ -110,151 +120,182 @@ class Management {
 
 class Admin {
   constructor() {
-
-    this.name = new Editable("adminName","adminnameeditor",
-      new TextInput("adminnamefield","adminnameinput","adminnameerror",validType.name),
-      "editadminname","adminnameview","saveadminname","canceladminname"
+    this.name = new Editable(
+      "adminName",
+      "adminnameeditor",
+      new TextInput(
+        "adminnamefield",
+        "adminnameinput",
+        "adminnameerror",
+        validType.name
+      ),
+      "editadminname",
+      "adminnameview",
+      "saveadminname",
+      "canceladminname"
     );
-    
+
     this.email = getElement("adminEmailAddress");
 
-    this.phone = new Editable("adminPhoneNumber","adminphoneeditor",
-      new TextInput("adminphonefield","adminphoneinput","adminphoneerror",validType.phone),
-      "editadminphone","adminphoneview","saveadminphone","canceladminphone"
+    this.phone = new Editable(
+      "adminPhoneNumber",
+      "adminphoneeditor",
+      new TextInput(
+        "adminphonefield",
+        "adminphoneinput",
+        "adminphoneerror",
+        validType.phone
+      ),
+      "editadminphone",
+      "adminphoneview",
+      "saveadminphone",
+      "canceladminphone"
     );
 
-    this.name.onSave(_=>{
+    this.name.onSave((_) => {
       this.name.validateInputNow();
-      if(!this.name.isValidInput()) return;
+      if (!this.name.isValidInput()) return;
       this.name.disableInput();
-      if(this.name.getInputValue() == this.name.displayText()){
-        localStorage.setItem('username',this.name.getInputValue());
+      if (this.name.getInputValue() == this.name.displayText()) {
+        localStorage.setItem("username", this.name.getInputValue());
         return this.name.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.self,{
-        target:"account",
-        action:code.action.CHANGE_NAME,
-        newname:this.name.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
-          localStorage.setItem('username',this.name.getInputValue());
+      postJsonData(post.admin.self, {
+        target: "account",
+        action: code.action.CHANGE_NAME,
+        newname: this.name.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
+          localStorage.setItem("username", this.name.getInputValue());
           this.name.setDisplayText(this.name.getInputValue());
           this.name.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
 
-    this.phone.onSave(_=>{
+    this.phone.onSave((_) => {
       this.phone.validateInputNow();
-      if(!this.phone.isValidInput()) return;
+      if (!this.phone.isValidInput()) return;
       this.phone.disableInput();
-      if(this.phone.getInputValue() == this.phone.displayText()){
+      if (this.phone.getInputValue() == this.phone.displayText()) {
         return this.phone.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.self,{
-        target:"account",
-        action:code.action.CHANGE_PHONE,
-        newphone:this.phone.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.self, {
+        target: "account",
+        action: code.action.CHANGE_PHONE,
+        newphone: this.phone.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.phone.setDisplayText(this.phone.getInputValue());
           this.phone.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    this.creationTime = getElement("adminCreationTime"); 
+    this.creationTime = getElement("adminCreationTime");
 
-    class Preferences{
-      constructor(){
-        this.showphoneteacher = new Switch('teacherphonevcheck');
-        this.showphonestudent = new Switch('studentphonevcheck');
-        this.showmailteacher = new Switch('teachermailvcheck');
-        this.showmailstudent = new Switch('studentmailvcheck');
+    class Preferences {
+      constructor() {
+        this.showphoneteacher = new Switch("teacherphonevcheck");
+        this.showphonestudent = new Switch("studentphonevcheck");
+        this.showmailteacher = new Switch("teachermailvcheck");
+        this.showmailstudent = new Switch("studentmailvcheck");
 
-        this.showphoneteacher.onTurnChange(_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showphonetoteacher",
-            show:true,
-          }).then(response=>{
-            this.showphoneteacher.turn(response.event == code.OK)
-          })
-        },_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showphonetoteacher",
-            show:false
-          }).then(response=>{
-            this.showphoneteacher.turn(response.event != code.OK)
-          })
-        })
-        this.showphonestudent.onTurnChange(_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showphonetostudent",
-            show:true,
-          }).then(response=>{
-            this.showphonestudent.turn(response.event == code.OK)
-          })
-        },_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showphonetostudent",
-            show:false
-          }).then(response=>{
-            this.showphonestudent.turn(response.event != code.OK)
-          })
-        })
-        this.showmailteacher.onTurnChange(_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showemailtoteacher",
-            show:true,
-          }).then(response=>{
-            this.showmailteacher.turn(response.event == code.OK)
-          })
-        },_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showemailtoteacher",
-            show:false
-          }).then(response=>{
-            this.showmailteacher.turn(response.event != code.OK)
-          })
-        })
-        this.showmailstudent.onTurnChange(_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showemailtostudent",
-            show:true,
-          }).then(response=>{
-            this.showmailstudent.turn(response.event == code.OK)
-          })
-        },_=>{
-          postJsonData(post.admin.self,{
-            target:"preferences",
-            action:"set",
-            specific:"showemailtostudent",
-            show:false
-          }).then(response=>{
-            this.showmailstudent.turn(response.event != code.OK)
-          })
-        })   
+        this.showphoneteacher.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showphonetoteacher",
+              show: true,
+            }).then((response) => {
+              this.showphoneteacher.turn(response.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showphonetoteacher",
+              show: false,
+            }).then((response) => {
+              this.showphoneteacher.turn(response.event != code.OK);
+            });
+          }
+        );
+        this.showphonestudent.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showphonetostudent",
+              show: true,
+            }).then((response) => {
+              this.showphonestudent.turn(response.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showphonetostudent",
+              show: false,
+            }).then((response) => {
+              this.showphonestudent.turn(response.event != code.OK);
+            });
+          }
+        );
+        this.showmailteacher.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showemailtoteacher",
+              show: true,
+            }).then((response) => {
+              this.showmailteacher.turn(response.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showemailtoteacher",
+              show: false,
+            }).then((response) => {
+              this.showmailteacher.turn(response.event != code.OK);
+            });
+          }
+        );
+        this.showmailstudent.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showemailtostudent",
+              show: true,
+            }).then((response) => {
+              this.showmailstudent.turn(response.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.self, {
+              target: "preferences",
+              action: "set",
+              specific: "showemailtostudent",
+              show: false,
+            }).then((response) => {
+              this.showmailstudent.turn(response.event != code.OK);
+            });
+          }
+        );
       }
     }
     new Preferences();
@@ -263,402 +304,639 @@ class Admin {
 
 class Institution {
   constructor() {
-    this.name = new Editable("instituteName","institutenameeditor",
-      new TextInput("institutenamefield","institutenameinput","institutenameerror",validType.name),
-      "editinstitutename","institutenameview","saveinstitutename","cancelinstitutename"
+    this.name = new Editable(
+      "instituteName",
+      "institutenameeditor",
+      new TextInput(
+        "institutenamefield",
+        "institutenameinput",
+        "institutenameerror",
+        validType.name
+      ),
+      "editinstitutename",
+      "institutenameview",
+      "saveinstitutename",
+      "cancelinstitutename"
     );
-    this.name.onSave(_=>{
+    this.name.onSave((_) => {
       this.name.validateInputNow();
-      if(!this.name.isValidInput()) return;
+      if (!this.name.isValidInput()) return;
       this.name.disableInput();
-      if(this.name.getInputValue() == this.name.displayText()){
+      if (this.name.getInputValue() == this.name.displayText()) {
         return this.name.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"institute",
-        action:code.action.CHANGE_NAME,
-        newname:this.name.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "institute",
+        action: code.action.CHANGE_NAME,
+        newname: this.name.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.name.setDisplayText(this.name.getInputValue());
           this.name.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    
-    this.phone = new Editable("institutePhone","institutephoneeditor",
-      new TextInput("institutephonefield","institutephoneinput","institutephoneerror",validType.phone),
-      "editinstitutephone","institutephoneview","saveinstitutephone","cancelinstitutephone"
+
+    this.phone = new Editable(
+      "institutePhone",
+      "institutephoneeditor",
+      new TextInput(
+        "institutephonefield",
+        "institutephoneinput",
+        "institutephoneerror",
+        validType.phone
+      ),
+      "editinstitutephone",
+      "institutephoneview",
+      "saveinstitutephone",
+      "cancelinstitutephone"
     );
-    this.phone.onSave(_=>{
+    this.phone.onSave((_) => {
       this.phone.validateInputNow();
-      if(!this.phone.isValidInput()) return;
+      if (!this.phone.isValidInput()) return;
       this.phone.disableInput();
-      if(this.phone.getInputValue() == this.phone.displayText()){
+      if (this.phone.getInputValue() == this.phone.displayText()) {
         return this.phone.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"institute",
-        action:code.action.CHANGE_PHONE,
-        newphone:this.phone.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "institute",
+        action: code.action.CHANGE_PHONE,
+        newphone: this.phone.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.phone.setDisplayText(this.phone.getInputValue());
           this.phone.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    
-    this.mail = new Editable("instituteMail","institutemaileditor",
-      new TextInput("institutemailfield","institutemailinput","institutemailerror",validType.email),
-      "editinstitutemail","institutemailview","saveinstitutemail","cancelinstitutemail"
+
+    this.mail = new Editable(
+      "instituteMail",
+      "institutemaileditor",
+      new TextInput(
+        "institutemailfield",
+        "institutemailinput",
+        "institutemailerror",
+        validType.email
+      ),
+      "editinstitutemail",
+      "institutemailview",
+      "saveinstitutemail",
+      "cancelinstitutemail"
     );
 
-    this.mail.onSave(_=>{
+    this.mail.onSave((_) => {
       this.mail.validateInputNow();
-      if(!this.mail.isValidInput()) return;
+      if (!this.mail.isValidInput()) return;
       this.mail.disableInput();
-      if(this.mail.getInputValue() == this.mail.displayText()){
+      if (this.mail.getInputValue() == this.mail.displayText()) {
         return this.mail.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"institute",
-        action:code.action.CHANGE_ID,
-        newemail:this.mail.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "institute",
+        action: code.action.CHANGE_ID,
+        newemail: this.mail.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.mail.setDisplayText(this.mail.getInputValue());
           this.mail.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
 
-    
     this.uiid = getElement("uiid");
     this.subscriptionTill = getElement("subscriptionTill");
 
-    class Preferences{
-      constructor(){
-        this.allowteacherschedule = new Switch('teachereditschedule');
-        this.scheduleActive = new Switch('scheduleactive');
-        this.darkmode = new Switch('darkmode');
+    class Preferences {
+      constructor() {
+        this.allowteacherschedule = new Switch("teachereditschedule");
+        this.scheduleActive = new Switch("scheduleactive");
+        this.darkmode = new Switch("darkmode");
         this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        this.darkmode.onTurnChange(
+          (_) => {
+            theme.setDark();
+          },
+          (_) => {
+            theme.setLight();
+          }
+        );
 
-        this.allowteacherschedule.onTurnChange(_=>{
-          postJsonData(post.admin.manage,{
-            type:"preferences",
-            action:"set",
-            specific:"allowTeacherAddSchedule",
-            allow:true
-          }).then(resp=>{
-            this.allowteacherschedule.turn(resp.event == code.OK);
-          });
-        },_=>{
-          postJsonData(post.admin.manage,{
-            type:"preferences",
-            action:"set",
-            specific:"allowTeacherAddSchedule",
-            allow:false
-          }).then(resp=>{
-            this.allowteacherschedule.turn(resp.event != code.OK);
-          });
-        });
-        this.scheduleActive.onTurnChange(_=>{
-          postJsonData(post.admin.manage,{
-            type:"preferences",
-            action:"set",
-            specific:"active",
-            active:true
-          }).then(resp=>{
-            this.scheduleActive.turn(resp.event == code.OK);
-          });
-        },_=>{
-          postJsonData(post.admin.manage,{
-            type:"preferences",
-            action:"set",
-            specific:"active",
-            active:false
-          }).then(resp=>{
-            this.scheduleActive.turn(resp.event != code.OK);
-          });
-        })
+        this.allowteacherschedule.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.manage, {
+              type: "preferences",
+              action: "set",
+              specific: "allowTeacherAddSchedule",
+              allow: true,
+            }).then((resp) => {
+              this.allowteacherschedule.turn(resp.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.manage, {
+              type: "preferences",
+              action: "set",
+              specific: "allowTeacherAddSchedule",
+              allow: false,
+            }).then((resp) => {
+              this.allowteacherschedule.turn(resp.event != code.OK);
+            });
+          }
+        );
+        this.scheduleActive.onTurnChange(
+          (_) => {
+            postJsonData(post.admin.manage, {
+              type: "preferences",
+              action: "set",
+              specific: "active",
+              active: true,
+            }).then((resp) => {
+              this.scheduleActive.turn(resp.event == code.OK);
+            });
+          },
+          (_) => {
+            postJsonData(post.admin.manage, {
+              type: "preferences",
+              action: "set",
+              specific: "active",
+              active: false,
+            }).then((resp) => {
+              this.scheduleActive.turn(resp.event != code.OK);
+            });
+          }
+        );
       }
     }
     new Preferences();
   }
-
-  
 }
 class Schedule {
   constructor() {
-    this.start = new Editable("start","starteditor",
-      new TextInput("startfield","startinput","starterror",validType.nonempty),
-      "editstart","startView","savestart","cancelstart"
+    this.start = new Editable(
+      "start",
+      "starteditor",
+      new TextInput(
+        "startfield",
+        "startinput",
+        "starterror",
+        validType.nonempty
+      ),
+      "editstart",
+      "startView",
+      "savestart",
+      "cancelstart"
     );
-    this.breakstart = new Editable("breakstart","breakstarteditor",
-      new TextInput("breakstartfield","breakstartinput","breakstarterror",validType.nonempty),
-      "editbreakstart","breakstartView","savebreakstart","cancelbreakstart"
+    this.breakstart = new Editable(
+      "breakstart",
+      "breakstarteditor",
+      new TextInput(
+        "breakstartfield",
+        "breakstartinput",
+        "breakstarterror",
+        validType.nonempty
+      ),
+      "editbreakstart",
+      "breakstartView",
+      "savebreakstart",
+      "cancelbreakstart"
     );
-    this.periodduration = new Editable("periodduration","perioddurationeditor",
-      new TextInput("perioddurationfield","perioddurationinput","perioddurationerror",validType.nonempty),
-      "editperiodduration","perioddurationView","saveperiodduration","cancelperiodduration"
+    this.periodduration = new Editable(
+      "periodduration",
+      "perioddurationeditor",
+      new TextInput(
+        "perioddurationfield",
+        "perioddurationinput",
+        "perioddurationerror",
+        validType.nonempty
+      ),
+      "editperiodduration",
+      "perioddurationView",
+      "saveperiodduration",
+      "cancelperiodduration"
     );
-    this.breakduration = new Editable("breakduration","breakdurationeditor",
-      new TextInput("breakdurationfield","breakdurationinput","breakdurationerror",validType.nonempty),
-      "editbreakduration","breakdurationView","savebreakduration","cancelbreakduration"
+    this.breakduration = new Editable(
+      "breakduration",
+      "breakdurationeditor",
+      new TextInput(
+        "breakdurationfield",
+        "breakdurationinput",
+        "breakdurationerror",
+        validType.nonempty
+      ),
+      "editbreakduration",
+      "breakdurationView",
+      "savebreakduration",
+      "cancelbreakduration"
     );
 
-    this.start.onSave(_=>{
+    this.start.onSave((_) => {
       this.start.validateInputNow();
-      if(!this.start.isValidInput()) return;
+      if (!this.start.isValidInput()) return;
       this.start.disableInput();
-      if(this.start.getInputValue() == this.start.displayText()){
+      if (this.start.getInputValue() == this.start.displayText()) {
         return this.start.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"timings",
-        action:code.action.CHANGE_START_TIME,
-        start:this.start.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "timings",
+        action: code.action.CHANGE_START_TIME,
+        start: this.start.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.start.setDisplayText(this.start.getInputValue());
           this.start.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    this.breakstart.onSave(_=>{
+    this.breakstart.onSave((_) => {
       this.breakstart.validateInputNow();
-      if(!this.breakstart.isValidInput()) return;
+      if (!this.breakstart.isValidInput()) return;
       this.breakstart.disableInput();
-      if(this.breakstart.getInputValue() == this.breakstart.displayText()){
+      if (this.breakstart.getInputValue() == this.breakstart.displayText()) {
         return this.breakstart.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"timings",
-        action:code.action.CHANGE_BREAK_START_TIME,
-        breakstart:this.breakstart.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "timings",
+        action: code.action.CHANGE_BREAK_START_TIME,
+        breakstart: this.breakstart.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.breakstart.setDisplayText(this.breakstart.getInputValue());
           this.breakstart.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    this.periodduration.onSave(_=>{
+    this.periodduration.onSave((_) => {
       this.periodduration.validateInputNow();
-      if(!this.periodduration.isValidInput()) return;
+      if (!this.periodduration.isValidInput()) return;
       this.periodduration.disableInput();
-      if(this.periodduration.getInputValue() == this.periodduration.displayText()){
+      if (
+        this.periodduration.getInputValue() == this.periodduration.displayText()
+      ) {
         return this.periodduration.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"timings",
-        action:code.action.CHANGE_PERIOD_DURATION,
-        periodduration:this.periodduration.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
-          this.periodduration.setDisplayText(this.periodduration.getInputValue());
+      postJsonData(post.admin.default, {
+        target: "timings",
+        action: code.action.CHANGE_PERIOD_DURATION,
+        periodduration: this.periodduration.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
+          this.periodduration.setDisplayText(
+            this.periodduration.getInputValue()
+          );
           this.periodduration.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
-    this.breakduration.onSave(_=>{
+    this.breakduration.onSave((_) => {
       this.breakduration.validateInputNow();
-      if(!this.breakduration.isValidInput()) return;
+      if (!this.breakduration.isValidInput()) return;
       this.breakduration.disableInput();
-      if(this.breakduration.getInputValue() == this.breakduration.displayText()){
+      if (
+        this.breakduration.getInputValue() == this.breakduration.displayText()
+      ) {
         return this.breakduration.clickCancel();
       }
       showLoader();
-      postJsonData(post.admin.default,{
-        target:"timings",
-        action:code.action.CHANGE_BREAK_DURATION,
-        breakduration:this.breakduration.getInputValue()
-      }).then(resp=>{
-        if(resp.event == code.OK){
+      postJsonData(post.admin.default, {
+        target: "timings",
+        action: code.action.CHANGE_BREAK_DURATION,
+        breakduration: this.breakduration.getInputValue(),
+      }).then((resp) => {
+        if (resp.event == code.OK) {
           this.breakduration.setDisplayText(this.breakduration.getInputValue());
           this.breakduration.display();
         } else {
-          snackBar('Unable to save');
+          snackBar("Unable to save");
         }
         hideLoader();
-      })
+      });
     });
 
     this.workDays = getElement("workdays");
     this.totalPeriods = getElement("totalPeriods");
     this.reschedule = getElement("reschedule");
     this.scheduler = new Dialog();
-    this.reschedule.onclick=_=>{
+    this.reschedule.onclick = (_) => {
       this.rescheduleDefault();
       this.scheduler.show();
-    }
+    };
   }
-  rescheduleDefault(weekdays = false,periods = false){
-    this.scheduler.createActions(Array('Discard'),Array(actionType.neutral));
-    this.scheduler.onButtonClick(Array(_=>{
-      sessionStorage.clear();
-      this.scheduler.hide();
-    }));
-    this.scheduler.setDisplay('Edit Schedule Structure',`
+  rescheduleDefault(weekdays = false, periods = false) {
+    this.scheduler.createActions(Array("Discard"), Array(actionType.neutral));
+    this.scheduler.onButtonClick(
+      Array((_) => {
+        sessionStorage.clear();
+        this.scheduler.hide();
+      })
+    );
+    this.scheduler.setDisplay(
+      "Edit Schedule Structure",
+      `
     <center class="negative">These actions will change the schedule structure, proceed with caution.</center>
     <br/>
     <div class="fmt-center">
-      <button class="positive-button" id="editweekdays">Edit weekdays${weekdays?'*':''}</button>
-      <button class="positive-button" id="editperiods">Edit periods${periods?'*':''}</button>
+      <button class="positive-button" id="editweekdays">Edit weekdays${
+        weekdays ? "*" : ""
+      }</button>
+      <button class="positive-button" id="editperiods">Edit periods${
+        periods ? "*" : ""
+      }</button>
     </div>
-  `);
-    const editweek = getElement("editweekdays"), editperiods = getElement("editperiods");
-    editweek.onclick=_=>{this.rescheduleWeekEditor()};
+  `
+    );
+    const editweek = getElement("editweekdays"),
+      editperiods = getElement("editperiods");
+    editweek.onclick = (_) => {
+      this.rescheduleWeekEditor();
+    };
+    editperiods.onclick = (_) => {
+      this.reschedulePeriodsEditor();
+    };
   }
-  
-  rescheduleWeekEditor(){
-    const daysindices = Array();
-    const days = this.workDays.innerHTML.split(',');
+  reschedulePeriodsEditor() {
+    const periods = Number(this.totalPeriods.innerHTML);
+    let editcontent = "";
+    for (let p = 0; p < periods; p++) {
+      editcontent += `<div class="fmt-row tab-view" id="periodrow${p}">
+        <div class="fmt-col fmt-half">
+          Period ${addNumberSuffixHTML(p + 1)}
+        </div>
+        <div class="fmt-col fmt-half">
+          <button class="negative-button fmt-right caption" id="deleteperiod${p}">Delete</button>
+          <button class="warning-button fmt-right caption" id="switchperiod${p}">Switch</button>
+        </div>
+      </div>`;
+    }
+    this.scheduler.setDisplay(
+      "Periods Editor",
+      `<center class="negative">These actions will change the periods, proceed with caution.</center>
+      <br/>
+      <div class="fmt-row">
+        ${editcontent}
+      </div>`
+    );
+    const periodrows = [];
+    const switchperiods = [];
+    const deleteperiods = [];
+    for (let p = 0; p < periods; p++) {
+      periodrows.push(getElement(`periodrow${p}`));
+      switchperiods.push(getElement(`switchperiod${p}`));
+      switchperiods[p].onclick = (_) => {
+        this.scheduler.setDisplay(
+          `Switch period ${addNumberSuffixHTML(p+1)}`,
+          `<center>Provide the period number which you want to transfer or exchange schedule of <b>${p+1}</b> with.</center>`
+        );
+        this.scheduler.createInputs(
+          ["Period number"],
+          [`A number between 1 and ${periods-1}`],
+          ["number"],
+          [validType.number]
+        );
+        this.scheduler.validate();
+        this.scheduler.createActions(
+          [`Back`, `Switch ${p+1}`],
+          [actionType.neutral, actionType.warning]
+        );
+        this.scheduler.onButtonClick([
+          (_) => {
+            this.scheduler.createInputs([]);
+            this.reschedulePeriodsEditor();
+          },
+          (_) => {
+            if (!this.scheduler.allValid()||Number(this.scheduler.getInputValue(0))<1||Number(this.scheduler.getInputValue(0))>periods-1) return this.scheduler.validateNow();
+            this.scheduler.loader();
+            postJsonData(post.admin.schedule, {
+              target: client.teacher,
+              action: "update",
+              specific: code.action.SWITCH_PERIOD,
+              oldperiod: p,
+              newperiod: Number(this.scheduler.getInputValue(0).trim()),
+            }).then((response) => {
+              clog(response);
+              if (response.event == code.OK) {
+                this.scheduler.loader(false);
+                snackBar(
+                  `${addNumberSuffixHTML(p+1)} has been switched with ${addNumberSuffixHTML(this.scheduler.getInputValue(0))}`
+                );
+                this.restartView();
+              } else {
+                snackBar("Could'nt change period.", "Report");
+              }
+            });
+          },
+        ]);
+      };
+      deleteperiods.push(getElement(`deleteperiod${p}`));
+      deleteperiods[p].onclick = (_) => {
+        snackBar(`Delete period ${p+1} from every schedule?`, "Delete", false, (_) => {
+          deleteperiods[p].onclick = (_) => {};
+          this.scheduler.loader();
+          snackBar(`Deleting period ${p+1}...`);
+          postJsonData(post.admin.schedule, {
+            target: client.teacher,
+            action: "update",
+            specific: code.action.REMOVE_PERIOD,
+            removedayindex: daysindices[p],
+          }).then((response) => {
+            clog(response);
+            this.scheduler.loader(false);
+            if (response.event == code.OK) {
+              hide(periodrows[p]);
+              snackBar(
+                `${p+1} was removed from every schedule`,
+                "Refresh",
+                true,
+                (_) => {
+                  location.reload();
+                }
+              );
+            } else {
+              snackBar(`Unable to remove ${p+1} from every schedule`, "Report");
+            }
+          });
+        });
+      };
+    };
+    this.scheduler.createActions(
+      [`Back`,'Cancel'],
+      [actionType.neutral, actionType.positive]
+    );
+    this.scheduler.onButtonClick([_=>{
+      this.rescheduleDefault();
+    },_=>{
+      this.scheduler.hide();
+    }])
+  }
+  rescheduleWeekEditor() {
+    const days = this.workDays.innerHTML.split(",");
+    const daysindices = Array(days.length);
     let editcontent = constant.nothing;
-    days.forEach((day,d)=>{
-      daysindices.push(constant.weekdayscasual.indexOf(day.toLowerCase().trim()));
-      editcontent += 
-      `<div class="fmt-row" id="dayrow${d}">
-        <div class="fmt-row">
+    days.forEach((day, d) => {
+      daysindices[d] = constant.weekdayscasual.indexOf(
+        day.toLowerCase().trim()
+      );
+      editcontent += `<div class="fmt-row tab-view" id="dayrow${d}">
           <div class="fmt-col fmt-half">
-          Shift ${day} to
+            ${day}
           </div>
           <div class="fmt-col fmt-half">
-          <button class="negative-button fmt-right" id="deleteday${d}">Delete ${day}</button>
+            <button class="negative-button fmt-right caption" id="deleteday${d}">Delete</button>
+            <button class="warning-button fmt-right caption" id="switchday${d}">Switch</button>
           </div>
-        </div>
-        <div class="fmt-row">
-        ${getInputField(`dayfield${d}`,`daycap${d}`,`dayinput${d}`,`dayerror${d}`)}
-        </div>
-      </>
+      </div>
       `;
     });
-    this.scheduler.setDisplay('Weekdays Editor',`
+    this.scheduler.setDisplay(
+      "Weekdays Editor",
+      `
     <center class="negative">These actions will change the weekdays, proceed with caution.</center>
     <br/>
     <div class="fmt-row">
       ${editcontent}
     </div>
-  `);
-    const dayrows = Array();
-    const editDayField = Array();
-    const deleteDays = Array();
-    days.forEach((day,d)=>{
+  `
+    );
+    const dayrows = [];
+    const switchdays = [];
+    const deleteDays = [];
+    days.forEach((day, d) => {
       dayrows.push(getElement(`dayrow${d}`));
-      editDayField.push(new TextInput(`dayfield${d}`,`dayinput${d}`,`dayerror${d}`,validType.weekday,`daycap${d}`));
+      switchdays.push(getElement(`switchday${d}`));
+      switchdays[d].onclick = (_) => {
+        this.scheduler.setDisplay(
+          `Switch ${day}`,
+          `
+          <center>Provide the day which you want to transfer or exchange schedule of <b>${day}</b> with.</center>
+        `
+        );
+        this.scheduler.createInputs(
+          ["Weekday name"],
+          [`${day}'s schedule will be transferred to or exchanged with`],
+          ["text"],
+          [validType.weekday]
+        );
+        this.scheduler.validate();
+        this.scheduler.createActions(
+          [`Back`, `Switch ${day}`],
+          [actionType.neutral, actionType.warning]
+        );
+        this.scheduler.onButtonClick([
+          (_) => {
+            this.scheduler.createInputs([]);
+            this.rescheduleWeekEditor();
+          },
+          (_) => {
+            if (!this.scheduler.allValid()) return this.scheduler.validateNow();
+            this.scheduler.loader();
+            postJsonData(post.admin.schedule, {
+              target: client.teacher,
+              action: "update",
+              specific: code.action.SWITCH_DAY,
+              olddayindex: daysindices[d],
+              newdayindex: constant.weekdayscasual.indexOf(
+                this.scheduler.getInputValue(0).toLowerCase().trim()
+              ),
+            }).then((response) => {
+              clog(response);
+              if (response.event == code.OK) {
+                this.scheduler.loader(false);
+                snackBar(
+                  `${day} has been switched with ${this.scheduler.getInputValue(
+                    0
+                  )}`
+                );
+                this.restartView();
+              } else {
+                snackBar("Could'nt change weekdays", "Report");
+              }
+            });
+          },
+        ]);
+      };
       deleteDays.push(getElement(`deleteday${d}`));
-      deleteDays[d].onclick=_=>{
-        snackBar(`Delete ${day} from every schedule?`,'Delete',false,_=>{
-          deleteDays[d].onclick=_=>{}
+      deleteDays[d].onclick = (_) => {
+        snackBar(`Delete ${day} from every schedule?`, "Delete", false, (_) => {
+          deleteDays[d].onclick = (_) => {};
+          this.scheduler.loader();
           snackBar(`Deleting ${day}...`);
-          postJsonData(post.admin.schedule,{
-            target:client.teacher,
-            action:"remove",
-            specific:"weekday",
-            removeday:daysindices[d]
-          }).then(response=>{
+          postJsonData(post.admin.schedule, {
+            target: client.teacher,
+            action: "update",
+            specific: code.action.REMOVE_DAY,
+            removedayindex: daysindices[d],
+          }).then((response) => {
             clog(response);
-            if(response.event == code.OK){
-              location.reload();
-              snackBar(`${day} was removed from every schedule`,'Refresh',true);
+            this.scheduler.loader(false);
+            if (response.event == code.OK) {
+              hide(dayrows[d]);
+              snackBar(
+                `${day} was removed from every schedule`,
+                "Refresh",
+                true,
+                (_) => {
+                  location.reload();
+                }
+              );
             } else {
-              snackBar(`Unable to remove ${day} from every schedule`,'Report');
+              snackBar(`Unable to remove ${day} from every schedule`, "Report");
             }
           });
         });
-      }
+      };
     });
-    editDayField.forEach((field,f)=>{
-      field.setFieldCaption('Weekday name');
-      field.setInputAttrs(`${days[f]} schedule will be transferred to`);
-    });
-    this.scheduler.createActions(Array('Back','Move schedule'),Array(actionType.neutral,actionType.positive));
-    this.scheduler.onButtonClick(Array(_=>{this.rescheduleDefault()},
-    _=>{
-      const someinvalid = editDayField.some((f,_)=>{
-        if(f.getInput()!=constant.nothing){
-          f.validateNow();
-        } else {
-          f.showError('Cannot be empty');
-        }
-        return !f.isValid();
-      });
-      if(!someinvalid){
-        const data = Array();
-        days.forEach((day,d)=>{
-          data.push({
-            old:daysindices[d],
-            new:constant.weekdayscasual.indexOf(editDayField[d].getInput().toLowerCase())
-          })
-        });
-        const equals = Array();
-        data.forEach((obj,o)=>{
-          equals.push(obj.old == obj.new);
-        });
-        if(!equals.includes(false)){
-          return snackBar('All days are same as their old ones.',null,bodyType.warning);
-        }
-        days.includes(constant.weekdayscasual[data.new])
-        this.scheduler.loader(true,_=>{editDayField.forEach((f,_)=>{f.disableInput()})})
-        postJsonData(post.admin.schedule,{
-          target:client.teacher,
-          action:"update",
-          specific:"switchweekdays",
-          days:data
-        }).then(response=>{
-          clog(response);
-          if(response.event == code.OK){
-            this.scheduler.loader(false);
-            this.rescheduleDefault();
-            this.restartView();
-          } else {
-            snackBar('Could\'nt change weekdays','Report');
-            editDayField.forEach((field,f)=>{
-              field.validateNow();
-            });
-          }
-        })
-      }
-    }))
+    this.scheduler.createActions(["Back", "Cancel"], [actionType.neutral]);
+    this.scheduler.onButtonClick([
+      (_) => {
+        this.rescheduleDefault();
+      },
+      (_) => {
+        this.scheduler.hide();
+      },
+    ]);
   }
 
-  restartView(){
-    this.scheduler.createActions(Array('Restart now'),Array(actionType.positive));
-    this.scheduler.onButtonClick(Array(_=>{
-      relocate(locate.root);
-    }));
-    this.scheduler.setDisplay('Restart now',`<center class="active">Changes were applied successfully.<br/>A restart is required to resume scheduling.</center>`);
+  restartView() {
+    this.scheduler.setDisplay(
+      "Load Changes",
+      `<center class="active">Changes were applied successfully.<br/>A restart is required to load changes.</center>`
+    );
+    this.scheduler.createActions(["Restart now"], [actionType.positive]);
+    this.scheduler.onButtonClick([
+      (_) => {
+        this.scheduler.loader();
+        relocate(locate.root, { client: client.admin });
+      },
+    ]);
     let i = 10;
     setInterval(() => {
       this.scheduler.getDialogButton(0).innerHTML = `Restart now (${i})`;
-      i-=1;
-      if(i==0){
+      i -= 1;
+      if (i == 0) {
         this.scheduler.getDialogButton(0).click();
       }
     }, 1000);
@@ -673,8 +951,8 @@ class Security {
     this.lastLogin = getElement("lastLoginTime");
     this.deleteAccount = getElement("deleteAdminAccount");
     this.resetPass.onclick = (_) => {
-      authenticateDialog(client.admin,(_) => {
-        resetPasswordDialog(client.admin,true);
+      authenticateDialog(client.admin, (_) => {
+        resetPasswordDialog(client.admin, true);
       });
     };
     if (Number(sessionStorage.getItem("linkin")) > 0) {
@@ -688,14 +966,18 @@ class Security {
           clearInterval(timer);
           this.sendpasslink.innerHTML = "Get password link";
           opacityOf(this.sendpasslink, 1);
-          this.sendpasslink.onclick = (_) => {this.linkSender()};
+          this.sendpasslink.onclick = (_) => {
+            this.linkSender();
+          };
         }
       }, 1000);
     } else {
-      this.sendpasslink.onclick = (_) => {this.linkSender()};
+      this.sendpasslink.onclick = (_) => {
+        this.linkSender();
+      };
     }
     this.resetMail.onclick = (_) => {
-        changeEmailBox(client.admin);
+      changeEmailBox(client.admin);
     };
     this.deleteAccount.addEventListener(
       click,
@@ -706,7 +988,9 @@ class Security {
             const delconf = new Dialog();
             delconf.setDisplay(
               "Delete?",
-              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem("id")}</b> permanently? The following consequencies will take place:<br/>
+              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
+                "id"
+              )}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
@@ -727,15 +1011,23 @@ class Security {
           <span class="fmt-right error-caption" id="deluiiderror"></span>
       </fieldset>
       </div>`
-        );
-        const deluiid = new TextInput("deluiidfield","deluiidinput","deluiiderror",validType.nonempty);
-              const deletinstituteswitch = new Switch("deleteinstituteswitch");
-              deletinstituteswitch.onTurnChange(_=>{
+            );
+            const deluiid = new TextInput(
+              "deluiidfield",
+              "deluiidinput",
+              "deluiiderror",
+              validType.nonempty
+            );
+            const deletinstituteswitch = new Switch("deleteinstituteswitch");
+            deletinstituteswitch.onTurnChange(
+              (_) => {
                 deluiid.validate();
                 deluiid.show();
-              },_=>{
+              },
+              (_) => {
                 deluiid.hide();
-              })
+              }
+            );
             delconf.setBackgroundColorType(bodyType.negative);
             delconf.createActions(
               Array(`Delete account & Institution`, "No, step back"),
@@ -744,8 +1036,8 @@ class Security {
             delconf.onButtonClick(
               Array(
                 (_) => {
-                  if(deletinstituteswitch.isOn()){
-                    if(!deluiid.isValid()){
+                  if (deletinstituteswitch.isOn()) {
+                    if (!deluiid.isValid()) {
                       return deluiid.validateNow();
                     }
                   }
@@ -754,18 +1046,19 @@ class Security {
                   postJsonData(post.admin.self, {
                     target: "account",
                     action: code.action.ACCOUNT_DELETE,
-                    uiid:deluiid.getInput().trim()
+                    uiid: deluiid.getInput().trim(),
                   }).then((response) => {
                     if (response.event == code.OK) {
                       relocate(locate.root);
-                    }else{ 
+                    } else {
                       delconf.loader(false);
                       deluiid.enableInput();
-                    if(response.event == code.auth.WRONG_UIID){
-                      return deluiid.showError('Wrong UIID');
-                    } else {
-                      snackBar("Action Failed");
-                    }}
+                      if (response.event == code.auth.WRONG_UIID) {
+                        return deluiid.showError("Wrong UIID");
+                      } else {
+                        snackBar("Action Failed");
+                      }
+                    }
                   });
                 },
                 (_) => {
@@ -778,7 +1071,9 @@ class Security {
             snack.show();
             let timer = setInterval(() => {
               time--;
-              delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
+              delconf.getDialogButton(
+                0
+              ).innerHTML = `Delete account (${time}s)`;
               if (time == 0) {
                 clearInterval(timer);
                 delconf.hide();
@@ -794,32 +1089,32 @@ class Security {
     );
   }
 
-  linkSender(){
-      postJsonData(post.admin.manage, {
-        type: "resetpassword",
-        action: "send",
-      }).then((response) => {
-        clog(response);
-        if (response.event == code.mail.MAIL_SENT) {
-          snackBar(
-            "A link for password reset has been sent to your email address."
-          );
-          opacityOf(this.sendpasslink, 0.4);
-          this.sendpasslink.onclick = (_) => {};
-          let time = 120;
+  linkSender() {
+    postJsonData(post.admin.manage, {
+      type: "resetpassword",
+      action: "send",
+    }).then((response) => {
+      clog(response);
+      if (response.event == code.mail.MAIL_SENT) {
+        snackBar(
+          "A link for password reset has been sent to your email address."
+        );
+        opacityOf(this.sendpasslink, 0.4);
+        this.sendpasslink.onclick = (_) => {};
+        let time = 120;
+        sessionStorage.setItem("linkin", time);
+        const timer = setInterval(() => {
+          time--;
           sessionStorage.setItem("linkin", time);
-          const timer = setInterval(() => {
-            time--;
-            sessionStorage.setItem("linkin", time);
-            this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
-            if (Number(sessionStorage.getItem("linkin")) == 0) {
-              clearInterval(timer);
-              this.sendpasslink.innerHTML = "Get password link";
-              opacityOf(this.sendpasslink, 1);
-            }
-          }, 1000);
-        }
-      });
+          this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
+          if (Number(sessionStorage.getItem("linkin")) == 0) {
+            clearInterval(timer);
+            this.sendpasslink.innerHTML = "Get password link";
+            opacityOf(this.sendpasslink, 1);
+          }
+        }, 1000);
+      }
+    });
   }
 
   setButtonText(resetMail, resetPass) {
@@ -833,14 +1128,21 @@ class Security {
 class Users {
   constructor(sectionsArray) {
     this.invite = getElement("inviteUsers");
-    this.invite.onclick=(_)=>{linkGenerator(client.teacher)};
+    this.invite.onclick = (_) => {
+      linkGenerator(client.teacher);
+    };
     class Teacher {
       constructor() {
         this.listview = getElement("teacherList");
         this.search = getElement("teacherSearch");
         this.load(false);
         this.search.oninput = (_) => {
-          if (this.search.value && this.search.value.trim()!='@' && this.search.value.trim()!='.' && this.search.value.trim() != constant.nothing) {
+          if (
+            this.search.value &&
+            this.search.value.trim() != "@" &&
+            this.search.value.trim() != "." &&
+            this.search.value.trim() != constant.nothing
+          ) {
             this.load();
             postJsonData(post.admin.manage, {
               target: client.teacher,
@@ -848,24 +1150,28 @@ class Users {
               q: this.search.value.trim(),
             }).then((resp) => {
               if (resp.event == code.OK) {
-                if(resp.teachers.length<1){
+                if (resp.teachers.length < 1) {
                   return this.nouserfound();
                 }
                 let listitems = constant.nothing;
-                resp.teachers.forEach((teacher,t)=>{
-                    listitems+= this.getSlate(teacher.username,teacher.teacherID,t)
+                resp.teachers.forEach((teacher, t) => {
+                  listitems += this.getSlate(
+                    teacher.username,
+                    teacher.teacherID,
+                    t
+                  );
                 });
                 this.listview.innerHTML = listitems;
                 const slates = Array();
-                resp.teachers.forEach((teacher,t)=>{
+                resp.teachers.forEach((teacher, t) => {
                   slates.push(getElement(`teacherslate${t}`));
-                  slates[t].onclick=_=>{
+                  slates[t].onclick = (_) => {
                     refer(locate.admin.session, {
                       target: locate.admin.target.viewschedule,
                       type: client.teacher,
                       t: teacher.teacherUID,
                     });
-                  }
+                  };
                 });
                 return;
               }
@@ -876,7 +1182,7 @@ class Users {
           this.getDefaultView();
         };
       }
-      getSlate(name, email,index) {
+      getSlate(name, email, index) {
         return `<button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="teacherslate${index}">
         <div class="fmt-col fmt-twothird group-text">
           <span class="positive" id="teachername${index}">${name}</span><br/>
@@ -885,30 +1191,39 @@ class Users {
         </button>`;
       }
       load(show = true) {
-        show?this.getLoaderView():this.getDefaultView();
+        show ? this.getLoaderView() : this.getDefaultView();
       }
       getLoaderView() {
-        this.listview.innerHTML =  `<div class="fmt-center" id="tlistLoader">
+        this.listview.innerHTML = `<div class="fmt-center" id="tlistLoader">
           <img class="fmt-spin" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
       getDefaultView() {
-        this.listview.innerHTML = '<div class="fmt-center group-text">Type to search.</div>';
+        this.listview.innerHTML =
+          '<div class="fmt-center group-text">Type to search.</div>';
       }
-      nouserfound(){
+      nouserfound() {
         const query = window.location.search;
-        this.listview.innerHTML = `<div class="fmt-center group-text">No user found. <a href="${query.replace(query.substr(query.lastIndexOf('=')),`=${sectionsArray[2]}`)}">Try in schedule</a>?</div>`;
+        this.listview.innerHTML = `<div class="fmt-center group-text">No user found. <a href="${query.replace(
+          query.substr(query.lastIndexOf("=")),
+          `=${sectionsArray[2]}`
+        )}">Try in schedule</a>?</div>`;
       }
     }
     this.teacher = new Teacher();
-    
+
     class Classes {
       constructor() {
         this.listview = getElement("classList");
         this.search = getElement("classSearch");
         this.load(false);
         this.search.oninput = (_) => {
-          if (this.search.value && this.search.value.trim()!='@' && this.search.value.trim()!='.' && this.search.value.trim() != constant.nothing) {
+          if (
+            this.search.value &&
+            this.search.value.trim() != "@" &&
+            this.search.value.trim() != "." &&
+            this.search.value.trim() != constant.nothing
+          ) {
             this.load();
             postJsonData(post.admin.manage, {
               target: client.student,
@@ -916,24 +1231,28 @@ class Users {
               q: this.search.value.trim(),
             }).then((resp) => {
               if (resp.event == code.OK) {
-                if(resp.classes.length<1){
+                if (resp.classes.length < 1) {
                   return this.noclassfound();
                 }
                 let listitems = constant.nothing;
-                resp.classes.forEach((Class,t)=>{
-                    listitems+= this.getSlate(Class.classname,Class.inchargeID,t)
+                resp.classes.forEach((Class, t) => {
+                  listitems += this.getSlate(
+                    Class.classname,
+                    Class.inchargeID,
+                    t
+                  );
                 });
                 this.listview.innerHTML = listitems;
                 const slates = Array();
-                resp.classes.forEach((Class,t)=>{
+                resp.classes.forEach((Class, t) => {
                   slates.push(getElement(`classslate${t}`));
-                  slates[t].onclick=_=>{
+                  slates[t].onclick = (_) => {
                     refer(locate.admin.session, {
                       target: locate.admin.target.viewschedule,
                       type: client.student,
                       c: Class.classUID,
                     });
-                  }
+                  };
                 });
                 return;
               }
@@ -944,7 +1263,7 @@ class Users {
           this.setDefaultView();
         };
       }
-      getSlate(name, email,index) {
+      getSlate(name, email, index) {
         return `<button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="classslate${index}">
         <div class="fmt-col fmt-twothird group-text">
           <span class="positive" id="classname${index}">${name}</span><br/>
@@ -953,23 +1272,25 @@ class Users {
         </button>`;
       }
       load(show = true) {
-        show?this.getLoaderView():this.setDefaultView();
+        show ? this.getLoaderView() : this.setDefaultView();
       }
       getLoaderView() {
-        this.listview.innerHTML =  `<div class="fmt-center" id="tlistLoader">
+        this.listview.innerHTML = `<div class="fmt-center" id="tlistLoader">
           <img class="fmt-spin" width="50" src="/graphic/blueLoader.svg"/>
         </div>`;
       }
       setDefaultView() {
-        this.listview.innerHTML = '<div class="fmt-center group-text">Type to search.</div>';
+        this.listview.innerHTML =
+          '<div class="fmt-center group-text">Type to search.</div>';
       }
-      noclassfound(){
-        this.listview.innerHTML = '<div class="fmt-center group-text">No class found.</div>';
+      noclassfound() {
+        this.listview.innerHTML =
+          '<div class="fmt-center group-text">No class found.</div>';
       }
     }
-    try{
+    try {
       this.classes = new Classes();
-    }catch{}
+    } catch {}
   }
 }
 

@@ -372,9 +372,10 @@ img{vertical-align:middle}
     color: var(--base-text);
     background-color: var(--base);
     box-shadow:1px -2px 8px #23232325;
+    margin:4px 0;
     font-size:22px;
     padding:12px 8px;
-    border-radius:0 0 8px 8px;
+    border-radius:8px;
     transition: 0.3s ease;
 }
 

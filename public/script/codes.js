@@ -132,14 +132,17 @@ class Codes {
         this.CHANGE_BREAK_START_TIME = "action/timing-change-break-starttime";
         this.CHANGE_PERIOD_DURATION = "action/timing-change-period-duration";
         this.CHANGE_BREAK_DURATION = "action/timing-change-break-duration";
-        this.CHANGE_TOTAL_PERIODS = "action/timing-change-periods";
-        this.CHANGE_WORKING_DAYS = "action/timing-change-working-days";
 
         this.CREATE_CLASSES = 'action/create-multiple-classes';
         this.CREATE_NEW_CLASS = 'action/create-new-class';
         this.RENAME_CLASS = "action/rename-classroom";
         this.RENAME_SUBJECT = "action/rename-subject";
-        this.SET_INCHARGE = "action/set-class-incharge"
+        this.SET_INCHARGE = "action/set-class-incharge";
+        this.REMOVE_CLASS = 'action/delete-classroom';
+        this.REMOVE_DAY = 'action/remove-day-schedule';
+        this.SWITCH_DAY = 'action/switch-day-schedule';
+        this.REMOVE_PERIOD = 'action/remove-period';
+        this.SWITCH_PERIODS = 'action/switch-periods';
       }
     }
     class InvitationCodes {
@@ -200,6 +203,7 @@ class Codes {
         this.BATCH_EXISTS = "schedule/batch-or-class-exists";
         this.BATCH_NOT_FOUND = "schedule/batch-or-class-not-exist";
         this.SCHEDULE_CLASHED = "schedule/conflicting-schedule";
+        this.WEEKDAY_EXISTS = "schedule/weekday-exists";
         this.FREE = "Free";
       }
     }
@@ -679,6 +683,7 @@ class InputType {
     this.match = "matching";
     this.username = "username";
     this.phone = "phone";
+    this.number = "number";
     this.weekday = "weekday";
   }
 }

@@ -374,8 +374,12 @@ class ConfirmClasses {
               <span class="fmt-right error-caption" id="classerror${c}"></span>
               </fieldset>
               <img class="fmt-spin-fast" style="display:none" width="20" src="/graphic/blueLoader.svg" id="loader${c}"/>
-              <button class="positive-button caption" id="saveclass${c}">Save</button>
-              <button class="negative-button caption" id="undoclass${c}">Cancel</button>
+              <div class="fmt-col fmt-third fmt-padding">
+                <button class="fmt-col positive-button caption" id="saveclass${c}">Save</button>
+              </div>
+              <div class="fmt-col fmt-third fmt-padding">
+                <button class="fmt-col negative-button caption" id="undoclass${c}">Cancel</button>
+              </div>
           </div>
         </div>`;
         });

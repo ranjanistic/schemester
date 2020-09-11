@@ -675,7 +675,7 @@ class Dialog extends DialogID {
     });
   }
   setDisplay(head, body = null, imgsrc  = null) {
-    this.heading.textContent = head;
+    this.heading.innerHTML = head;
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);
     if (imgsrc == null) {
@@ -1368,6 +1368,9 @@ const validateTextField = (
     case validType.phone:{
       error = "Not a valid number"
     }break;
+    case validType.number:{
+      error = "Not a valid number"
+    }break;
     case validType.match:
       {
         error = "This one is different.";
@@ -1687,6 +1690,8 @@ const stringIsValid = (
       return constant.emailRegex.test(String(value).toLowerCase());
     case validType.phone:
       return !isNaN(value) && stringIsValid(String(value).trim());
+    case validType.number:
+      return !isNaN(value) && stringIsValid(String(value).trim());
     //todo: case inputType.password: return constant.passRegex.test(String(passValue));
     case validType.username:
       return stringIsValid(String(value).trim());
@@ -1884,14 +1889,14 @@ const setTimeGreeting = (element = new HTMLElement()) => {
  * @param {String} dateTillMillis The full date in Schemester standard form: YYYYMMDDHHmmSSmmm
  * @return {String} Readable sentence like date.
  */
-const getProperDate = (dateTillMillis = String) => {
+const getProperDate = (dateTillMillis) => {
+  dateTillMillis = String(dateTillMillis);
   const year = dateTillMillis.substring(0, 4);
   const month = dateTillMillis.substring(4, 6);
   const date = dateTillMillis.substring(6, 8);
   const hour = dateTillMillis.substring(8, 10);
   const min = dateTillMillis.substring(10, 12);
   const sec = dateTillMillis.substring(12, 14);
-  clog(dateTillMillis.substring(6, 8));
   return `${getMonthName(
     month - 1
   )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;

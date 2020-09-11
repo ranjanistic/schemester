@@ -113,7 +113,7 @@
                         <div class="fmt-row sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <div class="fmt-col fmt-half">
                                 <span class="sub-heading">Admin</span>
-                                <div class="editable" id="adminName">
+                                <div class="positive" id="adminName">
                                     <span class="caption">Admin name</span><br/>
                                     <span id="adminnameview"><%= adata.username %></span>
                                     <button class="neutral-button caption" id="editadminname"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -131,7 +131,7 @@
                                 <div class="caption">Email address</div>
                                 <div class="active" id="adminEmailAddress"><%= adata.id %></div>
 
-                                <div class="editable" id="adminPhoneNumber">
+                                <div class="positive" id="adminPhoneNumber">
                                     <span class="caption">Contact Number</span><br/>
                                     <span id="adminphoneview"><%= inst.default.admin.phone %></span>
                                     <button class="neutral-button caption" id="editadminphone"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -202,7 +202,7 @@
                         <div class="sub-container fmt-row fmt-animate-opacity" id="institutionSettingsBox">
                             <div class="fmt-col fmt-half">
                                 <span class="sub-heading">Basic</span>
-                                <div class="editable" id="instituteName">
+                                <div class="positive" id="instituteName">
                                     <span class="caption">Display name</span><br/>
                                     <span id="institutenameview"><%= inst.default.institute.instituteName %></span>
                                     <button class="neutral-button caption" id="editinstitutename"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -217,7 +217,7 @@
                                     <button class="negative-button caption" id="cancelinstitutename">Cancel</button>
                                 </div>
 
-                                <div class="editable" id="instituteMail">
+                                <div class="positive" id="instituteMail">
                                     <span class="caption">Email address</span><br/>
                                     <span id="institutemailview"><%= inst.default.institute.email %></span>
                                     <button class="neutral-button caption" id="editinstitutemail"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -232,7 +232,7 @@
                                     <button class="negative-button caption" id="cancelinstitutemail">Cancel</button>
                                 </div>
 
-                                <div class="editable" id="institutePhone">
+                                <div class="positive" id="institutePhone">
                                     <span class="caption">Phone number</span><br/>
                                     <span id="institutephoneview"><%= inst.default.institute.phone %></span>
                                     <button class="neutral-button caption" id="editinstitutephone"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -248,7 +248,7 @@
                                 </div>
 
                                 <span class="caption">UIID</span><br/>
-                                <span class="editable" id="uiid"><%= adata.uiid %></span><br/>
+                                <span class="positive" id="uiid"><%= adata.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
                                 <span  id="subscriptionTill">...</span ><br/>
                             </div>
@@ -284,7 +284,7 @@
                             <span class="sub-heading">Timings</span>
                             <button class="fmt-right negative-button" id="reschedule">Re-schedule</button>
                             <div>
-                                <div class="editable" id="start">
+                                <div class="positive" id="start">
                                     <span class="caption">Schedule starts at</span><br/>
                                     <span id="startView"><%= inst.default.timings.startTime %></span>
                                     <button class="neutral-button caption" id="editstart"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -299,7 +299,7 @@
                                     <button class="negative-button caption" id="cancelstart">Cancel</button>
                                 </div>
 
-                                <div class="editable" id="breakstart">
+                                <div class="positive" id="breakstart">
                                     <span class="caption">Break starts at</span><br/>
                                     <span id="breakstartView"><%= inst.default.timings.breakStartTime %></span>
                                     <button class="neutral-button caption" id="editbreakstart"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -314,7 +314,7 @@
                                     <button class="negative-button caption" id="cancelbreakstart">Cancel</button>
                                 </div>
 
-                                <div class="editable" id="periodduration">
+                                <div class="positive" id="periodduration">
                                     <span class="caption">Each period duration</span><br/>
                                     <span id="perioddurationView"><%= inst.default.timings.periodMinutes %></span>
                                     <button class="neutral-button caption" id="editperiodduration"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -329,7 +329,7 @@
                                     <button class="negative-button caption" id="cancelperiodduration">Cancel</button>
                                 </div>
 
-                                <div class="editable" id="breakduration">
+                                <div class="positive" id="breakduration">
                                     <span class="caption">Break duration</span><br/>
                                     <span id="breakdurationView"><%= inst.default.timings.breakMinutes %></span>
                                     <button class="neutral-button caption" id="editbreakduration"><img width="20" src="/graphic/elements/editicon.svg"/></button>
@@ -344,7 +344,7 @@
                                     <button class="negative-button caption" id="cancelbreakduration">Cancel</button>
                                 </div>
                                 <span class="caption">Periods in a day</span><br/>
-                                <span class="editable" id="totalPeriods"><%= inst.default.timings.periodsInDay %></span><br/>
+                                <span class="positive" id="totalPeriods"><%= inst.default.timings.periodsInDay %></span><br/>
                                 <%
                                     function getDaysArray(indices){
                                         const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
@@ -360,7 +360,7 @@
                                     }
                                  %> 
                                 <span class="caption">Working days in a week</span><br/>
-                                <span class="editable" id="workdays"><%= getDaysArray(inst.default.timings.daysInWeek) %></span><br/>
+                                <span class="positive" id="workdays"><%= getDaysArray(inst.default.timings.daysInWeek) %></span><br/>
                             </div>
                         </div>
                         <!--users settings-->
