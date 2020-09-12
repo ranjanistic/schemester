@@ -24,7 +24,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.21",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "nodejs-nodemailer-outlook": "^1.2.3",
     "nodemailer": "^6.4.10",
     "rate-limiter-flexible": "^2.1.7"
