@@ -3,25 +3,27 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  code = require("../public/script/codes"),
-  view = require("../hardcodes/views"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
+  path = require("path"),
+  fs = require("fs"),
   verify = require("../workers/common/verification"),
   share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/adminworker"),
   Admin = require("../config/db").getAdmin(),
-  Institute = require("../config/db").getInstitute();
-  const sessionsecret = session.adminsessionsecret;
-
+  Institute = require("../config/db").getInstitute(),
+  sessionsecret = session.adminsessionsecret;
+const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
+  authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 admin.use(cookieParser(sessionsecret));
 
-admin.get("/", function (_, res) {
+admin.get(get.root, (_, res)=>{
   res.redirect(worker.toLogin());
 });
 
-admin.get("/auth/login*", (req, res) => {
+admin.get(get.authlogin, (req, res) => {
   clog("admin login get");
   session
     .verify(req, sessionsecret)
@@ -38,7 +40,42 @@ admin.get("/auth/login*", (req, res) => {
     });
 });
 
-admin.get("/session*", (req, res) => {
+
+admin.post('/auth',async (req,res)=>{
+  const body = req.body;
+  clog(body);
+  switch(body.action){
+    case "login":{session.login(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        return res.json(authreqfailed(error));
+      });
+    }break;
+    case "logout":{
+      session.finish(res).then((response) => {
+        return res.json({ result: response });
+      });
+    }break;
+    case "signup":{
+      session.signup(req, res, sessionsecret)
+      .then((response) => {
+        return res.json({ result: response });
+      })
+      .catch((error) => {
+        clog(error);
+        return res.json({
+          result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
+        });
+      });
+    }break;
+    default:res.sendStatus(500);
+  }
+});
+
+
+admin.get(get.session, (req, res) => {
   let data = req.query;
   clog("admin session");
   clog(data);
@@ -96,15 +133,23 @@ admin.get("/session*", (req, res) => {
               });
             }
             case view.admin.target.classes:{
-              clog(inst.users.classes);
               return res.render(view.admin.getViewByTarget(data.target),{
+                client:client.student,
+                users:inst.users.classes,
+                defaults:inst.default,
+              });
+            }
+            case view.admin.target.teachers:{
+              return res.render(view.admin.getViewByTarget(data.target),{
+                client:client.teacher,
+                users:inst.users.teachers,
                 classes:inst.users.classes,
                 defaults:inst.default,
               });
             }
             case view.admin.target.viewschedule:{
                 clog(data);
-                if (data.type == "teacher") {
+                if (data.type == client.teacher) {
                   if(data.t){ //if teacher _id is provided, means required teacher account considered exists.
                     const teacherInst = await Institute.findOne({
                       uiid: response.user.uiid,
@@ -176,12 +221,13 @@ admin.get("/session*", (req, res) => {
                       return res.render(view.notfound);
 
                     return res.render(view.admin.scheduleview, {  //account not found, so only schedule.
-                      group: { teacher: false },
+                      group: { teacher: true, pending:true },
+                      teacher:{teacherID:data.teacherID},
                       schedule: teacherScheduledoc.schedule.teachers[0],
                       inst,
                     });
                   }
-                } else if (data.type == "student") {  //class schedule
+                } else if (data.type == client.student) {  //class schedule
                   if(data.c){ //if class _id is provided, means required class considered exists.
                     const classdoc = await Institute.findOne({
                       uiid: response.user.uiid,
@@ -197,18 +243,10 @@ admin.get("/session*", (req, res) => {
                     clog(classdoc);
                     if(!classdoc) return res.render(view.notfound);  //no class for data.c (_id).
                     const Class = classdoc.users.classes[0];
-                    const scheduledoc = await Institute.findOne({
-                      uiid: response.user.uiid,
-                      "schedule.classes": {
-                        $elemMatch: { "classname": Class.classname },
-                      },
-                    },{
-                      projection: {
-                        _id: 0,
-                        "schedule.classes.$": 1,
-                      },
-                    });
-                    if(!scheduledoc){ //class exists:true, schedule:false
+
+                    const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :Class.classname})
+                    clog("here");
+                    if(!scheduleresp.schedule.days){ //class exists:true, schedule:false
                       return res.render(view.admin.scheduleview, {
                         group: { Class: true },
                         Class: Class,
@@ -220,11 +258,11 @@ admin.get("/session*", (req, res) => {
                     return res.render(view.admin.scheduleview, { //both account and schedule
                       group: { Class: true },
                       Class: Class,
-                      schedule: scheduledoc.schedule.classes[0],
+                      schedule: scheduleresp.schedule,
                       inst,
                     });
                   } else {  //class considered not exists.
-                    if(!data.classname) return res.render(view.notfound); //so classname must be provided for schedule.
+                    if(!data.classname) return res.render(view.notfound); //at least classname must be provided for schedule.
                     const classdoc = await Institute.findOne({ //checking for account by teacher ID, in case it exists.
                       uiid: response.user.uiid,
                       "users.classes": {
@@ -240,24 +278,21 @@ admin.get("/session*", (req, res) => {
                       data['c'] = classdoc.users.classes[0]._id;
                       return res.redirect(worker.toSession(data.u,data))
                     }
-                    const classScheduleInst = await Institute.findOne({ //finding schedule with classname
-                      uiid: response.user.uiid,
-                      "schedule.classes": {
-                        $elemMatch: { "classname": data.classname},
-                      },
-                    },{
-                      projection: {
-                        _id: 0,
-                        "schedule.classes.$": 1,
-                      },
-                    });
-                    if(!classScheduleInst)//no schedule found, so 404, as only schedule was requested.
+                    const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :data.classname})
+                    clog(scheduleresp);
+                    if(scheduleresp.event == code.inst.CLASS_NOT_FOUND) 
+                      return res.render(view.admin.getViewByTarget(data.target),{
+                        group: { Class: true, pending:true },
+                        Class:{classname:data.classname},
+                        schedule:false,
+                        inst,
+                      });
+                    if(!scheduleresp.schedule.days)//no schedule found, so 404, as only schedule was requested.
                       return res.render(view.notfound);
-
                     return res.render(view.admin.scheduleview, {  //class not found, so only schedule.
-                      group: { Class: false },
-                      Class:false,
-                      schedule: classScheduleInst.schedule.classes[0],
+                      group: { Class: true },
+                      Class:{classname:data.classname},
+                      schedule: scheduleresp.schedule,
                       inst,
                     });
                   }
@@ -277,13 +312,12 @@ admin.get("/session*", (req, res) => {
         }
       } catch (e) {
         clog(e);
-        return res.render(view.servererror);
+        return res.render(view.servererror,{error:e});
       }
     });
 });
-function authFail(e){
-  return {result:code.eventmsg(code.auth.AUTH_FAILED,e)}
-}
+const authFail=(e)=>({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+
 /**
  * For self account subdoc (Admin collection).
  */
@@ -300,11 +334,15 @@ admin.post("/self", async (req, res) => {
     return authFail(e);
   })
   .then(async (response) => {
+    clog(response);
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
     clog(body);
+    clog("here");
     const admin = await Admin.findOne({'_id':ObjectId(response.user.id)});
     if(!admin) return code.event(code.auth.USER_NOT_EXIST);
+    clog(share.getAdminShareData(admin));
     switch (body.target) {
+      case "receive": return res.json({result:share.getAdminShareData(admin)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body,admin)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
@@ -338,61 +376,6 @@ admin.post("/session/validate", (req, res) => {
       });
   }
 });
-
-admin.post(
-  "/auth/signup",
-  [
-    check("username", code.auth.NAME_INVALID).not().isEmpty(),
-    check("email", code.auth.EMAIL_INVALID).isEmail(),
-    check("password", code.auth.PASSWORD_INVALID)
-      .isAlphanumeric()
-      .isLength({ min: 6 }),
-    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.json({ result:{ event: errors.array()[0].msg }});
-    session.signup(req, res, sessionsecret)
-    .catch((error) => {
-      clog(error);
-      return res.json({ result:{ event: code.auth.ACCOUNT_CREATION_FAILED, msg: error } });
-    })
-    .then((response) => {
-      clog(response);
-      return res.json({ result:response });
-    });
-  }
-);
-
-/**
- * Logout admin.
- */
-admin.post("/auth/logout", (_, res) => {
-  session.finish(res).then((response) => {
-    return res.json({ result:response });
-  });
-});
-
-admin.post( "/auth/login",
-  [
-    check("email", code.auth.EMAIL_INVALID).isEmail(),
-    check("password", code.auth.PASSWORD_INVALID).not().isEmpty(),
-    check("uiid", code.auth.UIID_INVALID).not().isEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.json({ result:{ event: errors.array()[0].msg } });
-    session.login(req, res, sessionsecret)
-      .catch((error) => {
-        clog(error);
-        return res.json({ result:code.eventmsg(code.auth.AUTH_REQ_FAILED,error) });
-      })
-      .then((response) => { return res.json({ result:response }) });
-  }
-);
-
 /**
  * For current session account related requests.
  */
@@ -426,10 +409,45 @@ admin.post('/default',(req,res)=>{
         case "admin": return res.json({result:await worker.default.handleAdmin(response.user,inst,body)});
         case "institute":return res.json({result:await worker.default.handleInstitute(response.user,body)});
         case "timings": return res.json({result:await worker.default.handleTimings(response.user,body)});
+        case code.inst.BACKUP_INSTITUTION:{
+          worker.default.institute.createInstituteBackup(response.user,(filename,error)=>{
+            if(error) return res.json({result:code.event(code.NO)});
+            return res.json({result:{
+              event:code.OK,
+              url:`/${client.admin}/download?type=${code.inst.BACKUP_INSTITUTION}&res=${filename}`,
+            }})
+          });
+        }break;
       }
     });
 });
 
+admin.get(get.download,async(req,res)=>{
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return res.json({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.render(view.forbidden);
+    const query = req.query;
+    if(!(query.type&&query.res)) return res.render(view.notfound);
+    switch(query.type){
+      case code.inst.BACKUP_INSTITUTION:{
+        try{
+          if(response.user.id == String(query.res).slice(0,query.res.indexOf('_')) && response.user.uiid == String(query.res).slice(query.res.indexOf('_')+1,query.res.lastIndexOf('_'))){
+            res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
+              if(err) res.render(view.notfound);
+            });
+          } else {
+            res.render(view.notfound);
+          }
+        }catch{
+          res.render(view.notfound);
+        }
+      }
+    }
+  })
+})
 /**
  * For actions related to users subdocument.
  */
@@ -448,8 +466,8 @@ admin.post("/users",async (req,res)=>{
       if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
       const body = req.body;
       switch(body.target){
-        case "teachers":return res.json({result: await worker.users.handleTeacherAction(inst,body)});
-        case "student":return res.json({result: await worker.users.handleClassAction(inst,body)});
+        case client.teacher:return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
+        case client.student:return res.json({result: await worker.users.handleClassAction(response.user,body,inst)});
       }
     });
 });
@@ -467,8 +485,8 @@ admin.post("/pseudousers",async(req,res)=>{
       if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
       const body = req.body;
       switch(body.target){
-        case "teachers":return res.json({result:await worker.pseudo.handleTeachers(response.user,body)})
-        case "classes": return res.json({result:await worker.pseudo.handleStudents(response.user,body)})
+        case client.teacher:return res.json({result:await worker.pseudo.handleTeachers(response.user,body)})
+        case client.student: return res.json({result:await worker.pseudo.handleStudents(response.user,body)})
       }
     })
 })
@@ -489,8 +507,8 @@ admin.post("/schedule", async (req, res) => {
     const body = req.body;
     clog(body);
     switch (body.target) {
-      case "teacher": return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,inst,body)});
-      case "student": return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,inst,body)});
+      case client.teacher: return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,body,inst)});
+      case client.student: return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,body,inst)});
     }
   }); 
 });
@@ -508,6 +526,7 @@ admin.post("/receivedata",async(req,res)=>{
       case "default":return res.json({result:await worker.default.getDefaults(response.user)});
       case "users":return res.json({result:await worker.users.getUsers(response.user)});
       case "schedule":return res.json({result:await worker.schedule.getSchedule(response.user)});
+      case "classroom":return res.json({result:await worker.classroom.getClasses(response.user,body)});
       case "pseudousers":return res.json({result:await worker.pseudo.getPseudoUsers(response.user,body)});
       case "vacations":return res.json({result:await worker.vacation.getVacations(response.user)});
       case "preferences":return res.json({result:await worker.prefs.getPreferences(response.user)});
@@ -552,8 +571,7 @@ admin.post("/manage", async (req, res) => { //for settings
       return res.json({ result: code.eventmsg(code.auth.AUTH_REQ_FAILED, e) });
     })
     .then(async (response) => {
-      if (!session.valid(response))
-        return res.json({ result: response });
+      if (!session.valid(response))return res.json({ result: response });
       const inst = await Institute.findOne({uiid: response.user.uiid,});
       if (!inst && body.type!=verify.type)
         return res.json({
@@ -570,14 +588,31 @@ admin.post("/manage", async (req, res) => { //for settings
     });
 });
 
+admin.post('/mail',async(req,res)=>{
+  session.verify(req, sessionsecret).catch((e) => {
+    clog(e);
+    return res.json(authreqfailed(e));
+  }).then(async (response) => {
+    if (!session.valid(response))return res.json({ result: response });
+    const body = req.body;
+    switch(body.type){
+      case invite.personalType:{
+        switch(body.target){
+          case client.teacher: return res.json({result:await worker.users.teachers.sendInvitation(response.user,body)});
+        }
+      }break;
+    }
+  })
+})
+
 /**
  * For external links, not requiring valid session.
  */
-admin.get("/external*", async (req, res) => {
+admin.get(get.external, async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case verify.type:{
-      verify.handleVerification(query, verify.target.admin).then(async(resp) => {
+      verify.handleVerification(query, client.admin).then(async(resp) => {
         if (!resp)
           return res.render(view.notfound);
         return res.render(view.verification, { user: resp.user });
@@ -587,7 +622,7 @@ admin.get("/external*", async (req, res) => {
       });
     }break;
     case reset.type:{
-      reset.handlePasswordResetLink(query,reset.target.admin).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,client.admin).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user });
       }).catch(e=>{

@@ -25,6 +25,7 @@
         <script src="/script/codes.js"></script>
         <script async type="text/javascript" src="/script/main.js"></script>
         <script async type="text/javascript" src="/script/admin/teacherfiller.js"></script>
+        <script src="/script/admin/admin.js"></script>
     </head>
     <%
     addNumberSuffixHTML = function(number = Number){
@@ -57,21 +58,32 @@
                 <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="back">
                 <span id="greeting">Create schedule</span>
             <% } %>
-            <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <span class="fmt-row fmt-center">
+                        <label class="switch-container ">
+                            <input type="checkbox" id="darkmode">
+                            <span class="switch-positive"></span>
+                        </label>
+                    </span>
                     <% if (user.isAdmin) { %>
-                    <div class="fmt-padding" id="settingsButton">Settings</div>
+                        <div class="" id="settingsAdminButton">
+                            <img src="/graphic/elements/settings.svg" width="25" /> Settings
+                        </div>
                     <% } %>
-                    <div class="fmt-padding" id="logout">Logout</div>
+                    <div class="negative" id="logout">
+                        ❌ Logout
+                    </div>
                 </div>
-            </span>
+            </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
+            <button class="fmt-right neutral-button" id="uploadschedule">Upload <%= (user.isAdmin?'Teacher':'Schedule') %></button>
         </div>
         <div class="fmt-padding-small" style="margin-top: 66px;">
             <div class="container" id="workbox">
                 <div class="fmt-row">
+
                     <div class="fmt-col fmt-half">
                         <% if (user.isAdmin) { %>
                             <fieldset class="text-field" id="teacherEmailField">
@@ -95,15 +107,15 @@
                     <% if(inst.preferences.allowTeacherAddSchedule==true || user.isAdmin) { %>
                     <div class="fmt-col fmt-half">
                         <div class="fmt-half">
-                            <fieldset class="text-field-active" id="teacherDayField">
-                                <legend class="field-caption" id="teacherDayCaption">Day</legend>
-                                <!-- <input class="text-input" required placeholder="Monday" type="text" id="teacherDay" name="teacherScheduleDetail"> -->
-                                <span id="teacherDay" style="font-size:24px"><%= inst.default.timings.startDay %> </span>
+                            <fieldset class="text-field-active fmt-animate-fading-fast" id="teacherDayField">
+                                <legend class="" id="teacherDayCaption">Day</legend>
+                                <span id="teacherDay" class="field-caption " style="font-size:24px"><%= inst.default.timings.startDay %> </span>
                                 <span class="fmt-right error-caption"  id="teacherDayError"></span>
                             </fieldset>
                         </div>
-                        <div class="fmt-right fmt-hide-small" style="padding:12px">
-                            <button class="positive-button" id="nextSchedule">Save & Next</button>
+                        <div class="fmt-right" style="padding:12px">
+                            <button class="neutral-button" id="prevSchedule">Previous day</button>
+                            <button class="positive-button fmt-hide-small" id="nextSchedule">Save & Next</button>
                             <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="nextLoader"/>
                         </div>
                     </div>
@@ -124,28 +136,28 @@
                         Subject
                     </div>
                     <div class="fmt-col fmt-quarter">
-                        
+                        Free    
                     </div>
                 </div>
 
                 
                 <div class="fmt-row fmt-center" style="padding:4px" id="teacherFillerBox">
                     <% for( let index = 0; index < inst.default.timings.periodsInDay; index++ ) { %>
-                        <div class="fmt-row tab-container" style="margin-bottom:4px" id="teacherperiodrow<%= index %>">
+                        <div class="fmt-row tab-container fmt-animate-top" style="margin-bottom:4px" id="teacherperiodrow<%= index %>">
                             <div class="fmt-col fmt-quarter fmt-center active" style="padding:18px;">
                                 <%= addNumberSuffixHTML(index+1) %><span class="fmt-hide-large fmt-hide-medium"> period</span>
                             </div>
                             <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">
                                     <legend class="field-caption">Class assigned</legend>
-                                    <input class="text-input group-text" required placeholder="e.g. 8A,12b,9,etc. (only one)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
+                                    <input class="text-input group-text" required placeholder="Classname (Keep same pattern)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
                                     <span class="fmt-right error-caption"  id="teacherClassError<%= index %>"></span>
                                 </fieldset>
                             </div>
                             <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherSubjectField<%= index %>">
                                     <legend class="field-caption">Subject to be taken</legend>
-                                    <input class="text-input group-text" placeholder="e.g. Physics, Politics, etc."  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
+                                    <input class="text-input group-text" placeholder="Subject name"  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
                                     <span class="fmt-right error-caption"  id="teacherSubjectError<%= index %>"></span>
                                 </fieldset>
                             </div>
@@ -190,6 +202,10 @@
             <span id="snackText"></span>
             <button id="snackButton"></button>
         </div>
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
         <span hidden>
             <span id="isAdmin"><%= user.isAdmin %></span>
             <span id="uiid"><%= inst.uiid %></span>
@@ -205,4 +221,12 @@
             <% } %>
         </span>
     </body>
+    <noscript id="noscript" class="dialog fmt-red" style="display:block">
+        <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+            <div class="heading">Javascript required</div><br/>
+            <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+                <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+            </div>
+        </div>
+    </noscript>
 </html>

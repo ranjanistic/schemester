@@ -8,6 +8,7 @@
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
         <script src="/script/teacher/fragment/fullweek.js"></script>
+        <script src="/script/teacher/teacher.js"></script>
     </head>
     <% 
     let getDayName=(index = Number)=>{
@@ -69,7 +70,7 @@
                             <div class="fmt-row "  id="periodsview<%= schedule[i].dayIndex %>">
                                 <% for( let j = 0; j < schedule[i].period.length; j++ ) { %>
                                     <div class="fmt-row">
-                                        <div class="fmt-col fmt-padding fourth active caption fmt-center" style="margin:12px 0px">
+                                        <div class="fmt-col fmt-padding half active caption fmt-center" style="margin:12px 0px">
                                             <%= addNumberSuffixHTML(j+1) %> period
                                         </div>
                                         <div class="fmt-col fmt-center fmt-padding-small positive group-text half">
@@ -79,9 +80,6 @@
                                             <div class="fmt-row fmt-center group-text">
                                                 <%= schedule[i].period[j].subject %>
                                             </div>
-                                        </div>
-                                        <div class="fmt-col fmt-center fmt-padding fourth">
-                                            ✒️
                                         </div>
                                     </div>
                                 <% } %>

@@ -2,10 +2,10 @@ const { ObjectId } = require("mongodb");
 
 const express = require("express"),
   teacher = express.Router(),
+  path = require('path'),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
-  code = require("../public/script/codes"),
-  view = require("../hardcodes/views"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
@@ -21,11 +21,11 @@ teacher.use(cookieParser(sessionsecret));
 const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
   authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
-teacher.get("/", (req, res) => {
+teacher.get(get.root, (req, res) => {
   res.redirect(worker.toLogin());
 });
 
-teacher.get("/auth/login*", (req, res) => {
+teacher.get(get.authlogin, (req, res) => {
   session.verify(req, sessionsecret)
     .catch((error) => {
       return res.render(view.servererror, { error });
@@ -52,9 +52,10 @@ teacher.post("/auth",async(req,res)=>{
       })
     }break;
     case "logout":{
+      clog("finishing session");
       session.finish(res).then((response) => {
         return res.json({ result: response });
-      }); 
+      });
     }break;
     case "signup":{
       session.signup(req, res, sessionsecret,body.pseudo)
@@ -181,7 +182,7 @@ teacher.get("/session*", async (req, res) => {
 });
 
 //for teacher session fragments.
-teacher.get("/fragment*", (req, res) => {
+teacher.get(get.fragment, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
@@ -241,27 +242,18 @@ teacher.get("/fragment*", (req, res) => {
           worker.classroom.getClassroom(response.user,teacher)
             .then((resp) => {
               clog(resp);
-              if(resp.pseudostudents){
-                resp.pseudostudents.forEach((pstud,s)=>{
-                  resp.pseudostudents[s] = share.getPseudoStudentShareData(pstud);
-                });
-              }
-              if(resp.classroom){
-                resp.classroom.students.forEach((stud,s)=>{
-                  resp.classroom.students[s] = share.getStudentShareData(stud);
-                });
-              }
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 classroom: resp.classroom,
                 pseudostudents:resp.pseudostudents,
                 teacher:share.getTeacherShareData(teacher),
+                otherclasses:resp.otherclasses
               });
             })
             .catch((e) => {
               clog(e);
+              return res.render(view.notfound);
             });
-          return;
-        }
+        }break;
         case view.teacher.target.fragment.about: {
           clog("about");
           const teacherdoc = await Institute.findOne({
@@ -274,7 +266,8 @@ teacher.get("/fragment*", (req, res) => {
             adminphonevisible:admindoc?admindoc.prefs.showphonetoteacher:false,
             adminemailvisible:admindoc?admindoc.prefs.showemailtoteacher:false
           });
-        }
+        }break;
+        default:return res.render(view.notfound);
       }
     });
 });
@@ -294,8 +287,8 @@ teacher.post("/self", async (req, res) => {
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-    clog(body);
     switch (body.target) {
+      case "receive": return res.json({result:await worker.self.account.getAccount(response.user)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
@@ -312,17 +305,53 @@ teacher.post("/schedule", async (req, res) => {
       if (!session.valid(response)) return res.json(invalidsession);
       const body = req.body
       switch (body.action) {
-        case "upload":
-          return res.json({result:await worker.schedule.scheduleUpload(response.user, body)});
+        case "upload":return res.json({result:await worker.schedule.scheduleUpload(response.user, body)});
         case "receive":
           return res.json({result:await worker.schedule.getSchedule(response.user, body)});
         case "update":
           return res.json({result:await worker.schedule.scheduleUpdate(response.user, body)});
+        case code.schedule.CREATE_BACKUP:{
+          worker.schedule.createScheduleBackup(response.user,(filename,error)=>{
+            return res.json({result:{event:code.OK,url:`/${client.teacher}/download?type=${code.schedule.CREATE_BACKUP}&res=${filename}`}})
+            // if(error) return res.json({result:code.event(code.NO)});
+          });
+        }break;
         default:
           return res.json({result:code.event(code.server.DATABASE_ERROR)});
       }
-    })
+    });
 });
+
+teacher.get('/download*',async(req,res)=>{
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return res.json({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.render(view.forbidden);
+    const query = req.query;
+    if(!(query.type&&query.res)) return res.render(view.notfound);
+    switch(query.type){
+      case code.schedule.CREATE_BACKUP:{
+        try{
+          if(response.user.uiid == String(query.res).slice(0,query.res.lastIndexOf('_'))){
+            clog(query);
+            // clog(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`));
+            res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
+              clog(err);
+              clog("here");
+              if(err) res.render(view.notfound);
+            });
+          } else {
+            res.render(view.notfound);
+          }
+        }catch{
+          res.render(view.notfound);
+        }
+      }
+    }
+  })
+})
 
 teacher.post("/classroom",async(req,res)=>{
   session
@@ -369,7 +398,15 @@ teacher.get("/external*", async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:{  //invitation link
-      invite.handleInvitation(query,invite.target.teacher).then((resp)=>{
+      invite.handleInvitation(query,client.teacher).then((resp)=>{
+        if(!resp) return res.render(view.notfound);
+        return res.render(view.userinvitaion,{invite:resp.invite});
+      }).catch(e=>{
+        return res.render(view.notfound);
+      });
+    }break;
+    case invite.personalType:{
+      invite.handlePersonalInvitation(query,client.teacher).then(resp=>{
         if(!resp) return res.render(view.notfound);
         return res.render(view.userinvitaion,{invite:resp.invite});
       }).catch(e=>{
@@ -377,7 +414,7 @@ teacher.get("/external*", async (req, res) => {
       });
     }break;
     case verify.type: { //verification link
-      verify.handleVerification(query,verify.target.teacher).then((resp) => {
+      verify.handleVerification(query,client.teacher).then((resp) => {
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
       }).catch((e) => {
@@ -386,7 +423,7 @@ teacher.get("/external*", async (req, res) => {
       });
     }break;
     case reset.type:{ //password reset link
-      reset.handlePasswordResetLink(query,reset.target.teacher).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,client.teacher).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
       }).catch(e=>{

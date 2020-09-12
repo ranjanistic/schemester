@@ -1,19 +1,77 @@
 
 parent.window.scrollTo(0, 0);
+if(sessionStorage.getItem('fragment')!=locate.teacher.target.fragment.classroom){
+  parent.clickTab(2);
+}
 class Classroom {
   constructor() {
     this.data = new ReceiveData();
     this.notifmenu = new Menu("notifications", "notificationbutton");
     this.setupmenu = new Menu("setup", "setupbutton");
     this.settings = getElement("classsetup");
-
     if(!this.data.hasclass){
       return getElement("hidesection").onclick=_=>{
         parent.hideClassroom(true);
       }
     }
     localStorage.removeItem('hideclassroom');
-    this.addstudent = getElement("addstudent");
+    this.inchargeOf = getElement("inchargeOf");
+    this.studentlist = getElement("studentslist");
+    this.chooseclass = getElement("chooseclass");
+    this.chooseclass.onclick=_=>{
+      let viewbody = constant.nothing;
+      this.data.otherclasses.forEach((Class,c)=>{
+        viewbody+=`
+        <div class="fmt-row fmt-center">
+          <button class="half ${Class == this.data.classname?'active-button':'positive-button'}" id="classbutton${c}">${Class != this.data.classname?Class:`${Class} (yours) `}</button>
+        </div>`;
+      });
+      const classchoose = new Dialog();
+      classchoose.setDisplay('Choose class',`These are the classes you take in your schedule, choose anyone to view.<br/>${viewbody}`);
+      let classbtns = [];
+      this.data.otherclasses.forEach((_,c)=>{
+        classbtns.push(getElement(`classbutton${c}`));
+        classbtns[c].onclick=_=>{
+          if(this.data.otherclasses[c] == this.data.classname){
+            return parent.clickTab(2);
+          }
+          classchoose.loader();
+          postJsonData(post.teacher.classroom,{
+            target:'classroom',
+            action:'receive',
+            otherclass:this.data.otherclasses[c]
+          }).then((resp)=>{
+            const classroom = resp.classroom;
+            clog(classroom);
+            this.inchargeOf.innerHTML = `<span class="positive">Classroom ${classroom.classname}</span>`;
+            let listview = `
+            <div class="group-text fmt-center">${classroom.inchargeID}</div>
+            <div class="group-text positive fmt-center">${classroom.inchargeID}</div><br/>
+            <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among ${classroom.students.length} students" id="teacherSearch"/><br/><br/>`;
+            if(!classroom.students.length){
+              listview = `<div class="fmt-center group-text fmt-padding">
+              No students yet.
+              </div>`
+            }else{
+            classroom.students.forEach((stud,s)=>{
+              listview += `<div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="studentslate${s}">
+              <div class="fmt-col fmt-twothird group-text">
+                <span class="positive" id="studentname${s}">${stud.username}</span><br/>
+                <span class="questrial" id="studentmail${s}">${stud.id}</span><br/>
+              </div>
+            </div>`
+            })}
+            this.studentlist.innerHTML = listview;
+            hide(this.invitestudents);
+            classchoose.hide();
+          })
+        }
+      });
+      classchoose.createActions(['Hide']);
+      classchoose.transparent();
+      classchoose.onButtonClick([_=>{classchoose.hide()}]);
+      classchoose.show();
+    };
     this.invitestudents = getElement("invitestudents");
     this.invitestudents.onclick=_=>{
       this.linkGenerator();
@@ -24,8 +82,47 @@ class Classroom {
         getElement(`studentmail${s}`).innerHTML,
         getElement(`studentname${s}`).innerHTML,
         getElement(`removestudent${s}`)
-      ));
+        ));
     }
+    this.students.forEach((stud,s)=>{
+      stud.removestudent.onclick=_=>{
+        const removeconfirm = new Dialog();
+        removeconfirm.setDisplay('Remove student?', `Are you sure you want to remove <span class="negative">${stud.studentName}</span> (${stud.studentID})?
+        Their account will be removed from classroom ${this.data.classname}, and ${stud.studentName} <span class="negative">won't be able to access ${this.data.classname}</span>.`);
+        removeconfirm.createActions(Array(`Remove ${stud.studentName}`,'No, abort'),Array(actionType.negative,actionType.neutral));
+        removeconfirm.setBackgroundColor(colors.transparent);
+        removeconfirm.setHeadingColor(colors.negative);
+        removeconfirm.hideOnClickAnywhere(true);
+        removeconfirm.onButtonClick(Array(
+          _=>{
+            removeconfirm.loader();
+            postJsonData(post.teacher.classroom,{
+              target:"classroom",
+              action:"update",
+              specific:"removestudent",
+              studentID:stud.studentID
+            }).then((response)=>{
+              if(response.event == code.OK){
+                removeconfirm.hide();
+                parent.snackbar(`${stud.studentName} was removed from ${this.data.classname}`);
+                return parent.clickTab(2);
+              } else {
+                throw response;
+              }
+            }).catch(e=>{
+              clog(e);
+              parent.snackbar(`${stud.studentName} was not removed.`,'Retry',false,_=>{
+                removeconfirm.getDialogButton(0).click();
+              });
+            });
+          },
+          _=>{
+            removeconfirm.hide();
+          }
+        ));
+        removeconfirm.show();
+      }
+    })
     
     this.studentrequests = getElement("studentrequests");
     if (this.data.requestees) {
@@ -235,23 +332,6 @@ class Student{
     this.studentID = studID;
     this.studentName = studName;
     this.removestudent = remstud;
-    this.removeconfirm = new Dialog();
-    this.removeconfirm.setDisplay('Remove student?', `Are you sure you want to remove ${this.studentName} (${this.studentID})?
-    Their account will be removed from classroom ${this.classname}.`);
-    this.removeconfirm.createActions(Array(`Remove ${this.studentName}`,'No, abort'),Array(actionType.negative,actionType.neutral));
-    this.removeconfirm.setBackgroundColor(colors.transparent);
-    this.removeconfirm.onButtonClick(Array(
-      _=>{
-        this.removeconfirm.loader();
-        this.remove();
-      },
-      _=>{
-        this.removeconfirm.hide();
-      }
-    ))
-    this.removestudent.onclick=_=>{
-      this.removeconfirm.show();
-    }
   }
   message(message){
     postJsonData(post.teacher.classroom,{
@@ -265,26 +345,12 @@ class Student{
       }
     });
   }
-  remove(){
-    postJsonData(post.teacher.classroom,{
-      target:"classroom",
-      action:"update",
-      specific:"removestudent",
-      studentID:this.studentID
-    }).then((response)=>{
-      if(response.event == code.OK){
-        this.removeconfirm.hide();
-        return parent.snackbar(`${this.studentName} was removed from ${this.classname}`);
-      }
-      alert(response.event);
-    }).catch(e=>{
-      clog(e);
-    });
-  }
 }
 
 class ReceiveData{
     constructor(){
+      this.otherclasses = getElement("otherclasses").innerHTML.split(',');
+      clog(this.otherclasses);
       this.hasclass = getElement("hasclassroom").innerHTML=='true';
       if(this.hasclass){
         this.classname = getElement("classname").innerHTML;

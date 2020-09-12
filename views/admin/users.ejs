@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            <%= client == 'teacher'?'Teachers':'Classrooms'%> · Schemester
+        </title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3" id='themecolor'>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script src="/script/codes.js"></script>
+        <script src="/script/main.js"></script>
+        <script src="/script/admin/users.js"></script>
+        <script src="/script/admin/admin.js"></script>
+    </head>
+    
+    <body>
+        <div id="topBar">
+            <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back" onclick="window.history.back()">
+            <span id="greeting">
+                <%= client == 'teacher'?'Teachers':'Classes'%> 
+            </span>
+            <span  class="menu fmt-right">
+                <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                <div class="menubox" id="settingsmenu">
+                    <span class="fmt-row fmt-center">
+                        <label class="switch-container ">
+                            <input type="checkbox" id="darkmode">
+                            <span class="switch-positive"></span>
+                        </label>
+                    </span>
+                    <% if(client == 'teacher') {%>
+                    <div class="wide" id="invites">
+                        <img src="/graphic/elements/bellicon.svg" width="25" />Pending invites
+                    </div>
+                    <div class="" id="requests">
+                        <img src="/graphic/elements/bellicon.svg" width="25" />
+                        Pending requests
+                    </div>
+                    <div class="" id="users">
+                        <img src="/graphic/elements/classicon.svg" width="25" />
+                        Classrooms
+                    </div>
+                    <% } else { %>
+                    <div class="" id="users">
+                        <img src="/graphic/elements/settings.svg" width="25" />
+                        Teachers
+                    </div>
+                    <% } %>
+                    <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                        ❌ Logout
+                    </div>
+                </div>
+            </span >
+            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
+        </div>
+        <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
+            <div class="fmt-row fmt-padding-small">
+                <div class="sub-heading fmt-col half positive">
+                    <span id="totalusers"><%= users.length %></span> 
+                    <%= client == 'teacher'?'teachers':'classrooms'%>
+                    <% if(client == 'student') {%>
+                        ·
+                        <span id="totalstudents" class="group-heading positive">
+                        <% var totalstuds = 0 %>
+                        <% users.forEach((Class)=> { %>
+                            <% totalstuds+=Class.students.length %>
+                        <% }) %>
+                        <%= totalstuds %> students
+                    </span>
+                    <% } %>
+                </div>
+                <div class="fmt-col half">
+                    <button class="fmt-right positive-button" id="adduser">
+                        <%= client == 'teacher'?'Add teacher':'Create classroom'%>
+                    </button>
+                    <% if(client == 'teacher') {%>
+                        <button class="fmt-right active-button" id="inviteteacher">
+                            Invite teachers
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+            <div class="fmt-row">
+            <% users.forEach((user,c)=> {%>
+                <div class="fmt-col fmt-third fmt-padding">
+                    <div class="fmt-col container fmt-padding">
+                        <div class="fmt-row positive group-heading fmt-left break">
+                            <% if(client == 'teacher') {%>
+                                <span id="teacheruid<%= c %>" hidden><%= user._id %></span>
+                                <span id="teachername<%= c %>" ><%= user.username %></span>
+                            <% } else { %>
+                                <span id="classid<%= c %>" hidden><%= user._id %></span>
+                                <span id="classname<%= c %>" ><%= user.classname %></span>
+                            <% } %>
+                        </div>
+                        <button class="fmt-right caption positive-button questrial" id="viewschedule<%= c %>">More</button>
+                        <div class="fmt-row questrial " style="text-align:left">
+                            <% if(client == 'teacher') {%>
+                                <span id="teacherid<%= c %>" class="group-text"><%= user.teacherID %></span>
+                            <% } else { %>
+                                <%= user.students.length %> students
+                            <% } %>
+                        </div>
+                        <div class="fmt-row questrial caption break" style="text-align:left">
+                            <% if(client == 'teacher') {%>
+                                <% const found =  classes.some(Class => { %>
+                                    <% if(Class.inchargeID == user.teacherID){ %>
+                                        <a class="positive" id="class<%= c %>">Incharge of&#160;<span id="inchargeof<%= c %>"><%= Class.classname %></span></a>
+                                        <% return true %> 
+                                    <% } %>
+                                <% }) %>
+                                <% if(!found && classes.length) {%> 
+                                    <a class="active" id="setinchargeof<%= c %>">Make incharge</a>
+                                <%}%>
+                            <% } else { %>
+                                <% if(user.inchargeID){ %>
+                                    Incharge <br/>              
+                                    <div class="group-text" id="inchargename<%= c %>"><%= user.inchargeID %></div>
+                                    <a id="inchargeid<%= c %>"><%= user.inchargeID %></a>
+                                <%} else {%>
+                                    <a class="active" id="setincharge<%= c %>">Set incharge</a>
+                                <%}%>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            <%})%>
+            </div>
+        </div>
+        <span hidden>
+            <span id="client"><%= client %></span>
+        </span>
+
+        <div id="dialogView" class="dialog fmt-animate-opacity">
+            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            </div>
+        </div>
+        <div id="snackBar" class="fmt-animate-bottom">
+            <span id="snackText"></span>
+            <button id="snackButton"></button>
+        </div>
+        <noscript id="noscript" class="dialog fmt-red" style="display:block">
+            <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+                <div class="heading">Javascript required</div><br/>
+                <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+                    <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+                </div>
+            </div>
+        </noscript>
+    </body>
+</html>

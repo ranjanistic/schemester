@@ -8,6 +8,7 @@
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
         <script src="/script/teacher/fragment/classroom.js"></script>
+        <script src="/script/teacher/teacher.js"></script>
     </head>
     <body>
         <div class="fmt-col fmt-padding fmt-animate-top">
@@ -15,7 +16,7 @@
                 <div class="fmt-col three-fifth">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Class</div>
                     <% if(classroom){ %>
-                        <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeof">Classroom <%= classroom.classname %></div>
+                        <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeOf">Classroom <%= classroom.classname %></div>
                     <% } %>
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
@@ -61,8 +62,8 @@
                                 <div class="fmt-center questrial" id="invitestudents">
                                     Invite students
                                 </div>
-                                <div class="fmt-center questrial" id="addstudent">
-                                    Add student
+                                <div class="fmt-center questrial" id="chooseclass">
+                                    Choose class
                                 </div>
                             <% } %>
                         </div>
@@ -71,13 +72,13 @@
             </div>
             <% if(classroom){ %>
                 <div class="fmt-row">
+                    <br/>
                     <% if(classroom.students.length){ %>
-                        <br/>
-                        <input type="text" class="dropdown-input fmt-padding-small wide" placeholder="Search among <%= classroom.students.length %> students" id="teacherSearch"/>
-                        <br/>
                         <div class="fmt-row" id="studentslist">
+                            <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among <%= classroom.students.length %> students" id="teacherSearch"/>
+                            <br/><br/>
                             <% classroom.students.forEach((student,s) => {%>
-                                <div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="classslate${index}">
+                                <div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="studentslate<%= s %>">
                                     <div class="fmt-col fmt-twothird group-text">
                                       <span class="positive" id="studentname<%= s %>"><%= student.username %></span><br/>
                                       <span class="questrial" id="studentmail<%= s %>"><%= student.id %></span><br/>
@@ -91,7 +92,6 @@
                             <br/><br/>
                             No students yet.
                             <br/><br/>
-                            <button class="positive-button" id="addstudent">Add student</button>
                             <button class="active-button" id="invitestudents">Invite students</button>
                         </div>
                     <% } %>
@@ -126,6 +126,7 @@
             <button id="snackButton"></button>
         </div>
         <span hidden>
+                <span id="otherclasses"><%= otherclasses %></span>
                 <span id="hasclassroom"><%= classroom?true:false %></span>
             <% if(classroom) {%>
                 <span id="classname"><%= classroom.classname %></span>

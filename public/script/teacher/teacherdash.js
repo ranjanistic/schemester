@@ -40,6 +40,9 @@ function showClassroom(){
         show(tabs.classroom);
     }, 340);
 }
+function clickTab(index){
+  [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings][index].click();
+}
 class TeacherDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;
@@ -144,7 +147,7 @@ class Pseudoteacher{
         }
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
-            finishSession((_) => {
+            finishSession(client.teacher,(_) => {
                 relocateParent(locate.teacher.login, {
                 email: localStorage.getItem("id"),
                 });

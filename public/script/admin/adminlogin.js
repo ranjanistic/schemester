@@ -32,29 +32,17 @@ class AdminLogin{
       this.passField.normalize();
       hide(this.forgotPassword);
     });
-    if (Number(sessionStorage.getItem("linkin")) > 0) {
-      opacityOf(this.forgotPassword, 0.5);
-      let time = Number(sessionStorage.getItem("linkin"));
-      const timer = setInterval(() => {
-        time--;
-        sessionStorage.setItem("linkin", time);
-        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-        if (Number(sessionStorage.getItem("linkin")) == 0) {
-          clearInterval(timer);
-          this.forgotPassword.innerHTML = "Get password link";
-          opacityOf(this.forgotPassword, 1);
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
-        }
-      }, 1000);
-    } else {
+    resumeElementRestriction(this.forgotPassword,"adminforgot",_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
-    }
-    this.logInButton.addEventListener(click,_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())},false);
+    });
+    this.logInButton.onclick=_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())};
     
   }
   linkSender(){
     if(!this.emailField.isValid()) return this.emailField.showError('Please provide your email address to help us reset your password.');
     snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
+      this.forgotPassword.onclick = (_) => {};
+      snackBar(`Sending link to ${this.emailField.getInput()}`);
       postJsonData(post.admin.manage,{
         external:true,
         type:"resetpassword",
@@ -62,25 +50,13 @@ class AdminLogin{
         email:this.emailField.getInput()
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
           return snackBar('An error occurred','Report');
         }
-        snackBar(
-          "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
-        );
-        opacityOf(this.forgotPassword, 0.4);
-        this.forgotPassword.onclick = (_) => {};
-        let time = 120;
-        sessionStorage.setItem("linkin", time);
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            clearInterval(timer);
-            this.forgotPassword.innerHTML = "Get password link";
-            opacityOf(this.forgotPassword, 1);
-          }
-        }, 1000);
+        snackBar("If your email address was correct, you'll receive an email from us in a few moments.",'Hide');
+        restrictElement(this.forgotPassword,120,'adminforgot',_=>{
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        });
       })
     })
   }
@@ -100,7 +76,8 @@ class AdminLogin{
       this.emailField.normalize();
       this.passField.normalize();
       this.uiidField.normalize();
-      postData(post.admin.login,{
+      postJsonData(post.admin.auth,{
+        action:'login',
         email:String(this.emailField.getInput()).trim(),
         password:this.passField.getInput(),
         uiid:String(this.uiidField.getInput()).trim(),
@@ -116,52 +93,49 @@ class AdminLogin{
   
 
   handleAuthResult=(result)=>{
+    if(result.event == code.auth.AUTH_SUCCESS){
+      saveDataLocally(result.user);
+      return relocate(locate.admin.session,{
+        u:result.user.uid,
+        target:result.target
+      });
+    }
+    this.loader(false);
     switch (result.event) {
-      case code.auth.AUTH_SUCCESS:{
-        this.emailField.showValid();
-        this.passField.showValid();
-        this.uiidField.showValid();
-        saveDataLocally(result.user);
-        return relocate(locate.admin.session,{
-          u:result.user.uid,
-          target:result.target
-        });
-      }
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);
         this.logInButton.innerHTML = "Retry";
       }break;
       case code.auth.WRONG_UIID:{
-        this.uiidField.showError("Incorrect UIID.");
+        return this.uiidField.showError("Incorrect UIID.");
       }break;
       case code.auth.REQ_LIMIT_EXCEEDED:{
         snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
-        this.logInButton.textContent = "Disabled";
+        return this.logInButton.innerHTML = "Disabled";
       }break;
       case code.auth.USER_NOT_EXIST:{
         this.emailField.showError("Account not found.");
         this.logInButton.textContent = "Retry";
-        snackBar("Try registering a new account?","Create Account",true,_=>{registrationDialog(true,this.emailField.getInput(),this.uiidField.getInput())})
+        return snackBar("Try registering a new account?","Create Account",true,_=>{showadminregistration(true,this.emailField.getInput(),this.uiidField.getInput())})
       }break;
       case code.auth.EMAIL_INVALID:{
-        validateTextField(this.emailField,validType.email);
+        return validateTextField(this.emailField,validType.email);
       }break;
       case code.auth.ACCOUNT_RESTRICTED:{
         this.logInButton.textContent = "Retry";
-        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)});
+        return snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)});
       }break;
       case code.auth.AUTH_REQ_FAILED:{
         this.logInButton.textContent = "Retry";
-        snackBar("Request failed.", null, false);
+        return snackBar("Request failed.", null, false);
       }break;
       default: {
         this.logInButton.textContent = "Retry";
         show(this.forgotPassword);
-        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
+        return snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
       }
     }
-    this.loader(false);
   }
 }
 

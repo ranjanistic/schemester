@@ -1,14 +1,14 @@
-const MongoClient = require('mongodb').MongoClient;
-const dbName = "schemesterDB",
-getLink=(cloud=false)=>cloud?`mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${dbName}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${dbName}`;
+const {code} = require('../public/script/codes'),
+MongoClient = require('mongodb').MongoClient,
+getLink=(cloud=false)=>cloud?`mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${code.db.DBNAME}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${code.db.DBNAME}`;
 var _db;
-const adcoll = "0administrators",instcoll = "1institutions";
+
 module.exports = {
   connectToServer: ( callback )=>{
     MongoClient.connect(
-       getLink(true), 
+       getLink(true),
       { useNewUrlParser: true , useUnifiedTopology: true}, function( err, client ) {
-      _db  = client.db(dbName);
+      _db  = client.db(code.db.DBNAME);
       return callback( err );
     });
   },
@@ -17,9 +17,9 @@ module.exports = {
     return _db;
   },
   getAdmin:()=>{
-    return _db.collection(adcoll)
+    return _db.collection(code.db.ADMIN_COLLECTION)
   },
   getInstitute:()=>{
-    return _db.collection(instcoll)
+    return _db.collection(code.db.INSTITUTE_COLLECTION)
   }
 };
