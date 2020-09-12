@@ -15,7 +15,7 @@ class Time {
 
   /**
    * Returns the current moment in SGT notation.
-   * @param {Boolean} stringForm This ensures that returned time in SGT notation is of type string?true else type number?false.
+   * @param {Boolean} stringForm Defaults to true. This ensures that returned time in SGT notation is of type string?true else type number?false.
    * @param {Number} dayincrement The number of days to be incremented in returned SGT time. Defaults to 0.
    */
   getTheMoment = (stringForm = true, dayincrement = 0) => {

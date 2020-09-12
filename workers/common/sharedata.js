@@ -10,7 +10,7 @@ class ShareData {
    * @returns {JSON} Filters confidential values from given data, and returns in shareable form.
    */
   getAdminShareData(data = {}) {
-    return {
+    return data?{
       isAdmin: true,
       [this.uid]: data._id,
       username: data.username,
@@ -20,7 +20,7 @@ class ShareData {
       verified: data.verified,
       vlinkexp: data.vlinkexp,
       prefs:data.prefs
-    };
+    }:null;
   }
 
   /**
@@ -28,26 +28,28 @@ class ShareData {
    * @param {JSON} data The data of a teacher from database.
    * @returns {JSON} Filters confidential values from given personal data, and returns in shareable form.
    */
-  getTeacherShareData(data = {}) {
-    return {
+  getTeacherShareData(data = {},uiid = null) {
+    return data?{
       isTeacher: true,
+      uiid:uiid,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.teacherID,
       createdAt: data.createdAt,
       verified: data.verified,
-    };
+    }:null;
   }
-  getPseudoTeacherShareData(data = {}) {
-    return {
+  getPseudoTeacherShareData(data = {},uiid = null) {
+    return data?{
       isTeacher: true,
       pseudo:true,
+      uiid:uiid,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.teacherID,
       createdAt: data.createdAt,
       verified: data.verified,
-    };
+    }:null;
   }
 
   /**
@@ -55,26 +57,28 @@ class ShareData {
    * @param {JSON} data The data of a student from database.
    * @returns {JSON} Filters confidential values from given personal data, and returns in shareable form.
    */
-  getStudentShareData(data = {}) {
-    return {
+  getStudentShareData(data = {},uiid = null) {
+    return data?{
       isStudent: true,
+      uiid:uiid,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.studentID,
       createdAt: data.createdAt,
       verified: data.verified,
-    };
+    }:null;
   }
-  getPseudoStudentShareData(data = {}) {
-    return {
+  getPseudoStudentShareData(data = {},uiid = null) {
+    return data?{
       isStudent: true,
       pseudo:true,
+      uiid:uiid,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.studentID,
       createdAt: data.createdAt,
       verified: data.verified,
-    };
+    }:null;
   }
 }
 

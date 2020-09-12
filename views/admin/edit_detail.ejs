@@ -19,20 +19,30 @@
         <script src="/script/codes.js"></script>
         <script async type="text/javascript" src="/script/main.js"></script>
         <script async type="text/javascript" src="/script/admin/register.js"></script>
+        <script src="/script/admin/admin.js"></script>
     </head>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root)">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root,{client:client.admin})">
             <span id="greeting"></span>
             <span class="fmt-dropdown-hover fmt-right">
-                <img src="/graphic/menudotsvertical.svg" id="menuButton">
-                <div class="fmt-dropdown-content container" id="settingDropdown" style="right:0;padding:0;margin-right: 8px;background-color: #efefef;color:blue">
-                    <div class="fmt-padding" id="saveandexit">Save & Exit</div>
-                    <div class="fmt-padding" id="logoutAdminButton">Logout</div>
-                </div>
+                <span  class="menu fmt-right">
+                    <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
+                    <div class="menubox" id="settingsmenu">
+                        <span class="fmt-row fmt-center">
+                            <label class="switch-container ">
+                                <input type="checkbox" id="darkmode">
+                                <span class="switch-positive"></span>
+                            </label>
+                        </span>
+                        <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                            ❌ Logout
+                        </div>
+                    </div>
+                </span >
             </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
+            <button class="fmt-right neutral-button" id="uploadinst">Upload Institution</button>
         </div>
         <div class="fmt-padding-small" style="margin: 66px 0 44px 0;">
             <div class="container fmt-row " id="stage1">
@@ -54,7 +64,7 @@
                 <div class="fmt-half">
                     <fieldset class="fmt-col text-field-active" id="emailField">
                         <legend class="field-caption">Email Address</legend>
-                        <span style="font-size: 24px;" id="adminEmailView"><%= adata.id %></span>
+                        <span style="font-size: 24px;" class="break" id="adminEmailView"><%= adata.id %></span>
                     </fieldset>
                 </div>
                 <div class="fmt-half fmt-padding-small">
@@ -109,8 +119,8 @@
                 </div>
                 <br/>
                 <div class="fmt-row fmt-center">
-                    <img class="fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="stage1loader"/>
-                    <button class="positive-button fmt-center" id="saveStage1">Save &amp; Continue</button>
+                    <img class="fmt-col fmt-spin-fast" width="50" src="/graphic/blueLoader.svg" id="stage1loader"/>
+                    <button class="fmt-col fmt-third positive-button" id="saveStage1">Save &amp; Continue</button>
                 </div>
             </div>
 
@@ -142,32 +152,31 @@
                 </div>
                 <div class="fmt-row fmt-padding" >
                     <div class="group-heading" id="durationHead">Durations</div>
+                    <div class="fmt-half fmt-row">
+                        <fieldset class="text-field" id="totalPeriodsField">
+                            <legend class="field-caption">Total Periods in a day</legend>
+                            <input class="text-input" required placeholder="A number" min="1" max="1440" type="number" id="totalPeriods" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodsInDay:null:null:null %>">
+                            <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
+                        </fieldset>
+                    </div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
                             <legend class="field-caption">Duration of each period</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="eachDuration" name="durationDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodMinutes:null:null:null %>">
+                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="eachDuration" name="durationDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodMinutes:null:null:null %>">
                             <span class="fmt-right error-caption"  id="eachDurationError"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakDurationField">
                             <legend class="field-caption">Break Duration</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" type="number" id="breakDuration" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakMinutes:null:null:null %>">
+                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="breakDuration" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakMinutes:null:null:null %>">
                              
                             <span class="fmt-right error-caption"  id="breakDurationError"></span>
-                        </fieldset>
-                    </div>
-                    <div class="fmt-half fmt-row">
-                        <fieldset class="text-field" id="totalPeriodsField">
-                            <legend class="field-caption">Total Periods in a day</legend>
-                            <input class="text-input" required placeholder="A number" min="1" type="number" id="totalPeriods" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodsInDay:null:null:null %>">
-                            
-                            <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
                         </fieldset>
                     </div>
                 </div>
                 <br/>
                 <div class="fmt-row fmt-center">
-                    <img class="fmt-spin-fast" style="display:none" width="50" src="/graphic/blueLoader.svg" id="stage2load"/>
-                    <button class="positive-button" id="saveStage2">Create schedule</button>
+                    <img class="fmt-col fmt-spin-fast" style="display:none" width="50" src="/graphic/blueLoader.svg" id="stage2load"/>
+                    <button class="fmt-col fmt-third positive-button" id="saveStage2">Create institution</button>
                 </div>
             </div>
         </div>

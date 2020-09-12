@@ -15,6 +15,9 @@ class Tabs{
 
 let tabs;
 
+function clickTab(index){
+  [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings][index].click();
+}
 
 class StudentDash{
     constructor(){
@@ -117,7 +120,7 @@ class Pseudostudent{
         }
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
-        finishSession((_) => {
+        finishSession(client.student,(_) => {
             relocateParent(locate.teacher.login, {
             email: localStorage.getItem("id"),
             });

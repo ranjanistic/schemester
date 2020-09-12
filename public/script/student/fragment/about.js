@@ -1,4 +1,7 @@
 parent.window.scrollTo(0, 0);
+if(sessionStorage.getItem('fragment')!=locate.student.target.fragment.settings){
+  parent.clickTab(3);
+}
 class StudentAbout {
     constructor() {
       this.darkmode = new Switch("darkmode");
@@ -18,7 +21,7 @@ class StudentAbout {
   
       this.logout = getElement("logout");
       this.logout.onclick = (_) => {
-        finishSession((_) => {
+        finishSession(client.student,(_) => {
           relocateParent(locate.student.login, {
             email: localStorage.getItem("id"),
           });
@@ -72,28 +75,11 @@ class StudentAbout {
           });
         });
       };
-      if (Number(sessionStorage.getItem("linkin")) > 0) {
-        opacityOf(this.forgotpass, 0.5);
-        let time = Number(sessionStorage.getItem("linkin"));
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            clearInterval(timer);
-            this.forgotpass.innerHTML = "Forgot password";
-            opacityOf(this.forgotpass, 1);
-            this.forgotpass.onclick = (_) => {
-              this.sendForgotLink()
-            };
-          }
-        }, 1000);
-      } else {
+      resumeElementRestriction(this.forgotpass,"studentforgot",_=>{
         this.forgotpass.onclick = (_) => {
           this.sendForgotLink()
         };
-      }
-  
+      });
       this.deleteaccount.onclick = (_) => {
         authenticateDialog(
           client.student,
@@ -106,24 +92,11 @@ class StudentAbout {
       };
     }
     sendForgotLink(){
+      this.forgotpass.onclick=_=>{};
       parent.linkSender().then(done=>{
-        if(done){
-          opacityOf(this.forgotPassword, 0.4);
-          this.forgotPassword.onclick = (_) => {};
-          let time = 120;
-          sessionStorage.setItem("linkin", time);
-          const timer = setInterval(() => {
-            time--;
-            sessionStorage.setItem("linkin", time);
-            this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-            if (Number(sessionStorage.getItem("linkin")) == 0) {
-              clearInterval(timer);
-              this.forgotPassword.innerHTML = "Forgot password";
-              opacityOf(this.forgotPassword, 1);
-              this.forgotPassword.onclick = (_) => {this.linkSender()};
-            }
-          }, 1000);
-        }
+        restrictElement(this.forgotpass,120,'studentforgot',_=>{
+          this.forgotpass.onclick = (_) => {this.sendForgotLink()};
+        });
       })
     }
     accountdeletion() {
@@ -168,15 +141,18 @@ class StudentAbout {
           }
         )
       );
-      let time = 60;
-      let timer = setInterval(() => {
-        time--;
-        delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
-        if (time == 0) {
-          clearInterval(timer);
-          delconf.hide();
-        }
-      }, 1000);
+      
+      restrictElement(delconf.getDialogButton(0),15,"studentdeleteacc",_=>{
+        let time = 60;
+        let timer = setInterval(() => {
+          time--;
+          delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
+          if (time == 0) {
+            delconf.hide();
+            clearInterval(timer);
+          }
+        }, 1000);
+      })
     }
 }
   window.onload = (_) => new StudentAbout();

@@ -35,13 +35,12 @@
         </div>
         <br/><br/><br/>
         <div class="fmt-row fmt-center" >
-            <button class="sub-display-button" style="font-size:32px;font-family: 'Questrial',sans-serif;" id="returnFrom404">Return to base</button>
+            <button class="display-button" style="font-size:32px;font-family: 'Questrial',sans-serif;" id="returnFrom404">Return to base</button>
         </div >
         <script type="text/javascript">
-        window.onload=_=>{
-            document.getElementById('returnFrom404').addEventListener('click',function(){
+            document.getElementById('returnFrom404').onclick=()=>{
                 window.location.replace('/');
-            },false);}
+            };
         </script>
     </body>
 

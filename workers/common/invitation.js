@@ -1,13 +1,14 @@
-const code = require("../../public/script/codes"),
-  Institute = require("../../config/db").getInstitute(),
+const {code,client,clog} = require("../../public/script/codes"),
   Admin = require("../../config/db").getAdmin(),
+  Institute = require("../../config/db").getInstitute(),
   share = require("./sharedata"),
   time = require("./timer"),
   { ObjectId } = require("mongodb");
+
 class Invitation {
   constructor() {
     this.type = "invitation";
-    this.target = new Target();
+    this.personalType = "personalinvite";
     this.domain = code.domain;
     this.defaultValidity = 7;
   }
@@ -22,8 +23,7 @@ class Invitation {
    */
   generateLink = async (target, data, validdays = this.defaultValidity) => {
     switch (target) {
-      case this.target.teacher:
-        {
+      case client.teacher:{
           const instdoc = await Institute.findOne(
             { _id: ObjectId(data.instID) },
             { projection: { invite: 1 } }
@@ -56,7 +56,7 @@ class Invitation {
           }
         }
         break;
-      case this.target.student:
+      case client.student:
         {
           const classdoc = await Institute.findOne(
             {
@@ -64,7 +64,7 @@ class Invitation {
               "users.classes": { $elemMatch: { _id: ObjectId(data.cid) } },
             },
             {
-              projection: { "users.classes.$.invite": 1 },
+              projection: { "users.classes.$": 1 },
             }
           );
           if (!classdoc) return code.inst.CLASS_NOT_FOUND;
@@ -101,7 +101,7 @@ class Invitation {
     const expiryTime = time.getTheMoment(false, validdays);
     let link;
     switch (target) {
-      case this.target.teacher:
+      case client.teacher:
         {
           const path = `invite.${target}`;
           const document = await Institute.findOneAndUpdate(
@@ -129,7 +129,7 @@ class Invitation {
             : code.event(code.invite.LINK_CREATION_FAILED);
         }
         break;
-      case this.target.student: {
+      case client.student: {
         const path = `users.classes.$.invite.student`;
         const document = await Institute.updateOne(
           {
@@ -163,7 +163,7 @@ class Invitation {
 
   async disableInvitation(target, data) {
     switch (target) {
-      case this.target.teacher: {
+      case client.teacher: {
         const path = `invite.${target}`;
         const doc = await Institute.findOneAndUpdate(
           { _id: ObjectId(data.instID) },
@@ -182,7 +182,7 @@ class Invitation {
           ? code.event(code.invite.LINK_DISABLED)
           : code.event(code.invite.LINK_DISABLE_FAILED);
       }
-      case this.target.student: {
+      case client.student: {
         const path = `users.classes.$.invite.student`;
         const doc = await Institute.findOneAndUpdate(
           {
@@ -209,7 +209,7 @@ class Invitation {
 
   async handleInvitation(query, target) {
     switch (target) {
-      case this.target.teacher: {
+      case client.teacher: {
         if (!(query.in && query.t)) return false;
         const inst = await Institute.findOne(
           { _id: ObjectId(query.in) },
@@ -225,7 +225,7 @@ class Invitation {
               adminName: inst.default.admin.username,
               expireAt: inst.invite.teacher.expiresAt,
               instname: inst.default.institute.instituteName,
-              target: this.target.teacher,
+              target: target,
             },
           };
 
@@ -245,11 +245,11 @@ class Invitation {
             invitorName: inst.default.admin.username,
             instname: inst.default.institute.instituteName,
             expireAt: expires,
-            target: this.target.teacher,
+            target: target,
           },
         };
       }break;
-      case this.target.student:{
+      case client.student:{
         if(!(query.in && query.c && query.t)) return false;
         const classdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.classes":{$elemMatch:{"_id":ObjectId(query.c)}}},{
           projection:{uiid:1,"users.classes.$":1,default:1}
@@ -273,7 +273,7 @@ class Invitation {
               invitorName: incharge.username,
               expireAt: expires,
               instname: classdoc.default.institute.instituteName,
-              target: this.target.student, 
+              target: client.student, 
             }
           }
         
@@ -292,7 +292,7 @@ class Invitation {
             classname:Class.classname,
             instname: classdoc.default.institute.instituteName,
             expireAt: expires,
-            target: this.target.student,
+            target: client.student,
           },
         };
       }
@@ -309,10 +309,55 @@ class Invitation {
    */
   getTemplateLink(target, data, createdAt) {
     switch (target) {
-      case this.target.teacher:
+      case client.teacher:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&ad=${data.uid}&t=${createdAt}`;
-      case this.target.student:
+      case client.student:
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&t=${createdAt}`;
+    }
+  }
+  
+  getPersonalInviteLink(target,data){
+    switch (target) {
+      case client.admin:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&ad=${data.uid}&id=${data.to}`;
+      case client.teacher:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&ad=${data.uid}&id=${data.to}`;
+      case client.student:
+        return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&c=${data.cid}&id=${data.to}`;
+    }
+  }
+
+  async handlePersonalInvitation(query,target){
+    if(!(query.in&&query.id&&(query.ad||query.c))) return false;
+    switch(target){
+      case client.admin:{};
+      case client.teacher:{
+        const admin = await Admin.findOne({"_id":ObjectId(query.ad)});
+        if(!admin) return false;
+        const inst = await Institute.findOne({"_id":ObjectId(query.in),"schedule.teachers":{$elemMatch:{"teacherID":query.id}}},{
+          projection:{
+            "uiid":1,
+            "default":1,
+          }
+        });
+        if(!inst) return false;
+        const teacherdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.teachers":{$elemMatch:{"teacherID":query.id}}});
+        if(teacherdoc) return false;
+        return {
+          invite:{
+            valid: true,
+            personal:true,
+            email:query.id,
+            uiid: inst.uiid,
+            invitorID: admin.email,
+            invitorName: admin.username,
+            instname: inst.default.institute.instituteName,
+            expireAt: false,
+            target: target,
+          }
+        }
+      }break;
+      case client.student:{};
     }
   }
 
@@ -380,12 +425,4 @@ class Invitation {
   }
 }
 
-class Target {
-  constructor() {
-    this.teacher = "teacher";
-    this.student = "student";
-  }
-}
-
-let clog = (msg) => console.log(msg);
 module.exports = new Invitation();

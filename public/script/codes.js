@@ -1,14 +1,26 @@
 class Codes {
   constructor() {
-    // this.domain = "http://localhost:3000";
+
+    this.dbname = "schemesterDB";
+    //this.domain = "http://localhost:3000";
     this.domain = "https://schemester.herokuapp.com";
+    this.free = "Free";
     this.OK = "OK/true";
     this.NO = "NO/false";
+    
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";
         this.UIID_TAKEN = "server/uiid-already-taken";
         this.UIID_AVAILABLE = "server/uiid-available";
+      }
+    }
+
+    class Database{
+      constructor(){
+        this.DBNAME = "schemesterDB";
+        this.ADMIN_COLLECTION = "0administrators";
+        this.INSTITUTE_COLLECTION = "1institutions";
       }
     }
     class Clientcodes {
@@ -79,6 +91,8 @@ class Codes {
         this.INSTITUTION_CREATED = "inst/institution-created";
         this.INSTITUTION_CREATION_FAILED = "inst/institution-not-created";
 
+        this.BACKUP_INSTITUTION = 'inst/backup-institute-file';
+
         this.INSTITUTION_DEFAULTS_SET = "inst/institution-defaults-saved";
         this.INSTITUTION_DEFAULTS_UNSET = "inst/institution-defaults-not-saved";
 
@@ -89,6 +103,9 @@ class Codes {
         this.CLASS_NOT_FOUND = "inst/class-not-found";
         this.CLASSES_CREATED = "inst/classes-creation-success";
         this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
+        this.INCHARGE_EXISTS = 'inst/class-incharge-found';
+        this.INCHARGE_OCCUPIED = 'inst/incharge-assigned-another-class';
+        
       }
     }
 
@@ -107,6 +124,7 @@ class Codes {
     class ActionCodes {
       constructor() {
         this.ACCOUNT_DELETE = "action/delete-account";
+        this.INSTITUTE_DELETE = "action/delete-institute";
         this.CHANGE_PASSWORD = "action/change-password";
         this.CHANGE_ID = "action/change-id-email";
         this.CHANGE_PHONE = "action/change-phone-number";
@@ -118,9 +136,17 @@ class Codes {
         this.CHANGE_BREAK_START_TIME = "action/timing-change-break-starttime";
         this.CHANGE_PERIOD_DURATION = "action/timing-change-period-duration";
         this.CHANGE_BREAK_DURATION = "action/timing-change-break-duration";
-        this.CHANGE_TOTAL_PERIODS = "action/timing-change-periods";
-        this.CHANGE_WORKING_DAYS = "action/timing-change-working-days";
 
+        this.CREATE_CLASSES = 'action/create-multiple-classes';
+        this.CREATE_NEW_CLASS = 'action/create-new-class';
+        this.RENAME_CLASS = "action/rename-classroom";
+        this.RENAME_SUBJECT = "action/rename-subject";
+        this.SET_INCHARGE = "action/set-class-incharge";
+        this.REMOVE_CLASS = 'action/delete-classroom';
+        this.REMOVE_DAY = 'action/remove-day-schedule';
+        this.SWITCH_DAY = 'action/switch-day-schedule';
+        this.REMOVE_PERIOD = 'action/remove-period';
+        this.SWITCH_PERIODS = 'action/switch-periods';
       }
     }
     class InvitationCodes {
@@ -181,18 +207,22 @@ class Codes {
         this.BATCH_EXISTS = "schedule/batch-or-class-exists";
         this.BATCH_NOT_FOUND = "schedule/batch-or-class-not-exist";
         this.SCHEDULE_CLASHED = "schedule/conflicting-schedule";
+        this.WEEKDAY_EXISTS = "schedule/weekday-exists";
+        this.CREATE_BACKUP = "schedule/generate-backup";
         this.FREE = "Free";
       }
     }
     this.auth = new Authcodes();
     this.client = new Clientcodes();
     this.server = new Servercodes();
+    this.db = new Database();
     this.mail = new Mailcodes();
     this.action = new ActionCodes();
     this.inst = new InstitutionCodes();
     this.invite = new InvitationCodes();
     this.verify = new VerificationCodes();
     this.schedule = new ScheduleCodes();
+
   }
   event(code) {
     return {
@@ -288,9 +318,9 @@ class Locations {
     this.planspage = "/plans";
     class Admin {
       constructor() {
-        this.session = "/admin/session";
-        this.login = "/admin/auth/login";
-
+        const root = '/admin';
+        this.session = `${root}/session`;
+        this.login = `${root}/auth/login`;
         class Target {
           constructor() {
             this.settings = "manage";
@@ -299,7 +329,8 @@ class Locations {
             this.addteacher = "addteacher";
             this.register = "registration";
             this.viewschedule = "viewschedule";
-            this.classes = "classrooms"
+            this.classes = "classrooms";
+            this.teachers = "teachers";
           }
         }
         this.target = new Target();
@@ -321,9 +352,10 @@ class Locations {
 
     class Teacher {
       constructor() {
-        this.session = "/teacher/session";
-        this.login = "/teacher/auth/login";
-        this.fragment = "/teacher/fragment";
+        const root = '/teacher';
+        this.session = `${root}/session`;
+        this.login = `${root}/auth/login`;
+        this.fragment = `${root}/fragment`;
         class Target {
           constructor() {
             this.dash = "dash";
@@ -372,8 +404,134 @@ class Locations {
     this.student = new Student();
   }
 }
+
+class View{
+  constructor(){
+      this.homepage = 'home.ejs';
+      this.loader = 'loader.ejs';
+      this.plans = 'plans.ejs';
+      this.notfound = '404.ejs';
+      this.servererror = '500.ejs';
+      this.forbidden = '403.ejs';
+      this.offline = 'offline.ejs';
+
+      this.userinvitaion = 'invitation.ejs';
+      this.verification = 'verification.ejs';
+      this.passwordreset = 'resetpassword.ejs';
+
+      this.admin = new AdminView();
+      this.teacher = new TeacherView();
+      this.student = new StudentView();
+  }
+}
+
+class AdminView{
+  constructor(){
+      this.login = 'admin/admin_login.ejs';
+      this.dash = 'admin/admin_dash.ejs';
+      this.settings = 'admin/management.ejs';
+      this.registration = 'admin/edit_detail.ejs';
+      this.addTeacher = 'admin/teacher_filler.ejs';
+      this.scheduleview = 'admin/schedule_view.ejs';
+      this.users = 'admin/users.ejs';
+
+      this.target = new Locations().admin.target;
+      this.section = new Locations().admin.section;
+  }
+  getViewByTarget(target = this.target.dashboard){
+      switch(target){
+          case this.target.manage:return this.settings;
+          case this.target.addteacher:return this.addTeacher;
+          case this.target.dashboard:return this.dash;
+          case this.target.register:return this.registration;
+          case this.target.viewschedule:return this.scheduleview;
+          case this.target.classes:return this.users;
+          case this.target.teachers:return this.users;
+          default:return this.getViewByTarget();
+      }
+  }
+}
+
+class TeacherView{
+  constructor(){
+      this.login = 'teacher/teacher_login.ejs';
+      this.dash = 'teacher/teacher_dash.ejs';
+      this.settings = 'teacher/teacher_settings.ejs';
+      this.addschedule = 'admin/teacher_filler.ejs';
+      class FragmentView{
+          constructor(){
+              this.fullschedule = 'teacher/fragments/fullweek.ejs';
+              this.today = 'teacher/fragments/today.ejs';
+              this.about = 'teacher/fragments/about.ejs';
+              this.classroom = 'teacher/fragments/classroom.ejs';
+          }
+      }
+      this.fragment = new FragmentView();
+      this.target = new Locations().teacher.target;
+  }
+  getViewByTarget(target = this.target.dash){
+      switch(target){
+          case this.target.dash:return this.dash;
+          case this.target.settings:return this.settings;
+          case this.target.fullweek:return this.fullschedule;
+          case this.target.addschedule:return this.addschedule;
+          case this.target.fragment.today:return this.fragment.today;
+          case this.target.fragment.fullweek:return this.fragment.fullschedule;
+          case this.target.fragment.classroom:return this.fragment.classroom;
+          case this.target.fragment.about:return this.fragment.about;
+          default:return this.getViewByTarget();
+      }
+  }
+}
+
+class StudentView{
+  constructor(){
+      this.login = 'student/student_login.ejs';
+      this.dash = 'student/student_dash.ejs';
+      class FragmentView{
+          constructor(){
+              this.today = 'student/fragments/today.ejs';
+              this.fullschedule = 'student/fragments/fullweek.ejs';
+              this.classroom = 'student/fragments/classroom.ejs';
+              this.settings = 'student/fragments/about.ejs';
+          }
+      }
+      this.fragment = new FragmentView();
+      this.target = new Locations().student.target;
+  }
+  getViewByTarget(target = this.target.dash){
+      switch(target){
+          case this.target.dash:return this.dash;
+          case this.target.fragment.today:return this.fragment.today;
+          case this.target.fragment.fullweek:return this.fragment.fullschedule;
+          case this.target.fragment.settings:return this.fragment.settings;
+          case this.target.fragment.classroom:return this.fragment.classroom;
+          default:return this.getViewByTarget();
+      }
+  }
+}
+
+
+
+class Gets{
+  constructor(){
+    const locate = new Locations();
+    this.root = locate.root;
+    this.home = locate.homepage;
+    this.authlogin = '/auth/login*';
+    this.session = '/session*';
+    this.external = '/external*';
+    this.download = '/download*';
+    this.fragment = '/fragment*';
+    this.notfound = '/404';
+    this.servererror = '/500';
+    this.forbidder = '/403';
+  }
+}
+
 class Posts {
   constructor() {
+    this.logout = '/logout';
     class Admin {
       constructor() {
         const root = "/admin"
@@ -386,6 +544,8 @@ class Posts {
         this.default = `${root}/default`;
         this.sessionValidate = `${root}/session/validate`;
         this.manage = `${root}/manage`;
+        this.users = `${root}/users`;
+        this.email = `${root}/mail`;
         this.register = `${root}/session/registerinstitution`;
         this.schedule = `${root}/schedule`;
         this.receivedata = `${root}/receivedata`;
@@ -437,16 +597,11 @@ class Posts {
     class Student {
       constructor() {
         const root = '/student';
-        this.login = "/student/auth/login";
-        this.logout = "/student/auth/logout";
-        this.signup = "/student/auth/signup";
-
         this.auth = `${root}/auth`;
         this.sessionValidate = `${root}/session/validate`;
         this.schedule = `${root}/schedule`;
         this.self = `${root}/self`;
         this.manage = `${root}/manage`;
-
         class Action {
           constructor() {
             this.login = "login";
@@ -456,7 +611,6 @@ class Posts {
         }
         this.action = new Action();
       }
-
     }
     this.student = new Student();
   }
@@ -535,6 +689,7 @@ class InputType {
     this.match = "matching";
     this.username = "username";
     this.phone = "phone";
+    this.number = "number";
     this.weekday = "weekday";
   }
 }
@@ -629,6 +784,19 @@ class ViewType {
 const click = "click",
   change = "change",
   input = "input";
+const code = new Codes();
+const client = new Client();
+const value = new Constant();
+const constant = new Constant();
+const locate = new Locations();
+const theme = new Theme();
+const post = new Posts();
+const colors = new Colors();
+const validType = new InputType();
+const actionType = new ViewType();
+const bodyType = new ViewType();
 try {
-  module.exports = new Codes();
-} catch {}
+  module.exports = {code:new Codes(),client:new Client(),view:new View(),get:new Gets(),isOK(val){return String(val)==String(code.OK)},clog(msg){console.log(msg)}};
+} catch {
+  
+}

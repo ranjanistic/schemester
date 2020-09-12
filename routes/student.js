@@ -1,12 +1,9 @@
-const { getStudentShareData } = require("../workers/common/sharedata");
-
 const express = require("express"),
   student = express.Router(),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  code = require("../public/script/codes"),
-  view = require("../hardcodes/views"),
+  {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   share = require("../workers/common/sharedata"),
@@ -21,12 +18,12 @@ student.use(cookieParser(sessionsecret));
 const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
   authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
 
-student.get("/", (req, res) => {
+student.get(get.root, (req, res) => {
   res.redirect(worker.toLogin());
 });
 
 
-student.get("/auth/login*", (req, res) => {
+student.get(get.authlogin, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((error) => {
@@ -75,7 +72,7 @@ student.post("/auth",async(req,res)=>{
   }
 });
 
-student.get("/session*", async (req, res) => {
+student.get(get.session, async (req, res) => {
   let data = req.query;
   clog(data);
   session.verify(req, sessionsecret)
@@ -170,7 +167,7 @@ student.get("/session*", async (req, res) => {
     });
 });
 
-student.get("/fragment*", (req, res) => {
+student.get(get.fragment, (req, res) => {
   //for student session fragments.
   session
     .verify(req, sessionsecret)
@@ -196,6 +193,7 @@ student.get("/fragment*", (req, res) => {
                   today: false,
                   timings: scheduleresponse.timings,
                 });
+              clog(scheduleresponse.schedule);
               return res.render(view.student.getViewByTarget(query.fragment), {
                 today: scheduleresponse.schedule.period,
                 timings: scheduleresponse.timings,
@@ -275,6 +273,7 @@ student.post("/self", async (req, res) => {
     if (!session.valid(response)) return res.json(invalidsession);
     clog(response);
     switch (body.target) {
+      case "receive": return res.json({result:await worker.self.account.getAccount(response.user)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
       case "account": return res.json({ result: await worker.self.handleAccount(response.user,body)});
       case "preferences": return res.json({result: await worker.self.handlePreferences(response.user,body)});
@@ -328,11 +327,11 @@ student.post("/session/validate", async (req, res) => {
     });
 });
 
-student.get("/external*", async (req, res) => {
+student.get(get.external, async (req, res) => {
   const query = req.query;
   switch (query.type) {
     case invite.type:{
-      invite.handleInvitation(query,invite.target.student).then((resp)=>{
+      invite.handleInvitation(query,client.student).then((resp)=>{
         if(!resp) return res.render(view.notfound);
         return res.render(view.userinvitaion,{invite:resp.invite});
       }).catch(e=>{
@@ -341,7 +340,7 @@ student.get("/external*", async (req, res) => {
     }break;
     case verify.type: { //verification link
       clog("verify type");
-      verify.handleVerification(query,verify.target.student).then((resp) => {
+      verify.handleVerification(query,client.student).then((resp) => {
         clog("resp");
           clog(resp);
           if (!resp) return res.render(view.notfound);
@@ -354,7 +353,7 @@ student.get("/external*", async (req, res) => {
       return;
     }
     case reset.type:{
-      reset.handlePasswordResetLink(query,reset.target.student).then(async(resp)=>{
+      reset.handlePasswordResetLink(query,client.student).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid,classname:resp.classname});
       }).catch(e=>{

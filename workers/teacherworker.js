@@ -1,8 +1,12 @@
 const Institute = require("../config/db").getInstitute(),
-  view = require("../hardcodes/views"),
-  code = require("../public/script/codes"),
+  fs = require("fs"),
+  path = require("path"),
+  {code,client,view,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
+  session = require("./common/session"),
   verify = require("./common/verification"),
+  mailer = require("./common/mailer"),
+  timer = require("./common/timer"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
@@ -15,7 +19,7 @@ class TeacherWorker {
     this.pseudo = new PseudoUsers();
   }
   toSession = (u, query = { target: view.teacher.target.dash }) => {
-    let path = `/teacher/session?u=${u}`;
+    let path = `/${client.teacher}/session?u=${u}`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
         path = `${path}&${key}=${query[key]}`;
@@ -25,13 +29,12 @@ class TeacherWorker {
   };
   toLogin = (query = { target: view.teacher.target.dash }) => {
     let i = 0;
-    let path = "/teacher/auth/login";
+    let path = `/${client.teacher}/auth/login`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
-        path =
-          i > 0
-            ? `${path}&${key}=${query[key]}`
-            : `${path}?${key}=${query[key]}`;
+        path = i > 0
+          ? `${path}&${key}=${query[key]}`
+          : `${path}?${key}=${query[key]}`;
         i++;
       }
     }
@@ -58,16 +61,53 @@ class Self {
       }
       //send feedback emails
 
+      async getAccount(user){
+        let teacherdoc = await Institute.findOne({
+          uiid:user.uiid,
+          "users.teachers":{
+            $elemMatch:{"_id":ObjectId(user.id)}
+          }
+        },{
+          projection:{
+            "_id":0,
+            "users.teachers.$":1
+          }
+        });
+        if(!teacherdoc){
+          teacherdoc = await Institute.findOne({
+            uiid:user.uiid,
+            "pseudousers.teachers":{
+              $elemMatch:{"_id":ObjectId(user.id)}
+            }
+          },{
+            projection:{
+              "_id":0,
+              "pseudousers.teachers.$":1
+            }
+          });
+          clog(share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid));
+          return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+        }
+        return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+      }
+
       async createAccount(uiid, newteacher) {
-        const doc = await Institute.findOneAndUpdate(
+        let doc = await Institute.findOneAndUpdate(
           { uiid: uiid },
           {
             $push: {
-              [this.path]: newteacher,
+              [path]: newteacher,
             },
           }
         );
-        return code.event(doc ? code.OK : code.NO);
+        if(!doc.value) return code.event(code.NO);
+        doc = await Institute.findOneAndUpdate({uiid:uiid,
+          "schedule.teachers":{$elemMatch:{"teacherID":newteacher.teacherID}}},{
+            $set:{
+              "schedule.teachers.$.teachername":newteacher.username
+            }
+        });
+        return code.event(code.OK);
       }
 
       /**
@@ -82,11 +122,11 @@ class Self {
           },
           {
             $push: {
-              [this.pseudopath]: pseudoteacher,
+              [pseudopath]: pseudoteacher,
             },
           }
         );
-        return code.event(doc ? code.OK : code.NO);
+        return code.event(doc.value ? code.OK : code.NO);
       }
 
       /**
@@ -99,7 +139,7 @@ class Self {
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const namepath = pseudo?`${pseudopath}.$.${this.username}`:`${this.path}.$.${this.username}`;
         const path = pseudo?pseudopath:this.path;
-        const newteacher = await Institute.findOneAndUpdate({
+        let newteacher = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
         },
@@ -109,7 +149,21 @@ class Self {
             },
           }
         );
-        return code.event(newteacher.value ? code.OK : code.NO);
+        if(!newteacher.value) return code.event(code.NO);
+        if(!pseudo){
+          newteacher = await Institute.findOneAndUpdate({uiid:user.uiid,
+          "schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},{
+            $set:{
+              "schedule.teachers.$.teachername":body.newname
+            }
+          });
+          newteacher = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
+            $set:{
+              "users.classes.$.inchargename":body.newname
+            }
+          });
+        }
+        return code.event(code.OK);
       };
 
       /**
@@ -191,7 +245,6 @@ class Self {
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const path = pseudo?pseudopath:this.path;
-
         const deluser = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -303,15 +356,13 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
-        const linkdata = await verify.generateLink(verify.target.teacher, {
+        const linkdata = await verify.generateLink(client.teacher, {
           uid: user.id,
           instID: body.instID,
         });
         clog(linkdata);
-        //todo: send email then return.
-        return code.event(
-          linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-        );
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendVerificationEmail(linkdata);
       }
       case "check": {
         const teacherdoc = await Institute.findOne(
@@ -355,8 +406,7 @@ class Self {
       case "send":{
           if (!user) {
             //user not logged in
-            const userdoc = await Institute.findOne(
-              {
+            const userdoc = await Institute.findOne({
                 uiid: body.uiid,
                 "users.teachers": { $elemMatch: { teacherID: body.email } },
               },
@@ -374,8 +424,7 @@ class Self {
               );
               if (!pseudodoc) return { result: code.event(code.OK) }; //don't tell if user not exists, while sending reset email.
               body["instID"] = pseudodoc._id;
-              return await this.handlePassReset(
-                {
+              return await this.handlePassReset({
                   id: share.getPseudoTeacherShareData(
                     pseudodoc.pseudousers.teachers[0]
                   ).uid,
@@ -390,16 +439,14 @@ class Self {
             );
           }
           clog(user);
-          const linkdata = await reset.generateLink(reset.target.teacher, {
+          const linkdata = await reset.generateLink(client.teacher, {
             uid: user.id,
             instID: body.instID,
           });
-          clog(linkdata);
-          //todo: send email then return.
-          return code.event(
-            linkdata ? code.mail.MAIL_SENT : code.mail.ERROR_MAIL_NOTSENT
-          );
-        }
+          if(!linkdata) return 
+          clog(linkdata); code.event(code.mail.ERROR_MAIL_NOTSENT);
+          return await mailer.sendPasswordResetEmail(linkdata);
+      }
         break;
     }
   };
@@ -414,14 +461,13 @@ class Schedule {
     let incomplete = false; //if existing teacher schedule being rewritten without completion.
     let found = inst.schedule.teachers.some((teacher) => {
       if (teacher.teacherID == body.teacherID) {
-        if (teacher.days.length == inst.default.timings.daysInWeek.length) {
-          overwriting = true;
-        } else {
-          incomplete = teacher.days.some((day) => {
-            if (body.data.dayIndex <= day.dayIndex) {
-              return true;
-            }
-          });
+        overwriting = inst.default.timings.daysInWeek.every((d)=>{
+          //check if all days are present in teacher schedule
+          return teacher.days.find((day)=>day.dayIndex == d)?true:false;
+        });
+        if(!overwriting) {
+          //check if incoming day index is less than any day index present in teacher schedule
+          incomplete = teacher.days.find((day) => body.data.dayIndex <= day.dayIndex)?true:false;
         }
         return true;
       }
@@ -437,45 +483,52 @@ class Schedule {
       found = false; //add as a new teacher schedule
     }
 
-    let clashClass, clashPeriod, clashTeacher;
+    const clashdata = [];
     let clashed = inst.schedule.teachers.some((teacher) => {  //for clash checking
-      let clashed = teacher.days.some((day) => {
-        if (day.dayIndex == body.data.dayIndex) {
-          let clashed = day.period.some((period, pindex) => {
-            if (
-              period.classname == body.data.period[pindex].classname &&
-              period.classname != code.schedule.FREE
-            ) {
-              clashClass = period.classname;
-              clashPeriod = pindex;
-              return true;
-            }
-          });
-          return clashed;
-        }
-      });
-      if (clashed) {
-        clashTeacher = teacher.teacherID;
-        return true;
+      if(teacher.teacherID!=body.teacherID){
+        let clashed = teacher.days.some((day) => {
+          if (day.dayIndex == body.data.dayIndex) {
+            let clashed = day.period.some((period, pindex) => {
+              if (
+                period.classname == body.data.period[pindex].classname &&
+                period.classname != code.schedule.FREE
+              ) {
+                clashdata.push({
+                  classname:period.classname,
+                  period:pindex,
+                  id:teacher.teacherID,
+                  clashwith:teacher.teachername,
+                });
+                return true;
+              }
+            });
+            return clashed;
+          }
+        });
+        return clashed;
       }
     });
-    if (clashed) {//if schedule clashed.
-      inst.users.teachers.some((teacher)=>{
-        if(teacher.teacherID == clashTeacher){
-          clashTeacher = teacher.username;
-        }
-      });
+    if (clashed) {
+      //if some period clashed with an existing teacher.
       return {
         event: code.schedule.SCHEDULE_CLASHED,
-        clash: {
-          classname: clashClass,
-          period: clashPeriod,
-          clashwith: clashTeacher,
-        },
+        clash: clashdata[0]
       }
     }
-    if (found) { //existing teacher schedule, incomplete (new day index)
-      let doc = await Institute.findOneAndUpdate({
+    if (found) {
+      //existing teacher schedule, incomplete
+      let doc = await Institute.updateOne({uiid:user.uiid},{
+        $set:{
+          "schedule.teachers.$[outer].days.$[outer1].period":body.data.period  //overwrite existing day
+        }
+      },{
+        arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.data.dayIndex}]
+      });
+      clog("schedule overwritten?");
+      //return if existing day is overwritten.
+      clog(doc.result);
+      if(doc.result.nModified) return code.event(code.schedule.SCHEDULE_CREATED);
+      doc = await Institute.findOneAndUpdate({
         uiid: user.uiid,
         "schedule.teachers": {
           $elemMatch: { teacherID: body.teacherID },
@@ -488,10 +541,12 @@ class Schedule {
       clog(doc.value);
       clog("schedule appended?");
       return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED); //new day created.
-    } else { //no existing schedule teacherID
-      let doc = await Institute.findOneAndUpdate({ uiid: user.uiid }, {
+    } else { 
+      //no existing schedule teacherID
+      const doc = await Institute.findOneAndUpdate({ uiid: user.uiid }, {
         $push: {
           "schedule.teachers": {
+            teachername:body.teachername,
             teacherID: body.teacherID,
             days: [body.data],
           },
@@ -499,12 +554,29 @@ class Schedule {
       });
       clog(doc.value);
       clog("schedule created?");
+      //return if teacher created in schedule
       return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);//new teacher new day created.
     }
   }
 
   async scheduleUpdate(user, body) {}
 
+  async createScheduleBackup(user,sendPromptCallback=(filename,err)=>{}){
+    const teacher = await getTeacherById(user.uiid,user.id);
+    if(!teacher) return false;
+    const scheduledoc = await Institute.findOne({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},{
+      projection:{"schedule.teachers.$":1}
+    });
+    if(!scheduledoc) return false;
+    const schedule = scheduledoc.schedule.teachers[0];
+    clog(schedule);
+    fs.mkdir(path.join(__dirname+`/../backups/${user.uiid}`),()=>{
+      const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
+      fs.writeFile(path.join(__dirname+`/../backups/${user.uiid}/${filename}`),JSON.stringify(schedule),(err)=>{
+        sendPromptCallback(filename,err);
+      });
+    });
+  }
   async getSchedule(user, body = {}){
     clog(user);
     const teacheruser = await Institute.findOne({
@@ -515,7 +587,7 @@ class Schedule {
     );
     if (!teacheruser)
       return session.finish(res).then((response) => {
-        if (response) res.redirect(this.toLogin());
+        if (response) return false;
       });
     const teacher = teacheruser.users.teachers[0];
     const teacherschedule = await Institute.findOne({
@@ -534,14 +606,8 @@ class Schedule {
     const schedule = teacherschedule.schedule.teachers[0].days;
     if (body.dayIndex == null) return { schedule: schedule, timings: timings };
     let today = teacherschedule.schedule.teachers[0].days[0];
-    const found = schedule.some((day, index) => {
-      if (day.dayIndex == body.dayIndex) {
-        today = day;
-        return true;
-      }
-    });
-    if (!found) return { schedule: false, timings: timings };
-    return { schedule: today, timings: timings };
+    today = schedule.find((day) => day.dayIndex == body.dayIndex);
+    return { schedule: today?today:false, timings: timings };
   };
 }
 
@@ -568,7 +634,7 @@ class Classroom {
       case "update":
         return await this.updateClassroom(user, teacher, body, classroom);
       case "receive":
-        return await this.getClassroom(user, teacher);
+        return await this.getClassroom(user, teacher,body);
       case "manage":
         return await this.manage.handleSettings(user, body, teacher, classroom);
     }
@@ -620,8 +686,8 @@ class Classroom {
     }
   }
 
-  async getClassroom(user, teacher) {
-    const classdoc = await Institute.findOne({
+  async getClassroom(user, teacher, body) {
+    let classdoc = await Institute.findOne({
         uiid: user.uiid,
         "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
       },
@@ -636,9 +702,37 @@ class Classroom {
       },
       { projection: { "pseudousers.classes.$": 1 } }
     );
+    let pseudostudents = [];
+    if(pclassdoc){
+      pseudostudents = pclassdoc.pseudousers.classes[0].students;
+      pseudostudents.forEach((stud,s)=>{
+        pseudostudents[s] = share.getStudentShareData(stud);
+      })
+    }
+    let classroom = classdoc.users.classes[0];
+    let todayschedule = await new Schedule().getSchedule(user);
+    let otherclasses = [];
+    todayschedule.schedule.forEach(day=>{
+      day.period.forEach((period)=>{
+        if(!otherclasses.includes(period.classname)){
+          otherclasses.push(period.classname);
+        }
+      });
+    });
+    if(body&&otherclasses.includes(body.otherclass)){//a specific classes needed
+      classdoc = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.otherclass}}},{
+        projection:{"users.classes.$":1}
+      });
+      classroom = classdoc?classdoc.users.classes[0]:classroom;
+    }
+    classroom.students.forEach((stud,s)=>{
+      classroom.students[s] = share.getStudentShareData(stud);
+    });
+    clog(classroom);
     return {
-      classroom: classdoc.users.classes[0],
-      pseudostudents: pclassdoc.pseudousers.classes[0].students,
+      classroom: classroom,
+      pseudostudents: pseudostudents,
+      otherclasses:otherclasses
     };
   }
 
@@ -646,13 +740,13 @@ class Classroom {
     clog(body);
     switch (body.action) {
       case "create":{
-        return await invite.generateLink(invite.target.student,{
+        return await invite.generateLink(client.student,{
           cid:classroom._id,
           instID:instID
         });
       }break;
       case "disable":{
-        return await invite.disableInvitation(invite.target.student,{
+        return await invite.disableInvitation(client.student,{
           cid:classroom._id,
           instID:instID
         });
@@ -673,7 +767,7 @@ class PseudoUsers {
         $elemMatch: { inchargeID: teacher.teacherID },
       }
     },{
-      projection: { "users.classes.$.classname": 1 } 
+      projection: { "users.classes.$": 1 } 
     });
     if(!classdoc) return code.event(code.NO);
     switch (body.action) {
@@ -757,11 +851,10 @@ class PseudoUsers {
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
 }
-
-const clog = (m) => console.log(m);
 module.exports = new TeacherWorker();
 
 async function getTeacherById(uiid,id,pseudo = false){
+  clog(pseudo);
   let path = pseudo?"pseudousers.teachers":"users.teachers";
   let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
   const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"_id":ObjectId(id)}}},{
@@ -769,7 +862,7 @@ async function getTeacherById(uiid,id,pseudo = false){
       [getpath]:1
     }
   });
-  return tdoc?tdoc.users.teachers[0]:false;
+  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
 }
 async function getTeacherByEmail(uiid,email,pseudo = false){
   let path = pseudo?"pseudousers.teachers":"users.teachers";
@@ -779,5 +872,5 @@ async function getTeacherByEmail(uiid,email,pseudo = false){
       [getpath]:1
     }
   });
-  return tdoc?tdoc.users.teachers[0]:false;
+  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
 }

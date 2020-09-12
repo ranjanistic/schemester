@@ -18,6 +18,9 @@
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
         <script src="/script/verification.js"></script>
+        <script src="/script/admin/admin.js"></script>
+        <script src="/script/teacher/teacher.js"></script>
+        <script src="/script/student/student.js"></script>
     </head>
     <%if(user.expired) {%>
     <body class="b-negative">
@@ -28,6 +31,7 @@
     <% } %>
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root)">
             <span>Account Verification</span>
+            <button class="fmt-right neutral-button" id="logout">Logout</button>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
         </div>
         <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
@@ -53,17 +57,13 @@
                         <br/><br/>If you click the blue button, a link will be sent to your provided email address, and you should visit that link before it expires.</br>
                         This small step will get you verified, and would be a giant leap for us, as we'll fully trust you after that.
                         <br/>
-                        <% if(user.isAdmin){ %>
-                        <span class="negative">In case you've mistakenly provided us the wrong email, you can reset your account too, and then provide us with your own email address.</span>
-                        <% } %>
+                        <span class="negative">In case you've mistakenly provided the wrong email, you can reset your account too, and then provide us with your own email address.</span>
                     </div><br/><br/>
                     <div class="fmt-row">
                         <img class="fmt-spin-fast fmt-center fmt-left" width="50" src="/graphic/blueLoader.svg" id="verifyLoader"/>
                         <button class="positive-button fmt-left" id="sendlink">Send link to <%= user.id %> </button>
                         <button class="active-button fmt-left" id="checkverified">Check</button>
-                        <% if(user.isAdmin){ %>
                         <button class="fmt-right negative-button" id="resetaccount">Reset account</button>
-                        <% } %>
                         <button class="fmt-right neutral-button" id="later">Not now</button>
                     </div>
                 <% } else { %>
