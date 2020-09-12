@@ -1,6 +1,9 @@
 const Admin = require("../config/db").getAdmin(),
   Institute = require("../config/db").getInstitute(),
   bcrypt = require("bcryptjs"),
+  path = require("path"),
+  fs = require("fs"),
+  timer = require("./common/timer"),
   { code, client, view, isOK, clog } = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
@@ -421,7 +424,23 @@ class Default {
         );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async getInfo() {}
+      async createInstituteBackup(user,sendPromptCallback=(filename,err)=>{}){
+        const institute = await Institute.findOne({uiid:user.uiid});
+        if(!institute) return false;
+        fs.mkdir(path.join(__dirname+`/../backups/${user.uiid}`),()=>{
+          const filename = `${user.id}_${user.uiid}_${timer.getTheMoment()}.json`;
+          fs.writeFile(path.join(__dirname+`/../backups/${user.uiid}/${filename}`),JSON.stringify(institute),(err)=>{
+            sendPromptCallback(filename,err);
+          });
+        });
+      }
+      async deleteInstitution(user,body){
+        if(user.uiid != body.uiid) return code.event(code.auth.WRONG_UIID);
+        const inst = await Institute.findOne({uiid:user.uiid});
+        if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+        const deldoc = await Institute.findOneAndDelete({uiid:user.uiid});
+        return code.event(deldoc.value?code.OK:code.NO);
+      }
     }
     class Timing {
       constructor() {
@@ -511,6 +530,8 @@ class Default {
         return await this.institute.setEmail(user, body);
       case code.action.CHANGE_PHONE:
         return await this.institute.setPhone(user, body);
+      case code.action.INSTITUTE_DELETE:
+        return await this.institute.deleteInstitution(user,body);
     }
   };
   handleTimings = async (user, body) => {
@@ -1093,11 +1114,10 @@ class Schedule {
               options = { projection: { _id: 0, "schedule.teachers.$": 1 } };
             }
             break;
-          case "nonusers":
-            {
+          case "nonusers":{
               const nonusers = [];
               inst.schedule.teachers.forEach((teacher) => {
-                if (!teacher.teachername) {
+                if(!inst.users.teachers.find(t=>t.teacherID == teacher.teacherID)){
                   nonusers.push(teacher.teacherID);
                 }
               });

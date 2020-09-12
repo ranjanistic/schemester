@@ -69,6 +69,28 @@ class TeacherAbout {
         }
       });
     });
+
+    this.backup = getElement("downloadschedule");
+    resumeElementRestriction(this.backup,"backupschedule",_=>{
+      this.backup.onclick=_=>{
+        const backup = this.backup.onclick;
+        this.backup.onclick=_=>{};
+        parent.snackbar('Generating backup file...');
+        postJsonData(post.teacher.schedule,{
+          action:code.schedule.CREATE_BACKUP
+        }).then(resp=>{
+          clog(resp)
+          parent.snackbar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
+          restrictElement(this.backup,60,"backupschedule",_=>{
+            this.backup.onclick=backup;
+          });
+          refer(resp.url);
+        }).catch(err=>{
+          clog(err);
+        })
+      }
+    });
+
     this.resetmail = getElement("resetemail");
     this.resetpass = getElement("resetpass");
     this.forgotpass = getElement("forgotpass");
@@ -83,27 +105,9 @@ class TeacherAbout {
         });
       });
     };
-    if (Number(sessionStorage.getItem("linkin")) > 0) {
-      opacityOf(this.forgotpass, 0.5);
-      let time = Number(sessionStorage.getItem("linkin"));
-      const timer = setInterval(() => {
-        time--;
-        sessionStorage.setItem("linkin", time);
-        this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
-        if (Number(sessionStorage.getItem("linkin")) == 0) {
-          clearInterval(timer);
-          this.forgotpass.innerHTML = "Forgot password";
-          opacityOf(this.forgotpass, 1);
-          this.forgotpass.onclick = (_) => {
-            this.sendForgotLink();
-          };
-        }
-      }, 1000);
-    } else {
-      this.forgotpass.onclick = (_) => {
-        this.sendForgotLink();
-      };
-    }
+    resumeElementRestriction(this.forgotpass,"teacherforgot",_=>{
+      this.forgotpass.onclick = (_) => {this.sendForgotLink()};
+    });
 
     this.deleteaccount.onclick = (_) => {
       authenticateDialog(
@@ -158,36 +162,24 @@ class TeacherAbout {
         }
       )
     );
-    let time = 60;
-    let timer = setInterval(() => {
-      time--;
-      delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
-      if (time == 0) {
-        clearInterval(timer);
-        delconf.hide();
-      }
-    }, 1000);
+    restrictElement(delconf.getDialogButton(0),15,"teacherdeleteacc",_=>{
+      let time = 60;
+      let timer = setInterval(() => {
+        time--;
+        delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
+        if (time == 0) {
+          clearInterval(timer);
+          delconf.hide();
+        }
+      }, 1000);
+    })
   }
   sendForgotLink() {
+    this.forgotpass.onclick=_=>{};
     parent.linkSender().then((done) => {
-      clog(done);
-      if (done) {
-        opacityOf(this.forgotpass, 0.4);
-        this.forgotpass.onclick = (_) => {};
-        let time = 120;
-        sessionStorage.setItem("linkin", time);
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            clearInterval(timer);
-            this.forgotpass.innerHTML = "Forgot password";
-            opacityOf(this.forgotpass, 1);
-            this.forgotpass.onclick=_=>{this.sendForgotLink()};
-          }
-        }, 1000);
-      }
+      restrictElement(this.forgotpass,120,'teacherforgot',_=>{
+        this.forgotpass.onclick = (_) => {this.sendForgotLink()};
+      });
     });
   }
 }

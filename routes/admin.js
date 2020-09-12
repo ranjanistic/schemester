@@ -6,6 +6,8 @@ const express = require("express"),
   {code,client,view,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
+  path = require("path"),
+  fs = require("fs"),
   verify = require("../workers/common/verification"),
   share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
@@ -407,10 +409,45 @@ admin.post('/default',(req,res)=>{
         case "admin": return res.json({result:await worker.default.handleAdmin(response.user,inst,body)});
         case "institute":return res.json({result:await worker.default.handleInstitute(response.user,body)});
         case "timings": return res.json({result:await worker.default.handleTimings(response.user,body)});
+        case code.inst.BACKUP_INSTITUTION:{
+          worker.default.institute.createInstituteBackup(response.user,(filename,error)=>{
+            if(error) return res.json({result:code.event(code.NO)});
+            return res.json({result:{
+              event:code.OK,
+              url:`/${client.admin}/download?type=${code.inst.BACKUP_INSTITUTION}&res=${filename}`,
+            }})
+          });
+        }break;
       }
     });
 });
 
+admin.get(get.download,async(req,res)=>{
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return res.json({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.render(view.forbidden);
+    const query = req.query;
+    if(!(query.type&&query.res)) return res.render(view.notfound);
+    switch(query.type){
+      case code.inst.BACKUP_INSTITUTION:{
+        try{
+          if(response.user.id == String(query.res).slice(0,query.res.indexOf('_')) && response.user.uiid == String(query.res).slice(query.res.indexOf('_')+1,query.res.lastIndexOf('_'))){
+            res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
+              if(err) res.render(view.notfound);
+            });
+          } else {
+            res.render(view.notfound);
+          }
+        }catch{
+          res.render(view.notfound);
+        }
+      }
+    }
+  })
+})
 /**
  * For actions related to users subdocument.
  */

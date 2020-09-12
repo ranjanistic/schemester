@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 
 const express = require("express"),
   teacher = express.Router(),
+  path = require('path'),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
   {code,client,view,get} = require("../public/script/codes"),
@@ -304,17 +305,53 @@ teacher.post("/schedule", async (req, res) => {
       if (!session.valid(response)) return res.json(invalidsession);
       const body = req.body
       switch (body.action) {
-        case "upload":
-          return res.json({result:await worker.schedule.scheduleUpload(response.user, body)});
+        case "upload":return res.json({result:await worker.schedule.scheduleUpload(response.user, body)});
         case "receive":
           return res.json({result:await worker.schedule.getSchedule(response.user, body)});
         case "update":
           return res.json({result:await worker.schedule.scheduleUpdate(response.user, body)});
+        case code.schedule.CREATE_BACKUP:{
+          worker.schedule.createScheduleBackup(response.user,(filename,error)=>{
+            return res.json({result:{event:code.OK,url:`/${client.teacher}/download?type=${code.schedule.CREATE_BACKUP}&res=${filename}`}})
+            // if(error) return res.json({result:code.event(code.NO)});
+          });
+        }break;
         default:
           return res.json({result:code.event(code.server.DATABASE_ERROR)});
       }
-    })
+    });
 });
+
+teacher.get('/download*',async(req,res)=>{
+  session.verify(req, sessionsecret)
+  .catch(e=>{
+    return res.json({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
+  })
+  .then(async (response) => {
+    if (!session.valid(response)) return res.render(view.forbidden);
+    const query = req.query;
+    if(!(query.type&&query.res)) return res.render(view.notfound);
+    switch(query.type){
+      case code.schedule.CREATE_BACKUP:{
+        try{
+          if(response.user.uiid == String(query.res).slice(0,query.res.lastIndexOf('_'))){
+            clog(query);
+            // clog(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`));
+            res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
+              clog(err);
+              clog("here");
+              if(err) res.render(view.notfound);
+            });
+          } else {
+            res.render(view.notfound);
+          }
+        }catch{
+          res.render(view.notfound);
+        }
+      }
+    }
+  })
+})
 
 teacher.post("/classroom",async(req,res)=>{
   session

@@ -32,24 +32,10 @@ class AdminLogin{
       this.passField.normalize();
       hide(this.forgotPassword);
     });
-    if (Number(sessionStorage.getItem("linkin")) > 0) {
-      opacityOf(this.forgotPassword, 0.5);
-      let time = Number(sessionStorage.getItem("linkin"));
-      const timer = setInterval(() => {
-        time--;
-        sessionStorage.setItem("linkin", time);
-        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-        if (Number(sessionStorage.getItem("linkin")) == 0) {
-          this.forgotPassword.innerHTML = "Get password link";
-          opacityOf(this.forgotPassword, 1);
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
-          clearInterval(timer);
-        }
-      }, 1000);
-    } else {
+    resumeElementRestriction(this.forgotPassword,"adminforgot",_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
-    }
-    this.logInButton.addEventListener(click,_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())},false);
+    });
+    this.logInButton.onclick=_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())};
     
   }
   linkSender(){
@@ -67,23 +53,10 @@ class AdminLogin{
           this.forgotPassword.onclick = (_) => {this.linkSender()};
           return snackBar('An error occurred','Report');
         }
-        snackBar(
-          "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
-        );
-        opacityOf(this.forgotPassword, 0.4);
-        let time = 120;
-        sessionStorage.setItem("linkin", time);
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            this.forgotPassword.innerHTML = "Get password link";
-            opacityOf(this.forgotPassword, 1);
-            this.forgotPassword.onclick = (_) => {this.linkSender()};
-            clearInterval(timer);
-          }
-        }, 1000);
+        snackBar("If your email address was correct, you'll receive an email from us in a few moments.",'Hide');
+        restrictElement(this.forgotPassword,120,'adminforgot',_=>{
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        });
       })
     })
   }

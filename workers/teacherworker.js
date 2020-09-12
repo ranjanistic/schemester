@@ -1,9 +1,12 @@
 const Institute = require("../config/db").getInstitute(),
+  fs = require("fs"),
+  path = require("path"),
   {code,client,view,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   session = require("./common/session"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
+  timer = require("./common/timer"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
@@ -558,6 +561,22 @@ class Schedule {
 
   async scheduleUpdate(user, body) {}
 
+  async createScheduleBackup(user,sendPromptCallback=(filename,err)=>{}){
+    const teacher = await getTeacherById(user.uiid,user.id);
+    if(!teacher) return false;
+    const scheduledoc = await Institute.findOne({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},{
+      projection:{"schedule.teachers.$":1}
+    });
+    if(!scheduledoc) return false;
+    const schedule = scheduledoc.schedule.teachers[0];
+    clog(schedule);
+    fs.mkdir(path.join(__dirname+`/../backups/${user.uiid}`),()=>{
+      const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
+      fs.writeFile(path.join(__dirname+`/../backups/${user.uiid}/${filename}`),JSON.stringify(schedule),(err)=>{
+        sendPromptCallback(filename,err);
+      });
+    });
+  }
   async getSchedule(user, body = {}){
     clog(user);
     const teacheruser = await Institute.findOne({
@@ -568,7 +587,7 @@ class Schedule {
     );
     if (!teacheruser)
       return session.finish(res).then((response) => {
-        if (response) res.redirect(this.toLogin());
+        if (response) return false;
       });
     const teacher = teacheruser.users.teachers[0];
     const teacherschedule = await Institute.findOne({
@@ -587,14 +606,8 @@ class Schedule {
     const schedule = teacherschedule.schedule.teachers[0].days;
     if (body.dayIndex == null) return { schedule: schedule, timings: timings };
     let today = teacherschedule.schedule.teachers[0].days[0];
-    const found = schedule.some((day, index) => {
-      if (day.dayIndex == body.dayIndex) {
-        today = day;
-        return true;
-      }
-    });
-    if (!found) return { schedule: false, timings: timings };
-    return { schedule: today, timings: timings };
+    today = schedule.find((day) => day.dayIndex == body.dayIndex);
+    return { schedule: today?today:false, timings: timings };
   };
 }
 

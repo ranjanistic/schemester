@@ -745,7 +745,7 @@ class Schedule {
                 );
                 this.restartView();
               } else {
-                snackBar("Could'nt change period.", "Report");
+                snackBar("Couldn't change period.", "Report");
               }
             });
           },
@@ -942,52 +942,60 @@ class Schedule {
     }, 1000);
   }
 }
-
 class Security {
   constructor() {
     this.resetPass = getElement("resetPasswordButton");
     this.sendpasslink = getElement("sendpasswordlink");
+
+    resumeElementRestriction(this.sendpasslink,"sendpasslink",_=>{
+      this.sendpasslink.onclick = (_) => {
+        this.linkSender();
+      };
+    });
+
     this.resetMail = getElement("resetMailButton");
-    this.lastLogin = getElement("lastLoginTime");
+    this.backup = getElement("instbackup");
+
+    resumeElementRestriction(this.backup,"backupinst",_=>{
+      this.backup.onclick=_=>{
+        const backup = this.backup.onclick;
+        this.backup.onclick=_=>{};
+        snackBar('Generating backup file...');
+        showLoader();
+        postJsonData(post.admin.default,{
+          target:code.inst.BACKUP_INSTITUTION
+        }).then(resp=>{
+          clog(resp.url)
+          snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
+          hideLoader();
+          restrictElement(this.backup,60,"backupinst",_=>{
+            this.backup.onclick=backup;
+          });
+          refer(resp.url);
+        }).catch(err=>{
+          clog(err);
+        })
+      }
+    });
     this.deleteAccount = getElement("deleteAdminAccount");
+    this.deleteInstitute = getElement("deleteInstitute");
+
     this.resetPass.onclick = (_) => {
       authenticateDialog(client.admin, (_) => {
         resetPasswordDialog(client.admin, true);
       });
     };
-    if (Number(sessionStorage.getItem("linkin")) > 0) {
-      opacityOf(this.sendpasslink, 0.5);
-      let time = Number(sessionStorage.getItem("linkin"));
-      const timer = setInterval(() => {
-        time--;
-        sessionStorage.setItem("linkin", time);
-        this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
-        if (Number(sessionStorage.getItem("linkin")) == 0) {
-          clearInterval(timer);
-          this.sendpasslink.innerHTML = "Get password link";
-          opacityOf(this.sendpasslink, 1);
-          this.sendpasslink.onclick = (_) => {
-            this.linkSender();
-          };
-        }
-      }, 1000);
-    } else {
-      this.sendpasslink.onclick = (_) => {
-        this.linkSender();
-      };
-    }
+    
     this.resetMail.onclick = (_) => {
       changeEmailBox(client.admin);
     };
-    this.deleteAccount.addEventListener(
-      click,
-      (_) => {
+    this.deleteAccount.onclick=(_) => {
         authenticateDialog(
           client.admin,
           (_) => {
             const delconf = new Dialog();
             delconf.setDisplay(
-              "Delete?",
+              "Delete Account?",
               `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
                 "id"
               )}</b> permanently? The following consequencies will take place:<br/>
@@ -1030,89 +1038,152 @@ class Security {
             );
             delconf.setBackgroundColorType(bodyType.negative);
             delconf.createActions(
-              Array(`Delete account & Institution`, "No, step back"),
-              Array(actionType.negative, actionType.positive)
+              [`Delete account & Institution`, "No, step back"],
+              [actionType.negative, actionType.positive]
             );
             delconf.onButtonClick(
-              Array(
+              [
                 (_) => {
-                  if (deletinstituteswitch.isOn()) {
-                    if (!deluiid.isValid()) {
-                      return deluiid.validateNow();
-                    }
-                  }
-                  delconf.loader();
-                  deluiid.disableInput();
-                  postJsonData(post.admin.self, {
-                    target: "account",
-                    action: code.action.ACCOUNT_DELETE,
-                    uiid: deluiid.getInput().trim(),
-                  }).then((response) => {
-                    if (response.event == code.OK) {
-                      relocate(locate.root);
-                    } else {
-                      delconf.loader(false);
-                      deluiid.enableInput();
-                      if (response.event == code.auth.WRONG_UIID) {
-                        return deluiid.showError("Wrong UIID");
-                      } else {
-                        snackBar("Action Failed");
-                      }
-                    }
-                  });
+                  
                 },
                 (_) => {
                   delconf.hide();
                 }
-              )
+              ]
             );
-            let time = 60;
-            const snack = new Snackbar();
-            snack.show();
-            let timer = setInterval(() => {
-              time--;
-              delconf.getDialogButton(
-                0
-              ).innerHTML = `Delete account (${time}s)`;
-              if (time == 0) {
-                clearInterval(timer);
-                delconf.hide();
-                snack.hide();
+            restrictElement(delconf.getDialogButton(0),15,"admindelacc",_=>{
+              delconf.getDialogButton(0).onclick=_=>{
+                if (deletinstituteswitch.isOn()) {
+                  if (!deluiid.isValid()) {
+                    return deluiid.validateNow();
+                  }
+                }
+                delconf.loader();
+                deluiid.disableInput();
+                postJsonData(post.admin.self, {
+                  target: "account",
+                  action: code.action.ACCOUNT_DELETE,
+                  uiid: deluiid.getInput().trim(),
+                }).then((response) => {
+                  if (response.event == code.OK) {
+                    relocate(locate.root);
+                  } else {
+                    delconf.loader(false);
+                    deluiid.enableInput();
+                    if (response.event == code.auth.WRONG_UIID) {
+                      return deluiid.showError("Wrong UIID");
+                    } else {
+                      snackBar("Action Failed");
+                    }
+                  }
+                });
               }
-            }, 1000);
+              let time = 60;
+              let timer = setInterval(() => {
+                time--;
+                delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
+                if (time == 0) {
+                  clearInterval(timer);
+                  delconf.hide();
+                  snack.hide();
+                }
+              }, 1000);
+            });
           },
-          true,
-          true
+        true,true
+      );
+    }
+
+    this.deleteInstitute.onclick=_=>{
+      authenticateDialog(client.admin,_=>{
+        const delinst = new Dialog();
+        delinst.setHeadingColor(colors.negative);
+        delinst.setBackgroundColorType(bodyType.negative);
+        delinst.setDisplay('Delete Institute?',`
+          <div class="fmt-center">
+            <div class="questrial group-text negative">This action is permanent, and kk will be completely removed.</div>
+            <div class="questrial group-text">Type the uiid of your institution to delete it.</div>
+            ${getInputField('deluiidfield','deluiidcap','deluiid','deluiiderror')}<br/>
+            <button class="fmt-row positive-button questrial" id="downloadinst">Download Institute Backup</button><br/>
+            <div class="fmt-row active caption">It is recommended to download a backup of your institution, which includes all schedule, settings, and user accounts, as a precautionary measure.</div>
+          </div>`
         );
-      },
-      false
-    );
+        const deluiid = new TextInput('deluiidfield','deluiid','deluiiderror',validType.nonempty,'deluiidcap');
+        deluiid.setFieldCaption('UIID');
+        deluiid.setInputAttrs(`Type your institute's unique ID`);
+        const downloadinst = getElement("downloadinst");
+        downloadinst.onclick=_=>{
+          snackBar('Generating backup file...');
+          postJsonData(post.admin.default,{
+            target:code.inst.BACKUP_INSTITUTION
+          }).then(resp=>{
+            clog(resp.url)
+            snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
+            refer(resp.url);
+          }).catch(err=>{
+            clog(err);
+          })
+        }
+        delinst.createActions(['Abort','Delete Institution Permanently'],[actionType.positive,actionType.negative]);
+        delinst.onButtonClick([_=>{
+          delinst.hide();
+        },_=>{
+          
+        }]);
+        restrictElement(delinst.getDialogButton(1),15,"delinst",_=>{
+          delinst.getDialogButton(1).onclick=_=>{
+            if (!deluiid.isValid()) {
+              return deluiid.validateNow();
+            }
+            delinst.loader();
+            deluiid.disableInput();
+            postJsonData(post.admin.default, {
+              target: "institute",
+              action: code.action.INSTITUTE_DELETE,
+              uiid: deluiid.getInput().trim(),
+            }).then((response) => {
+              if (response.event == code.OK) {
+                return relocate(locate.root,{client:client.admin});
+              } else {
+                delinst.loader(false);
+                deluiid.enableInput();
+                if (response.event == code.auth.WRONG_UIID) {
+                  return deluiid.showError("Wrong UIID");
+                } else {
+                  snackBar("Action Failed");
+                }
+              }
+            });
+          }
+          let time = 60;
+          const timer = setInterval(() => {
+            time--;
+            delinst.getDialogButton(1).innerHTML = `Delete Institute (${time}s)`;
+            if (time == 0) {
+              clearInterval(timer);
+              delinst.hide();
+            }
+          }, 1000);
+        });
+        delinst.show();
+      },true,true)
+    }
   }
 
   linkSender() {
+    this.sendpasslink.onclick=_=>{};
     postJsonData(post.admin.manage, {
       type: "resetpassword",
       action: "send",
     }).then((response) => {
       clog(response);
       if (response.event == code.mail.MAIL_SENT) {
-        snackBar(
-          "A link for password reset has been sent to your email address."
-        );
-        opacityOf(this.sendpasslink, 0.4);
-        this.sendpasslink.onclick = (_) => {};
-        let time = 120;
-        sessionStorage.setItem("linkin", time);
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.sendpasslink.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            clearInterval(timer);
-            this.sendpasslink.innerHTML = "Get password link";
-            opacityOf(this.sendpasslink, 1);
+        snackBar("A link for password reset has been sent to your email address.");
+        restrictElement(this.sendpasslink,120,"sendpasslink",_=>{
+          this.sendpasslink.onclick=_=>{
+            this.linkSender();
           }
-        }, 1000);
+        });
       }
     });
   }

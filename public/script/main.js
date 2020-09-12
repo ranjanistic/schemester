@@ -1193,6 +1193,54 @@ const infoDialog=(heading,body,imgsrc,action)=>{
   infodialog.show();
 }
 
+/**
+ * Displays a timer on given element for which it remains disabled. This method however, doesn't actually disable the element,
+ * therefore, must be called after disabling it.
+ * @param {HTMLElement} element The element to be disabled.
+ * @param {Number} duration The duration in seconds, for which element remains disabled.
+ * @param {String} id A unique string associated with the element.
+ * @param {Function} afterRestriction The method to be excecuted after restrication is lifted. (optional)
+ */
+const restrictElement=(element,duration,id,afterRestriction=_=>{})=>{
+  opacityOf(element, 0.5);
+  const ogtext = element.innerHTML;
+  let time = duration;
+  const timer = setInterval(() => {
+    time--;
+    sessionStorage.setItem(`restrict${id}`, time);
+    element.innerHTML = `Wait for ${time} seconds.`;
+    if (time == 0) {
+      element.innerHTML = ogtext;
+      opacityOf(element, 1);
+      sessionStorage.removeItem(`restrict${id}`);
+      afterRestriction();
+      clearInterval(timer);
+    }
+  }, 1000);
+}
+
+const resumeElementRestriction=(element,id,afterRestriction=_=>{})=>{
+  if (Number(sessionStorage.getItem(`restrict${id}`)) > 0) {
+    opacityOf(element, 0.5);
+    const ogtext = element.innerHTML;
+    let time = Number(sessionStorage.getItem(`restrict${id}`));
+    const timer = setInterval(() => {
+      time--;
+      sessionStorage.setItem(`restrict${id}`, time);
+      element.innerHTML = `Wait for ${time} seconds.`;
+      if (time == 0) {
+        element.innerHTML = ogtext;
+        opacityOf(element, 1);
+        sessionStorage.removeItem(`restrict${id}`);
+        afterRestriction();
+        clearInterval(timer);
+      }
+    }, 1000);
+  } else {
+    afterRestriction();
+  }  
+}
+
 let checkSessionValidation = (
   clientType = null,
   validAction = null,

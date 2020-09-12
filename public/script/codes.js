@@ -90,6 +90,8 @@ class Codes {
         this.INSTITUTION_CREATED = "inst/institution-created";
         this.INSTITUTION_CREATION_FAILED = "inst/institution-not-created";
 
+        this.BACKUP_INSTITUTION = 'inst/backup-institute-file';
+
         this.INSTITUTION_DEFAULTS_SET = "inst/institution-defaults-saved";
         this.INSTITUTION_DEFAULTS_UNSET = "inst/institution-defaults-not-saved";
 
@@ -121,6 +123,7 @@ class Codes {
     class ActionCodes {
       constructor() {
         this.ACCOUNT_DELETE = "action/delete-account";
+        this.INSTITUTE_DELETE = "action/delete-institute";
         this.CHANGE_PASSWORD = "action/change-password";
         this.CHANGE_ID = "action/change-id-email";
         this.CHANGE_PHONE = "action/change-phone-number";
@@ -204,6 +207,7 @@ class Codes {
         this.BATCH_NOT_FOUND = "schedule/batch-or-class-not-exist";
         this.SCHEDULE_CLASHED = "schedule/conflicting-schedule";
         this.WEEKDAY_EXISTS = "schedule/weekday-exists";
+        this.CREATE_BACKUP = "schedule/generate-backup";
         this.FREE = "Free";
       }
     }
@@ -516,6 +520,7 @@ class Gets{
     this.authlogin = '/auth/login*';
     this.session = '/session*';
     this.external = '/external*';
+    this.download = '/download*';
     this.fragment = '/fragment*';
     this.notfound = '/404';
     this.servererror = '/500';

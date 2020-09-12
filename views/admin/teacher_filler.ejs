@@ -78,11 +78,12 @@
                 </div>
             </span >
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <input type="text" class="searcher fmt-right" name="search">
+            <button class="fmt-right neutral-button" id="uploadschedule">Upload <%= (user.isAdmin?'Teacher':'Schedule') %></button>
         </div>
         <div class="fmt-padding-small" style="margin-top: 66px;">
             <div class="container" id="workbox">
                 <div class="fmt-row">
+
                     <div class="fmt-col fmt-half">
                         <% if (user.isAdmin) { %>
                             <fieldset class="text-field" id="teacherEmailField">

@@ -22,8 +22,45 @@ class TeacherFiller {
       };
     } else {
       this.back.onclick = (_) => {
-        relocate(locate.root);
+        relocate(locate.root,{client:client.teacher});
       };
+    }
+
+    this.uploadfile = getElement("uploadschedule");
+    this.uploadfile.onclick=_=>{
+      const updial = new Dialog();
+      updial.transparent();
+      updial.setDisplay('Upload schedule',`
+      <center>If you have already a backup file (.json) of schedule, then you can upload it here to directly create schedule from it.</center>
+      <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_NNNNNNNNNNNNNNNNN.json</div>
+        <fieldset class="text-field" id="fileuploadfield">
+          <legend class="field-caption">Select the file from your device</legend>
+          <input class="text-input" required type="file" id="fileupload" name="schedulefileupload">
+          <span class="error-caption" id="fileuploaderror"></span>
+        </fieldset>
+      `);
+      const fileinput = new TextInput("fileuploadfield","fileupload","fileuploaderror");
+      updial.createActions(['Create Schedule','Cancel'],[actionType.positive,actionType.neutral]);
+      let teacher;
+      fileinput.input.addEventListener('change',(event)=>{
+        var files = event.target.files;
+        var file = files[0];           
+        var reader = new FileReader();
+        reader.onload = (eve)=> {
+          try{
+            teacher = JSON.parse(eve.target.result);
+          }catch(e){
+            fileinput.showError(e);
+          }
+        }
+        reader.readAsText(file)
+      },false);
+      updial.onButtonClick([_=>{
+        this.fillScheduleFromfile(teacher);
+      },_=>{
+        updial.hide();
+      }])
+      updial.show();
     }
 
     this.logout = getElement("logout");
@@ -151,6 +188,10 @@ class TeacherFiller {
         hide(this.previous);
       }
     };
+  }
+
+  fillScheduleFromfile(inst){
+    //todo fill all fields from given object, including teacher id.
   }
 
   fillFromSession() {

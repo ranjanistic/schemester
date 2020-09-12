@@ -261,23 +261,9 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    if (Number(sessionStorage.getItem("linkin")) > 0) {
-      opacityOf(this.forgotPassword, 0.5);
-      let time = Number(sessionStorage.getItem("linkin"));
-      const timer = setInterval(() => {
-        time--;
-        sessionStorage.setItem("linkin", time);
-        this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-        if (Number(sessionStorage.getItem("linkin")) == 0) {
-          this.forgotPassword.innerHTML = "Get password link";
-          opacityOf(this.forgotPassword, 1);
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
-          clearInterval(timer);
-        }
-      }, 1000);
-    } else {
+    resumeElementRestriction(this.forgotPassword,"studentforgot",_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
-    }
+    });
 
     this.previous.onclick = _=>{
       this.passField.hide();
@@ -342,20 +328,9 @@ class Password{
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
-        opacityOf(this.forgotPassword, 0.4);
-        let time = 120;
-        sessionStorage.setItem("linkin", time);
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            this.forgotPassword.innerHTML = "Forgot password";
-            opacityOf(this.forgotPassword, 1);
-            this.forgotPassword.onclick = (_) => {this.linkSender()};
-            clearInterval(timer);
-          }
-        }, 1000);
+        restrictElement(this.forgotPassword,120,'studentforgot',_=>{
+          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        });
       })
     })
   }
