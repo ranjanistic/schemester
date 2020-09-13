@@ -23,9 +23,6 @@ mongo.connectToServer(( err )=>{
   server.get(get.home, (_req, res) => {
     res.render(view.homepage);
   });
-  server.get("/plans", (_request, res) => {
-    res.render(view.plans);
-  });
   server.get(get.notfound, (_req, _res, next) => {
     next();
   });
@@ -35,7 +32,6 @@ mongo.connectToServer(( err )=>{
   server.get(get.servererror, (req, res, next) => {
     next();
   });
-
   server.use((req, res, next) => {
     res.status(404);
     res.format({

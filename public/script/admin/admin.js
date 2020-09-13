@@ -34,7 +34,8 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
       const regDial = new Dialog();
       regDial.setDisplay(
         "Create Admin Account",
-        "Create a new account with a working email address (individual or institution)."
+        "Create a new account with a working email address (individual or institution).",
+        '/graphic/illustrations/adminview.svg'
       );
       regDial.createActions(
         ["Next", "Cancel"],

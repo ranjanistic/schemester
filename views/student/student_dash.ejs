@@ -2,30 +2,84 @@
 <html>
     <head>
         <title>
-            <% if(student.pseudo) { %>
-                Pending
-            <% } else { %>
-                Dashboard
-            <% } %>
-             · Schemester</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="robots" content="noindex, nofollow">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
-        <meta name="theme-color" content="#216bf3" id='themecolor'>
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
-        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
-        <link rel = "stylesheet" href="/css/fmt.css">
-        <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/switch.css">
-        <link href="/font/Jost.css" rel="stylesheet">
-        <link href="/font/Questrial.css" rel="stylesheet">
+            <% if(student.pseudo) { %>Pending<% } else { %>Dashboard<% } %> · Schemester
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE" />
+        <meta name="theme-color" content="#216bf3" id="themecolor" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <link
+          rel="apple-touch-startup-image"
+          href="/graphic/icons/schemester128.png"
+        />
+        <meta
+          name="description"
+          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+        />
+        <link rel="canonical" href="https://schemester.herokuapp.com/" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Schemester" />
+        <meta property="og:title" content="Schemester · Get Scheduled" />
+        <meta property="og:type" content="tools" />
+        <meta property="og:url" content="https://schemester.web.app/" />
+        <meta property="og:locale" content="en-US" />
+        <meta
+          property="og:description"
+          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+          />
+        <meta
+        property="og:image"
+          content="https://schemester.web.app/graphic/icons/schemester512.png"
+        />
+        <meta property="og:site_name" content="Dahsboard · Student · Schemester" />
+        <meta
+          name="favicon"
+          content="https://schemester.web.app/graphic/icons/schemester512.png"
+        />
+        <meta name="twitter:title" content="Dashboard · Student · Schemester" />
+        <meta
+          name="twitter:description"
+          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+        />
+        <meta
+          name="twitter:image"
+          content="https://schemester.web.app/graphic/icons/schemester512.png"
+        />
+        <meta name="twitter:site" content="@schemesterTweet" />
+        <meta name="twitter:creator" content="@ranjanistic" />
+        <meta name="twitter:url" content="https://schemester.web.app/" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+        name="linkedin:card"
+        content="https://schemester.web.app/graphic/icons/schemester512.png"
+        />
+        <link
+        rel="icon"
+        href="/graphic/icons/schemester128.png"
+        type="image/png"
+        sizes="128x128"
+        />
+        <link rel="apple-touch-icon" href="/graphic/icons/schemester128.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3" />
+        <meta name="apple-mobile-web-app-title" content="Schemester" />
+        <meta name="msapplication-TileColor" content="#216bf3" />
+        <meta name="msapplication-TileImage" content="/graphic/schemester.png" />
+        <link href="/font/Jost.css" rel="stylesheet" />
+        <link href="/font/Questrial.css" rel="stylesheet" />
+        <link rel="stylesheet" href="/css/fmt.css" />
+        <link rel="stylesheet" href="/css/main.css" />
+        <link rel="stylesheet" href="/css/switch.css" />
+        <link rel="manifest" href="/manifest.json" />
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
         <script src="/script/student/studentdash.js"></script>
         <script src="/script/student/student.js"></script>
+        <script async defer src="/script/pwacompat.js"></script>
     </head>
     <body>
         <% if(student.pseudo) { %>
@@ -116,4 +170,16 @@
             <span id="frag"><%= target.fragment %></span>
         </span>
     </body>
+    <script>
+        if ('serviceWorker' in window.navigator) {
+        window.addEventListener('load', _=> {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration)=> {
+                    console.log('SW:1:', registration.scope);
+                }).catch((err)=> {
+                    console.log('SW:0:', err);
+                });
+        });
+    }
+    </script>
 </html>

@@ -77,8 +77,6 @@ admin.post('/auth',async (req,res)=>{
 
 admin.get(get.session, (req, res) => {
   let data = req.query;
-  clog("admin session");
-  clog(data);
   session
     .verify(req, sessionsecret)
     .catch((e) => {
@@ -89,15 +87,12 @@ admin.get(get.session, (req, res) => {
       if (!session.valid(response)) return res.redirect(worker.toLogin(data));
       try {
         if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
-        clog(Admin);
         const admin = await Admin.findOne({ "_id": ObjectId(response.user.id) });
         if (!admin)
           return session.finish(res).then((response) => {
             if (response) res.redirect(worker.toLogin(data));
           });
-        clog(admin);
         let adata = share.getAdminShareData(admin);
-        clog(adata);
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
@@ -148,7 +143,6 @@ admin.get(get.session, (req, res) => {
               });
             }
             case view.admin.target.viewschedule:{
-                clog(data);
                 if (data.type == client.teacher) {
                   if(data.t){ //if teacher _id is provided, means required teacher account considered exists.
                     const teacherInst = await Institute.findOne({
@@ -240,12 +234,10 @@ admin.get(get.session, (req, res) => {
                         "users.classes.$": 1,
                       },
                     });
-                    clog(classdoc);
                     if(!classdoc) return res.render(view.notfound);  //no class for data.c (_id).
                     const Class = classdoc.users.classes[0];
 
                     const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :Class.classname})
-                    clog("here");
                     if(!scheduleresp.schedule.days){ //class exists:true, schedule:false
                       return res.render(view.admin.scheduleview, {
                         group: { Class: true },
@@ -254,7 +246,6 @@ admin.get(get.session, (req, res) => {
                         inst,
                       });
                     }
-                    clog("both");
                     return res.render(view.admin.scheduleview, { //both account and schedule
                       group: { Class: true },
                       Class: Class,
@@ -279,7 +270,6 @@ admin.get(get.session, (req, res) => {
                       return res.redirect(worker.toSession(data.u,data))
                     }
                     const scheduleresp = await worker.schedule.classes.scheduleReceive(response.user,{classname :data.classname})
-                    clog(scheduleresp);
                     if(scheduleresp.event == code.inst.CLASS_NOT_FOUND) 
                       return res.render(view.admin.getViewByTarget(data.target),{
                         group: { Class: true, pending:true },
