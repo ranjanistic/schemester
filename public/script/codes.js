@@ -2,8 +2,9 @@ class Codes {
   constructor() {
 
     this.dbname = "schemesterDB";
-    this.domain = "http://localhost:3000";
-    // this.domain = "https://schemester.herokuapp.com";
+
+    //this.domain = "http://localhost:3000";
+    this.domain = "https://schemester.herokuapp.com";
     this.free = "Free";
     this.OK = "OK/true";
     this.NO = "NO/false";

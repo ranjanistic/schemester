@@ -35,6 +35,7 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
         "Registration",
         "Provide your details, including the unique ID of your institute (UIID).",
         '/graphic/illustrations/teacherview.svg'
+
       );
       teachdialog.createInputs(
         ["UIID", "Your email address", "Your name", "Create password"],

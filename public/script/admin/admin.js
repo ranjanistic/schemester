@@ -36,6 +36,7 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
         "Create Admin Account",
         "Create a new account with a working email address (individual or institution).",
         '/graphic/illustrations/adminview.svg'
+
       );
       regDial.createActions(
         ["Next", "Cancel"],
