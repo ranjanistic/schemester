@@ -1,14 +1,14 @@
 var CACHE_NAME = 'schemester-cache-v1';
 var urlsToCache = [
-  '/loader.ejs',
-  '/home.ejs',
-  '/offline.html',
-  '/views/admin/admin_login.ejs',
-  '/views/admin/admin_dash.ejs',
-  '/script/main.js',
-  '/css/fmt.css',
-  '/css/main.css',
-  ''
+  '/',
+  // '/home',
+  // '/offline.html',
+  // '/views/admin/admin_login.ejs',
+  // '/views/admin/admin_dash.ejs',
+  // '/script/main.js',
+  // '/css/fmt.css',
+  // '/css/main.css',
+  // ''
 ];
 
 self.addEventListener('install', (event)=> {
