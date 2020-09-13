@@ -508,8 +508,9 @@ class DialogID {
   dialogButton(index) {
     return "dialogButton" + index;
   }
-  basicDialogContent = `<img class="fmt-col fmt-quarter fmt-center fmt-padding" id="dialogImage" style="width: 80;"/>
-    <div class="fmt-col fmt-threequarter" id="dialogContent">
+  basicDialogContent = `
+      <img class="fmt-col fmt-third fmt-center" id="dialogImage" width="100%"/>
+    <div class="fmt-col fmt-twothird" id="dialogContent">
       <div class="fmt-row" id="dialogHeading"></div>
       <div class="fmt-row" id="dialogSubHeading"></div>
       <div id="inputFields"></div>
@@ -679,9 +680,9 @@ class Dialog extends DialogID {
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);
     if (imgsrc == null) {
-      this.content.classList.remove("fmt-threequarter");
+      this.content.classList.remove("fmt-twothird");
     } else {
-      this.content.classList.add("fmt-threequarter");
+      this.content.classList.add("fmt-twothird");
       this.image.src = imgsrc;
     }
     replaceClass(

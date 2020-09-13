@@ -2,6 +2,7 @@ class Codes {
   constructor() {
 
     this.dbname = "schemesterDB";
+
     //this.domain = "http://localhost:3000";
     this.domain = "https://schemester.herokuapp.com";
     this.free = "Free";

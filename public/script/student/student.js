@@ -36,7 +36,8 @@ const showStudentRegistration = (
       const studialog = new Dialog();
       studialog.setDisplay(
         "Registration",
-        "Provide your details, including the unique ID of your institute (UIID)."
+        "Provide your details, including the unique ID of your institute (UIID).",
+        '/graphic/illustrations/studentview.svg'
       );
       studialog.createInputs(
         [
