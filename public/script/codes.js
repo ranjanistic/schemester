@@ -1,9 +1,6 @@
 class Codes {
   constructor() {
-
-    this.dbname = "schemesterDB";
-
-    //this.domain = "http://localhost:3000";
+    // this.domain = "http://localhost:3000";
     this.domain = "https://schemester.herokuapp.com";
     this.free = "Free";
     this.OK = "OK/true";
@@ -315,6 +312,7 @@ class Constant {
 class Locations {
   constructor() {
     this.homepage = "/home";
+    this.offline = "/offline"
     this.root = "/";
     this.planspage = "/plans";
     class Admin {
@@ -519,6 +517,7 @@ class Gets{
     const locate = new Locations();
     this.root = locate.root;
     this.home = locate.homepage;
+    this.offline = locate.offline;
     this.authlogin = '/auth/login*';
     this.session = '/session*';
     this.external = '/external*';

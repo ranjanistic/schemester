@@ -10,7 +10,6 @@
   "author": "Priyanshu Ranjan",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "connect-mongodb-session": "^2.3.3",
@@ -23,14 +22,12 @@
     "heroku": "^7.42.13",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
-    "mongoose": "^5.9.21",
-    "node-fetch": "^2.6.0",
     "nodejs-nodemailer-outlook": "^1.2.3",
-    "nodemailer": "^6.4.10",
-    "rate-limiter-flexible": "^2.1.7"
+    "nodemailer": "^6.4.10"
   },
   "devDependencies": {
     "es6-promisify": "^6.1.1",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "workbox-cli": "^3.5.0"
   }
 }

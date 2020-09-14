@@ -32,7 +32,7 @@ async function sendEmail(to, subject, html) {
     port: 587,
     auth: {
       user: "schemester@outlook.in",
-      pass: "#schememail<outlook.web.password/>",
+      pass: "G$TU5i?(%;SU8=H",
     },
     starttls: {
       ciphers: "SSLv3",

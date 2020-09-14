@@ -23,6 +23,9 @@ mongo.connectToServer(( err )=>{
   server.get(get.home, (_req, res) => {
     res.render(view.homepage);
   });
+  server.get(get.offline,(_,res)=>{
+    res.render(view.offline)
+  });
   server.get(get.notfound, (_req, _res, next) => {
     next();
   });

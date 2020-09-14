@@ -2,36 +2,36 @@
 class IDB{
     constructor(version = 1){
         this.version = version;
-        this.dbName = 'schemesterDB';
+        this.dbName = code.db.DBNAME;
         this.keypath = new KeyPath();
         this.txmode  = new TXMode();
         this.objStore = new ObjectStore();
         this.transaction = new Transaction(this.dbName,this.objStore);
-        this.database;
+        this.openDatabase();
     }
     openDatabase(success=_=>{clog('Opened')},error=_=>{clog("failed")},upgrade=_=>{clog("upgrade needed")}){
         let request = window.indexedDB.open(this.dbName,this.version);
         request.onerror =_=>{
-            error();
+          error();
         }
         request.onupgradeneeded =_=>{
-            upgrade();
+          upgrade();
         }
         request.onsuccess =_=>{
-            success();
+          success();
+          this.database = request.result;
         }
-        this.database = request.result;
     }
     deleteDatabase(success =_=>{clog("DB deleted")},blocked=_=>{clog("Deletion blocked")},error=_=>{clog("error deleting db")}){
         let req = window.indexedDB.deleteDatabase(this.dbName);
         req.onerror=_=>{
-            error()
+          error()
         }
         req.onblocked =_=>{
-            blocked();
+          blocked();
         }
         req.onsuccess =_=>{
-            success();
+          success();
         }
         return req.result==null;
     }
@@ -41,9 +41,9 @@ class IDB{
 class KeyPath {
   constructor() {
     this.default = new DefaultKey();
-    this.schedule = new ScheduleKey();
-    this.teacherschedule = new TeacherscheduleKey();
-    this.users = new UsersKey();
+    // this.schedule = new ScheduleKey();
+    // this.teacherschedule = new TeacherscheduleKey();
+    // this.users = new UsersKey();
   }
 }
 
@@ -103,3 +103,4 @@ class Transaction {
   getUsersTx = (mode) => mode?this.db.transaction(this.obstore.users,mode):this.db.transaction(this.obstore.users);
   
 }
+const idb = new IDB();
