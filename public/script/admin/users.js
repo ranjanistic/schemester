@@ -247,6 +247,7 @@ class Teachers {
             };
             requests[p].onclick = (_) => {
               opacityOf(requests[p], 0.5);
+              requests[p].innerHTML = "Sending...";
               postJsonData(post.admin.email, {
                 to: nonuser,
                 target: client.teacher,
@@ -255,7 +256,9 @@ class Teachers {
                 .then((res) => {
                   clog(res);
                   if (res.event == code.mail.MAIL_SENT) {
-                    requests[p].innerHTML = "Mail sent";
+                    restrictElement(requests[p],60,`requestteacher${p}`,_=>{
+                      requests[p].onclick=requests[p].onclick;
+                    });
                     return snackBar(
                       `Request email has been sent to ${nonuser}.`,
                       "OK"

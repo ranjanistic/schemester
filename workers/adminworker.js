@@ -427,10 +427,14 @@ class Default {
       async createInstituteBackup(user,sendPromptCallback=(filename,err)=>{}){
         const institute = await Institute.findOne({uiid:user.uiid});
         if(!institute) return false;
-        fs.mkdir(path.join(__dirname+`/../backups/${user.uiid}`),()=>{
-          const filename = `${user.id}_${user.uiid}_${timer.getTheMoment()}.json`;
-          fs.writeFile(path.join(__dirname+`/../backups/${user.uiid}/${filename}`),JSON.stringify(institute),(err)=>{
-            sendPromptCallback(filename,err);
+        fs.mkdir(path.join(path.dirname(require.main.filename)+`/backups/`),(err)=>{
+          fs.mkdir(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}`),(err)=>{
+            clog(err);
+            const filename = `${user.id}_${user.uiid}_${timer.getTheMoment()}.json`;
+            fs.writeFile(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}/${filename}`),JSON.stringify(institute),(err)=>{
+              clog(err);
+              sendPromptCallback(filename,err);
+            });
           });
         });
       }
@@ -551,6 +555,9 @@ class Default {
     clog(body.data);
     const existingInst = await Institute.findOne({ uiid: user.uiid });
     if (existingInst) {
+      const admin = await Admin.findOne({_id:ObjectId(user.id)});
+      if(!admin) return code.event(code.NO);
+      if(existingInst.default.admin.email != admin.email) return code.event(code.inst.INSTITUTION_EXISTS);
       const doc = Institute.findOneAndUpdate(
         { uiid: user.uiid },
         {
@@ -565,7 +572,38 @@ class Default {
           : code.inst.INSTITUTION_CREATION_FAILED
       );
     }
-    const registerdoc = {
+    if(body.fromfile){
+      if(body.data.users.teachers){
+        clog(body.data.users.teachers);
+        body.data.users.teachers.forEach((teacher)=>{
+          teacher._id = ObjectId(teacher._id);
+        });
+        clog(body.data.users.teachers);
+      }
+      if(body.data.pseudousers.teachers){
+        body.data.pseudousers.teachers.forEach((teacher)=>{
+          teacher._id = ObjectId(teacher._id);
+        });
+      }
+      if(body.data.users.classes){
+        body.data.users.classes.forEach((Class)=>{
+          Class.students.forEach((student)=>{
+            student._id = ObjectId(student._id);
+          })
+        });
+      }
+    }
+    const registerdoc = body.fromfile?{
+      uiid: user.uiid,
+      default: body.data.default,
+      users:body.data.users,
+      pseudousers:body.data.pseudousers,
+      schedule:body.data.schedule,
+      invite:body.data.invite,
+      restricted: body.data.restricted,
+      vacations: body.data.vacations,
+      preferences: body.data.preferences,
+    }:{
       uiid: user.uiid,
       default: body.data.default,
       users: {
@@ -578,7 +616,6 @@ class Default {
       },
       schedule: {
         teachers: [],
-        classes: [],
       },
       invite: {
         teacher: {

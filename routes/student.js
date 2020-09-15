@@ -180,7 +180,7 @@ student.get(get.fragment, (req, res) => {
       switch (query.fragment) {
         case view.student.target.fragment.today: {
           clog("todaystudent");
-          worker.schedule.getSchedule(response.user, new Date().getDay())
+          worker.schedule.getSchedule(response.user, Number(query.day))
             .then((scheduleresponse) => {
               if(!scheduleresponse){  //no schedule
                 return res.render(view.student.getViewByTarget(query.fragment), {

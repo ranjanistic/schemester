@@ -37,14 +37,6 @@ class StudentToday{
         hideElement(this.periodActions);
         this.periodview.forEach((view,pindex)=>{
             this.periodTime[pindex].innerHTML = pindex;//todo: show timing
-            // this.periodExpand[pindex].onclick=_=>{
-            //     show(this.periodActions[pindex]);
-            //     let shower = this.periodExpand[pindex].onclick;
-            //     this.periodExpand[pindex].onclick=_=>{
-            //         hide(this.periodActions[pindex]);
-            //         this.periodExpand[pindex].onclick = shower;
-            //     }
-            // };
         })
     }
     startTimers= async()=>{

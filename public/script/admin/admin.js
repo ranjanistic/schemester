@@ -242,7 +242,8 @@ function linkGenerator(target) {
         linkdialog.onButtonClick(
           [
             (_) => {
-              this.revokeLink(target);
+              linkdialog.loader();
+              revokeLink(target);
             },
             (_) => {
               navigator.clipboard

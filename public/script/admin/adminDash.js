@@ -182,6 +182,7 @@ class NoDataView {
   constructor() {
     clog("NDV");
     this.data = new ReceiveData();
+    sessionStorage.clear();
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
     this.addTeacher.onclick= (_) => {

@@ -1961,6 +1961,15 @@ const getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
 const getCheckBox = (labelID, label, checkboxID) =>
   `<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
+const getSwitch = (labelID,label,checkID,switchcontainerID,switchviewID)=>
+  `<span class="fmt-row switch-view" id="${switchcontainerID}">
+    <span class="switch-text" id="${labelID}">${label}</span>
+    <label class="switch-container">
+      <input type="checkbox" id="${checkID}"/>
+      <span class="switch-positive" id="${switchviewID}"></span>
+    </label>
+  </span>`;
+
 const getInputField = (fieldID, captionID, inputID, errorID) =>
   `<fieldset class="fmt-row text-field" id="${fieldID}"> 
   <legend class="field-caption" id="${captionID}"></legend> 

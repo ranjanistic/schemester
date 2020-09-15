@@ -570,9 +570,10 @@ class Schedule {
     if(!scheduledoc) return false;
     const schedule = scheduledoc.schedule.teachers[0];
     clog(schedule);
-    fs.mkdir(path.join(__dirname+`/../backups/${user.uiid}`),()=>{
+    
+    fs.mkdir(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}`),()=>{
       const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
-      fs.writeFile(path.join(__dirname+`/../backups/${user.uiid}/${filename}`),JSON.stringify(schedule),(err)=>{
+      fs.writeFile(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}/${filename}`),JSON.stringify(schedule),(err)=>{
         sendPromptCallback(filename,err);
       });
     });

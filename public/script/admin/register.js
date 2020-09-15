@@ -1,3 +1,4 @@
+let inst;
 class Register {
   constructor() {
     this.greeting = getElement("greeting");
@@ -23,7 +24,144 @@ class Register {
     this.logout.onclick = () => {
       finishSession(client.admin);
     };
+
+   this.uploadfile = getElement("uploadinst");
+  this.uploadfile.onclick = (_) => {
+    this.updial = new Dialog();
+    this.updial.transparent();
+    this.updial.setDisplay(
+      "Upload Institute",
+      `
+      <center>If you have already a backup file (.json) of your institution, then you can upload it here to directly create schedule from it.</center>
+      <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_AA_NNNNNNNNNNNNNNNNN.json</div>
+        <fieldset class="text-field" id="fileuploadfield">
+          <legend class="field-caption">Select the file from your device</legend>
+          <input class="text-input" required type="file" id="fileupload" name="schedulefileupload">
+          <span class="error-caption" id="fileuploaderror"></span>
+        </fieldset>
+      `
+    );
+    const fileinput = new TextInput(
+      "fileuploadfield",
+      "fileupload",
+      "fileuploaderror"
+    );
+    this.updial.createActions(
+      ["Create Institute", "Cancel"],
+      [actionType.positive, actionType.neutral]
+    );
+    fileinput.input.addEventListener(
+      "change",
+      (event) => {
+        var files = event.target.files;
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = (eve) => {
+          try {
+            inst = JSON.parse(eve.target.result);
+          } catch (e) {
+            clog(e);
+            fileinput.showError('Invalid file, must be of JSON type.');
+          }
+        };
+        reader.readAsText(file);
+      },
+      false
+    );
+    this.updial.onButtonClick([
+      (_) => {
+        if(inst){
+          this.updial.loader(true);
+          this.fillScheduleFromfile(inst);
+        }else {
+          snackBar('Problem with your file.','Help',false);
+        }
+      },
+      (_) => {
+        this.updial.hide();
+      },
+    ]);
+    this.updial.show();
+  };
+
   }
+  fillScheduleFromfile(inst){
+    try{
+      sessionStorage.setItem("adphone", inst.default.admin.phone);
+      sessionStorage.setItem("instname", inst.default.institute.instituteName);
+      sessionStorage.setItem("uiid", inst.uiid);
+      sessionStorage.setItem("instemail", inst.default.institute.email);
+      sessionStorage.setItem("instphone", inst.default.institute.phone);
+      sessionStorage.setItem("startTimeField", inst.default.timings.startTime);
+      sessionStorage.setItem("breakStartField", inst.default.timings.breakStartTime);
+      sessionStorage.setItem("eachDurationField",inst.default.timings.periodMinutes);
+      sessionStorage.setItem("totalDaysField", inst.default.timings.daysInWeek);
+      sessionStorage.setItem("totalPeriodsField",inst.default.timings.periodsInDay);
+      sessionStorage.setItem("breakDurationField",inst.default.timings.breakMinutes);
+      
+      const choosedialog = new Dialog();
+      choosedialog.transparent();
+      let choicesview = inst.schedule.teachers.length?`${getSwitch('teacherschedule','Teachers Schedule','teacherscheduleswitch')}`:constant.nothing;
+      choicesview += inst.users.teachers.length?`${getSwitch('teacheraccount','Teacher Accounts','teacheraccountswitch')}`:constant.nothing;
+      choicesview += inst.users.classes.length?`${getSwitch('classrooms','Classrooms','classroomswitch')}`:constant.nothing;
+      choosedialog.setDisplay('Choose to use',`The following information was found in your file. Choose the ones to use.
+      <div class="fmt-row">
+      ${choicesview}
+      </div>
+      `);
+      const teacherscheduleswitch = new Switch('teacherscheduleswitch');
+      const teacheraccountswitch = new Switch('teacheraccountswitch');
+      const classroomswitch = new Switch('classroomswitch');
+      try{
+        teacherscheduleswitch.onTurnChange(_=>{
+          sessionStorage.setItem('fileteacherschedule',true);
+        },_=>{
+          sessionStorage.removeItem('fileteacherschedule');
+        });
+        teacheraccountswitch.onTurnChange(_=>{
+          sessionStorage.setItem('fileteacheraccount',true);
+        },_=>{
+          sessionStorage.removeItem('fileteacheraccount');
+        });
+        classroomswitch.onTurnChange(_=>{
+          sessionStorage.setItem('fileclasses',true);
+        },_=>{
+          sessionStorage.removeItem('fileclasses');
+        });
+      }catch{};
+      choosedialog.createActions(['Apply','Cancel'],[actionType.positive,actionType.neutral]);
+      choosedialog.onButtonClick([_=>{
+        choosedialog.setDisplay('Confirm Data',`${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}${sessionStorage.getItem('fileclasses')?', & Classrooms':''} will be created from your file.`);
+        choosedialog.createActions(['Confirm','Abort'],[actionType.positive,actionType.neutral]);
+        choosedialog.onButtonClick([_=>{
+          setClasses();
+          this.uploadfile.innerHTML = 'File Selected';
+          opacityOf(this.uploadfile,0.5);
+          this.uploadfile.onclick=_=>{snackBar('A file is already selected','Deselect File',true,_=>{location.reload()})}
+          choosedialog.hide();
+        },_=>{
+          inst = null;
+          sessionStorage.removeItem('fileteacherschedule');
+          sessionStorage.removeItem('fileteacheraccount');
+          sessionStorage.removeItem('fileclasses');
+          choosedialog.hide();
+        }])
+      },_=>{
+        inst = null;
+        sessionStorage.removeItem('fileteacherschedule');
+        sessionStorage.removeItem('fileteacheraccount');
+        sessionStorage.removeItem('fileclasses');
+        choosedialog.hide();
+      }]);
+      choosedialog.show();
+
+    }catch(e){
+      this.updial.loader(false);
+      snackBar(`File corrupted`,'Report',false);
+    }
+    
+  }
+  
 }
 
 class Stage1 {
@@ -177,14 +315,9 @@ class Stage2 {
       </label>
       </div>
     `;
-      // checks += `<label class="check-container fmt-margin" id="daycheckcontainer${index}">
-      //   <span id="daychecklabel${index}">${day}</span>
-      //   <input type="checkbox" id="daycheck${index}">
-      //   <span class="tickmark-positive" id="daycheckview${index}"></span>
-      // </label>`;
     });
     this.daySelector.innerHTML = checks + "</div>";
-    let days = Array();
+    const days = [];
     constant.weekdays.forEach((_, index) => {
       this.daychecks[index] = new Switch(
         `daycheck${index}`,
@@ -220,7 +353,7 @@ class Stage2 {
     if (sessionStorage.getItem("totalDaysField")) {
       String(sessionStorage.getItem("totalDaysField"))
         .split(",")
-        .forEach((dayi, index) => {
+        .forEach((dayi) => {
           appendClass(this.daychecks[dayi].switchText, "active");
           this.daychecks[dayi].on();
         });
@@ -229,20 +362,20 @@ class Stage2 {
       "eachDurationField",
       "eachDuration",
       "eachDurationError",
-      validType.nonempty
+      validType.number
     );
 
     this.totalPeriodsField = new TextInput(
       "totalPeriodsField",
       "totalPeriods",
       "totalPeriodsError",
-      validType.nonempty
+      validType.number
     );
     this.breakDurationField = new TextInput(
       "breakDurationField",
       "breakDuration",
       "breakDurationError",
-      validType.nonempty
+      validType.number
     );
 
     sessionStorage.getItem("startTimeField")
@@ -381,50 +514,59 @@ class Stage2 {
       });
     } else {
       this.saveLocally();
-      let confirm = new Dialog();
+      this.confirmationDialog();
+    }
+  }
+  confirmationDialog(){
+    const confirm = new Dialog();
       let dindex = String(sessionStorage.getItem("totalDaysField")).split(",");
       let days = constant.weekdays[Number(dindex[0])];
       for (let i = 1; i < dindex.length; i++) {
         days = `${days}, ${constant.weekdays[Number(dindex[i])]}`;
       }
+      clog(inst);
       confirm.setDisplay(
         "Confirmation",
         `<center >Proceed to create <b>${sessionStorage.getItem(
           "instname"
-        )}</b>?</center>
+        )}</b>?${inst?' (From uploaded file)':''}</center>
         <br/>
         <div class="questrial">
-        <ul>
-          <li>Administrator : <b>${sessionStorage.getItem("adname")}</b></li>
-          <li>Admin email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem(
-            "ademail"
-          )}')">${sessionStorage.getItem("ademail")}</b></li>
-          <li>Admin contact number : <b class=" pointer active" onclick="callTo('${sessionStorage.getItem(
-            "adphone"
-          )}')">${sessionStorage.getItem("adphone")}</b></li>
-          <li>Institute email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem(
-            "instemail"
-          )})">${sessionStorage.getItem("instemail")}</b></li>
-          <li>Institute phone : <b class="active pointer" onclick="callTo('${sessionStorage.getItem(
-            "instphone"
-          )}')">${sessionStorage.getItem("instphone")}</b></li>
-          <li>Day starts at: <b>${sessionStorage.getItem(
-            "startTimeField"
-          )} hours</b></li>
-          <li>Break starts at : <b>${sessionStorage.getItem(
-            "breakStartField"
-          )} hours</b></li>
-          <li>Each period duration : <b>${sessionStorage.getItem(
-            "eachDurationField"
-          )} minutes</b></li>
-          <li>Break duration : <b>${sessionStorage.getItem(
-            "breakDurationField"
-          )} minutes</b></li>
-          <li>Periods in a day : <b>${sessionStorage.getItem(
-            "totalPeriodsField"
-          )}</b></li>
-          <li>Working days : <b>${days}</li>
-        </ul>
+          <ul>
+            <li>Administrator : <b>${sessionStorage.getItem("adname")}</b></li>
+            <li>Admin email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem(
+              "ademail"
+            )}')">${sessionStorage.getItem("ademail")}</b></li>
+            <li>Admin contact number : <b class=" pointer active" onclick="callTo('${sessionStorage.getItem(
+              "adphone"
+            )}')">${sessionStorage.getItem("adphone")}</b></li>
+            <li>Institute email address : <b class=" pointer positive" onclick="mailTo('${sessionStorage.getItem(
+              "instemail"
+            )})">${sessionStorage.getItem("instemail")}</b></li>
+            <li>Institute phone : <b class="active pointer" onclick="callTo('${sessionStorage.getItem(
+              "instphone"
+            )}')">${sessionStorage.getItem("instphone")}</b></li>
+            <li>Day starts at: <b>${sessionStorage.getItem(
+              "startTimeField"
+            )} hours</b></li>
+            <li>Break starts at : <b>${sessionStorage.getItem(
+              "breakStartField"
+            )} hours</b></li>
+            <li>Each period duration : <b>${sessionStorage.getItem(
+              "eachDurationField"
+            )} minutes</b></li>
+            <li>Break duration : <b>${sessionStorage.getItem(
+              "breakDurationField"
+            )} minutes</b></li>
+            <li>Periods in a day : <b>${sessionStorage.getItem(
+              "totalPeriodsField"
+            )}</b></li>
+            <li>Working days : <b>${days}</li>
+          </ul>
+          ${inst?
+          `<div class="fmt-row">
+            With ${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}${sessionStorage.getItem('fileclasses')?', & Classrooms':''} from your file.
+          </div>`:''}
         </div>`
       );
       confirm.createActions(
@@ -450,14 +592,51 @@ class Stage2 {
               )}</b>. Always keep this in your mind.`,
               "Understood"
             );
-            const wdays = Array();
-            const wdaysString = String(
-              sessionStorage.getItem("totalDaysField")
-            ).split(",");
-            wdaysString.forEach((item, _) => {
+            const wdays = [];
+            String(sessionStorage.getItem("totalDaysField")).split(",").forEach((item) => {
               wdays.push(Number(item));
             });
-            const data = {
+            const data = inst?{
+              default: {
+                admin: {
+                  username: sessionStorage.getItem("adname"),
+                  email: sessionStorage.getItem("ademail"),
+                  phone: sessionStorage.getItem("adphone"),
+                },
+                institute: {
+                  instituteName: sessionStorage.getItem("instname"),
+                  email: sessionStorage.getItem("instemail"),
+                  phone: sessionStorage.getItem("instphone"),
+                },
+                timings: {
+                  startTime: sessionStorage.getItem("startTimeField"),
+                  breakStartTime: sessionStorage.getItem("breakStartField"),
+                  periodMinutes: Number(
+                    sessionStorage.getItem("eachDurationField")
+                  ),
+                  breakMinutes: Number(
+                    sessionStorage.getItem("breakDurationField")
+                  ),
+                  periodsInDay: Number(
+                    sessionStorage.getItem("totalPeriodsField")
+                  ),
+                  daysInWeek: wdays,
+                },
+              },
+              schedule:sessionStorage.getItem('fileteacherschedule')?inst.schedule:{teachers:[]},
+              users:{
+                teachers:sessionStorage.getItem('fileteacheraccount')?inst.users.teachers:[],
+                classes:sessionStorage.getItem('fileclasses')?inst.users.classes:[]
+              },
+              pseudousers:{
+                teachers:sessionStorage.getItem('fileteacheraccount')?inst.pseudousers.teachers:[],
+                classes:sessionStorage.getItem('fileclasses')?inst.pseudousers.classes:[]
+              },
+              invite:inst.invite,
+              restricted:inst.restricted,
+              vacations:inst.vacations,
+              preferences:inst.preferences
+            }:{
               default: {
                 admin: {
                   username: sessionStorage.getItem("adname"),
@@ -485,9 +664,9 @@ class Stage2 {
                 },
               },
             };
-            //check other subdocs before sending
             postJsonData(post.admin.default, {
               target: post.admin.action.registerInstitute,
+              fromfile:inst?true:false,
               data,
             }).then((response) => {
               clog(response);
@@ -512,6 +691,7 @@ class Stage2 {
                 }
                 case code.inst.INSTITUTION_CREATED:
                   {
+                    if(inst) return location.reload();
                     loadingBox(false);
                     const finish = new Dialog();
                     finish.setDisplay(
@@ -519,11 +699,11 @@ class Stage2 {
                       "The details have been saved successfully. You may add teachers, or skip to your dashboard."
                     );
                     finish.createActions(
-                      Array("Add teachers", "Skip"),
-                      Array(actionType.positive, actionType.neutral)
+                      ["Add teachers", "Skip"],
+                      [actionType.positive, actionType.neutral]
                     );
                     finish.onButtonClick(
-                      Array(
+                      [
                         (_) => {
                           finish.loader();
                           relocate(locate.admin.session, {
@@ -538,7 +718,7 @@ class Stage2 {
                             target: locate.admin.target.dashboard,
                           });
                         }
-                      )
+                      ]
                     );
                     finish.show();
                   }
@@ -552,10 +732,9 @@ class Stage2 {
         )
       );
       confirm.show();
-    }
   }
   saveLocally() {
-    let days = Array();
+    const days = [];
     this.daychecks.forEach((daycheck, index) => {
       if (daycheck.isOn()) {
         days.push(index);
@@ -581,7 +760,7 @@ class Stage2 {
   }
 }
 
-window.onload = (_) => {
+function setClasses(){
   const app = new Register();
   const s1 = new Stage1();
   const s2 = new Stage2();
@@ -594,77 +773,8 @@ window.onload = (_) => {
     s1.saveLocally();
     s2.saveInstitution();
   };
+}
 
-  const uploadfile = getElement("uploadinst");
-  uploadfile.onclick = (_) => {
-    const updial = new Dialog();
-    updial.transparent();
-    updial.setDisplay(
-      "Upload Institute",
-      `
-      <center>If you have already a backup file (.json) of your institution, then you can upload it here to directly create schedule from it.</center>
-      <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_AA_NNNNNNNNNNNNNNNNN.json</div>
-        <fieldset class="text-field" id="fileuploadfield">
-          <legend class="field-caption">Select the file from your device</legend>
-          <input class="text-input" required type="file" id="fileupload" name="schedulefileupload">
-          <span class="error-caption" id="fileuploaderror"></span>
-        </fieldset>
-      `
-    );
-    const fileinput = new TextInput(
-      "fileuploadfield",
-      "fileupload",
-      "fileuploaderror"
-    );
-    updial.createActions(
-      ["Create Institute", "Cancel"],
-      [actionType.positive, actionType.neutral]
-    );
-    let inst;
-    fileinput.input.addEventListener(
-      "change",
-      (event) => {
-        var files = event.target.files;
-        var file = files[0];
-        var reader = new FileReader();
-        reader.onload = (eve) => {
-          try {
-            inst = JSON.parse(eve.target.result);
-            clog(inst);
-          } catch (e) {
-            fileinput.showError(e);
-          }
-        };
-        reader.readAsText(file);
-      },
-      false
-    );
-    updial.onButtonClick([
-      (_) => {
-        // fillScheduleFromfile(teacher);
-      },
-      (_) => {
-        updial.hide();
-      },
-    ]);
-    updial.show();
-  };
-
-  // app.saveExit.onclick = () => {
-  //   sessionStorage.setItem("adname", s1.namedisplay.innerHTML);
-  //   sessionStorage.setItem("ademail", s1.emaildisplay.innerHTML);
-  //   sessionStorage.setItem("adphone", s1.phoneField.getInput());
-  //   sessionStorage.setItem("instname", s1.instNameField.getInput());
-  //   sessionStorage.setItem("uiid", s1.uiidVIew.innerHTML);
-  //   sessionStorage.setItem("instemail", s1.instEmailField.getInput());
-  //   sessionStorage.setItem("instphone", s1.instPhoneField.getInput());
-  //   sessionStorage.setItem("startTimeField", s2.startTimeField.getInput());
-  //   sessionStorage.setItem("breakStartField", s2.breakStartField.getInput());
-  //   sessionStorage.setItem("day1Field", s2.day1Field.getInput());
-  //   sessionStorage.setItem("eachDurationField",s2.eachDurationField.getInput());
-  //   sessionStorage.setItem("totalDaysField", s2.totalDaysField.getInput());
-  //   sessionStorage.setItem("totalPeriodsField",s2.totalPeriodsField.getInput());
-  //   sessionStorage.setItem("breakDurationField",s2.breakDurationField.getInput());
-  //   relocate(locate.homepage);
-  // };
+window.onload = (_) => {
+  setClasses();
 };

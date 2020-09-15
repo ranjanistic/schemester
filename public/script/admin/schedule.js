@@ -17,7 +17,7 @@ class Schedule{
         this.editmode = new Switch('editmode');
         this.editmode.onTurnChange(_=>{
             sessionStorage.setItem('switchclash',true);
-            this.editmodeview.innerHTML=`Edit mode: Switch`;
+            this.editmodeview.innerHTML=`Switch Edit`;
             snackBar('Any change will be switched if clashed with someone.','Means?',bodyType.warning,_=>{
                 infoDialog('Edit modes',`The edit mode type tells schemester how to respond if any change made by you results in any kind of conflict.<br/>
                     <ul>
@@ -30,7 +30,7 @@ class Schedule{
             });
         },_=>{
             sessionStorage.removeItem('switchclash');
-            this.editmodeview.innerHTML=`Edit mode: Clash Check`;
+            this.editmodeview.innerHTML=`Clash Edit`;
             snackBar('Changes will not be applied if conflicted');
         })
         try{

@@ -194,7 +194,7 @@ teacher.get(get.fragment, (req, res) => {
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           clog("today");
-          worker.schedule.getSchedule(response.user, {dayIndex:new Date().getDay()})
+          worker.schedule.getSchedule(response.user, {dayIndex:Number(query.day)})
             .then((scheduleresponse) => {
               if(!scheduleresponse){  //no schedule
                 return res.render(view.teacher.getViewByTarget(query.fragment), {

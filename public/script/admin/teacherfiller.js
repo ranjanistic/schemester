@@ -1,4 +1,4 @@
-
+let teacher;
 class TeacherFiller {
   constructor() {
     sessionStorage.clear();
@@ -28,9 +28,9 @@ class TeacherFiller {
 
     this.uploadfile = getElement("uploadschedule");
     this.uploadfile.onclick=_=>{
-      const updial = new Dialog();
-      updial.transparent();
-      updial.setDisplay('Upload schedule',`
+      this.updial = new Dialog();
+      this.updial.transparent();
+      this.updial.setDisplay('Upload schedule',`
       <center>If you have already a backup file (.json) of schedule, then you can upload it here to directly create schedule from it.</center>
       <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_NNNNNNNNNNNNNNNNN.json</div>
         <fieldset class="text-field" id="fileuploadfield">
@@ -40,8 +40,7 @@ class TeacherFiller {
         </fieldset>
       `);
       const fileinput = new TextInput("fileuploadfield","fileupload","fileuploaderror");
-      updial.createActions(['Create Schedule','Cancel'],[actionType.positive,actionType.neutral]);
-      let teacher;
+      this.updial.createActions(['Create Schedule','Cancel'],[actionType.positive,actionType.neutral]);
       fileinput.input.addEventListener('change',(event)=>{
         var files = event.target.files;
         var file = files[0];           
@@ -50,17 +49,23 @@ class TeacherFiller {
           try{
             teacher = JSON.parse(eve.target.result);
           }catch(e){
-            fileinput.showError(e);
+            clog(e);
+            fileinput.showError('Problem with your file');
           }
         }
         reader.readAsText(file)
       },false);
-      updial.onButtonClick([_=>{
-        this.fillScheduleFromfile(teacher);
+      this.updial.onButtonClick([_=>{
+        if(!teacher){
+          snackBar('File corrupt','Help',false);
+        }else{
+          this.fillScheduleFromfile(teacher);
+
+        }
       },_=>{
-        updial.hide();
+        this.updial.hide();
       }])
-      updial.show();
+      this.updial.show();
     }
 
     this.logout = getElement("logout");
@@ -190,8 +195,27 @@ class TeacherFiller {
     };
   }
 
-  fillScheduleFromfile(inst){
-    //todo fill all fields from given object, including teacher id.
+  fillScheduleFromfile(teacher){
+    clog(teacher);
+    try{
+    teacher.days.forEach(day=>{
+      day.period.forEach((period,p)=>{
+        sessionStorage.setItem(`${day.dayIndex}classname${p}`, period.classname);
+        sessionStorage.setItem(`${day.dayIndex}subject${p}`, period.subject);
+      });
+    });
+    this.teachername = teacher.teachername;
+    sessionStorage.setItem('teacherID',teacher.teacherID)
+    this.teacherIDField.setInput(teacher.teacherID);
+    this.fillFromSession();
+    this.updial.hide();
+    this.uploadfile.innerHTML = 'File Selected';
+    opacityOf(this.uploadfile,0.5);
+    this.uploadfile.onclick=_=>{snackBar('A file is already selected','Deselect File',true,_=>{location.reload()})}
+    }catch(e){
+      clog(e);
+      snackBar(`File corrupted`,'Report',false);
+    }
   }
 
   fillFromSession() {
@@ -409,7 +433,7 @@ class TeacherFiller {
                 referTab(locate.admin.session, {
                   target: locate.admin.target.viewschedule,
                   type: client.teacher,
-                  [response.uid ? "t" : "teacherID"]: response.uid
+                  [response.id ? "t" : "teacherID"]: response.uid
                     ? response.uid
                     : response.id,
                 });

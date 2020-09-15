@@ -59,7 +59,7 @@ class TeacherDash{
                 this.showLoader(tab);
                 sessionStorage.setItem('fragment',this.fragpath[t]);
                 this.selectTab(tab);
-                this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t]});
+                this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
                 this.frame.onload=_=>{
                     this.hideLoader(tab)
                 }
