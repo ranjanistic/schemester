@@ -587,9 +587,7 @@ class Schedule {
       { projection: { _id: 0, default:1,"users.teachers.$": 1 } }
     );
     if (!teacheruser)
-      return session.finish(res).then((response) => {
-        if (response) return false;
-      });
+      return false;
     const teacher = teacheruser.users.teachers[0];
     const teacherschedule = await Institute.findOne({
         uiid: user.uiid,

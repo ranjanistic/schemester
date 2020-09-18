@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<% inst = false %>
 <html>
     <title>Registration · Schemester</title>
     <head>
@@ -26,6 +25,7 @@
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root,{client:client.admin})">
             <span id="greeting"></span>
+            <% if(inst){ %> | Updating Defaults<%}%>
             <span class="fmt-dropdown-hover fmt-right">
                 <span  class="menu fmt-right">
                     <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
@@ -43,7 +43,7 @@
                 </span >
             </span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
-            <button class="fmt-right neutral-button" id="uploadinst">Upload Institution</button>
+        <% if(!inst){ %><button class="fmt-right neutral-button" id="uploadinst">Upload Institution</button><% } %> 
         </div>
         <div class="fmt-padding-small" style="margin: 66px 0 44px 0;">
             <div class="container fmt-row " id="stage1">
@@ -101,20 +101,36 @@
                     </div>
                     <div class="fmt-col fmt-half">
                         <div class="fmt-row">
-                            <fieldset class="text-field" id="instEmailField">
-                                <legend class="field-caption">Institution Email address</legend>
-                                <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails" value="<%= inst?inst.default?inst.default.institute.email:null:null %>">
-                                 
-                                <span class="fmt-right error-caption"  id="instEmailError"></span>
-                            </fieldset>
+                            <div class="fmt-col fmt-twothird " >
+                                <fieldset class="text-field" id="instEmailField">
+                                    <legend class="field-caption">Institution Email address</legend>
+                                    <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails" value="<%= inst?inst.default?inst.default.institute.email:null:null %>">
+                                    <span class="fmt-right error-caption"  id="instEmailError"></span>
+                                </fieldset>
+                            </div>
+                            <div class="fmt-col fmt-third group-text" style="padding:22px 12px;">
+                                <span class="fmt-padding" id="emailsameasadminlabel">Same as admin</span>
+                                <label class="switch-container">
+                                    <input type="checkbox" id="emailsameasadmin">
+                                    <span class="switch-positive"></span>
+                                </label>
+                            </div>
                         </div>
                         <div class="fmt-row">
+                            <div class="fmt-col fmt-twothird" >
                             <fieldset class="text-field fmt-right" id="instPhoneField">
                                 <legend class="field-caption">Telephone Number</legend>
-                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails" value="<%= inst?inst.default?inst.default.institute.phone:null:null %>">
-                                 
+                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails" value="<%= inst?inst.default?inst.default.institute.phone:null:null %>">    
                                 <span class="fmt-right error-caption"  id="instPhoneError"></span>
                             </fieldset>
+                        </div>
+                            <div class="fmt-col fmt-third group-text" style="padding:22px 12px;">
+                                <span class="fmt-padding" id="phonesameasadminlabel">Same as admin</span>
+                                <label class="switch-container">
+                                    <input type="checkbox" id="phonesameasadmin">
+                                    <span class="switch-positive"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,11 +152,20 @@
                             <input class="text-input" required type="time" id="startTime" name="timeDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.startTime:null:null:null %>">
                             <span class="fmt-right error-caption"  id="startTimeError"></span>
                         </fieldset>
-                        <fieldset class="text-field" id="breakStartField">
-                            <legend class="field-caption">Break starts at</legend>
-                            <input class="text-input" required type="time" id="breakStart" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakStartTime:null:null:null %>">
-                            <span class="fmt-right error-caption"  id="breakStartError"></span>
-                        </fieldset>
+                        <div class="fmt-col fmt-half">
+                            <fieldset class="text-field" id="breakStartField">
+                                <legend class="field-caption">Break starts at</legend>
+                                <input class="text-input" required type="time" id="breakStart" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakStartTime:null:null:null %>">
+                                <span class="fmt-right error-caption"  id="breakStartError"></span>
+                            </fieldset>
+                        </div>
+                        <div class="fmt-col fmt-quarter group-text" style="padding-top:22px;">
+                            <span class="fmt-padding" id="nobreaklabel">No break</span>
+                            <label class="switch-container" style="align-content: center;">
+                                <input type="checkbox" id="nobreakcheck">
+                                <span class="switch-negative"></span>
+                            </label>
+                        </div>
                     </div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="workingdaysfield">
@@ -177,9 +202,16 @@
                 <br/>
                 <div class="fmt-row fmt-center">
                     <img class="fmt-col fmt-spin-fast" style="display:none" width="50" src="/graphic/blueLoader.svg" id="stage2load"/>
-                    <button class="fmt-col fmt-third positive-button" id="saveStage2">Create institution</button>
+                    <button class="fmt-col fmt-third positive-button" id="saveStage2"><%= inst?'Save & Resume Scheduling':'Create institution' %></button>
                 </div>
             </div>
+        </div>
+        <div class="container caption group-text">
+            <ul>
+                <li>The info you provide will help us to make &amp; manage your institution, and will be a backbone to everyone at your institution.</li>
+                <li>These details can be changed later anytime.</li>
+                <li>Providing erronous details could get you in organizational trouble. <a target="_blank" rel="noreferrer" href="">Get help on registration</a></li>
+            </ul>
         </div>
         <div id="dialogView" class="dialog fmt-animate-opacity">
             <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
@@ -190,4 +222,7 @@
             <button id="snackButton"></button>
         </div>
     </body>
+    <span hidden>
+        <span id="updatinginst"><%= inst?'true':'false' %></span>
+    </span>
 </html>

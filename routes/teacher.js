@@ -222,6 +222,9 @@ teacher.get(get.fragment, (req, res) => {
           worker.schedule.getSchedule(response.user)
             .then((resp) => {
               clog(resp);
+              if(!resp) session.finish(res).then((response) => {
+                if (response) return false;
+              });
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 schedule: resp.schedule,
                 timings:resp.timings
@@ -394,8 +397,9 @@ teacher.post("/session/validate", async (req, res) => {
     });
 });
 
-teacher.get("/external*", async (req, res) => {
+teacher.get(get.external, async (req, res) => {
   const query = req.query;
+  clog(query);
   switch (query.type) {
     case invite.type:{  //invitation link
       invite.handleInvitation(query,client.teacher).then((resp)=>{
@@ -406,7 +410,9 @@ teacher.get("/external*", async (req, res) => {
       });
     }break;
     case invite.personalType:{
+      clog("here");
       invite.handlePersonalInvitation(query,client.teacher).then(resp=>{
+        clog(resp);
         if(!resp) return res.render(view.notfound);
         return res.render(view.userinvitaion,{invite:resp.invite});
       }).catch(e=>{

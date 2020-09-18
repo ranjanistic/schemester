@@ -258,6 +258,13 @@ class Constant {
     this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
     this.sessionID = "id";
     this.sessionUID = "uid";
+    this.millisInSecond = 1000;
+    this.secondsInMinute = 60;
+    this.minutesInHour = 60;
+    this.hoursInDay = 24;
+    this.minutesInDay = this.hoursInDay*this.minutesInHour;
+    this.secondsInDay = this.minutesInDay*this.secondsInMinute;
+    this.millisInDay = this.secondsInDay*this.millisInSecond;
     this.weekdays = Array(
       "Sunday",
       "Monday",
@@ -690,6 +697,8 @@ class InputType {
     this.username = "username";
     this.phone = "phone";
     this.number = "number";
+    this.naturalnumber = "greaterthanzero";
+    this.wholenumber = "nonnegative";
     this.weekday = "weekday";
   }
 }
@@ -795,8 +804,48 @@ const colors = new Colors();
 const validType = new InputType();
 const actionType = new ViewType();
 const bodyType = new ViewType();
+/**
+ * Checks if given string is valid, according to its type given as second parameter.
+ * @param {String} value The string value to be checked for validity.
+ * @param {String} type The type of string according to which it will be verified. E.g. email, password, nonempty. Defaults to nonempty.
+ * @param {String} ifMatchValue This optional parameter becomes neccessary, when the given value is to be checked for equality. This parameter works as the second string, against which
+ * the given value will be checked. In this case, the type parameter should be 'matching'.
+ * @note The type parameter can be passed using the InputType class object available in Schemester.
+ */
+const stringIsValid = (
+  value = String,
+  type = validType.nonempty,
+  ifMatchValue = String
+) => {
+  switch (type) {
+    case validType.name:
+      return stringIsValid(String(value).trim());
+    case validType.email:
+      return constant.emailRegex.test(String(value).toLowerCase());
+    case validType.phone:
+      return !isNaN(value) && stringIsValid(String(value).trim());
+    case validType.number:
+      return !isNaN(value) && stringIsValid(String(value).trim());
+    case validType.naturalnumber:
+      return stringIsValid(String(value).trim(),validType.number) && Number(value)>0;
+    case validType.wholenumber:
+      return stringIsValid(String(value).trim(),validType.number) && Number(value)>=0;
+    case validType.password:
+      return constant.passRegex.test(String(value))||true;
+    case validType.username:
+      return stringIsValid(String(value).trim());
+    case validType.match:
+      return value === ifMatchValue;
+    case validType.weekday:
+      return constant.weekdayscasual.includes(value.toLowerCase())
+    default:
+      return value != null && value != constant.nothing;
+
+  }
+};
+
 try {
-  module.exports = {code:new Codes(),client:new Client(),view:new View(),get:new Gets(),isOK(val){return String(val)==String(code.OK)},clog(msg){console.log(msg)}};
+  module.exports = {code:new Codes(),client:new Client(),view:new View(),get:new Gets(),validType:new InputType(),stringIsValid, isOK(val){return String(val)==String(code.OK)},clog(msg){console.log(msg)}};
 } catch {
   
 }

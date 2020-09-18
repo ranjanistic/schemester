@@ -190,7 +190,7 @@ function linkGenerator(target) {
         let linkdialog = new Dialog();
         linkdialog.setDisplay(
           "Invitation Link",
-          `<center><a href="${response.link}">${response.link}</a>
+          `<center><a href="${response.link}" target="_blank" rel="noreferrer">${response.link}</a>
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
             )}</b><br/><br/>

@@ -289,7 +289,6 @@ class TeacherFiller {
       .then((response) => {
         clog(response);
         this.handleScheduleResponse(response);
-        this.load(false);
       })
       .catch((error) => {
         this.load(false);
@@ -333,7 +332,6 @@ class TeacherFiller {
       .then((response) => {
         clog(response);
         this.handleScheduleResponse(response);
-        this.load(false);
       })
       .catch((error) => {
         if (!navigator.onLine) {
@@ -376,9 +374,7 @@ class TeacherFiller {
     }
   };
   handleScheduleResponse(response) {
-    switch (response.event) {
-      case code.schedule.SCHEDULE_CREATED:
-        {
+      if(response.event == code.schedule.SCHEDULE_CREATED){
           for (let i = 0; i < this.data.totalPeriods; i++) {
             this.teacherClass[i].activate();
             this.teacherSubject[i].activate();
@@ -395,7 +391,9 @@ class TeacherFiller {
               this.teacherIDField.disableInput();
               this.teacherIDField.activate();
             }
+            this.load(false);
           } else {
+            window.onbeforeunload = () => {};
             if (this.data.isAdmin) {
               postJsonData(post.admin.email,{
                 to:sessionStorage.getItem("teacherID"),
@@ -404,7 +402,6 @@ class TeacherFiller {
               }).then(res=>{
                 clog(res);
                 if(res.event == code.mail.MAIL_SENT){
-                  requests[p].innerHTML = 'Mail sent';
                   snackBar(`Request email has been sent to ${sessionStorage.getItem("teacherID")}.`,'OK');
                   return new ScheduleComplete(this.data);
                 }
@@ -412,15 +409,16 @@ class TeacherFiller {
               }).catch(e=>{
                 clog(e);
                 snackBar('Failed to send email. You can resend it from teachers view.',null,false);
+                return new ScheduleComplete(this.data);
               })
             } else if (this.data.isTeacher) {
-              location.reload();
+              return location.reload();
             }
           }
-        }
-        break;
-      case code.schedule.SCHEDULE_EXISTS:
-        {
+          return;
+      }
+    switch(response.event){
+      case code.schedule.SCHEDULE_EXISTS:{
           clog(response);
           if (this.data.isAdmin) {
             snackBar(
@@ -513,8 +511,9 @@ class ScheduleComplete {
     this.addAnother = getElement("addAnother");
     this.exit = getElement("exitadder");
     this.addAnother.onclick = (_) => {
-      relocate(locate.adminDashPage, {
-        target: "addteacher",
+      relocate(locate.admin.session, {
+        u:localStorage.getItem(constant.seesionUID),
+        target: locate.admin.target.addteacher,
       });
     };
     this.exit.onclick = (_) => {
@@ -536,8 +535,8 @@ class ScheduleComplete {
   }
 }
 window.onbeforeunload = () => {
-  snackBar("Please complete before leaving to avoid data loss.");
-  return "sfd";
+  snackBar("Try to complete before leaving to avoid data loss.");
+  return "";
 };
 
 window.onload = () => (window.app = new TeacherFiller());

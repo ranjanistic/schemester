@@ -703,13 +703,14 @@ class Schedule {
     const periodrows = [];
     const switchperiods = [];
     const deleteperiods = [];
+    let remainingperiods = periods;
     for (let p = 0; p < periods; p++) {
       periodrows.push(getElement(`periodrow${p}`));
       switchperiods.push(getElement(`switchperiod${p}`));
       switchperiods[p].onclick = (_) => {
         this.scheduler.setDisplay(
-          `Switch period ${addNumberSuffixHTML(p+1)}`,
-          `<center>Provide the period number which you want to transfer or exchange schedule of <b>${p+1}</b> with.</center>`
+          `Switch ${addNumberSuffixHTML(p+1)} period`,
+          `<center>Provide the period number which you want to transfer or exchange schedule of everyone's <b>${addNumberSuffixHTML(p+1)} period</b> with.</center>`
         );
         this.scheduler.createInputs(
           ["Period number"],
@@ -717,9 +718,11 @@ class Schedule {
           ["number"],
           [validType.number]
         );
+        this.scheduler.getInput(0).max = periods-1;
+        this.scheduler.getInput(0).min = 1;
         this.scheduler.validate();
         this.scheduler.createActions(
-          [`Back`, `Switch ${p+1}`],
+          [`Back`, `Switch ${addNumberSuffixHTML(p+1)} period`],
           [actionType.neutral, actionType.warning]
         );
         this.scheduler.onButtonClick([
@@ -761,12 +764,20 @@ class Schedule {
             target: client.teacher,
             action: "update",
             specific: code.action.REMOVE_PERIOD,
-            removedayindex: daysindices[p],
+            period: p,
           }).then((response) => {
             clog(response);
             this.scheduler.loader(false);
             if (response.event == code.OK) {
+              remainingperiods--;
+              if(remainingperiods<1){
+                this.scheduler.createActions(['Set periods']);
+                this.scheduler.onButtonClick([_=>{
+                  location.reload();
+                }]);
+              }
               hide(periodrows[p]);
+              this.totalPeriods.innerHTML = Number(this.totalPeriods.innerHTML) - 1;
               snackBar(
                 `${p+1} was removed from every schedule`,
                 "Refresh",
@@ -824,6 +835,7 @@ class Schedule {
     const dayrows = [];
     const switchdays = [];
     const deleteDays = [];
+    let remainingdays = days.length;
     days.forEach((day, d) => {
       dayrows.push(getElement(`dayrow${d}`));
       switchdays.push(getElement(`switchday${d}`));
@@ -893,6 +905,13 @@ class Schedule {
             clog(response);
             this.scheduler.loader(false);
             if (response.event == code.OK) {
+              remainingdays--;
+              if(remainingdays<1){
+                this.scheduler.createActions(['Set days']);
+                this.scheduler.onButtonClick([_=>{
+                  location.reload();
+                }]);
+              }
               hide(dayrows[d]);
               snackBar(
                 `${day} was removed from every schedule`,

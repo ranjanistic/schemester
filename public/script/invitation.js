@@ -41,12 +41,12 @@ class Active {
     this.loader = getElement("inviteloader");
     hide(this.loader);
 
-    this.acceptinvite.addEventListener(click, (_) => {
+    this.acceptinvite.onclick= (_) => {
       this.acceptInvitation(data);
-    });
-    this.rejectinvite.addEventListener(click, (_) => {
+    };
+    this.rejectinvite.onclick= (_) => {
       this.rejectInvitation(data);
-    });
+    };
   }
   acceptInvitation(data) {
     if (
@@ -74,10 +74,10 @@ class Active {
     clog(data.target);
     clog("posting");
     let posturl,postaction;
-    if(data.target == 'teacher'){
+    if(data.target == client.teacher){
       posturl = post.teacher.auth;
       postaction = post.teacher.action.signup;
-    }else if(data.target == 'student'){
+    }else if(data.target == client.student){
       posturl = post.student.auth;
       postaction = post.student.action.signup;
     }
@@ -93,12 +93,12 @@ class Active {
         clog("response");
         clog(response);
         if (response.event == code.auth.ACCOUNT_CREATED) {
-          if (data.target == "teacher") {
+          if (data.target == client.teacher) {
             relocate(locate.teacher.session, {
               u: response.user.uid,
-              target: locate.teacher.target.addschedule,
+              target: locate.teacher.target.dash,
             });
-          } else if (data.target == "student") {
+          } else if (data.target == client.student) {
             relocate(locate.student.session, {
               u: response.user.uid,
               target: locate.student.target.dash,
@@ -108,8 +108,13 @@ class Active {
         }
         this.load(false);
         switch (response.event) {
-          case code.auth.USER_EXIST:
-            return this.emailField.showError("Account already exists");
+          case code.auth.USER_EXIST:{
+            snackBar('Try signing in?','Sign In',true,_=>{
+              refer(data.target==client.teacher?locate.teacher.login:locate.student.login,{
+                email:this.emailField.getInput()
+              });
+            })
+            return this.emailField.showError("Account already exists");}
           default: {
             if (!navigator.onLine) {
               snackBar("Network error", null, false);

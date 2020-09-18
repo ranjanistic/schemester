@@ -4,7 +4,7 @@ const Admin = require("../config/db").getAdmin(),
   path = require("path"),
   fs = require("fs"),
   timer = require("./common/timer"),
-  { code, client, view, isOK, clog } = require("../public/script/codes"),
+  { code, client, view, isOK, stringIsValid,validType,clog } = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
@@ -487,19 +487,19 @@ class Default {
         return code.event(newinst ? code.OK : code.NO);
       }
 
-      async setPeriodsInDay(user, body) {
+      async setPeriodsInDay(user,totalperiods) {
         const newinst = await Institute.findOneAndUpdate(
           { uiid: user.uiid },
-          { $set: { [this.totalperiodspath]: Number(body.totalperiods) } }
+          { $set: { [this.totalperiodspath]: Number(totalperiods) } }
         );
         return code.event(newinst ? code.OK : code.NO);
       }
-      async setDaysInWeek(user, body) {
+      async setDaysInWeek(user, daysinweek = []) {
         const newinst = await Institute.findOneAndUpdate(
           { uiid: user.uiid },
-          { $set: { [this.daysinweekpath]: body.daysinweek } }
+          { $set: { [this.daysinweekpath]:daysinweek } }
         );
-        return code.event(newinst ? code.OK : code.NO);
+        return code.event(newinst.value ? code.OK : code.NO);
       }
       async getInfo() {}
     }
@@ -551,14 +551,16 @@ class Default {
     }
   };
   handleRegistration = async (user, body) => {
-    //todo:validation
     clog(body.data);
+    if(!stringIsValid(body.data.default.institute.email,validType.email)) return code.event(code.auth.EMAIL_INVALID);
+    if(!stringIsValid(body.data.default.institute.phone,validType.phone)) return code.event(code.inst.INVALID_INST_PHONE);
+    if(!stringIsValid(body.data.default.institute.instituteName,validType.name)) return code.event(code.inst.INVALID_INST_NAME);
     const existingInst = await Institute.findOne({ uiid: user.uiid });
     if (existingInst) {
       const admin = await Admin.findOne({_id:ObjectId(user.id)});
       if(!admin) return code.event(code.NO);
-      if(existingInst.default.admin.email != admin.email) return code.event(code.inst.INSTITUTION_EXISTS);
-      const doc = Institute.findOneAndUpdate(
+      if(!existingInst.default.admin.email==admin.email) return code.event(code.inst.INSTITUTION_EXISTS);
+      const doc = await Institute.findOneAndUpdate(
         { uiid: user.uiid },
         {
           $set: {
@@ -574,11 +576,9 @@ class Default {
     }
     if(body.fromfile){
       if(body.data.users.teachers){
-        clog(body.data.users.teachers);
         body.data.users.teachers.forEach((teacher)=>{
           teacher._id = ObjectId(teacher._id);
         });
-        clog(body.data.users.teachers);
       }
       if(body.data.pseudousers.teachers){
         body.data.pseudousers.teachers.forEach((teacher)=>{
@@ -677,6 +677,15 @@ class Users {
         body["instID"] = inst._id;
         body["link"] = invite.getPersonalInviteLink(client.teacher, body);
         return await mailer.sendInvitationEmail(client.teacher, body);
+      }
+
+      async removeTeacher(user,body){
+        const deldoc = await Institute.findOneAndUpdate({uiid:user.uiid,"users.teachers":{$elemMatch:{"teacherID":body.teacherID}}},{
+          $pull:{
+            "users.teachers":{"teacherID":body.teacherID}
+          }
+        });
+        return code.event(deldoc.value?code.OK:code.NO);
       }
     }
     class Classes {
@@ -954,6 +963,11 @@ class Users {
   };
   handleTeacherAction = async (user, body) => {
     switch (body.action) {
+      case "remove":{
+        if(body.teacherID){
+          return await this.teachers.removeTeacher(user,body);
+        }
+      }
     }
   };
   handleClassAction = async (user, body) => {
@@ -1107,6 +1121,7 @@ class Schedule {
               : code.schedule.SCHEDULE_NOT_CREATED
           ); //new day created.
         } else {
+          if(!stringIsValid(body.teacherID,validType.email)) return code.event(code.auth.EMAIL_INVALID);
           //no existing schedule of received teacher ID
           const doc = await Institute.findOneAndUpdate(
             { uiid: inst.uiid },
@@ -1489,17 +1504,15 @@ class Schedule {
                     inst.default.timings.daysInWeek.forEach((dw)=>{
                       daysinweek.push(dw == body.olddayindex?body.newdayindex:dw);
                     });
-                    return await defaults.timings.setDaysInWeek(user, {
-                      daysinweek,
-                    });
+                    return await defaults.timings.setDaysInWeek(user,daysinweek);
                   });
                 }
               } catch (e) {
                 return code.eventmsg(code.NO, e);
               }
             }break;
-          case code.action.REMOVE_DAY:{
-            Promise.all(inst.schedule.teachers.map(async (_, t) => {
+          case code.action.REMOVE_DAY:{   //remove for everyone
+            const res = await Promise.all(inst.schedule.teachers.map(async (_, t) => {
                 if (body.removedayindex >= 0 && !isNaN(body.removedayindex)) {
                     const path = `schedule.teachers.${t}.days`;
                     return Promise.resolve(Institute.findOneAndUpdate(
@@ -1512,21 +1525,20 @@ class Schedule {
                     ));
                 } else throw body;
               })
-            ).then(async (res) => {
-              clog(res);
-              const doc = await Institute.findOneAndUpdate(
-                { uiid: user.uiid },
-                {
-                  $pull: {
-                    [defaults.timings.daysinweekpath]: body.removedayindex,
-                  },
+            );
+            if(res){
+              const daysinweek = [];
+              inst.default.timings.daysInWeek.forEach((dindex)=>{
+                if(dindex != body.removedayindex){
+                  daysinweek.push(dindex);
                 }
-              );
-              return code.event(doc.value ? code.OK : code.NO);
-            }).catch((e) => {
-              return code.eventmsg(code.NO, e);
-            });
-          }
+              });
+              clog(daysinweek);
+              return await new Default().timings.setDaysInWeek(user,daysinweek);
+            }else {
+              code.event(code.NO);
+            }
+          }break;
           case code.action.SWITCH_PERIODS:{
               if (body.dayIndex) {
                 //switch periods of a particular day.
@@ -1536,46 +1548,53 @@ class Schedule {
           }break;
           case code.action.REMOVE_PERIOD: {
             //will be removed for everyone
-            Promise.all(
-              inst.schedule.teachers.map((teacher, t) => {
+            const res = await Promise.all(inst.schedule.teachers.map((teacher, t) => {
                 return Promise.all(
-                  teachers.days.map((day, d) => {
+                  teacher.days.map((day, d) => {
                     return Promise.all(
-                      day.period.map((period, p) => {
-                        return new Promise((resolve) => {
-                          const path = `schedule.teachers.${t}.days.${d}.period`;
-                          resolve(
-                            Institute.findOneAndUpdate(
-                              { uiid: user.uiid },
-                              {
-                                $pull: {
-                                  [path]: p,
-                                },
-                              }
-                            )
-                          );
-                        });
+                      day.period.map((_,p) => {
+                        if(p == body.p){
+                          clog("yes");
+                          return new Promise((resolve) => {
+                            const path = `schedule.teachers.${t}.days.${d}.period`;
+                              Institute.findOneAndUpdate(
+                                { uiid: user.uiid },
+                                {
+                                  $pull: {
+                                    [path]: p,
+                                  },
+                                }
+                              ).then((res)=>{
+                                clog(res);
+                                if(res) resolve(code.OK)
+                              })
+                          })
+                        }
                       })
                     );
                   })
                 );
               })
             )
-              .then((data) => {
-                clog(data);
-                return code.OK;
-              })
-              .catch((err) => {
-                clog(err);
-                return code.NO;
-              });
+            if(res){
+              return await new Default().timings.setPeriodsInDay(user,inst.default.timings.periodsInDay - 1);
+            } else {
+              return code.event(code.NO);
+            }
           }
         }
         return;
       }
       async scheduleRemove(user, body, inst) {
-        switch (body.specific) {
-          
+        if(body.teacherID){
+          //removing one's schedule.
+          const doc = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":body.teacherID}}},{
+            $pull:{
+              "schedule.teachers":{"teacherID":body.teacherID}
+            }
+          });
+          clog(doc);
+          return code.event(doc.value?code.OK:code.NO);
         }
       }
     }

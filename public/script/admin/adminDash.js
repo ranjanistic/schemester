@@ -219,7 +219,6 @@ class ConfirmClasses {
   constructor(receivedclasses) {
     clog("CCS");
     sessionStorage.clear();
-
     class InchargeDialog {
       constructor(receivedclasses) {
         this.receivedclasses = receivedclasses;

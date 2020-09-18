@@ -1420,6 +1420,15 @@ const validateTextField = (
     case validType.number:{
       error = "Not a valid number"
     }break;
+    case validType.naturalnumber:{
+      error = "Must be greater than zero";
+    }break;
+    case validType.wholenumber:{
+      error = "Must be a positive number";
+    }break;
+    case validType.password:{
+      error = "Weak password, try something else."
+    }break;
     case validType.match:
       {
         error = "This one is different.";
@@ -1719,40 +1728,6 @@ const areVisible = (elements = Array(), index = null) =>
     : elements.some((element, _) => {
         return element.style.display == constant.show;
       });
-/**
- * Checks if given string is valid, according to its type given as second parameter.
- * @param {String} value The string value to be checked for validity.
- * @param {String} type The type of string according to which it will be verified. E.g. email, password, nonempty. Defaults to nonempty.
- * @param {String} ifMatchValue This optional parameter becomes neccessary, when the given value is to be checked for equality. This parameter works as the second string, against which
- * the given value will be checked. In this case, the type parameter should be 'matching'.
- * @note The type parameter can be passed using the InputType class object available in Schemester.
- */
-const stringIsValid = (
-  value = String,
-  type = validType.nonempty,
-  ifMatchValue = String
-) => {
-  switch (type) {
-    case validType.name:
-      return stringIsValid(String(value).trim());
-    case validType.email:
-      return constant.emailRegex.test(String(value).toLowerCase());
-    case validType.phone:
-      return !isNaN(value) && stringIsValid(String(value).trim());
-    case validType.number:
-      return !isNaN(value) && stringIsValid(String(value).trim());
-    //todo: case inputType.password: return constant.passRegex.test(String(passValue));
-    case validType.username:
-      return stringIsValid(String(value).trim());
-    case validType.match:
-      return value === ifMatchValue;
-    case validType.weekday:
-      return constant.weekdayscasual.includes(value.toLowerCase())
-    default:
-      return value != null && value != constant.nothing;
-
-  }
-};
 
 const getDayName = (dIndex = Number) =>
   dIndex < constant.weekdays.length && dIndex >= 0
@@ -1956,6 +1931,7 @@ function getNumericTime(time){
 }
 
 const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
+const getButton = (id,label,type=actionType.positive)=>`<button class="${actionType.getButtonStyle(type)}" id="${id}">${label}</button>`;
 
 const getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;

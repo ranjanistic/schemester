@@ -24,7 +24,8 @@ class Register {
     this.logout.onclick = () => {
       finishSession(client.admin);
     };
-
+    this.updating = getElement("updatinginst").innerHTML == 'true';
+    if(!this.updating){
    this.uploadfile = getElement("uploadinst");
   this.uploadfile.onclick = (_) => {
     this.updial = new Dialog();
@@ -82,7 +83,7 @@ class Register {
       },
     ]);
     this.updial.show();
-  };
+  };}
 
   }
   fillScheduleFromfile(inst){
@@ -197,6 +198,18 @@ class Stage1 {
       validType.phone
     );
 
+    this.instemailsame = new Switch('emailsameasadmin');
+    this.instemailsame.onTurnChange(_=>{
+      this.instEmailField.setInput(this.emaildisplay.innerHTML);
+    },_=>{
+      this.instEmailField.clearInput();
+    });
+    this.instphonesame = new Switch('phonesameasadmin');
+    this.instphonesame.onTurnChange(_=>{
+      this.instPhoneField.setInput(this.phoneField.getInput());
+    },_=>{
+      this.instPhoneField.clearInput();
+    });
     if (sessionStorage.getItem("uiid") == localStorage.getItem("uiid")) {
       this.phoneField.setInput(sessionStorage.getItem("adphone"));
       this.instNameField.setInput(sessionStorage.getItem("instname"));
@@ -226,7 +239,6 @@ class Stage1 {
 
   movetostage2 = (app, s2) => {
     this.load();
-    clog("moving");
     if (
       !(
         this.phoneField.isValid() &&
@@ -250,14 +262,12 @@ class Stage1 {
       this.instPhoneField.validateNow((_) => {
         sessionStorage.setItem("instphone", this.instPhoneField.getInput());
       });
-      clog("invalidmove");
       this.load(false);
     } else {
       this.saveLocally();
       hide(this.view);
-      clog("moved");
       show(s2.view);
-      app.greeting.innerHTML = `<button class="neutral-button" id="previousButton">Previous</button>`;
+      app.greeting.innerHTML = getButton("previousButton","Previous",actionType.neutral);
       getElement("previousButton").onclick = () => {
         this.backToStage1(app, s2);
       };
@@ -286,7 +296,7 @@ class Stage1 {
 class Stage2 {
   constructor() {
     this.view = getElement("stage2");
-
+    this.updating = getElement("updatinginst").innerHTML == 'true';
     this.startTimeField = new TextInput(
       "startTimeField",
       "startTime",
@@ -300,6 +310,27 @@ class Stage2 {
       "breakStartError",
       validType.nonempty
     );
+    this.breakDurationField = new TextInput(
+      "breakDurationField",
+      "breakDuration",
+      "breakDurationError",
+      validType.naturalnumber
+    );
+    this.nobreak = new Switch('nobreakcheck','nobreaklabel');
+    this.nobreak.onTurnChange(_=>{
+      this.breakStartField.disableInput();
+      this.breakStartField.setInput(null);
+      this.breakStartField.normalize();
+      this.breakDurationField.disableInput();
+      this.breakDurationField.setInput(0);
+      this.breakDurationField.normalize();
+      sessionStorage.setItem('nobreak',true);
+    },_=>{
+      sessionStorage.removeItem('nobreak');
+      this.breakStartField.enableInput();
+      this.breakDurationField.enableInput();
+    })
+
     this.daySelector = getElement("dayselector");
     this.daychecks = Array(constant.weekdays.length);
     this.dayschecked = Array(constant.weekdays.length);
@@ -362,30 +393,37 @@ class Stage2 {
       "eachDurationField",
       "eachDuration",
       "eachDurationError",
-      validType.number
+      validType.naturalnumber
     );
 
     this.totalPeriodsField = new TextInput(
       "totalPeriodsField",
       "totalPeriods",
       "totalPeriodsError",
-      validType.number
-    );
-    this.breakDurationField = new TextInput(
-      "breakDurationField",
-      "breakDuration",
-      "breakDurationError",
-      validType.number
+      validType.naturalnumber
     );
 
     sessionStorage.getItem("startTimeField")
       ? this.startTimeField.setInput(sessionStorage.getItem("startTimeField"))
       : (_) => {};
-
-    sessionStorage.getItem("breakStartField")
+    if(sessionStorage.getItem('nobreak')){
+      this.nobreak.on()
+      this.breakStartField.disableInput();
+      this.breakStartField.setInput(null);
+      this.breakStartField.normalize();
+      this.breakDurationField.disableInput();
+      this.breakDurationField.setInput(0);
+      this.breakDurationField.normalize();
+    }else {
+      sessionStorage.getItem("breakStartField")
       ? this.breakStartField.setInput(sessionStorage.getItem("breakStartField"))
       : (_) => {};
-
+      sessionStorage.getItem("breakDurationField")
+      ? this.breakDurationField.setInput(
+          sessionStorage.getItem("breakDurationField")
+        )
+      : (_) => {};
+    }
     sessionStorage.getItem("eachDurationField")
       ? this.eachDurationField.setInput(
           sessionStorage.getItem("eachDurationField")
@@ -398,11 +436,6 @@ class Stage2 {
         )
       : (_) => {};
 
-    sessionStorage.getItem("breakDurationField")
-      ? this.breakDurationField.setInput(
-          sessionStorage.getItem("breakDurationField")
-        )
-      : (_) => {};
 
     this.startTimeField.validate((_) => {
       this.breakStartField.inputFocus(),
@@ -458,7 +491,7 @@ class Stage2 {
     clog((end - start - bdur) / pdur);
   }
   someChecked() {
-    let valid = this.daychecks.some((check, index) => {
+    let valid = this.daychecks.some((check) => {
       return check.isOn();
     });
     if (!valid) {
@@ -467,14 +500,13 @@ class Stage2 {
     return valid;
   }
   saveInstitution() {
-    this.someChecked();
     if (
       !(
         this.startTimeField.isValid() &&
-        this.breakStartField.isValid() &&
+        (this.breakStartField.isValid()||sessionStorage.getItem('nobreak'))&&
         this.eachDurationField.isValid() &&
         this.totalPeriodsField.isValid() &&
-        this.breakDurationField.isValid() &&
+        (this.breakDurationField.isValid() ||sessionStorage.getItem('nobreak')) &&
         this.someChecked()
       )
     ) {
@@ -484,13 +516,21 @@ class Stage2 {
           this.startTimeField.getInput()
         );
       });
-      this.breakStartField.validateNow((_) => {
-        this.eachDurationField.inputFocus();
-        sessionStorage.setItem(
-          "breakStartField",
-          this.breakStartField.getInput()
-        );
-      });
+      if(!sessionStorage.getItem('nobreak')){
+        this.breakStartField.validateNow((_) => {
+          this.eachDurationField.inputFocus();
+          sessionStorage.setItem(
+            "breakStartField",
+            this.breakStartField.getInput()
+          );
+        });
+        this.breakDurationField.validateNow((_) => {
+          sessionStorage.setItem(
+            "breakDurationField",
+            this.breakDurationField.getInput()
+          );
+        });
+      }
 
       this.eachDurationField.validateNow((_) => {
         this.totalPeriodsField.inputFocus(),
@@ -506,13 +546,12 @@ class Stage2 {
             this.totalPeriodsField.getInput()
           );
       });
-      this.breakDurationField.validateNow((_) => {
-        sessionStorage.setItem(
-          "breakDurationField",
-          this.breakDurationField.getInput()
-        );
-      });
     } else {
+      if(this.totalPeriodsField.getInput()*this.eachDurationField.getInput()>constant.minutesInDay-this.breakDurationField.getInput()){
+        this.totalPeriodsField.showError('Not acceptable');
+        this.eachDurationField.showError('Not acceptable');
+        return snackBar(`Invalid period setup. Make sure that product of total periods and each period duration doesn't exceed ${constant.minutesInDay-this.breakDurationField.getInput()} (total minutes in a day, excluding break minutes)`,'Help',false);
+      }
       this.saveLocally();
       this.confirmationDialog();
     }
@@ -527,7 +566,7 @@ class Stage2 {
       clog(inst);
       confirm.setDisplay(
         "Confirmation",
-        `<center >Proceed to create <b>${sessionStorage.getItem(
+        `<center >Proceed to ${this.updating?'update':'create'} <b>${sessionStorage.getItem(
           "instname"
         )}</b>?${inst?' (From uploaded file)':''}</center>
         <br/>
@@ -549,14 +588,16 @@ class Stage2 {
             <li>Day starts at: <b>${sessionStorage.getItem(
               "startTimeField"
             )} hours</b></li>
-            <li>Break starts at : <b>${sessionStorage.getItem(
-              "breakStartField"
-            )} hours</b></li>
+            ${sessionStorage.getItem(
+              "nobreak"
+              )?'<li>No break time':`<li>Break starts at : <b>${sessionStorage.getItem(
+                "breakStartField"
+              )} hours</b></li>
+              <li>Break duration : <b>${sessionStorage.getItem(
+                "breakDurationField"
+              )} minutes</b></li>`}
             <li>Each period duration : <b>${sessionStorage.getItem(
               "eachDurationField"
-            )} minutes</b></li>
-            <li>Break duration : <b>${sessionStorage.getItem(
-              "breakDurationField"
             )} minutes</b></li>
             <li>Periods in a day : <b>${sessionStorage.getItem(
               "totalPeriodsField"
@@ -570,13 +611,11 @@ class Stage2 {
         </div>`
       );
       confirm.createActions(
-        Array("Confirm & Proceed", "Edit"),
-        Array(actionType.active, actionType.neutral)
+        ["Confirm & Proceed", "Edit"],
+        [actionType.active, actionType.neutral]
       );
-      confirm.onButtonClick(
-        Array(
+      confirm.onButtonClick([
           (_) => {
-            confirm.hide();
             loadingBox(
               true,
               "Setting up",
@@ -585,12 +624,6 @@ class Stage2 {
               )}'s (${sessionStorage.getItem(
                 "uiid"
               )})</br> schedule structure, please wait...`
-            );
-            snackBar(
-              `Your institution's UIID is, <b>${sessionStorage.getItem(
-                "uiid"
-              )}</b>. Always keep this in your mind.`,
-              "Understood"
             );
             const wdays = [];
             String(sessionStorage.getItem("totalDaysField")).split(",").forEach((item) => {
@@ -610,11 +643,11 @@ class Stage2 {
                 },
                 timings: {
                   startTime: sessionStorage.getItem("startTimeField"),
-                  breakStartTime: sessionStorage.getItem("breakStartField"),
+                  breakStartTime: sessionStorage.getItem("nobreak")?null:sessionStorage.getItem("breakStartField"),
                   periodMinutes: Number(
                     sessionStorage.getItem("eachDurationField")
                   ),
-                  breakMinutes: Number(
+                  breakMinutes: sessionStorage.getItem("nobreak")?0:Number(
                     sessionStorage.getItem("breakDurationField")
                   ),
                   periodsInDay: Number(
@@ -650,11 +683,11 @@ class Stage2 {
                 },
                 timings: {
                   startTime: sessionStorage.getItem("startTimeField"),
-                  breakStartTime: sessionStorage.getItem("breakStartField"),
+                  breakStartTime: sessionStorage.getItem("nobreak")?null:sessionStorage.getItem("breakStartField"),
                   periodMinutes: Number(
                     sessionStorage.getItem("eachDurationField")
                   ),
-                  breakMinutes: Number(
+                  breakMinutes: sessionStorage.getItem("nobreak")?0:Number(
                     sessionStorage.getItem("breakDurationField")
                   ),
                   periodsInDay: Number(
@@ -691,7 +724,8 @@ class Stage2 {
                 }
                 case code.inst.INSTITUTION_CREATED:
                   {
-                    if(inst) return location.reload();
+                    window.onbeforeunload = () => {};
+                    if(inst || this.updating) return location.reload();
                     loadingBox(false);
                     const finish = new Dialog();
                     finish.setDisplay(
@@ -701,6 +735,12 @@ class Stage2 {
                     finish.createActions(
                       ["Add teachers", "Skip"],
                       [actionType.positive, actionType.neutral]
+                    );
+                    snackBar(
+                      `Your institution's UIID is, <b>${sessionStorage.getItem(
+                        "uiid"
+                      )}</b>. Always keep this in your mind.`,
+                      "Understood"
                     );
                     finish.onButtonClick(
                       [
@@ -723,13 +763,14 @@ class Stage2 {
                     finish.show();
                   }
                   break;
+                  default:snackBar(`Couldn't create institution, please check for any wrong inputs.`);
               }
             });
           },
           (_) => {
             confirm.hide();
           }
-        )
+        ]
       );
       confirm.show();
   }
@@ -774,6 +815,11 @@ function setClasses(){
     s2.saveInstitution();
   };
 }
+
+window.onbeforeunload = () => {
+  snackBar("Try to complete before leaving to avoid data loss.");
+  return constant.nothing;
+};
 
 window.onload = (_) => {
   setClasses();

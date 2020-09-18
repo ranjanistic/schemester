@@ -75,7 +75,7 @@ admin.post('/auth',async (req,res)=>{
 });
 
 
-admin.get(get.session, (req, res) => {
+admin.get(get.session, async(req, res) => {
   let data = req.query;
   session
     .verify(req, sessionsecret)
@@ -96,10 +96,10 @@ admin.get(get.session, (req, res) => {
         if (!admin.verified)
           return res.render(view.verification, { user: adata });
         let inst = await Institute.findOne({ uiid: response.user.uiid });
-        if (!inst || !inst.default || !inst.default.timings.daysInWeek.length) {
+        if (!inst || !inst.default || !inst.default.timings.daysInWeek.length || !inst.default.timings.periodsInDay) {
           data.target = view.admin.target.register;
           return res.render(view.admin.getViewByTarget(data.target), {
-            adata,inst:inst?inst:false,binst:false
+            adata,inst:inst?inst:false
           });
         }
         if (

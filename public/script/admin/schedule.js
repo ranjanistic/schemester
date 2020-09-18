@@ -65,18 +65,55 @@ class Teacher{
             }
             this.removeteacher = getElement("removeteacher");
             this.removeteacher.onclick=_=>{
-                // const confdial = new Dialog();
                 confirmDialog('Remove teacher?',`Are you sure you want to remove ${this.data.teachername} (${this.data.teacherID}) from your institution?
                     Their schedule will not be affected, but they won't be
-                able to login to your institution. They'll have to join again if needed.`,null,_=>{},true,_=>{new Dialog().hide();snackBar(`${this.data.teachername}'s account is safe.`)});
+                able to login to your institution. They'll have to join again if needed.`,null,_=>{
+                    loadingBox(true,'Removing Teacher...');
+                    postJsonData(post.admin.users,{
+                        target:client.teacher,
+                        action:'remove',
+                        teacherID:this.data.teacherID
+                    }).then(resp=>{
+                        if(resp.event == code.OK){
+                            return relocate(locate.admin.session,{
+                                u:localStorage.getItem(constant.sessionUID),
+                                target:locate.admin.target.teachers
+                            })
+                        }
+                        loadingBox(false);
+                        snackBar(resp.event,null,false);
+                    });
+                },true,_=>{new Dialog().hide();snackBar(`${this.data.teachername}'s account is safe.`)});
             }
         }
         this.deleteschedule.onclick=_=>{
             const confirmdialog = new Dialog();
-            confirmdialog.setDisplay('Delete schedule?',`Are you sure you want to delete ${this.data.teachername}'s schedule permanently? This might affect schedule of several classes too.`);
-            confirmdialog.createActions(['Check affected classes','Delete anyway','Abort'],[actionType.positive,actionType.negative,actionType.neutral]);
+            confirmdialog.setDisplay('Delete schedule?',`Are you sure you want to delete ${this.data.pending?this.data.teacherID:this.data.teachername}'s schedule permanently?${this.data.pending?' Their invitation will no longer remain valid.':' This might affect schedule of several classes too.'}`);
+            this.data.pending
+            ?confirmdialog.createActions(['Remove','Abort'],[actionType.negative,actionType.neutral])
+            :confirmdialog.createActions(['Check affected classes','Delete anyway','Abort'],[actionType.positive,actionType.negative,actionType.neutral]);
             confirmdialog.transparent();
-            confirmdialog.onButtonClick([_=>{
+            this.data.pending
+            ?confirmdialog.onButtonClick([_=>{
+                confirmdialog.loader();
+                snackBar(`Deleting ${this.data.teacherID}'s schedule...`,null,false);
+                postJsonData(post.admin.schedule,{
+                    target:client.teacher,
+                    action:"remove",
+                    teacherID:this.data.teacherID
+                }).then((resp)=>{
+                    if(resp.event == code.OK){
+                        return relocate(locate.admin.session,{
+                            u:localStorage.getItem(constant.sessionUID),
+                            target:locate.admin.target.teachers,
+                        });
+                    }
+                    snackBar(resp.event);
+                });
+            },_=>{
+                confirmdialog.hide();
+            }])
+            :confirmdialog.onButtonClick([_=>{
                 confirmdialog.loader();
                 postJsonData(post.admin.receivedata,{
                     target:'classroom',
@@ -110,7 +147,21 @@ class Teacher{
                         })
                         confirmdialog.createActions(['Delete schedule now','Abort'],[actionType.negative,actionType.neutral]);
                         confirmdialog.onButtonClick([_=>{
-
+                            confirmdialog.loader();
+                            snackBar(`Deleting ${this.data.teachername}'s schedule (${this.data.teacherID})...`,null,false);
+                            postJsonData(post.admin.schedule,{
+                                target:client.teacher,
+                                action:"remove",
+                                teacherID:this.data.teacherID
+                            }).then((resp)=>{
+                                if(resp.event == code.OK){
+                                    return relocate(locate.admin.session,{
+                                        u:localStorage.getItem(constant.sessionUID),
+                                        target:locate.admin.target.teachers,
+                                    });
+                                }
+                                snackBar(resp.event);
+                            });
                         },_=>{
                             confirmdialog.hide();
                         }]);
@@ -120,7 +171,21 @@ class Teacher{
                     clog(e);
                 });
             },_=>{
-                
+                confirmdialog.loader();
+                snackBar(`Deleting ${this.data.teachername}'s schedule (${this.data.teacherID})...`,null,false);
+                postJsonData(post.admin.schedule,{
+                    target:client.teacher,
+                    action:"remove",
+                    teacherID:this.data.teacherID
+                }).then((resp)=>{
+                    if(resp.event == code.OK){
+                        return relocate(locate.admin.session,{
+                            u:localStorage.getItem(constant.sessionUID),
+                            target:locate.admin.target.teachers,
+                        });
+                    }
+                    snackBar(resp.event);
+                });
             },_=>{
                 confirmdialog.hide();
             }]);
@@ -370,18 +435,23 @@ class Teacher{
         const gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
         clog(gap);
         const indicator = setInterval(async ()=>{
-            const date = new Date();
-            for(let p=0;p<this.data.totalperiods;p++){
-                if(this.data.weekdays[index] == date.getDay()){
-                    const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
-                    const day = this.schedule.days.find(day=>day.dayIndex == date.getDay());
-                    if(this.data.start+(p*gap) <= hrsnow && hrsnow < this.data.start+((p+1)*gap)){
-                        //in the schedule duration
-                        day.period[p].hold?setActive(this.dayperiods[p]):setNegativeActive(this.dayperiods[p]);
+                const date = new Date();
+                for(let p=0;p<this.data.totalperiods;p++){
+                    if(this.data.weekdays[index] == date.getDay()){
+                        const hrsnow = Number(`${date.getHours()}${date.getMinutes()<10?`0${date.getMinutes()}`:date.getMinutes()}`);
+                        try{
+                            const day = this.schedule.days.find(day=>day.dayIndex == date.getDay());
+                            if(this.data.start+(p*gap) <= hrsnow && hrsnow < this.data.start+((p+1)*gap)){
+                                //in the schedule duration
+                                day.period[p].hold?setActive(this.dayperiods[p]):setNegativeActive(this.dayperiods[p]);
+                            }
+                        }catch{
+                            clearInterval(indicator);
+                            location.reload();
+                        }
                     }
                 }
-            }
-        }, 1);
+            }, 1000);
     }
 }
 
