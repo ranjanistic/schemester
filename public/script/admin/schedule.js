@@ -636,13 +636,13 @@ class Class{
                     </div>
 
                     <div class="fmt-col fmt-half fmt-padding-small positive" id="teacherIDview${index}${p}">
-                        <span class="" id="teachername${index}${p}">${period?period.teacherID:'Not set'}</span><button class="neutral-button caption" id="editteacherID${index}${p}">${editIcon(15)}</button>
+                        <span class="" id="teachername${index}${p}">${period?period.teachername:'Not set'}</span><button class="neutral-button caption" id="editteacherID${index}${p}">${editIcon(15)}</button>
                         <br/>
                         <span class="group-text" id="teacherID${index}${p}">${period?period.teacherID:'Not set'}</span>
                     </div>
                     <div class="fmt-col fmt-half fmt-padding-small positive" id="teacherIDeditor${index}${p}">
                         <fieldset style="margin:0" class="text-field questrial fmt-third" id="teacherIDfield${index}${p}">
-                            <legend class="field-caption">Replace ${period?period.teacherID:''}</legend>
+                            <legend class="field-caption">Replace ${period?period.teachername:''}</legend>
                             <input class="text-input" style="font-size:18px" required value="${period?period.teacherID:''}" placeholder="New teacherID" type="text" id="teacherIDinput${index}${p}" name="teacherID" >
                             <span class="fmt-right error-caption"  id="teacherIDerror${index}${p}"></span>
                         </fieldset>
@@ -827,7 +827,7 @@ class ReceiveData{
             this.classname = getElement("classname").innerHTML == 'null'?null:getElement("classname").innerHTML;
             if(!this.pending){
                 this.classUID = getElement("classUID").innerHTML;
-                this.classinchargeID = getElement("classinchargeID").innerHTML;
+                this.classinchargeID = getElement("classinchargeid").innerHTML;
                 this.classinchargename = getElement("classinchargename").innerHTML;
             }
         }

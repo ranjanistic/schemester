@@ -17,6 +17,7 @@ class Classroom {
     localStorage.removeItem('hideclassroom');
     this.inchargeOf = getElement("inchargeOf");
     this.studentlist = getElement("studentslist");
+    this.studentsview = getElement("studentsview");
     this.chooseclass = getElement("chooseclass");
     this.chooseclass.onclick=_=>{
       let viewbody = constant.nothing;
@@ -61,7 +62,7 @@ class Classroom {
               </div>
             </div>`
             })}
-            this.studentlist.innerHTML = listview;
+            this.studentsview.innerHTML = listview;
             hide(this.invitestudents);
             classchoose.hide();
           })
@@ -223,19 +224,20 @@ class Classroom {
           const linkdialog = new Dialog();
           linkdialog.setDisplay(
             "Invitation Link",
-            `<center><a href="${response.link}">${response.link}</a>
+            `<center><a target="_blank" rel="noreferrer" href="${response.link}">${response.link}</a>
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
             )}</b><br/><br/>
           </center>`
           );
           linkdialog.createActions(
-            Array("Disable link", "Copy", "Hide"),
-            Array(actionType.negative, actionType.positive, actionType.neutral)
+            ["Disable link", "Copy", "Hide"],
+            [actionType.negative, actionType.positive, actionType.neutral]
           );
           linkdialog.onButtonClick(
-            Array(
+            [
               (_) => {
+                linkdialog.loader(true);
                 this.revokeLink();
               },
               (_) => {
@@ -255,7 +257,7 @@ class Classroom {
               (_) => {
                 linkdialog.hide();
               }
-            )
+            ]
           );
           linkdialog.show();
         }

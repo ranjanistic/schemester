@@ -3,7 +3,7 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view,get} = require("../public/script/codes"),
+  {code,client,view,get,clog} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   share = require("../workers/common/sharedata"),
@@ -179,9 +179,10 @@ student.get(get.fragment, (req, res) => {
       const query = req.query;
       switch (query.fragment) {
         case view.student.target.fragment.today: {
-          clog("todaystudent");
           worker.schedule.getSchedule(response.user, Number(query.day))
             .then((scheduleresponse) => {
+              clog("schedres");
+              clog(scheduleresponse);
               if(!scheduleresponse){  //no schedule
                 return res.render(view.student.getViewByTarget(query.fragment), {
                   today: null,
@@ -193,7 +194,7 @@ student.get(get.fragment, (req, res) => {
                   today: false,
                   timings: scheduleresponse.timings,
                 });
-              clog(scheduleresponse.schedule);
+              clog(scheduleresponse.schedule.period);
               return res.render(view.student.getViewByTarget(query.fragment), {
                 today: scheduleresponse.schedule.period,
                 timings: scheduleresponse.timings,
@@ -205,7 +206,6 @@ student.get(get.fragment, (req, res) => {
           return;
         }
         case view.student.target.fragment.fullweek: {
-          clog("full week");
           worker.schedule.getSchedule(response.user)
           .then((resp) => {
               return res.render(view.student.getViewByTarget(query.fragment), {
@@ -219,7 +219,6 @@ student.get(get.fragment, (req, res) => {
           return;
         }
         case view.student.target.fragment.classroom: {
-          clog("classroom");
           const classuser = await Institute.findOne({
             uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}
           },{projection:{"users.classes.$":1}});
@@ -231,7 +230,6 @@ student.get(get.fragment, (req, res) => {
           return;
         }
         case view.student.target.fragment.settings: {
-          clog("about");
           const classuser = await Institute.findOne({
             uiid: response.user.uiid,
             "users.classes": {
@@ -339,9 +337,7 @@ student.get(get.external, async (req, res) => {
       });
     }break;
     case verify.type: { //verification link
-      clog("verify type");
       verify.handleVerification(query,client.student).then((resp) => {
-        clog("resp");
           clog(resp);
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
@@ -366,6 +362,4 @@ student.get(get.external, async (req, res) => {
   }
 });
 
-
 module.exports = student;
-let clog=(m)=>console.log(m);

@@ -143,8 +143,10 @@ class Codes {
         this.REMOVE_CLASS = 'action/delete-classroom';
         this.REMOVE_DAY = 'action/remove-day-schedule';
         this.SWITCH_DAY = 'action/switch-day-schedule';
+        this.ADD_DAY = 'action/add-new-day';
         this.REMOVE_PERIOD = 'action/remove-period';
         this.SWITCH_PERIODS = 'action/switch-periods';
+        this.ADD_PERIOD = 'action/add-new-period';
       }
     }
     class InvitationCodes {
@@ -206,6 +208,7 @@ class Codes {
         this.BATCH_NOT_FOUND = "schedule/batch-or-class-not-exist";
         this.SCHEDULE_CLASHED = "schedule/conflicting-schedule";
         this.WEEKDAY_EXISTS = "schedule/weekday-exists";
+        this.INVALID_PERIOD = "schedule/invalid-period";
         this.CREATE_BACKUP = "schedule/generate-backup";
         this.FREE = "Free";
       }

@@ -560,9 +560,9 @@ class Dialog extends DialogID {
     this.box.innerHTML = htmlcontent;
   }
   createInputs(
-    captions,
-    hints,
-    types,
+    captions = [],
+    hints = [],
+    types = [],
     validateTypes = null,
     contents = null,
     autocompletes = null,
@@ -728,6 +728,9 @@ class Dialog extends DialogID {
   }
   getInputType(index) {
     return this.inputField[index].type;
+  }
+  showFieldError(index,errortext){
+    this.inputField[index].showError(errortext);
   }
   getDialogChip(index) {
     return this.optionsRadio[index];

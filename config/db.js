@@ -1,5 +1,5 @@
 const {code} = require('../public/script/codes'),
-MongoClient = require('mongodb').MongoClient,
+  {MongoClient} = require('mongodb'),
 getLink=(cloud=false)=>cloud?`mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${code.db.DBNAME}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${code.db.DBNAME}`;
 var _db;
 

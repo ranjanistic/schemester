@@ -59,7 +59,6 @@ class PasswordReset {
           link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}&exp=${exp}`;
         }break;
         case client.student:{
-          clog("hersdfe");
           clog(data);
           const studdoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
             $set:{
@@ -69,11 +68,11 @@ class PasswordReset {
             arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
           });
           clog(studdoc.result);
+          const classdoc = await Institute.findOne({_id:ObjectId(data.instID),
+            "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+          },{projection:{"users.classes.$":1}});
           if(studdoc.result.nModified){
-            const doc = await Institute.findOne({_id:ObjectId(data.instID),
-              "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
-            },{projection:{"users.classes.$":1}});
-            const student = doc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
+            const student = classdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
             to = student.studentID;
             username = student.username;
           }else{
@@ -82,14 +81,14 @@ class PasswordReset {
                 "pseudousers.classes.$[outer].students.$[outer1].rlinkexp":exp
               }
             },{
-              arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
+              arrayFilters:[{"outer.classname":classdoc.users.classes[0].classname},{"outer1._id":ObjectId(data.uid)}]
             });
             clog(pseudodoc.result);
             if(!pseudodoc.result.nModified) return false;
             const doc = await Institute.findOne({_id:ObjectId(data.instID),
-              "pseudousers.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+              "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}
             },{projection:{"pseudousers.classes.$":1}});
-            const student = doc.pseudousers.classes[0].students.some((stud)=>String(stud._id)==String(data.uid));
+            const student = doc.pseudousers.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
             to = student.studentID;
             username = student.username;
           }
@@ -188,13 +187,13 @@ class PasswordReset {
                 projection:{
                   '_id':0,
                   "uiid":1,
-                  'users.classes.$':1
+                  'pseudousers.classes.$':1
                 }
               });
-              student = studclass.users.classes[0].students.find((stud)=>String(stud._id) == String(query.u));
+              student = studclass.pseudousers.classes[0].students.find((stud)=>String(stud._id) == String(query.u));
               if(!student || !student.rlinkexp||Number(student.rlinkexp)!=String(query.exp)) return false;
               if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};
-              return {user:share.getPseudoStudentShareData(student),uiid:studclass.uiid,classname:studclass.users.classes[0].classname};
+              return {user:share.getPseudoStudentShareData(student),uiid:studclass.uiid,classname:studclass.pseudousers.classes[0].classname};
             }
             if(!student || !student.rlinkexp||Number(student.rlinkexp)!=String(query.exp)) return false;
             if(!this.isValidTime(student.rlinkexp)) return {user:{expired:true}};

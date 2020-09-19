@@ -68,7 +68,7 @@ class StudentDash{
         this.tabloaders[this.tabs.indexOf(tab)].classList.add('fmt-spin-fast');
     }
 }
-async function linkSender(){
+async function linkSender(onsuccess=_=>{}){
     clog("showing");
     snackBar(`To reset your password, a link will be sent to your email address.`,'Send Link',true,_=>{
       postJsonData(post.student.manage,{
@@ -81,10 +81,11 @@ async function linkSender(){
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
+        onsuccess();
         return true;
       })
     })
-  }
+}
   function snackbar(
     text = String(),
     actionText = 'OK',
@@ -165,48 +166,19 @@ class Pseudostudent{
           this.resetmail.onclick = (_) => {
             changeEmailBox(client.student);
           };
-          if (Number(sessionStorage.getItem("linkin")) > 0) {
-            opacityOf(this.forgotpass, 0.5);
-            let time = Number(sessionStorage.getItem("linkin"));
-            const timer = setInterval(() => {
-              time--;
-              sessionStorage.setItem("linkin", time);
-              this.forgotpass.innerHTML = `Try again in ${time} seconds.`;
-              if (Number(sessionStorage.getItem("linkin")) == 0) {
-                clearInterval(timer);
-                this.forgotpass.innerHTML = "Forgot password";
-                opacityOf(this.forgotpass, 1);
-                this.forgotpass.onclick = (_) => {
-                  this.sendForgotLink()
-                };
-              }
-            }, 1000);
-          } else {
+          resumeElementRestriction(this.forgotpass,'studentforgot',_=>{
             this.forgotpass.onclick = (_) => {
               this.sendForgotLink()
             };
-          }
+          })
         }
         sendForgotLink(){
-          linkSender().then(done=>{
-            if(done){
-              opacityOf(this.forgotPassword, 0.4);
-              this.forgotPassword.onclick = (_) => {};
-              let time = 120;
-              sessionStorage.setItem("linkin", time);
-              const timer = setInterval(() => {
-                time--;
-                sessionStorage.setItem("linkin", time);
-                this.forgotPassword.innerHTML = `Try again in ${time} seconds.`;
-                if (Number(sessionStorage.getItem("linkin")) == 0) {
-                  clearInterval(timer);
-                  this.forgotPassword.innerHTML = "Forgot password";
-                  opacityOf(this.forgotPassword, 1);
-                  this.forgotPassword.onclick = (_) => {this.linkSender()};
-                }
-              }, 1000);
-            }
-          })
+          this.forgotpass.onclick = (_) => {};
+          linkSender(_=>{
+            restrictElement(this.forgotpass,120,'studentforgot',_=>{
+              this.forgotpass.onclick = (_) => {this.sendForgotLink()};
+            });
+          });
         }
 }
 

@@ -31,12 +31,12 @@ class StudentToday{
                 this.todayactions();
             }
         }
-        this.startTimers();
+        // this.startTimers();
     }
     controlVisibility(){
-        hideElement(this.periodActions);
+        // hideElement(this.periodActions);
         this.periodview.forEach((view,pindex)=>{
-            this.periodTime[pindex].innerHTML = pindex;//todo: show timing
+            // this.periodTime[pindex].innerHTML = pindex;//todo: show timing
         })
     }
     startTimers= async()=>{
@@ -145,9 +145,13 @@ class ReceiveData{
             this.subject = Array();
             this.hold = Array();
             for(let i = 0;i<this.totalperiods;i++){
-                this.classname.push(getElement(`classname${i}`).innerHTML);
-                this.subject.push(getElement(`subject${i}`).innerHTML);
-                this.hold.push(getElement(`hold${i}`).innerHTML == 'true');
+                try{
+                    this.classname.push(getElement(`teachername${i}`).innerHTML);
+                    this.subject.push(getElement(`subject${i}`).innerHTML);
+                    this.hold.push(getElement(`hold${i}`).innerHTML == 'true');
+                }catch{
+                    continue;
+                }
             }
         }
     }

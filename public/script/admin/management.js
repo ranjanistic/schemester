@@ -679,7 +679,7 @@ class Schedule {
     };
   }
   reschedulePeriodsEditor() {
-    const periods = Number(this.totalPeriods.innerHTML);
+    let periods = Number(this.totalPeriods.innerHTML);
     let editcontent = "";
     for (let p = 0; p < periods; p++) {
       editcontent += `<div class="fmt-row tab-view" id="periodrow${p}">
@@ -695,11 +695,44 @@ class Schedule {
     this.scheduler.setDisplay(
       "Periods Editor",
       `<center class="negative">These actions will change the periods, proceed with caution.</center>
+      ${getButton('addperiod','Add period')}
       <br/>
       <div class="fmt-row">
         ${editcontent}
       </div>`
     );
+    getElement("addperiod").onclick=_=>{
+      this.scheduler.setDisplay('Insert new period',`<center>Add a new (${addNumberSuffixHTML(periods+1)}) period in everyone's daily schedule.<br/>The period will be set to free by default.</center>
+      `)
+      this.scheduler.createActions(
+        [`Back`, `Create ${addNumberSuffixHTML(periods+1)} period`],
+        [actionType.neutral, actionType.warning]
+      );
+      this.scheduler.onButtonClick([
+        (_) => {
+          this.scheduler.createInputs();
+          this.reschedulePeriodsEditor();
+        },
+        (_) => {
+          this.scheduler.loader();
+          postJsonData(post.admin.schedule, {
+            target: client.teacher,
+            action: "update",
+            specific: code.action.ADD_PERIOD,
+            newperiod: periods+1,
+          }).then(resp=>{
+            if(resp.event == code.OK){
+              snackBar(`${addNumberSuffixHTML(periods+1)} period has been created for everyone.`);
+              return this.restartView();
+            }
+            this.scheduler.loader(false);
+            switch(resp.event){
+              default:snackBar('An error occurred','Report',false);
+            }
+          })
+        }
+      ]);
+    }
     const periodrows = [];
     const switchperiods = [];
     const deleteperiods = [];
@@ -714,11 +747,11 @@ class Schedule {
         );
         this.scheduler.createInputs(
           ["Period number"],
-          [`A number between 1 and ${periods-1}`],
+          [`A number between 1 and ${periods}`],
           ["number"],
-          [validType.number]
+          [validType.naturalnumber]
         );
-        this.scheduler.getInput(0).max = periods-1;
+        this.scheduler.getInput(0).max = periods;
         this.scheduler.getInput(0).min = 1;
         this.scheduler.validate();
         this.scheduler.createActions(
@@ -731,20 +764,21 @@ class Schedule {
             this.reschedulePeriodsEditor();
           },
           (_) => {
-            if (!this.scheduler.allValid()||Number(this.scheduler.getInputValue(0))<1||Number(this.scheduler.getInputValue(0))>periods-1) return this.scheduler.validateNow();
+            clog("here");
+            if (!this.scheduler.allValid()||Number(this.scheduler.getInputValue(0))<1||Number(this.scheduler.getInputValue(0))>periods) return this.scheduler.validateNow();
             this.scheduler.loader();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
               action: "update",
-              specific: code.action.SWITCH_PERIOD,
+              specific: code.action.SWITCH_PERIODS,
               oldperiod: p,
-              newperiod: Number(this.scheduler.getInputValue(0).trim()),
+              newperiod: Number(this.scheduler.getInputValue(0).trim())-1,
             }).then((response) => {
               clog(response);
               if (response.event == code.OK) {
                 this.scheduler.loader(false);
                 snackBar(
-                  `${addNumberSuffixHTML(p+1)} has been switched with ${addNumberSuffixHTML(this.scheduler.getInputValue(0))}`
+                  `${addNumberSuffixHTML(p+1)} has been switched with ${addNumberSuffixHTML(this.scheduler.getInputValue(0))} period.`
                 );
                 this.restartView();
               } else {
@@ -770,6 +804,7 @@ class Schedule {
             this.scheduler.loader(false);
             if (response.event == code.OK) {
               remainingperiods--;
+              periods--;
               if(remainingperiods<1){
                 this.scheduler.createActions(['Set periods']);
                 this.scheduler.onButtonClick([_=>{
@@ -805,6 +840,7 @@ class Schedule {
   }
   rescheduleWeekEditor() {
     const days = this.workDays.innerHTML.split(",");
+    days.forEach((day,d)=>days[d] = day.trim());
     const daysindices = Array(days.length);
     let editcontent = constant.nothing;
     days.forEach((day, d) => {
@@ -826,12 +862,57 @@ class Schedule {
       "Weekdays Editor",
       `
     <center class="negative">These actions will change the weekdays, proceed with caution.</center>
+    ${getButton('addday','Add day')}
     <br/>
     <div class="fmt-row">
       ${editcontent}
-    </div>
-  `
+    </div>`
     );
+    getElement("addday").onclick=_=>{
+      this.scheduler.setDisplay('Insert new day',`<center>Add a new day in everyone's schedule.<br/>The periods of this day will be set to free by default.</center>
+      `)
+      this.scheduler.createInputs(
+        ['New day name'],
+        ['Type the new day to be inserted'],
+        ['text'],
+        [validType.weekday]
+      );
+      this.scheduler.validate();
+      this.scheduler.createActions(
+        [`Back`, `Create day`],
+        [actionType.neutral, actionType.warning]
+      );
+      this.scheduler.onButtonClick([
+        (_) => {
+          this.scheduler.createInputs([]);
+          this.rescheduleWeekEditor();
+        },
+        (_) => {
+          if (!this.scheduler.allValid()) return this.scheduler.validateNow();
+          this.scheduler.loader();
+          postJsonData(post.admin.schedule, {
+            target: client.teacher,
+            action: "update",
+            specific: code.action.ADD_DAY,
+            newdayindex: constant.weekdayscasual.indexOf(
+              this.scheduler.getInputValue(0).toLowerCase().trim()
+            ),
+          }).then(resp=>{
+            if(resp.event == code.OK){
+              snackBar(`${this.scheduler.getInputValue(0)} is now a working day.`);
+              return this.restartView();
+            }
+            this.scheduler.loader(false);
+            switch(resp.event){
+              case code.schedule.WEEKDAY_EXISTS:{
+                return this.scheduler.showFieldError(0,`${this.scheduler.getInputValue(0)} is already in schedule.`);
+              };
+              default:snackBar('An error occurred','Report',false);
+            }
+          })
+        }
+      ]);
+    }
     const dayrows = [];
     const switchdays = [];
     const deleteDays = [];
@@ -843,7 +924,7 @@ class Schedule {
         this.scheduler.setDisplay(
           `Switch ${day}`,
           `
-          <center>Provide the day which you want to transfer or exchange schedule of <b>${day}</b> with.</center>
+          <center>Provide the day which you want to transfer or exchange everyone's schedule of <b>${day}</b> with.</center>
         `
         );
         this.scheduler.createInputs(
@@ -869,6 +950,7 @@ class Schedule {
               target: client.teacher,
               action: "update",
               specific: code.action.SWITCH_DAY,
+              switchclash:true,
               olddayindex: daysindices[d],
               newdayindex: constant.weekdayscasual.indexOf(
                 this.scheduler.getInputValue(0).toLowerCase().trim()
@@ -882,6 +964,7 @@ class Schedule {
                     0
                   )}`
                 );
+                
                 this.restartView();
               } else {
                 snackBar("Could'nt change weekdays", "Report");
@@ -944,11 +1027,12 @@ class Schedule {
       "Load Changes",
       `<center class="active">Changes were applied successfully.<br/>A restart is required to load changes.</center>`
     );
+    this.scheduler.createInputs();
     this.scheduler.createActions(["Restart now"], [actionType.positive]);
     this.scheduler.onButtonClick([
       (_) => {
         this.scheduler.loader();
-        relocate(locate.root, { client: client.admin });
+        location.reload();
       },
     ]);
     let i = 10;

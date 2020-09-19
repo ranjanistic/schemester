@@ -58,7 +58,7 @@
                             <section class="fmt-padding positive fmt-center">
                                 Actions
                             </section>
-                            <% if(classroom && classroom.students.length) {%>
+                            <% if(classroom) {%>
                                 <div class="fmt-center questrial" id="invitestudents">
                                     Invite students
                                 </div>
@@ -71,7 +71,7 @@
                 </div>
             </div>
             <% if(classroom){ %>
-                <div class="fmt-row">
+                <div class="fmt-row" id="studentsview">
                     <br/>
                     <% if(classroom.students.length){ %>
                         <div class="fmt-row" id="studentslist">

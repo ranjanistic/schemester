@@ -248,7 +248,8 @@ class ConfirmClasses {
         bodyview += `</div>`;
         this.inchargeDialog = new Dialog();
         this.inchargeDialog.setDisplay("Set Incharges", bodyview);
-        this.inchargeeditables = Array()
+        this.inchargeeditables = [];
+        this.receivedclasses = receivedclasses;
         receivedclasses.forEach((Class, c) => {
           this.inchargeeditables.push(
             new Editable(
@@ -281,9 +282,9 @@ class ConfirmClasses {
             }
             this.inchargeeditables[c].load();
             
-            sessionStorage.setItem(Class,this.inchargeeditables[c].getInputValue().trim());
+            // sessionStorage.setItem(Class,this.inchargeeditables[c].getInputValue().trim());
             this.inchargeeditables[c].setDisplayText(`Class ${Class} 
-              <span class="positive">(${sessionStorage.getItem(Class)})</span>`
+              <span class="positive caption">${sessionStorage.getItem(Class+'name')} (${sessionStorage.getItem(Class)})</span>`
             );
             this.inchargeeditables[c].display();
             this.inchargeeditables[c].load(false);
@@ -305,18 +306,19 @@ class ConfirmClasses {
               receivedclasses.forEach((Class,c)=>{
                 data.push({
                   classname:Class,
+                  inchargename:sessionStorage.getItem(Class+'name'),
                   inchargeID:sessionStorage.getItem(Class),
                   students:[],
                 });
               });
               postJsonData(post.admin.schedule, {
                 target: client.student,
-                action: "update",
+                action: "create",
                 specific:code.action.CREATE_CLASSES,
                 classes:data,
               }).then((response) => {
                 clog(response);
-                if (response.event == code.schedule.SCHEDULE_CREATED) {
+                if (response.event == code.inst.CLASSES_CREATED) {
                   location.reload();
                 } else {
                   this.inchargeDialog.loader(false);
@@ -342,6 +344,8 @@ class ConfirmClasses {
               if(resp.teachers.length>0){
                 snackBar(`${resp.teachers[0].username} (${resp.teachers[0].teacherID})?`,'Yes',true,_=>{
                   this.inchargeeditables[c].textInput.setInput(resp.teachers[0].teacherID);
+                  sessionStorage.setItem(this.receivedclasses[c],resp.teachers[0].teacherID);
+                  sessionStorage.setItem(this.receivedclasses[c]+'name',resp.teachers[0].username);
                 });
               }
             }
@@ -424,6 +428,7 @@ class ConfirmClasses {
               oldclassname: this.classeditables[c].displayText(),
               newclassname: this.classeditables[c].getInputValue().trim(),
             }).then((response) => {
+              clog("dfsfsdf");
               clog(response);
               this.classeditables[c].load(false);
               if (response.event == code.OK) {

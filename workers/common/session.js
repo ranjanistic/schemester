@@ -19,9 +19,10 @@ class Session {
     this.adminsessionsecret = "adminschemesterSecret2001";
     this.teachersessionsecret = "teacherschemesterSecret2001";
     this.studentsessionsecret = "studentschemesterSecret2001";
-    (this.sessionID = "id"), (this.sessionUID = "uid");
+    this.sessionID = "id";
+    this.sessionUID = "uid";
     this.sessionKey = "bailment"; //bailment ~ amaanat
-    this.expiresIn = 7 * 86400; //days*seconds/day
+    this.expiresIn = 30 * 86400; //days*seconds/day
   }
   verify = async (request, secret) => {
     const token = request.signedCookies[this.sessionKey];
@@ -47,7 +48,6 @@ class Session {
             uiid: userUIID,
           },
         };
-    clog(payload);
     const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
     return response.cookie(this.sessionKey, token, { signed: true });
   }
@@ -114,14 +114,12 @@ class Session {
                   const teacher = userdoc
                     ? userdoc.users.teachers[0]
                     : pseudouserdoc.pseudousers.teachers[0];
-                  clog(teacher);
                   const isMatch = await bcrypt.compare(
                     password,
                     teacher.password
                   );
                   if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
                   this.createSession(response, teacher._id, uiid, secret);
-                  clog(body);
                   return {
                     event: code.auth.AUTH_SUCCESS,
                     user: userdoc
@@ -167,8 +165,6 @@ class Session {
                 },
                 { projection: { _id: 0, "pseudousers.classes.$": 1 } }
               );
-              clog(body);
-              clog(classdoc);
               switch (body.type) {
                 case "classname":
                   return code.event(
@@ -221,7 +217,6 @@ class Session {
                     student.password
                   );
                   if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-                  clog(student);
                   this.createSession(
                     response,
                     student._id,
@@ -251,7 +246,6 @@ class Session {
 
   authenticate = async (req, res, body, secret) => {
     const resp = await this.verify(req, secret);
-    clog(resp);
     if (!this.valid(resp)) return code.event(code.auth.SESSION_INVALID);
     switch (secret) {
       case this.adminsessionsecret: {
@@ -265,8 +259,6 @@ class Session {
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.teachersessionsecret: {
-        clog(body);
-        clog(resp);
         let teacherdoc = await Institute.findOne(
           {
             uiid: resp.user.uiid,
@@ -296,7 +288,6 @@ class Session {
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.studentsessionsecret: {
-        clog(resp.user);
         const classdoc = await Institute.findOne(
           {
             uiid: resp.user.uiid,
@@ -304,7 +295,6 @@ class Session {
           },
           { projection: { "users.classes.$": 1 } }
         );
-        clog(classdoc);
         if (!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);
         let student;
         const found = classdoc.users.classes[0].students.some((stud) => {
@@ -354,7 +344,6 @@ class Session {
   signup = async (request, response, secret, pseudo = false) => {
     switch (secret) {
       case this.adminsessionsecret: {
-        clog("sessionsignup");
         const { username, email, password, uiid } = request.body;
         if (!stringIsValid(email, validType.email))
           return code.event(code.auth.EMAIL_INVALID);
@@ -364,7 +353,6 @@ class Session {
         if (admin) return code.event(code.auth.USER_EXIST);
         const inst = await Admin.findOne({ uiid: uiid });
         if (inst) return code.event(code.server.UIID_TAKEN);
-        clog("checks cleared");
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(password, salt);
         const result = await adminworker.self.account.createAccount({
@@ -381,12 +369,10 @@ class Session {
             showphonetostudent: false,
           },
         });
-        clog(result);
         if (result.event == code.NO)
           return code.event(code.auth.ACCOUNT_CREATION_FAILED);
         //account created
         this.createSession(response, result._id, result.uiid, secret);
-        clog("session created?");
         return {
           event: code.auth.ACCOUNT_CREATED,
           user: share.getAdminShareData(result),
@@ -410,7 +396,6 @@ class Session {
             "pseudousers.teachers": { $elemMatch: { teacherID: email } },
           });
           if (userdoc || pseudouserdoc) return code.event(code.auth.USER_EXIST);
-          clog("checks cleared");
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
           const newteacher = {
@@ -433,7 +418,6 @@ class Session {
             : await teacherworker.self.account.createAccount(uiid, newteacher);
           if (result.event == code.NO)
             return code.event(code.auth.ACCOUNT_CREATION_FAILED);
-          clog("created?");
           const teacherdoc = pseudo
             ? await Institute.findOne(
                 {
@@ -492,7 +476,6 @@ class Session {
         );
         if (!pclassdoc) return code.event(code.auth.CLASS_NOT_EXIST);
         if (pclassdoc.pseudousers.classes[0].students.find((stud) => stud.studentID == email)) return code.event(code.auth.USER_EXIST);
-        clog("checks cleared student");
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(password, salt);
         const result = pseudo
@@ -522,7 +505,6 @@ class Session {
             }); //new student push
         if (result.event == code.NO)
           return code.event(code.auth.ACCOUNT_CREATION_FAILED);
-        clog("new student appended?");
         classdoc = pseudo
           ? await Institute.findOne(
               {
@@ -543,7 +525,6 @@ class Session {
               }
             );
         if (!classdoc) return code.event(code.schedule.BATCH_NOT_FOUND);
-        clog(classdoc);
         const student = pseudo
           ? classdoc.pseudousers.classes[0].students.find((stud) => stud.studentID == email)
           : classdoc.users.classes[0].students.find((stud) => stud.studentID == email);
@@ -565,7 +546,6 @@ class Session {
         return code.event(code.auth.AUTH_REQ_FAILED);
       })
       .then(async (response) => {
-        clog(response);
         if (!this.valid(response)) return code.event(code.auth.SESSION_INVALID);
         switch (secret) {
           case this.adminsessionsecret: {
@@ -605,12 +585,6 @@ class Session {
                     "pseudousers.teachers.$": 1,
                   },
                 }
-              );
-              clog(
-                share.getPseudoTeacherShareData(
-                  teacherdoc.pseudousers.teachers[0],
-                  response.user.uiid
-                )
               );
               return teacherdoc
                 ? share.getPseudoTeacherShareData(

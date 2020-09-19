@@ -90,12 +90,11 @@ class Verification {
         });
         clog("studd");
         clog(studdoc.result.nModified);
-        clog(studdoc);
+        const classdoc = await Institute.findOne({_id:ObjectId(data.instID),
+          "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+        },{projection:{"users.classes.$":1}});
         if(studdoc.result.nModified){
-          const doc = await Institute.findOne({_id:ObjectId(data.instID),
-            "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
-          },{projection:{"users.classes.$":1}});
-          const student = doc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
+          const student = classdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
           to = student.studentID;
           username = student.username;
         } else {
@@ -106,15 +105,16 @@ class Verification {
               "pseudousers.classes.$[outer].students.$[outer1].vlinkexp":exp
             }
           },{
-            arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
+            arrayFilters:[{"outer.classname":classdoc.users.classes[0].classname},{"outer1._id":ObjectId(data.uid)}]
           });
           clog("pseudo");
           clog(pseudodoc.result);
           if(!pseudodoc.result.nModified) return false;
           const doc = await Institute.findOne({_id:ObjectId(data.instID),
-            "pseudousers.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
+            "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}
           },{projection:{"pseudousers.classes.$":1}});
-          const student = doc.pseudousers.classes[0].students.some((stud)=>String(stud._id)==String(data.uid));
+          clog(doc)
+          const student = doc.pseudousers.classes[0].students.find((stud)=>String(stud._id)==String(data.uid));
           to = student.studentID;
           username = student.username;
         }

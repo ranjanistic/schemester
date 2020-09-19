@@ -91,7 +91,7 @@
                         <% if (group.teacher) { %>
                             <%= teacher.teacherID %>
                         <% } else if(group.Class) { %>
-                            Incharge <a id="inchargeid"><%= Class.inchargeID %></a>
+                            <a id="classinchargename"><%= Class.inchargename %></a> <span id="classinchargeid"><%= Class.inchargeID %></a>
                         <% } %>
                     </div>
                 </div>

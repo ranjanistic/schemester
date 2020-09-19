@@ -335,7 +335,7 @@ class Self {
           cid: body.cid,
           instID: body.instID,
         });
-        clog(linkdata);
+        clog(linkdata); 
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
@@ -433,18 +433,18 @@ class Self {
 class Schedule {
   constructor() {}
   getSchedule = async (user, dayIndex = null) => {
-    const classdoc = await Institute.findOne({uiid: user.uiid,},{
+    const teacherdoc = await Institute.findOne({uiid: user.uiid},{
       projection: {
         _id: 0,
         default: 1,
         "schedule.teachers": 1,
       }
     });
-    const timings = classdoc.default.timings;
+    const timings = teacherdoc.default.timings;
     let thisday = {};
-    let days = Array(timings.daysInWeek.length);
+    const days = Array(timings.daysInWeek.length);
     if (dayIndex!=null) {
-      classdoc.schedule.teachers.some((teacher) => {
+      teacherdoc.schedule.teachers.some((teacher) => {
         teacher.days.some((day) => {
           if (dayIndex == day.dayIndex) {
             thisday = {
@@ -453,10 +453,12 @@ class Schedule {
             };
             day.period.forEach((period, p) => {
               if (period.classname == user.classname) {
-                thisday["period"][p] = {
+                thisday.period[p] = {
+                  teachername:teacher.teachername,
                   teacherID: teacher.teacherID,
                   subject: period.subject,
                   hold: period.hold,
+                  temp:period.temp
                 };
               }
             });
@@ -467,7 +469,7 @@ class Schedule {
       });
       return { schedule: thisday.hasOwnProperty('period')?thisday:false, timings: timings };
     } else {
-      classdoc.schedule.teachers.some((teacher) => {
+      teacherdoc.schedule.teachers.some((teacher) => {
         teacher.days.forEach((day, d) => {
           try {
             if (days[d].dayIndex != day.dayIndex) {
@@ -485,7 +487,8 @@ class Schedule {
           if(days[d].period.includes(undefined)){
           day.period.forEach((period, p) => {
             if (period.classname == user.classname) {
-              days[d]["period"][p] = {
+              days[d].period[p] = {
+                teachername:teacher.teachername,
                 teacherID: teacher.teacherID,
                 subject: period.subject,
                 hold: period.hold,
