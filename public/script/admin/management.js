@@ -15,7 +15,6 @@ class Management {
       this.sectionsArray.indexOf(this.sectionreq) < 0
         ? 0
         : this.sectionsArray.indexOf(this.sectionreq);
-    clog(this.displayIndex);
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
     this.tabs = Array(
       getElement("adminTab"),
@@ -54,39 +53,27 @@ class Management {
     this.security = new Security();
     this.users = new Users(this.sectionsArray);
     for (var i = 0; i < this.tabs.length; i++) {
-      this.tabs[i].addEventListener(
-        click,
-        (_) => {
-          this.handleTabClicks(
-            event,
-            this.tabs,
-            this.boxes,
-            "leftTabButtonSelected",
-            "leftTabButton"
-          );
-        },
-        false
-      );
-      this.chips[i].addEventListener(
-        click,
-        (_) => {
+      this.tabs[i].onclick=(event) => {
+        this.handleTabClicks(
+          event,
+          this.tabs,
+          this.boxes,
+          "leftTabButtonSelected",
+          "leftTabButton"
+        );
+      };
+      this.chips[i].onclick=(event) => {
           this.handleTabClicks(event, this.chips, this.boxes);
-        },
-        false
-      );
+      };
     }
-    this.contactDevs.addEventListener(click, feedBackBox, false);
-    this.back.addEventListener(click, this.undoAndReturn, false);
-    this.logout.addEventListener(
-      click,
-      (_) => {
-        showLoader();
-        finishSession(client.admin, (_) => {
-          relocate(locate.admin.login, { target: locate.admin.target.manage });
-        });
-      },
-      false
-    );
+    this.contactDevs.onclick=_=>feedBackBox();
+    this.back.onclick=_=> this.undoAndReturn();
+    this.logout.onclick=(_) => {
+      showLoader();
+      finishSession(client.admin, (_) => {
+        relocate(locate.admin.login, { target: locate.admin.target.manage ,section:this.sectionsArray[this.displayIndex]});
+      });
+    };
   }
   handleTabClicks = (event, clickables, showables, showClass, hideClass) => {
     var e = event.currentTarget;
@@ -101,7 +88,8 @@ class Management {
             query.substr(query.lastIndexOf("=")),
             `=${this.sectionsArray[k]}`
           )
-        );
+          );
+          this.displayIndex = k;
       }
       visibilityOf(showables[k], condition);
       if (showClass != null && hideClass != null) {

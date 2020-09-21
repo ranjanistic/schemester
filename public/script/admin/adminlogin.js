@@ -3,7 +3,6 @@ class AdminLogin{
   constructor(){
     value.backbluecovered = true;
     this.view = getElement("workbox");
-
     this.darkmode = new Switch('darkmode');
     this.darkmode.turn(theme.isDark());
     this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
@@ -20,10 +19,13 @@ class AdminLogin{
 
     this.target = String(getElement('target').innerHTML);
     if(!stringIsValid(this.target,validType.nonempty)){
-      this.target = 'dashboard';
+      this.target = locate.admin.target.dashboard;
     }
-
-    this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
+    this.section = String(getElement('section').innerHTML);
+    if(!stringIsValid(this.section,validType.nonempty)){
+      this.section = locate.admin.section.account;
+    }
+    this.back.onclick=_=> {showLoader();relocate(locate.homepage)};
     this.emailField.validate(_=>{this.passField.inputFocus()});
     this.passField.validate(_=>{this.uiidField.inputFocus()});
     this.uiidField.validate();
@@ -35,7 +37,7 @@ class AdminLogin{
     resumeElementRestriction(this.forgotPassword,"adminforgot",_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
     });
-    this.logInButton.onclick=_=>{this.loginAdmin(this.emailField.getInput(),this.passField.getInput(),this.uiidField.getInput())};
+    this.logInButton.onclick=_=>{this.loginAdmin()};
     
   }
   linkSender(){
@@ -65,23 +67,21 @@ class AdminLogin{
     visibilityOf(this.logInButton, !show);
     opacityOf(this.view,show?0.5:1);
   }
-  loginAdmin =(email,password, uiid)=>{
-    if(!(stringIsValid(email,validType.email)&&stringIsValid(password)&&stringIsValid(uiid))){
+  loginAdmin(){
+    if(!(this.emailField.isValid()&&this.passField.isValid()&&this.uiidField.isValid())){
       this.emailField.validateNow(_=>{this.passField.inputFocus()});
       this.passField.validateNow(_=>{this.uiidField.inputFocus()});
       this.uiidField.validateNow();
     } else{
       this.loader();
       hide(this.forgotPassword);
-      this.emailField.normalize();
-      this.passField.normalize();
-      this.uiidField.normalize();
       postJsonData(post.admin.auth,{
-        action:'login',
+        action:post.admin.action.login,
         email:String(this.emailField.getInput()).trim(),
         password:this.passField.getInput(),
         uiid:String(this.uiidField.getInput()).trim(),
-        target:this.target
+        target:this.target,
+        section:this.section
       })
       .then((result) => {
         this.handleAuthResult(result);
@@ -97,7 +97,8 @@ class AdminLogin{
       saveDataLocally(result.user);
       return relocate(locate.admin.session,{
         u:result.user.uid,
-        target:result.target
+        target:result.target,
+        section:result.section
       });
     }
     this.loader(false);

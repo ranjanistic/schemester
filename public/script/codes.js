@@ -102,6 +102,7 @@ class Codes {
         this.CLASSES_CREATED = "inst/classes-creation-success";
         this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
         this.INCHARGE_EXISTS = 'inst/class-incharge-found';
+        this.INCHARGE_NOT_FOUND = 'inst/class-incharge-not-found';
         this.INCHARGE_OCCUPIED = 'inst/incharge-assigned-another-class';
         
       }

@@ -97,9 +97,11 @@ class Classrooms {
             (_) => {
               setincharge.validateNow(0);
               if (!setincharge.isValid(0)) return;
+              setincharge.loader();
               postJsonData(post.admin.users, {
                 target: client.student,
-                action: code.action.SET_INCHARGE,
+                action:"update",
+                specific: code.action.SET_INCHARGE,
                 cid: classtab.classID,
                 newinchargeID: setincharge.getInputValue(0).trim(),
               }).then((resp) => {
@@ -107,7 +109,11 @@ class Classrooms {
                 if (resp.event == code.OK) {
                   return location.reload();
                 }
+                setincharge.loader(false);
                 switch (resp.event) {
+                  case code.inst.INCHARGE_NOT_FOUND:{
+                    return setincharge.inputField[0].showError('No such user exists');
+                  }
                   case code.inst.INCHARGE_OCCUPIED:
                     return snackBar(
                       `${resp.inchargename} (${resp.inchargeID}) is already an incharge of ${resp.iclassname}`,
@@ -116,7 +122,8 @@ class Classrooms {
                       (_) => {
                         postJsonData(post.admin.users, {
                           target: client.student,
-                          action: code.action.SET_INCHARGE,
+                          action:"update",
+                          specific: code.action.SET_INCHARGE,
                           switchclash: true,
                           cid: classtab.classID,
                           newinchargeID: resp.inchargeID,

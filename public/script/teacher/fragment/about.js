@@ -29,9 +29,10 @@ class TeacherAbout {
 
     this.logout = getElement("logout");
     this.logout.onclick = (_) => {
+      const email =  localStorage.getItem("id");
       finishSession(client.teacher,(_) => {
         relocateParent(locate.teacher.login, {
-          email: localStorage.getItem("id"),
+          email:email
         });
       });
     };

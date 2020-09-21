@@ -3,7 +3,7 @@ const express = require("express"),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view,get} = require("../public/script/codes"),
+  {code,client,view,clog,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   path = require("path"),
@@ -24,11 +24,9 @@ admin.get(get.root, (_, res)=>{
 });
 
 admin.get(get.authlogin, (req, res) => {
-  clog("admin login get");
   session
     .verify(req, sessionsecret)
     .then((response) => {
-      clog(response);
       if (!session.valid(response))
         return res.render(view.admin.login, { autofill: req.query });
       let data = req.query;
@@ -43,7 +41,6 @@ admin.get(get.authlogin, (req, res) => {
 
 admin.post('/auth',async (req,res)=>{
   const body = req.body;
-  clog(body);
   switch(body.action){
     case "login":{session.login(req, res, sessionsecret)
       .then((response) => {
@@ -64,7 +61,6 @@ admin.post('/auth',async (req,res)=>{
         return res.json({ result: response });
       })
       .catch((error) => {
-        clog(error);
         return res.json({
           result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
         });
@@ -80,7 +76,6 @@ admin.get(get.session, async(req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return res.redirect(worker.toLogin(data));
     })
     .then(async (response) => {
@@ -296,12 +291,10 @@ admin.get(get.session, async(req, res) => {
               });
           }
         } catch (e) {
-          clog(e);
           data.target = view.admin.target.dashboard;
           return res.redirect(worker.toLogin(data));
         }
       } catch (e) {
-        clog(e);
         return res.render(view.servererror,{error:e});
       }
     });
@@ -324,13 +317,9 @@ admin.post("/self", async (req, res) => {
     return authFail(e);
   })
   .then(async (response) => {
-    clog(response);
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-    clog(body);
-    clog("here");
     const admin = await Admin.findOne({'_id':ObjectId(response.user.id)});
     if(!admin) return code.event(code.auth.USER_NOT_EXIST);
-    clog(share.getAdminShareData(admin));
     switch (body.target) {
       case "receive": return res.json({result:share.getAdminShareData(admin)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
@@ -342,23 +331,17 @@ admin.post("/self", async (req, res) => {
 
 admin.post("/session/validate", (req, res) => {
   const { getuser } = req.body;
-  clog("getuser=");
-  clog(getuser);
   if (getuser) {
     session.userdata(req, sessionsecret)
       .then((response) => {
-        clog(response);
         return res.json({ result:response});
       })
       .catch((error) => {
-        clog("errr");
         return res.json({result:code.eventmsg(code.server.DATABASE_ERROR, error)});
       });
   } else {
-    clog("just verify");
     session.verify(req, sessionsecret)
       .then((response) => {
-        clog(response);
         return res.json({ result:response });
       })
       .catch((error) => {
@@ -445,7 +428,6 @@ admin.post("/users",async (req,res)=>{
   session
     .verify(req, sessionsecret)
     .catch((error) => {
-      clog(error);
       return res.json({
         result: code.eventmsg(code.auth.AUTH_FAILED, error),
       });
@@ -455,7 +437,7 @@ admin.post("/users",async (req,res)=>{
       const inst = await Institute.findOne({uiid:response.user.uiid});
       if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
       const body = req.body;
-      switch(body.target){
+      switch(body.target){ 
         case client.teacher:return res.json({result: await worker.users.handleTeacherAction(response.user,body)});
         case client.student:return res.json({result: await worker.users.handleClassAction(response.user,body,inst)});
       }
@@ -466,7 +448,6 @@ admin.post("/pseudousers",async(req,res)=>{
   session
     .verify(req, sessionsecret)
     .catch((error) => {
-      clog(error);
       return res.json({
         result: code.eventmsg(code.auth.AUTH_FAILED, error),
       });
@@ -486,7 +467,6 @@ admin.post("/pseudousers",async(req,res)=>{
 */
 admin.post("/schedule", async (req, res) => {
   session.verify(req, sessionsecret).catch((error) => {
-    clog(error);
     return res.json({
       result: code.eventmsg(code.auth.AUTH_FAILED, error),
     });
@@ -495,7 +475,6 @@ admin.post("/schedule", async (req, res) => {
     const inst = await Institute.findOne({ uiid: response.user.uiid });
     if (!inst) return res.json({result: code.event(code.inst.INSTITUTION_NOT_EXISTS)});
     const body = req.body;
-    clog(body);
     switch (body.target) {
       case client.teacher: return res.json({result:await worker.schedule.handleScheduleTeachersAction(response.user,body,inst)});
       case client.student: return res.json({result:await worker.schedule.handleScheduleClassesAction(response.user,body,inst)});
@@ -505,7 +484,6 @@ admin.post("/schedule", async (req, res) => {
 
 admin.post("/receivedata",async(req,res)=>{
   session.verify(req, sessionsecret).catch((error) => {
-    clog(error);
     return res.json({
       result: code.eventmsg(code.auth.AUTH_FAILED, error),
     });
@@ -528,14 +506,12 @@ admin.post("/receivedata",async(req,res)=>{
 
 admin.post("/dashboard",async(req,res)=>{
   session.verify(req, sessionsecret).catch((error) => {
-    clog(error);
     return res.json({
       result: code.eventmsg(code.auth.AUTH_FAILED, error),
     });
   }).then(async (response) => {
     if (!session.valid(response)) return res.json({ result: code.event(code.auth.SESSION_INVALID) });
     const body = req.body;
-    clog(body);
     switch(body.target){  
       case "today":case "today": return res.json({result:await worker.today.handlerequest(response.user,body)});
       
@@ -544,7 +520,6 @@ admin.post("/dashboard",async(req,res)=>{
 });
 
 admin.post("/manage", async (req, res) => { //for settings
-  clog("in post manage");
   const body = req.body;
   if(body.external){
     switch (body.type) {
@@ -557,7 +532,6 @@ admin.post("/manage", async (req, res) => { //for settings
   }
   session.verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return res.json({ result: code.eventmsg(code.auth.AUTH_REQ_FAILED, e) });
     })
     .then(async (response) => {
@@ -580,7 +554,6 @@ admin.post("/manage", async (req, res) => { //for settings
 
 admin.post('/mail',async(req,res)=>{
   session.verify(req, sessionsecret).catch((e) => {
-    clog(e);
     return res.json(authreqfailed(e));
   }).then(async (response) => {
     if (!session.valid(response))return res.json({ result: response });
@@ -607,7 +580,6 @@ admin.get(get.external, async (req, res) => {
           return res.render(view.notfound);
         return res.render(view.verification, { user: resp.user });
       }).catch(e=>{
-        clog(e);
         return res.render(view.servererror, {error:e});
       });
     }break;
@@ -616,7 +588,6 @@ admin.get(get.external, async (req, res) => {
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user });
       }).catch(e=>{
-        clog(e);
         return res.render(view.servererror, {error:e});
       });
     }break;
@@ -636,7 +607,5 @@ const getAdminShareData = (data = {}) => {
     vlinkexp: data.vlinkexp,
   };
 };
-
-let clog = (msg) => console.log(msg);
 
 module.exports = admin;

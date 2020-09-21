@@ -72,6 +72,7 @@ class Session {
           event: code.auth.AUTH_SUCCESS,
           user: share.getAdminShareData(admin),
           target: target,
+          section:body.section
         };
       }
       case this.teachersessionsecret:

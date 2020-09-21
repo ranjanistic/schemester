@@ -5,7 +5,7 @@ const express = require("express"),
   path = require('path'),
   cookieParser = require("cookie-parser"),
   { check, validationResult } = require("express-validator"),
-  {code,client,view,get} = require("../public/script/codes"),
+  {code,client,view,clog,get} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
@@ -41,7 +41,6 @@ teacher.get(get.authlogin, (req, res) => {
 
 teacher.post("/auth",async(req,res)=>{
   const body = req.body;
-  clog(body);
   switch(body.action){
     case "login":{  session.login(req, res, sessionsecret)
       .then((response) => {
@@ -52,7 +51,6 @@ teacher.post("/auth",async(req,res)=>{
       })
     }break;
     case "logout":{
-      clog("finishing session");
       session.finish(res).then((response) => {
         return res.json({ result: response });
       });
@@ -63,7 +61,6 @@ teacher.post("/auth",async(req,res)=>{
         return res.json({ result: response });
       })
       .catch((error) => {
-        clog(error);
         return res.json({
           result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
         });
@@ -76,10 +73,8 @@ teacher.post("/auth",async(req,res)=>{
 
 teacher.get("/session*", async (req, res) => {
   let data = req.query;
-  clog(data);
   session.verify(req, sessionsecret)
   .catch((e) => {
-    clog(e);
     return res.redirect(worker.toLogin(data));
   })
   .then(async (response) => {
@@ -135,7 +130,6 @@ teacher.get("/session*", async (req, res) => {
     if (!scheduledoc) {
       //no schedule for this user teacher
       if(userinst.preferences.allowTeacherAddSchedule){
-        clog("yes");
         return res.render(view.teacher.addschedule, {
           user: teacher,
           inst:userinst,
@@ -165,8 +159,6 @@ teacher.get("/session*", async (req, res) => {
       }
     }
     try {
-      clog("in session try");
-      clog(data);
       return res.render(view.teacher.getViewByTarget(data.target), {
         teacher,
         userinst,
@@ -175,7 +167,6 @@ teacher.get("/session*", async (req, res) => {
         }
       });
     } catch (e) {
-      clog(e);
       return res.redirect(worker.toLogin());
     }
   });
@@ -186,14 +177,12 @@ teacher.get(get.fragment, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return authreqfailed(e);
     })
     .then(async (response) => {
       const query = req.query;
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
-          clog("today");
           worker.schedule.getSchedule(response.user, {dayIndex:Number(query.day)})
             .then((scheduleresponse) => {
               if(!scheduleresponse){  //no schedule
@@ -213,15 +202,13 @@ teacher.get(get.fragment, (req, res) => {
               });
             })
             .catch((e) => {
-              clog(e);
+              return res.render(view.servererror,{error:e});
             });
-          return;
-        }
+            return;
+          }
         case view.teacher.target.fragment.fullweek: {
-          clog("full week");
           worker.schedule.getSchedule(response.user)
-            .then((resp) => {
-              clog(resp);
+          .then((resp) => {
               if(!resp) session.finish(res).then((response) => {
                 if (response) return false;
               });
@@ -231,20 +218,17 @@ teacher.get(get.fragment, (req, res) => {
               });
             })
             .catch((e) => {
-              clog(e);
+              return res.render(view.servererror,{error:e});
             });
           return;
         }
         case view.teacher.target.fragment.classroom: {
-          clog("classroom");
           const teacherdoc = await Institute.findOne({
             uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
           },{projection:{"users.teachers.$":1}});
           const teacher = teacherdoc.users.teachers[0];
-          clog(teacher);
           worker.classroom.getClassroom(response.user,teacher)
             .then((resp) => {
-              clog(resp);
               return res.render(view.teacher.getViewByTarget(query.fragment), {
                 classroom: resp.classroom,
                 pseudostudents:resp.pseudostudents,
@@ -253,12 +237,10 @@ teacher.get(get.fragment, (req, res) => {
               });
             })
             .catch((e) => {
-              clog(e);
-              return res.render(view.notfound);
+              return res.render(view.servererror,{error:e});
             });
         }break;
         case view.teacher.target.fragment.about: {
-          clog("about");
           const teacherdoc = await Institute.findOne({
             uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
           },{projection:{"users.teachers.$":1,"default":1}});
@@ -277,7 +259,6 @@ teacher.get(get.fragment, (req, res) => {
 
 teacher.post("/self", async (req, res) => {
   const body = req.body;
-  clog(body);
   if(body.external){
     switch (body.action) {
       case code.action.CHANGE_PASSWORD: return res.json({ result: await worker.self.account.changePassword(body.user,body,true)});
@@ -302,7 +283,6 @@ teacher.post("/self", async (req, res) => {
 teacher.post("/schedule", async (req, res) => {
   session
     .verify(req, sessionsecret).catch((e) => {
-      clog(e);
       return authreqfailed(e)
     }).then(async (response) => {
       if (!session.valid(response)) return res.json(invalidsession);
@@ -337,19 +317,11 @@ teacher.get('/download*',async(req,res)=>{
     switch(query.type){
       case code.schedule.CREATE_BACKUP:{
         try{
-          if(response.user.uiid == String(query.res).slice(0,query.res.lastIndexOf('_'))){
-            clog(query);
-            // clog(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`));
-            res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
-              clog(err);
-              clog("here");
-              if(err) res.render(view.notfound);
-            });
-          } else {
-            res.render(view.notfound);
-          }
+          return res.download(path.join(__dirname+`/../backups/${response.user.uiid}/${query.res}`),(err)=>{
+            if(err) res.render(view.notfound);
+          });
         }catch{
-          res.render(view.notfound);
+          return res.render(view.notfound);
         }
       }
     }
@@ -374,9 +346,6 @@ teacher.post("/classroom",async(req,res)=>{
       });
       const classroom = classdoc?classdoc.users.classes[0]:false;
       const body = req.body;
-      clog("hereree");
-      clog(teacher);
-      clog(classroom);
       switch(body.target){
         case "classroom":return res.json({ result:await worker.classroom.manageClassroom(response.user,body,teacher,classroom)});
         case "pseudousers": return res.json({ result:await worker.pseudo.managePseudousers(response.user,body,teacher)});
@@ -399,7 +368,6 @@ teacher.post("/session/validate", async (req, res) => {
 
 teacher.get(get.external, async (req, res) => {
   const query = req.query;
-  clog(query);
   switch (query.type) {
     case invite.type:{  //invitation link
       invite.handleInvitation(query,client.teacher).then((resp)=>{
@@ -410,9 +378,7 @@ teacher.get(get.external, async (req, res) => {
       });
     }break;
     case invite.personalType:{
-      clog("here");
       invite.handlePersonalInvitation(query,client.teacher).then(resp=>{
-        clog(resp);
         if(!resp) return res.render(view.notfound);
         return res.render(view.userinvitaion,{invite:resp.invite});
       }).catch(e=>{
@@ -424,7 +390,6 @@ teacher.get(get.external, async (req, res) => {
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
       }).catch((e) => {
-        clog(e);
         return res.render(view.servererror, { error: e });
       });
     }break;
@@ -433,7 +398,6 @@ teacher.get(get.external, async (req, res) => {
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid});
       }).catch(e=>{
-        clog(e);
         return res.render(view.servererror, {error:e});
       });
     }break;
@@ -453,7 +417,6 @@ teacher.post("/manage", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return res.json(authreqfailed(e));
     })
     .then(async (response) => {
@@ -461,7 +424,6 @@ teacher.post("/manage", async (req, res) => {
       const inst = await Institute.findOne({uiid:response.user.uiid},{projection:{"_id":1}});
       if(!inst) return false;
       body['instID'] = inst._id;
-      clog(body);
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
         case reset.type:return res.json({result:await worker.self.handlePassReset(response.user,body)});
@@ -483,4 +445,3 @@ teacher.post("/find", async (req, res) => {
 });
 
 module.exports = teacher;
-let clog = (msg) => console.log(msg);

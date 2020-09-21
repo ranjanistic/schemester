@@ -68,8 +68,6 @@ class UIID{
   }
    uiidProcedure(uiid){
     postData(post.student.auth,{action:post.student.action.login,type:'uiid',uiid:uiid}).then(response=>{
-      clog("response");
-      clog(response);
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
       if(response.event == code.inst.INSTITUTION_EXISTS){
         this.uiidField.activate();
@@ -132,15 +130,12 @@ class Classname{
       classname:classname,
       uiid:this.getUIID()
     }).then(response=>{
-      clog("email respnse");
-      clog(response);
       switch(response.event){
         case code.auth.CLASS_NOT_EXIST:{
           this.classField.showError("Class not found.");
           this.proceed.textContent = "Retry";
         };break;
         case code.auth.CLASS_EXISTS:{
-          clog("claaaaaaaaaaaas");
           this.classField.activate();
           this.classField.disableInput();
           this.classCheck(classname);
@@ -205,9 +200,7 @@ class Email{
       classname:this.getClassname(),
       email:emailid,
       uiid:this.getUIID()
-    }).then(response=>{
-      clog("email respnse");
-      clog(response);
+    }).then(response=>{    
       switch(response.event){
         case code.auth.USER_NOT_EXIST:{
           this.emailField.showError("Account not found.");
@@ -217,7 +210,6 @@ class Email{
           });
         };break;
         case code.auth.USER_EXIST:{
-          clog("yaaaaaaaaaaaas");
           this.emailField.activate();
           this.emailField.disableInput();
           this.emailCheck(emailid);
@@ -287,7 +279,6 @@ class Password{
       password:password,
       target:this.target
     }).then(response=>{
-      clog(response);
       this.handleAuthResult(response);
     }).catch(e=>{
       snackBar(e,null,false);

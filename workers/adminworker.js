@@ -774,7 +774,7 @@ class Users {
       }
 
       async getClassByIncharge(user, inchargeID) {
-        const classdoc = await Institute.findOneAndUpdate(
+        const classdoc = await Institute.findOne(
           {
             uiid: user.uiid,
             [this.path]: { $elemMatch: { [this.inchargeID]: inchargeID } },
@@ -923,7 +923,7 @@ class Users {
        * @param inst The institution document object.
        * @returns {Promise} Usually success/failure event codes; could be specific for special update requests.
        */
-      async updateClass(user, body, inst) {
+      async updateClass(user, body, inst) { 
         switch (body.specific) {
           case code.action.RENAME_CLASS: {
             let classroom = await this.getClassByClassname(
@@ -948,15 +948,20 @@ class Users {
             );
           }
           case code.action.SET_INCHARGE: {
+            clog(body);
             let classroom = body.classname
               ? await this.getClassByClassname(user, body.classname)
               : await this.getClassBy_id(user, body.cid);
             if (!classroom) return code.event(code.inst.CLASS_NOT_FOUND);
             if (classroom.inchargeID == body.newinchargeID)
               return code.event(code.OK);
+            const teacherdoc = await Institute.findOne({uiid:user.uiid,"users.teachers":{$elemMatch:{"teacherID":body.newinchargeID}}},{
+              projection:{"users.teachers.$":1}
+            });
+            if(!teacherdoc) return code.event(code.inst.INCHARGE_NOT_FOUND);
             let iclassroom = await this.getClassByIncharge(
               user,
-              body.newinchargeID
+              teacherdoc.users.teachers[0].teacherID
             );
             if (iclassroom) {
               if (!body.switchclash)
@@ -976,7 +981,7 @@ class Users {
             return await this.setIncharge(
               user,
               classroom.classname,
-              body.newinchargename,
+              teacherdoc.users.teachers[0].username,
               body.newinchargeID
             );
           }

@@ -30,7 +30,6 @@ student.get(get.authlogin, (req, res) => {
       return res.render(view.servererror, { error });
     })
     .then((response) => {
-      clog(response);
       if (!session.valid(response))
         return res.render(view.student.login, { autofill: req.query });
       let data = req.query;
@@ -41,7 +40,6 @@ student.get(get.authlogin, (req, res) => {
 
 student.post("/auth",async(req,res)=>{
   const body = req.body;
-  clog(body);
   switch(body.action){
     case "login":{  session.login(req, res, sessionsecret)
       .then((response) => {
@@ -62,7 +60,6 @@ student.post("/auth",async(req,res)=>{
         return res.json({ result: response });
       })
       .catch((error) => {
-        clog(error);
         return res.json({
           result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
         });
@@ -74,10 +71,8 @@ student.post("/auth",async(req,res)=>{
 
 student.get(get.session, async (req, res) => {
   let data = req.query;
-  clog(data);
   session.verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return res.redirect(worker.toLogin(data));
     })
     .then(async (response) => {
@@ -109,7 +104,6 @@ student.get(get.session, async (req, res) => {
         }
       })
       if (!found) {
-        clog("pseudo?")
         const pclassdoc = await Institute.findOne({
           uiid: response.user.uiid,
           "pseudousers.classes": {
@@ -120,7 +114,6 @@ student.get(get.session, async (req, res) => {
             "pseudousers.classes.$": 1,
           },
         });
-        clog(pclassdoc);
         if(!pclassdoc) return session.finish(res).then((response) => {
           if (response) res.redirect(worker.toLogin(data));
         });
@@ -150,8 +143,6 @@ student.get(get.session, async (req, res) => {
       });
       const schedule = scheduledoc?scheduledoc.schedule.classes[0]:false;
       try {
-        clog("in session try");
-        clog(data);
         return res.render(view.student.getViewByTarget(data.target), {
           student,
           classinst: classdoc,
@@ -161,7 +152,6 @@ student.get(get.session, async (req, res) => {
           schedule
         });
       } catch (e) {
-        clog(e);
         return res.redirect(worker.toLogin());
       }
     });
@@ -172,7 +162,6 @@ student.get(get.fragment, (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return code.eventmsg(code.auth.AUTH_REQ_FAILED, e);
     })
     .then(async (response) => {
@@ -181,8 +170,6 @@ student.get(get.fragment, (req, res) => {
         case view.student.target.fragment.today: {
           worker.schedule.getSchedule(response.user, Number(query.day))
             .then((scheduleresponse) => {
-              clog("schedres");
-              clog(scheduleresponse);
               if(!scheduleresponse){  //no schedule
                 return res.render(view.student.getViewByTarget(query.fragment), {
                   today: null,
@@ -194,14 +181,12 @@ student.get(get.fragment, (req, res) => {
                   today: false,
                   timings: scheduleresponse.timings,
                 });
-              clog(scheduleresponse.schedule.period);
               return res.render(view.student.getViewByTarget(query.fragment), {
                 today: scheduleresponse.schedule.period,
                 timings: scheduleresponse.timings,
               });
             })
             .catch((e) => {
-              clog(e);
             });
           return;
         }
@@ -214,7 +199,6 @@ student.get(get.fragment, (req, res) => {
               });
             })
             .catch((e) => {
-              clog(e);
             });
           return;
         }
@@ -223,7 +207,6 @@ student.get(get.fragment, (req, res) => {
             uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}
           },{projection:{"users.classes.$":1}});
           const classroom = classuser.users.classes[0];
-          clog(classroom);
           return res.render(view.student.getViewByTarget(query.fragment), {
             classroom
           });
@@ -245,7 +228,6 @@ student.get(get.fragment, (req, res) => {
             return String(stud._id) == String(response.user.id)
           })
           const adminpref = await Admin.findOne({uiid:response.user.uiid},{projection:{"prefs":1}});
-          clog(adminpref);
           return res.render(view.student.getViewByTarget(query.fragment), {student,defaults:classuser.default,adminemailvisible:adminpref.prefs.showemailtostudent,adminphonevisible:adminpref.prefs.showphonetostudent});
         }
         default:return res.render(view.notfound);
@@ -256,7 +238,6 @@ student.get(get.fragment, (req, res) => {
 
 student.post("/self", async (req, res) => {
   const body = req.body;
-  clog(body);
   if(body.external){
     switch (body.target) {
       case "account": return res.json({ result: await worker.self.handleAccount(body.user,body)});
@@ -269,7 +250,6 @@ student.post("/self", async (req, res) => {
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json(invalidsession);
-    clog(response);
     switch (body.target) {
       case "receive": return res.json({result:await worker.self.account.getAccount(response.user)});
       case "authenticate": return res.json({result:await session.authenticate(req,res,body,sessionsecret)});
@@ -289,7 +269,6 @@ student.post("/manage", async (req, res) => {
   session
     .verify(req, sessionsecret)
     .catch((e) => {
-      clog(e);
       return res.json(authreqfailed(e));
     })
     .then(async (response) => {
@@ -305,7 +284,6 @@ student.post("/manage", async (req, res) => {
         body['cid'] = classdoc.users.classes[0]._id;
       }
       body['instID'] = classdoc._id;
-      clog(body);
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
         case reset.type:return res.json({result:await worker.self.handlePassReset(response.user,body)});
@@ -338,12 +316,10 @@ student.get(get.external, async (req, res) => {
     }break;
     case verify.type: { //verification link
       verify.handleVerification(query,client.student).then((resp) => {
-          clog(resp);
           if (!resp) return res.render(view.notfound);
           return res.render(view.verification,{user:resp.user});
         })
         .catch((e) => {
-          clog(e);
           return res.render(view.servererror, { error: e });
         });
       return;
@@ -353,7 +329,6 @@ student.get(get.external, async (req, res) => {
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid,classname:resp.classname});
       }).catch(e=>{
-        clog(e);
         return res.render(view.servererror, {error:e});
       });
     }break;

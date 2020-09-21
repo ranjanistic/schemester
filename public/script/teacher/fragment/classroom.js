@@ -46,8 +46,8 @@ class Classroom {
             clog(classroom);
             this.inchargeOf.innerHTML = `<span class="positive">Classroom ${classroom.classname}</span>`;
             let listview = `
-            <div class="group-text fmt-center">${classroom.inchargeID}</div>
-            <div class="group-text positive fmt-center">${classroom.inchargeID}</div><br/>
+            <div class="group-text fmt-center">${classroom.inchargeID?classroom.inchargename:'No incharge assigned'}</div>
+            ${classroom.inchargeID?'<div class="group-text positive fmt-center">${classroom.inchargeID}</div>':''}<br/>
             <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among ${classroom.students.length} students" id="teacherSearch"/><br/><br/>`;
             if(!classroom.students.length){
               listview = `<div class="fmt-center group-text fmt-padding">
