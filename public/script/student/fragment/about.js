@@ -118,11 +118,11 @@ class StudentAbout {
       );
       delconf.setBackgroundColorType(bodyType.negative);
       delconf.createActions(
-        Array(`Delete account`, "No, step back"),
-        Array(actionType.negative, actionType.positive)
+        [`Delete account`, "No, step back"],
+        [actionType.negative, actionType.positive]
       );
       delconf.onButtonClick(
-        Array(
+        [
           (_) => {
             delconf.loader();
             postJsonData(post.student.self, {
@@ -139,7 +139,7 @@ class StudentAbout {
           (_) => {
             delconf.hide();
           }
-        )
+        ]
       );
       
       restrictElement(delconf.getDialogButton(0),15,"studentdeleteacc",_=>{

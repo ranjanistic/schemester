@@ -11,12 +11,12 @@ class TeacherToday{
             getElement("weekschedule").onclick = window.parent.document.getElementById("fulltab").onclick;
         } else {
             this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-            this.periodview = Array();
-            this.periodExpand = Array();
-            this.periodTime = Array();
-            this.periodActions = Array();
-            this.actionYes = Array();
-            this.actionNo = Array();
+            this.periodview = [];
+            this.periodExpand = [];
+            this.periodTime = [];
+            this.periodActions = [];
+            this.actionYes = [];
+            this.actionNo = [];
             for(let i = 0;i<this.data.totalperiods;i++){
                 this.periodview.push(getElement(`periodview${i}`));
                 this.periodExpand.push(getElement(`showactions${i}`));

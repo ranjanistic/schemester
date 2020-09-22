@@ -94,10 +94,10 @@ class Dashboard {
                 arrangebuttons[p].onclick=_=>{
                   const adialog = new Dialog();
                   adialog.setDisplay('',`Substitute for ${addNumberSuffixHTML(arranges[p].period+1)} period of class ${arranges[p].classname}`);
-                  adialog.createInputs(Array('Substitute name or ID'),Array('This teacher will hold the class today'),Array('text'),Array(validType.nonempty));
+                  adialog.createInputs(['Substitute name or ID'],['This teacher will hold the class today'],['text'],[validType.nonempty]);
                   adialog.createActions(['Set','Cancel'],[actionType.positive,actionType.neutral]);
                   adialog.transparent();
-                  adialog.onButtonClick(Array(_=>{
+                  adialog.onButtonClick([_=>{
                     if(!adialog.isValid()) return adialog.validateNow();
                     adialog.loader();
                     postJsonData(post.admin.dashboard,{
@@ -116,7 +116,7 @@ class Dashboard {
                     });
                   },_=>{
                     adialog.hide();
-                  }));
+                  }]);
                   adialog.show();
                 }
               });
@@ -292,11 +292,11 @@ class ConfirmClasses {
         });
 
         this.inchargeDialog.createActions(
-          Array("Back", "Start schedule", "Abort"),
-          Array(actionType.neutral, actionType.positive, actionType.negative)
+          ["Back", "Start schedule", "Abort"],
+          [actionType.neutral, actionType.positive, actionType.negative]
         );
         this.inchargeDialog.onButtonClick(
-          Array(
+          [
             (_) => {
               new ConfirmClasses(receivedclasses);
             },
@@ -329,7 +329,7 @@ class ConfirmClasses {
             (_) => {
               this.inchargeDialog.hide();
             }
-          )
+          ]
         );
         this.inchargeDialog.show();
       }
@@ -390,7 +390,7 @@ class ConfirmClasses {
         bodyview += `</div>`;
         this.classesDialog = new Dialog();
         this.classesDialog.setDisplay("Confirm Classes", bodyview);
-        this.classeditables = Array();
+        this.classeditables = [];
         receivedclasses.forEach((Class, c) => {
           this.classeditables.push(
             new Editable(
@@ -452,15 +452,15 @@ class ConfirmClasses {
         });
 
         this.classesDialog.createActions(
-          Array(receivedclasses.length?"Continue":"View teachers", "Abort"),
-          Array(actionType.positive, actionType.neutral)
+          [receivedclasses.length?"Continue":"View teachers", "Abort"],
+          [actionType.positive, actionType.neutral]
         );
         this.classesDialog.onButtonClick(
-          Array(
+          [
             receivedclasses.length?
             (_) => {
               this.classesDialog.loader();
-              let finalClasses = Array();
+              let finalClasses = [];
               postJsonData(post.admin.schedule, {
                 target: client.teacher,
                 action: "receive",
@@ -474,7 +474,7 @@ class ConfirmClasses {
             (_) => {
               this.classesDialog.hide();
             }
-          )
+          ]
         );
         this.classesDialog.show();
       }

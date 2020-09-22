@@ -140,11 +140,11 @@ class TeacherAbout {
     );
     delconf.setBackgroundColorType(bodyType.negative);
     delconf.createActions(
-      Array(`Delete account`, "No, step back"),
-      Array(actionType.negative, actionType.positive)
+      [`Delete account`, "No, step back"],
+      [actionType.negative, actionType.positive]
     );
     delconf.onButtonClick(
-      Array(
+      [
         (_) => {
           delconf.loader();
           postJsonData(post.teacher.self, {
@@ -161,7 +161,7 @@ class TeacherAbout {
         (_) => {
           delconf.hide();
         }
-      )
+      ]
     );
     restrictElement(delconf.getDialogButton(0),15,"teacherdeleteacc",_=>{
       let time = 60;

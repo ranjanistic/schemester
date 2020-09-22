@@ -24,23 +24,9 @@ class Verification {
       this.later.onclick = (_) => {
         refer(locate.homepage);
       };
-      if (Number(sessionStorage.getItem("linkin")) > 0) {
-        opacityOf(this.sendlink, 0.5);
-        let time = Number(sessionStorage.getItem("linkin"));
-        const timer = setInterval(() => {
-          time--;
-          sessionStorage.setItem("linkin", time);
-          this.sendlink.innerHTML = `Try again in ${time} seconds.`;
-          if (Number(sessionStorage.getItem("linkin")) == 0) {
-            this.sendlink.innerHTML = `Re-send link to ${this.data.email}`;
-            opacityOf(this.sendlink, 1);
-            this.sendlink.onclick = (_) => {this.sendVerificationLink()};
-            clearInterval(timer);
-          }
-        }, 1000);
-      } else {
+      resumeElementRestriction(this.sendlink,'verificationlinkid',_=>{
         this.sendlink.onclick = (_) => {this.sendVerificationLink()};
-      }
+      })
       this.check.onclick = (_) => {
         this.checkVerification();
       };
@@ -108,29 +94,14 @@ class Verification {
       });
     } else {
       snackBar(`Link sent to ${this.data.email}. Check your spam folder too!`);
-      show(this.check);
-      let t = 60;
-      this.sendlink.innerHTML = `Retry in ${t} seconds`;
-      opacityOf(this.sendlink, 0.5);
-      sessionStorage.setItem("linkin", t);
-      const timer = setInterval(() => {
-        t--;
-        sessionStorage.setItem("linkin", t);
-        this.sendlink.innerHTML = `Retry in ${t} seconds`;
-        if (t == 0) {
-          opacityOf(this.sendlink, 1);
-          this.sendlink.innerHTML = `Send link to ${this.data.email}`;
-          this.sendlink.onclick = (_) => {
-            this.sendVerificationLink();
-          };
-          clearInterval(timer);
-        }
-      }, 1000);
+      restrictElement(this.sendlink,60,'verificationlinkid',_=>{
+        this.sendlink.onclick = (_) => {this.sendVerificationLink()};
+      });
     }
   }
   accountDelete(){
     this.load();
-    snackBar(`Deleting ${this.data.email}...`); //todo
+    snackBar(`Deleting ${this.data.email}...`);
     let postlink;
     switch (this.data.client) {
       case client.admin:postlink = post.admin.self;break;
@@ -202,4 +173,4 @@ class ReceiveData {
     localStorage.setItem("uiid", this.uiid);
   }
 }
-window.onload = (_) => (window.app = new Verification());
+window.onload = (_) => new Verification();

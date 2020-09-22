@@ -4,6 +4,7 @@ const showStudentRegistration = (
   uiid = null,
   classname = null
 ) => {
+  loadingBox();
   checkSessionValidation(
     client.student,
     (_) => {

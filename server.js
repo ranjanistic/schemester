@@ -1,14 +1,12 @@
 const express = require("express"),
   bodyParser = require("body-parser"),
   {client,view,clog,get} = require("./public/script/codes"),
-  server = express();
-const mongo = require('./config/db');
+  server = express(),
+  mongo = require('./config/db');
 server.set("view engine", "ejs");
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
-
-// const clog = (msg) => console.log(msg);
 
 mongo.connectToServer(( err )=>{
   if (err) console.log(err);

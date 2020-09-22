@@ -9,9 +9,9 @@ class FullSchedule {
     this.data = new ReceiveData();
     this.rawdata = new ReceiveData(true);
     if (this.data.schedule) {
-      this.dayBox = Array();
-      this.dayBoxExpand = Array();
-      this.periodsView = Array();
+      this.dayBox = [];
+      this.dayBoxExpand = [];
+      this.periodsView = [];
       this.data.totaldays.forEach((dindex, _) => {
         this.dayBox.push(getElement(`dayBox${dindex}`));
         this.dayBoxExpand.push(getElement(`dayexpander${dindex}`));

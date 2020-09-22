@@ -1715,7 +1715,7 @@ const opacityOf = (element = new HTMLElement(), value = 1) =>
  */
 const visibilityOf = (element = new HTMLElement(), visible = true) =>
   (element.style.display = visible ? constant.show : constant.hide);
-const visibilityOfAll = (elements = Array(), visible = true, index = null) =>
+const visibilityOfAll = (elements = [], visible = true, index = null) =>
   index != null
     ? visibilityOf(elements[index], visible)
     : elements.forEach((element, _) => {
@@ -1725,7 +1725,7 @@ const hide = (element = new HTMLElement()) => visibilityOf(element, false);
 const show = (element = new HTMLElement()) => visibilityOf(element, true);
 const isVisible = (element = new HTMLElement()) =>
   element.style.display == constant.show;
-const areVisible = (elements = Array(), index = null) =>
+const areVisible = (elements = [], index = null) =>
   index != null
     ? elements[index].style.display == constant.show
     : elements.some((element, _) => {

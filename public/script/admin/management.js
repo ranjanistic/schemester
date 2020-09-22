@@ -3,45 +3,45 @@
 class Management {
   constructor() {
     this.sectionreq = getElement("section").innerHTML;
-    this.sectionsArray = Array(
+    this.sectionsArray = [
       locate.admin.section.account,
       locate.admin.section.institute,
       locate.admin.section.schedule,
       locate.admin.section.users,
       locate.admin.section.security,
       locate.admin.section.about
-    );
+    ];
     this.displayIndex =
       this.sectionsArray.indexOf(this.sectionreq) < 0
         ? 0
         : this.sectionsArray.indexOf(this.sectionreq);
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-    this.tabs = Array(
+    this.tabs = [
       getElement("adminTab"),
       getElement("institutionTab"),
       getElement("scheduleTab"),
       getElement("usersTab"),
       getElement("securityTab"),
       getElement("aboutTab")
-    );
+    ];
     setClassNames(this.tabs[this.displayIndex], "leftTabButtonSelected");
-    this.chips = Array(
+    this.chips = [
       getElement("madminTab"),
       getElement("minstitutionTab"),
       getElement("mscheduleTab"),
       getElement("musersTab"),
       getElement("msecurityTab"),
       getElement("maboutTab")
-    );
+    ];
     this.chips[this.displayIndex].click();
-    this.boxes = Array(
+    this.boxes = [
       getElement("accountSettingsBox"),
       getElement("institutionSettingsBox"),
       getElement("scheduleSettingsBox"),
       getElement("usersSettingsBox"),
       getElement("securitySettingsBox"),
       getElement("aboutSettingsBox")
-    );
+    ];
     showElement(this.boxes, this.displayIndex);
 
     this.back = getElement("backFromSettings");
@@ -635,12 +635,12 @@ class Schedule {
     };
   }
   rescheduleDefault(weekdays = false, periods = false) {
-    this.scheduler.createActions(Array("Discard"), Array(actionType.neutral));
+    this.scheduler.createActions(["Discard"], [actionType.neutral]);
     this.scheduler.onButtonClick(
-      Array((_) => {
+      [(_) => {
         sessionStorage.clear();
         this.scheduler.hide();
-      })
+      }]
     );
     this.scheduler.setDisplay(
       "Edit Schedule Structure",
@@ -829,7 +829,7 @@ class Schedule {
   rescheduleWeekEditor() {
     const days = this.workDays.innerHTML.split(",");
     days.forEach((day,d)=>days[d] = day.trim());
-    const daysindices = Array(days.length);
+    const daysindices = [days.length];
     let editcontent = constant.nothing;
     days.forEach((day, d) => {
       daysindices[d] = constant.weekdayscasual.indexOf(
@@ -1324,7 +1324,7 @@ class Users {
                   );
                 });
                 this.listview.innerHTML = listitems;
-                const slates = Array();
+                const slates = [];
                 resp.teachers.forEach((teacher, t) => {
                   slates.push(getElement(`teacherslate${t}`));
                   slates[t].onclick = (_) => {
@@ -1405,7 +1405,7 @@ class Users {
                   );
                 });
                 this.listview.innerHTML = listitems;
-                const slates = Array();
+                const slates = [];
                 resp.classes.forEach((Class, t) => {
                   slates.push(getElement(`classslate${t}`));
                   slates[t].onclick = (_) => {

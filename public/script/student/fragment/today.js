@@ -11,12 +11,12 @@ class StudentToday{
             getElement("weekschedule").onclick = window.parent.document.getElementById("fulltab").onclick;
         } else {
             this.gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-            this.periodview = Array();
-            // this.periodExpand = Array();
-            this.periodTime = Array();
-            this.periodActions = Array();
-            this.actionYes = Array();
-            this.actionNo = Array();
+            this.periodview = [];
+            // this.periodExpand = [];
+            this.periodTime = [];
+            this.periodActions = [];
+            this.actionYes = [];
+            this.actionNo = [];
             for(let i = 0;i<this.data.totalperiods;i++){
                 this.periodview.push(getElement(`periodview${i}`));
                 // this.periodExpand.push(getElement(`showactions${i}`));
@@ -141,9 +141,9 @@ class ReceiveData{
         this.today = getElement("today").innerHTML == 'false'?false:true;
         clog(getElement("today").innerHTML);
         if(this.today){
-            this.classname = Array();
-            this.subject = Array();
-            this.hold = Array();
+            this.classname = [];
+            this.subject = [];
+            this.hold = [];
             for(let i = 0;i<this.totalperiods;i++){
                 try{
                     this.classname.push(getElement(`teachername${i}`).innerHTML);

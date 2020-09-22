@@ -898,8 +898,17 @@ class Users {
           user,
           body.newclass.classname
         );
-        if (isOK(classroom)) return code.event(code.inst.CLASS_EXISTS);
-        newclass[this._id] = new ObjectId();
+        clog(classroom);
+        if (classroom) return code.event(code.inst.CLASS_EXISTS);
+        const teacher = await Institute.findOne({uiid:user.uiid,"users.teachers":{$elemMatch:{"teacherID":body.newclass.inchargeID}}});
+        if(!teacher) return code.event(code.inst.INCHARGE_NOT_FOUND);
+        const existclassincharge = await this.getClassByIncharge(user,body.newclass.inchargeID);
+        if(existclassincharge) return {
+          event:code.inst.INCHARGE_OCCUPIED,
+          inchargeof:existclassincharge.classname
+        };
+        body.newclass._id = new ObjectId();
+        body.newclass.inchargename = teacher.users.teachers[0].username;
         classroom = await Institute.findOneAndUpdate(
           { uiid: user.uiid },
           {
@@ -985,6 +994,13 @@ class Users {
               body.newinchargeID
             );
           }
+          /**
+           * To push a single new class in users.classes.
+           */
+          case code.action.CREATE_NEW_CLASS:{
+            return await this.pushClassroom(user, body);
+          }
+          break;
         }
       }
     }
@@ -1905,15 +1921,6 @@ class Schedule {
                 : code.inst.CLASSES_CREATION_FAILED
             );
           }
-          /**
-           * To push a single new class in users.classes.
-           */
-          case code.action.CREATE_NEW_CLASS:
-            {
-              let cresult = await new Users().classes.pushClassroom(user, body);
-              if (cresult.event != code.inst.CLASSES_CREATED) return cresult;
-            }
-            break;
         }
       }
       async scheduleUpdate(user, body, inst) {

@@ -3,49 +3,73 @@ class Classrooms {
     this.totalclasses = Number(getElement("totalusers").innerHTML);
     this.createclass = getElement("adduser");
     this.createclass.onclick = (_) => {
-      const addclass = new Dialog();
-      addclass.setDisplay(
+      this.addclass = new Dialog();
+      this.addclass.setDisplay(
         "Create Classroom",
         "Set a class name and assign the incharge."
       );
-      addclass.createInputs(
-        ["New classname", "Class incharge"],
+      this.addclass.createInputs(
+        ["New classname", "Class incharge ID"],
         ["A unique classroom", "Incharge ID"],
         ["text", "email"],
         [validType.nonempty, validType.email]
       );
-      addclass.validate(0);
-      addclass.validate(1);
-      addclass.inputField[1].onTextInput((_) => {
+      this.addclass.validate(0);
+      this.addclass.validate(1);
+      this.addclass.inputField[1].onTextInput((_) => {
         this.teacherpredictor(
-          addclass.getInputValue(1).trim(),
-          addclass.inputField[1]
+          this.addclass.getInputValue(1).trim(),
+          this.addclass.inputField[1]
         );
       });
-      addclass.createActions(
+      this.addclass.createActions(
         ["Create", "Cancel"],
         [actionType.positive, actionType.neutral]
       );
-      addclass.onButtonClick([
+      this.addclass.onButtonClick([
         (_) => {
-          addclass.validateNow(0);
-          addclass.validateNow(1);
-          if (!addclass.isValid(0) || !addclass.isValid(1)) return;
+          this.addclass.validateNow(0);
+          this.addclass.validateNow(1);
+          if (!this.addclass.allValid()) return;
+          this.addclass.loader();
           postJsonData(post.admin.users, {
             target: client.student,
-            action: code.action.CREATE_NEW_CLASS,
-            newclassname: addclass.getInputValue(0).trim(),
-            inchargeID: addclass.getInputValue(1).trim(),
+            action:"update",
+            specific: code.action.CREATE_NEW_CLASS,
+            newclass:{
+              _id:null,
+              classname:this.addclass.getInputValue(0).trim(),
+              inchargename: "",
+              inchargeID: this.addclass.getInputValue(1).trim(),
+              students:[],
+              invite:{
+                student:{
+                  active:false,
+                  createdAt:0,
+                  expiresAt:0
+                }
+              }
+            }
           }).then((resp) => {
             clog(resp);
+            if(resp.event == code.OK){
+              return location.reload();
+            }
+            this.addclass.loader(false);
+            switch(resp.event){
+              case code.inst.CLASS_EXISTS:return this.addclass.showFieldError(0,'Classroom already exists');
+              case code.inst.INCHARGE_OCCUPIED:return this.addclass.showFieldError(1,`Already an incharge of ${resp.inchargeof}`);
+              case code.inst.INCHARGE_NOT_FOUND:return this.addclass.showFieldError(1,`No such user exists.`);
+              default:return snackBar(resp.event,'Report',false);
+            };
           });
         },
         (_) => {
-          addclass.hide();
+          this.addclass.hide();
         },
       ]);
-      addclass.transparent();
-      addclass.show();
+      this.addclass.transparent();
+      this.addclass.show();
     };
     this.classes = [];
     let c = 0;

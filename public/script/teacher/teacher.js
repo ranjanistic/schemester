@@ -1,4 +1,5 @@
 const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
+  loadingBox();
   checkSessionValidation(
     client.teacher,
     (_) => {

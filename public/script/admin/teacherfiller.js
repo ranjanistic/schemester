@@ -265,7 +265,7 @@ class TeacherFiller {
   }
 
   uploadScheduleByTeacher = (dayindex) => {
-    var periods = Array();
+    var periods = [];
     for (let i = 0; i < this.data.totalPeriods; i++) {
       periods.push({
         classname: this.teacherClass[i].getInput(),
@@ -308,7 +308,7 @@ class TeacherFiller {
       });
   };
   uploadScheduleByAdmin = (dayindex) => {
-    var periods = Array();
+    var periods = [];
     for (let i = 0; i < this.data.totalPeriods; i++) {
       periods.push({
         classname: this.teacherClass[i].getInput(),
