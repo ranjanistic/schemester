@@ -274,10 +274,10 @@ student.post("/manage", async (req, res) => {
     .then(async (response) => {
       if (!session.valid(response)) return res.json({ result: response });
       let classdoc = await Institute.findOne({uiid:response.user.uiid,"users.classes":{$elemMatch:{"classname":response.user.classname}}},
-      {projection:{"_id":1,"users.classes.$._id":1}});
+      {projection:{"_id":1,"users.classes.$":1}});
       if(!classdoc){ 
         classdoc = await Institute.findOne({uiid:response.user.uiid,"pseudousers.classes":{$elemMatch:{"classname":response.user.classname}}},
-        {projection:{"_id":1,"pseudousers.classes.$._id":1}});
+        {projection:{"_id":1,"pseudousers.classes.$":1}});
         if(!classdoc) return false;
         body['cid'] = classdoc.pseudousers.classes[0]._id;
       } else {
