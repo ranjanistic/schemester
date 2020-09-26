@@ -34,17 +34,18 @@ class AdminLogin{
       this.passField.normalize();
       hide(this.forgotPassword);
     });
-    resumeElementRestriction(this.forgotPassword,"adminforgot",_=>{
+    resumeElementRestriction(this.forgotPassword,key.admin.forgotpassword,_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
     });
     this.logInButton.onclick=_=>{this.loginAdmin()};
     
   }
   linkSender(){
-    if(!this.emailField.isValid()) return this.emailField.showError('Please provide your email address to help us reset your password.');
+    if(!this.emailField.isValid()) return this.emailField.showError('Please provide your valid email address to help us reset your password.');
     snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
       this.forgotPassword.onclick = (_) => {};
-      snackBar(`Sending link to ${this.emailField.getInput()}`);
+      this.forgotPassword.innerHTML = 'Sending...';
+      snackBar(`Sending link to ${this.emailField.getInput()}...`);
       postJsonData(post.admin.manage,{
         external:true,
         type:"resetpassword",
@@ -56,7 +57,7 @@ class AdminLogin{
           return snackBar('An error occurred','Report');
         }
         snackBar("If your email address was correct, you'll receive an email from us in a few moments.",'Hide');
-        restrictElement(this.forgotPassword,120,'adminforgot',_=>{
+        restrictElement(this.forgotPassword,120,key.admin.forgotpassword,_=>{
           this.forgotPassword.onclick = (_) => {this.linkSender()};
         });
       })
@@ -86,7 +87,7 @@ class AdminLogin{
       .then((result) => {
         this.handleAuthResult(result);
       }).catch((error)=>{
-        snackBar(error,'Report',false);
+        snackBar(error,'Report');
       });
     }
   }
@@ -106,31 +107,31 @@ class AdminLogin{
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);
-        this.logInButton.innerHTML = "Retry";
-      }break;
+        return this.logInButton.innerHTML = "Retry";
+      }
       case code.auth.WRONG_UIID:{
         return this.uiidField.showError("Incorrect UIID.");
-      }break;
+      }
       case code.auth.REQ_LIMIT_EXCEEDED:{
         snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
         return this.logInButton.innerHTML = "Disabled";
-      }break;
+      }
       case code.auth.USER_NOT_EXIST:{
         this.emailField.showError("Account not found.");
         this.logInButton.textContent = "Retry";
         return snackBar("Try registering a new account?","Create Account",true,_=>{showadminregistration(true,this.emailField.getInput(),this.uiidField.getInput())})
-      }break;
+      }
       case code.auth.EMAIL_INVALID:{
         return validateTextField(this.emailField,validType.email);
-      }break;
+      }
       case code.auth.ACCOUNT_RESTRICTED:{
         this.logInButton.textContent = "Retry";
         return snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)});
-      }break;
+      }
       case code.auth.AUTH_REQ_FAILED:{
         this.logInButton.textContent = "Retry";
         return snackBar("Request failed.", null, false);
-      }break;
+      }
       default: {
         this.logInButton.textContent = "Retry";
         show(this.forgotPassword);
@@ -140,6 +141,5 @@ class AdminLogin{
   }
 }
 
-
-window.onload =_=> window.app = new AdminLogin();
+window.onload =_=> new AdminLogin();
 

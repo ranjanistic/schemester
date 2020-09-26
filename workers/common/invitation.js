@@ -38,15 +38,11 @@ class Invitation {
                 )
               )
             ) {
-              clog("already active");
               let link = this.getTemplateLink(
                 target,
                 data,
                 instdoc.invite[target].createdAt
               );
-              clog("templated");
-              clog(link);
-              clog("returning existing link");
               return {
                 event: code.invite.LINK_EXISTS,
                 link: link,
@@ -84,9 +80,6 @@ class Invitation {
                 data,
                 Class.invite[target].createdAt
               );
-              clog("templated");
-              clog(link);
-              clog("returning existing link");
               return {
                 event: code.invite.LINK_EXISTS,
                 link: link,
@@ -117,9 +110,6 @@ class Invitation {
             }
           );
           link = this.getTemplateLink(target, data, creationTime);
-          clog("generated");
-          clog(document);
-          clog(link);
           return document.value
             ? {
                 event: code.invite.LINK_CREATED,
@@ -147,9 +137,6 @@ class Invitation {
           }
         );
         link = this.getTemplateLink(target, data, creationTime);
-        clog("generated");
-        clog(document.result);
-        clog(link);
         return document.result.nModified
           ? {
               event: code.invite.LINK_CREATED,
@@ -177,7 +164,6 @@ class Invitation {
             },
           }
         );
-        clog("returning");
         return doc.value
           ? code.event(code.invite.LINK_DISABLED)
           : code.event(code.invite.LINK_DISABLE_FAILED);
@@ -199,7 +185,6 @@ class Invitation {
             },
           }
         );
-        clog("returning");
         return doc.value
           ? code.event(code.invite.LINK_DISABLED)
           : code.event(code.invite.LINK_DISABLE_FAILED);
@@ -236,7 +221,6 @@ class Invitation {
           query.t
         );
         if (this.isInvalid(validity)) return false;
-        clog(this.isActive(validity));
         return {
           invite: {
             valid: this.isActive(validity),
@@ -369,14 +353,7 @@ class Invitation {
    */
   checkTimingValidity(creation, expiration, linktime) {
     let current = time.getTheMoment(false);
-    clog("times of link");
     let t = Number(linktime);
-    clog(linktime);
-    clog(t);
-    clog(creation);
-    clog(current);
-    clog(expiration);
-    clog(linktime == String(creation));
     if (
       creation == 0 ||
       expiration == 0 ||

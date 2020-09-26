@@ -5,6 +5,30 @@ if (localStorage.getItem("theme")) {
   );
 }
 
+class Button{
+  constructor(buttonid,actiontype=actionType.positive){
+    this.button = getElement(buttonid);
+    setClassNames(this.button,actionType.getButtonStyle(actiontype));
+  }
+  setType(actiontype = actionType.positive){
+    setClassNames(this.button,actionType.getButtonStyle(actiontype));
+  }
+  onclick(action=_=>{}){
+    this.action = action;
+    this.button.onclick=_=>{
+      action();
+    }
+  }
+  disable(){
+    opacityOf(this.button,0.5);
+    this.onclick();
+  }
+  enable(action=_=>{}){
+    opacityOf(this.button,1);
+    this.onclick(this.action?this.action:action);
+  }
+}
+
 class TextInput {
   constructor(
     fieldId = String(),
@@ -61,7 +85,6 @@ class TextInput {
     });
   }
   stopValidate(){
-    clog("here");
     this.onTextDefocus(_=>{});
   }
   isValid(matchfieldvalue = null) {
@@ -452,11 +475,11 @@ const snackBar = (
       });
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min(Array(text.length*3,15))*1000); //lengthwise timer.
+      }, min([text.length*3,15])*1000); //lengthwise timer.
     } else {
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min(Array(text.length*(3/2),15))*1000); //lengthwise timer for non action snackbar.
+      }, min([text.length*(3/2),15])*1000); //lengthwise timer for non action snackbar.
     }
     snack.displayType(isNormal);
   }
@@ -471,6 +494,9 @@ const min=(numbers = [])=>{
   return min;
 }
 
+/**
+ * Manages the ids of dialog box elements, to be used by Dialog class in particular.
+ */
 class DialogID {
   viewId = "dialogView";
   boxId = "dialogBox";
@@ -535,6 +561,11 @@ class DialogID {
   }
 }
 
+/**
+ * The class to display and maintain dialog boxes of schemester, used throughout the application. 
+ * Creates, hides, modifies, validates, and does many jobs using built-in methods for dialog boxes.
+ * @note Requires the basic html content of dialog box to be present in current file.
+ */
 class Dialog extends DialogID {
   constructor() {
     super(DialogID);
@@ -802,18 +833,16 @@ class Dialog extends DialogID {
   }
 }
 
-let clog = (msg) => {
+/**
+ * console.log() shorthand
+ */
+const clog = (msg) => {
   console.log(msg);
 };
 
-let sendPassResetLink = () => {
-  snackBar(
-    "A link has been sent at your provided email address. Reset your password from there.",
-    "Got it"
-  );
-};
-
-//todo: modify Dialog.createinputs method for direct call, instead of DIalog.inputparams.
+/**
+ * Dialog box to re-authenticate client accoriding to the type of client.
+ */
 const authenticateDialog = (
   clientType,
   afterLogin = (_) => {
@@ -829,14 +858,14 @@ const authenticateDialog = (
       "You are about to perform a sensitive action. Please provide your login credentials."
     );
     loginDialog.createInputs(
-      Array("Email address", "Password"),
-      Array("youremail@example.com", "Your password"),
-      Array("email", "password"),
-      Array(validType.email, validType.password)
+      ["Email address", "Password"],
+      ["youremail@example.com", "Your password"],
+      ["email", "password"],
+      [validType.email, validType.password]
     );
     loginDialog.createActions(
-      Array("Continue", "Cancel"),
-      Array(actionType.neutral, actionType.positive)
+      ["Continue", "Cancel"],
+      [actionType.neutral, actionType.positive]
     );
     if (sensitive) {
       loginDialog.setBackgroundColorType(bodyType.negative);
@@ -844,13 +873,12 @@ const authenticateDialog = (
     loginDialog.validate(0);
     loginDialog.validate(1);
     loginDialog.onButtonClick(
-      Array(
+      [
         (_) => {
           if (!(loginDialog.isValid(0) && loginDialog.isValid(1))) {
             loginDialog.validateNow(0);
             loginDialog.validateNow(1);
           } else {
-            clog("clicked");
             loginDialog.loader();
             let postpath;
             switch(clientType){
@@ -863,7 +891,6 @@ const authenticateDialog = (
               email: loginDialog.getInputValue(0),
               password: loginDialog.getInputValue(1),
             }).then((response) => {
-              clog(response);
               if (response.event == code.auth.AUTH_SUCCESS) {
                 afterLogin();
               } else {
@@ -886,12 +913,15 @@ const authenticateDialog = (
         (_) => {
           loginDialog.hide();
         }
-      )
+      ]
     );
   }
   loginDialog.existence(isShowing);
 };
 
+/**
+ * Dialog box to change password of client accoriding to the type of client.
+ */
 const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackBar(
     "Your password was changed.",
     "Done"
@@ -902,20 +932,20 @@ const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackB
     "Create a new password for your account."
   );
   resetDialog.createInputs(
-    Array("Create new password"),
-    Array("A strong password"),
-    Array("password"),
-    Array(validType.password),
+    ["Create new password"],
+    ["A strong password"],
+    ["password"],
+    [validType.password],
   );
   resetDialog.createActions(
-    Array("Update password", "Cancel"),
-    Array(actionType.positive, actionType.neutral)
+    ["Update password", "Cancel"],
+    [actionType.positive, actionType.neutral]
   );
 
   resetDialog.validate(0);
 
   resetDialog.onButtonClick(
-    Array(
+    [
       () => {
         resetDialog.validateNow(0);
         if (!resetDialog.isValid(0)) return;
@@ -942,11 +972,14 @@ const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackB
       () => {
         resetDialog.hide();
       }
-    )
+    ]
   );
   resetDialog.existence(isShowing);
 };
 
+/**
+ * Dialog box to change email of client accoriding to the type of client.
+ */
 const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType == client.admin?location.reload():parent.location.reload()}) => {
   authenticateDialog(clientType,(_) => {
     const mailChange = new Dialog();
@@ -955,18 +988,18 @@ const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType
       "Provide the new email address. You'll have to verify this in next step."
     );
     mailChange.createInputs(
-      Array("New email address"),
-      Array("newemail@example.com"),
-      Array("email"),
-      Array(validType.email)
+      ["New email address"],
+      ["newemail@example.com"],
+      ["email"],
+      [validType.email]
     );
     mailChange.createActions(
-      Array("Change email ID", "Abort"),
-      Array(actionType.negative, actionType.neutral)
+      ["Change email ID", "Abort"],
+      [actionType.negative, actionType.neutral]
     );
     mailChange.validate(0);
     mailChange.onButtonClick(
-      Array(
+      [
         () => {
           if (!mailChange.isValid(0)) return mailChange.validateNow(0);
           mailChange.loader();
@@ -976,13 +1009,11 @@ const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType
             case client.teacher:postpath = post.teacher.self;break;
             case client.student:postpath = post.student.self;break;
           }
-          clog(postpath);
           postJsonData(postpath, {
             target: "account",
             action: code.action.CHANGE_ID,
             newemail: mailChange.getInputValue(0),
           }).then((response) => {
-            clog(response);
             if (response.event == code.OK) {
               return onemailchange();
             }
@@ -1007,13 +1038,16 @@ const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType
         () => {
           mailChange.hide();
         }
-      )
+      ]
     );
-
     mailChange.existence(isShowing);
   });
 };
 
+/**
+ * Saves the given data to localstorage.
+ * @param {JSON} data The data to be stored via localStorage api of browser
+ */
 const saveDataLocally = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
@@ -1022,6 +1056,11 @@ const saveDataLocally = (data = {}) => {
   }
 };
 
+/**
+ * Checks if given data has any null key.
+ * @param {JSON} data The data to be checked.
+ * @returns {Boolean} true if any key null, else false.
+ */
 const hasAnyKeyNull = (data = {}) => {
   if (data == null) {
     return true;
@@ -1032,7 +1071,6 @@ const hasAnyKeyNull = (data = {}) => {
   for (var key in data) {
     if (data.hasOwnProperty(key)) {
       if (data[key] == null || data[key] == constant.nothing) {
-        clog(key);
         return true;
       }
     }
@@ -1040,6 +1078,9 @@ const hasAnyKeyNull = (data = {}) => {
   return false;
 };
 
+/**
+ * Retrives current user session data and stores it in localstorage.
+ */
 const getSessionUserData = async(clientType) => {
   let data = {
     [constant.sessionID]: localStorage.getItem(constant.sessionID),
@@ -1048,22 +1089,16 @@ const getSessionUserData = async(clientType) => {
     uiid: localStorage.getItem("uiid")=='null'?false:localStorage.getItem("uiid"),
     createdAt: localStorage.getItem("createdAt"),
   };
-  clog("nullcheck");
-  clog(data);
-  clog(hasAnyKeyNull(data));
   if(hasAnyKeyNull(data)){
     let postpath;
-    clog(clientType);
     switch(clientType){
       case client.admin:postpath = post.admin.self;break;
       case client.teacher:postpath = post.teacher.self;break;
       case client.student:postpath = post.student.self;break;
     }
-    clog(postpath);
     let result = await postJsonData(postpath, {
       target:'receive',
     });
-    clog(result);
     if(result.event == code.auth.SESSION_INVALID){
       return false;
     }
@@ -1075,6 +1110,9 @@ const getSessionUserData = async(clientType) => {
 };
 
 
+/**
+ * The global feedback box for schemester. Uses Dialog class.
+ */
 const feedBackBox = (
   isShowing = true,
   defaultText = String(),
@@ -1088,37 +1126,37 @@ const feedBackBox = (
     "/graphic/icons/schemester512.png"
   );
   feedback.createInputs(
-    Array("Your email address"),
-    Array("To help or thank you directly ;)"),
-    Array("email"),
-    Array(validType.email),
+    ["Your email address"],
+    ["To help or thank you directly ;)"],
+    ["email"],
+    [validType.email],
     null,
-    Array("email")
+    ["email"]
   );
   feedback.largeTextArea(
     "Describe everything",
     "Start typing your experience here"
   );
   feedback.createRadios(
-    Array("Feedback", "Error"),
+    ["Feedback", "Error"],
     error ? "Error" : "Feedback"
   );
 
   feedback.setBackgroundColorType(!error);
 
   feedback.createActions(
-    Array("Submit", "Abort"),
-    Array(actionType.positive, actionType.negative)
+    ["Submit", "Abort"],
+    [actionType.positive, actionType.negative]
   );
   feedback.onChipClick(
-    Array(
+    [
       (_) => {
         feedback.setBackgroundColorType();
       },
       (_) => {
         feedback.setBackgroundColorType(bodyType.negative);
       }
-    )
+    ]
   );
 
   feedback.largeTextField.input.value = defaultText;
@@ -1129,7 +1167,7 @@ const feedBackBox = (
   feedback.largeTextField.validate();
 
   feedback.onButtonClick(
-    Array(
+    [
       () => {
         if (
           !(
@@ -1151,13 +1189,16 @@ const feedBackBox = (
         }
       },
       () => {
-        feedback.hide();
+       feedback.hide();
       }
-    )
+    ]
   );
   feedback.existence(isShowing);
 };
 
+/**
+ * Can be used to show a loading only dialog box via Dialog class.
+ */
 const loadingBox = (
   visible = true,
   title = "Please wait",
@@ -1170,6 +1211,9 @@ const loadingBox = (
   load.existence(visible);
 };
 
+/**
+ * Can be used to show any confirmation via Dialog class.
+ */
 const confirmDialog=(heading,body,imgsrc,yesaction=_=>{}, serious = false,noaction)=>{
   const confdialog = new Dialog();
   confdialog.setDisplay(heading,body,imgsrc?imgsrc:serious?'/graphic/elements/warnicon.svg':null);
@@ -1186,6 +1230,9 @@ const confirmDialog=(heading,body,imgsrc,yesaction=_=>{}, serious = false,noacti
   confdialog.show();
 }
 
+/**
+ * Can be used to show any information via Dialog class.
+ */
 const infoDialog=(heading,body,imgsrc,action)=>{
   const infodialog = new Dialog();
   infodialog.setDisplay(heading,body,imgsrc);
@@ -1204,38 +1251,48 @@ const infoDialog=(heading,body,imgsrc,action)=>{
  * @param {Number} duration The duration in seconds, for which element remains disabled.
  * @param {String} id A unique string associated with the element.
  * @param {Function} afterRestriction The method to be excecuted after restrication is lifted. (optional)
+ * @param {Boolean} strict Defaults to false. If false, uses sessionStorage for timer (which means, timer will be removed if browser is closed), else uses localStorage.
  */
-const restrictElement=(element,duration,id,afterRestriction=_=>{})=>{
+const restrictElement=(element,duration,id,afterRestriction=_=>{},strict = false)=>{
   opacityOf(element, 0.5);
   const ogtext = element.innerHTML;
   let time = duration;
   const timer = setInterval(() => {
     time--;
-    sessionStorage.setItem(`restrict${id}`, time);
+    strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.setItem(`restrict${id}`, time);
     element.innerHTML = `Wait for ${time} seconds.`;
     if (time == 0) {
       element.innerHTML = ogtext;
       opacityOf(element, 1);
-      sessionStorage.removeItem(`restrict${id}`);
+      strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.removeItem(`restrict${id}`);
       afterRestriction();
       clearInterval(timer);
     }
   }, 1000);
 }
 
-const resumeElementRestriction=(element,id,afterRestriction=_=>{})=>{
+/**
+ * Resumes a timer on given element for which it remains disabled, if set by [restrictElement] method. This method however, doesn't actually disable the element,
+ * therefore, must be called after disabling it. This method prevents removal of restriction commit by a simple page reload.
+ * @param {HTMLElement} element The element to be disabled if timer set be [restrictElement] method is still running.
+ * @param {String} id The unique string associated with the element, as set by [restrictElement] method.
+ * @param {Function} afterRestriction The method to be excecuted after restrication is lifted. (optional)
+ * @param {Boolean} strict Defaults to false. If false, uses sessionStorage for timer (which means, timer will be removed if browser is closed), else uses localStorage.
+ * @note The param id and strict must be same for the same element as set by ]restrictElement] method.
+ */
+const resumeElementRestriction=(element,id,afterRestriction=_=>{},strict=false)=>{
   if (Number(sessionStorage.getItem(`restrict${id}`)) > 0) {
     opacityOf(element, 0.5);
     const ogtext = element.innerHTML;
     let time = Number(sessionStorage.getItem(`restrict${id}`));
     const timer = setInterval(() => {
       time--;
-      sessionStorage.setItem(`restrict${id}`, time);
+      strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.setItem(`restrict${id}`, time);
       element.innerHTML = `Wait for ${time} seconds.`;
       if (time == 0) {
         element.innerHTML = ogtext;
         opacityOf(element, 1);
-        sessionStorage.removeItem(`restrict${id}`);
+        strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.removeItem(`restrict${id}`);
         afterRestriction();
         clearInterval(timer);
       }
@@ -1252,13 +1309,12 @@ let checkSessionValidation = (
 ) => {
   switch (clientType) {
     case client.admin:{
-        postData(post.admin.sessionValidate)
+        postJsonData(post.admin.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
             } else {
               if (validAction == null) {
-                clog("isnull");
                 validAction = (_) => {
                   relocate(locate.admin.session, {
                     target: locate.admin.target.dashboard,
@@ -1269,7 +1325,6 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
-            clog("error in admin validation");
             snackBar(
               getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
               "Report"
@@ -1279,7 +1334,7 @@ let checkSessionValidation = (
       break;
     case client.teacher:
       {
-        postData(post.teacher.sessionValidate)
+        postJsonData(post.teacher.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
@@ -1295,17 +1350,15 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
-            clog("error in teacher validation");
             snackBar(
               getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
               "Report",
-              false
             );
           });
       }
       break;
     case client.student:{
-      postData(post.student.sessionValidate)
+      postJsonData(post.student.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
@@ -1321,16 +1374,13 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
-            clog("error in teacher validation");
             snackBar(
               getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
               "Report",
-              false
             );
           });
       }break;
     default: {
-      clog("in target default");
       if (validAction == null) {
         switch (clientType) {
           case client.admin:
@@ -1380,10 +1430,7 @@ const onSessionStatus = (
   validAction = _=>{},
   invalidAction = _=>{}
 ) => {
-  clog("onsessi");
   getSessionUserData(clientType).then(data=>{
-    clog("thedata");
-    clog(data);
     if(!data){
       invalidAction();
     }else {
@@ -1505,7 +1552,7 @@ const validateTextField = (
 const finishSession = (
   clientType,
   afterfinish = () => {
-    relocate(locate.root);
+    relocateParent(locate.root);
   }
 ) => {
   let postpath;
@@ -1514,26 +1561,32 @@ const finishSession = (
     case client.teacher:postpath = post.teacher.auth;break;
     case client.student:postpath = post.student.auth;break;
   }
-  postData(postpath,{
+  postJsonData(postpath,{
     action:'logout',
   }).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       sessionStorage.clear();
       clearLocalData();
-      afterfinish();
-      return;
+      return afterfinish();
     }
     snackBar("Failed to logout", "Try again", false, (_) => {
       finishSession(clientType,_=>{afterfinish()});
     });
+    location.reload();
   }).catch(e=>{
     clog(e);
     snackBar("Failed to logout", "Try again", false, (_) => {
       finishSession(clientType,_=>{afterfinish()});
     });
+    location.reload();
   });
 };
 
+/**
+ * Clears key value pairs from using localStorage API of browser.
+ * @param {Boolean} absolute Defaults to false. If true, will clear every key-value pair from localStorage, otherwise, will keep 
+ * the globally applied setting storage (like theme value,etc.) and remove others.
+ */
 const clearLocalData = (absolute = false) => {
   if (absolute) {
     localStorage.clear();
@@ -1564,8 +1617,7 @@ const setFieldSetof = (
   );
 };
 
-const setClass = (element = new HTMLElement(), classname) =>
-  (element.className = classname);
+const setClass = (element = new HTMLElement(), classname) => (element.className = classname);
 
 const setClassNames = (
   element,
@@ -1577,32 +1629,15 @@ const setClassNames = (
 ) => {
   switch (condition) {
     case actionType.positive:
-      {
-        element.className = normalClass;
-      }
-      break;
+      return element.className = normalClass;
     case actionType.negative:
-      {
-        element.className = errorClass;
-      }
-      break;
+      return element.className = errorClass;
     case actionType.warning:
-      {
-        element.className = warnClass;
-      }
-      break;
+      return element.className = warnClass;
     case actionType.active:
-      {
-        element.className = activeClass;
-      }
-      break;
-    default: {
-      if (condition == false) {
-        element.className = errorClass;
-      } else {
-        element.className = normalClass;
-      }
-    }
+      return element.className = activeClass;
+    default:
+      return element.className = condition?normalClass:errorClass;
   }
 };
 
@@ -1666,6 +1701,11 @@ const elementRiseVisibility = (element, isVisible) => {
   visibilityOf(element, isVisible);
 };
 
+/**
+ * Sets background color of any element as per the param type (a value from ViewType class).
+ * @param {HTMLElement} element The element to be updated.
+ * @param {String} type Defaults to actionType.positive. Can be taken from ViewType class object.
+ */
 const setDefaultBackground = (element, type = actionType.positive) => {
   element.style.backgroundColor = colors.getColorByType(type);
   switch (type) {
@@ -1709,18 +1749,21 @@ const opacityOf = (element = new HTMLElement(), value = 1) =>
   (element.style.opacity = String(value));
 
 /**
- * Controls visiblity of the given HTML element, as per the condition.
+ * Controls visiblity of the given HTML element, as per the condition. (using hidden attribute of HTMLElement)
  * @param {HTMLElement} element The element whose visibility is to be toggled.
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
  */
-const visibilityOf = (element = new HTMLElement(), visible = true) =>
-  (element.style.display = visible ? constant.show : constant.hide);
+const visibilityOf = (element = new HTMLElement(), visible = true) =>{
+  (element.hidden = visible ? false : true);
+  (element.style.display = visible?constant.show:constant.hide);
+}
+
 const visibilityOfAll = (elements = [], visible = true, index = null) =>
   index != null
     ? visibilityOf(elements[index], visible)
     : elements.forEach((element, _) => {
-        visibilityOf(element, visible);
-      });
+      visibilityOf(element, visible);
+    });
 const hide = (element = new HTMLElement()) => visibilityOf(element, false);
 const show = (element = new HTMLElement()) => visibilityOf(element, true);
 const isVisible = (element = new HTMLElement()) =>
@@ -1746,7 +1789,7 @@ const getElement = (id) => document.getElementById(id);
 /**
  * This function extends the ability of window.location.replace(), by allowing you to provide additional link data passed as query along with the link.
  * @param {String} path The path or link to be passed in replace() function of window.location
- * @param data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
+ * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
  */
 const relocate = (path = String, data = null) => {
   if (data != null) {
@@ -1762,6 +1805,12 @@ const relocate = (path = String, data = null) => {
   window.location.replace(path);
 };
 
+/**
+ * This function extends the ability of window.location.replace(), by allowing you to provide additional link data passed as query along with the link.
+ * Useful replacing parent location from an iframe source.
+ * @param {String} path The path or link to be passed in replace() function of window.location
+ * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
+ */
 const relocateParent = (path, data = null) => {
   if (data != null) {
     let i = 0;
@@ -1776,6 +1825,13 @@ const relocateParent = (path, data = null) => {
   window.parent.location.replace(path);
 };
 
+/**
+ * @deprecated As of September 27, 2020 02:41 hours. See the new [postJsonData] method.
+ * Sends post request using browser fetch API, with x-www-form-urlencoded type body, and receives response in JSON format.
+ * @param {String} url The endpoint location of post request. (same-origin)
+ * @param {JSON} data The data to be sent along with request, key value type.
+ * @returns {Promise} response object as a promise.
+ */
 const postData = async (url = String, data = {}) => {
   const response = await fetch(url, {
     method: constant.post,
@@ -1783,12 +1839,12 @@ const postData = async (url = String, data = {}) => {
     headers: { "Content-type": constant.fetchContentType },
     body: getRequestBody(data, true),
   });
-  let res = await response.json();
+  const res = await response.json();
   return await res.result;
 };
 
 /**
- * Sends post request using browser fetch API, and receives response in JSON format.
+ * Sends post request using browser fetch API, with json type body, and receives response in JSON format.
  * @param {String} url The endpoint location of post request. (same-origin)
  * @param {JSON} data The data to be sent along with request, key value type.
  * @returns {Promise} response object as a promise.
@@ -1798,8 +1854,8 @@ const postJsonData = async (url = String, data = {}) => {
     method: constant.post,
     mode: "same-origin",
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
+      Accept: constant.fetchJsonContent,
+      "Content-Type": constant.fetchJsonContent,
     },
     body: JSON.stringify(data),
   });
@@ -1807,19 +1863,42 @@ const postJsonData = async (url = String, data = {}) => {
   return await content.result;
 };
 
+
+/**
+ * Sets location as per given params
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
 const refer = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.location.href = href;
 };
+
+/**
+ * Opens link in a new tab as per given params
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
 const referTab = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.open(href);
 };
 
+/**
+ * Sets parent location href as per given params. Useful in loading a url from an iframe source.
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
 const referParent = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.parent.location.href = href;
 };
+
+/**
+ * Opens a link in new tab as per given params. Useful in opening a new tab from an iframe source.
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
 const referParentTab = (href, data = null) => {
   href += data != null ? getRequestBody(data) : constant.nothing;
   window.parent.open(href);
@@ -1828,7 +1907,7 @@ const referParentTab = (href, data = null) => {
 /**
  * Creates a string of queries to be passed along with any form action type link, from given JSON type data.
  * @param data The given key:value pairs of data to be converted into url query.
- * @param {Boolean} isPost The optional parameter, if data is to be converted to send with a post request of content-type: x-www-form-urlencoded, set true. Defaults to false.
+ * @param {Boolean} isPost The optional parameter, if body is to be converted to send with a post request of content-type: x-www-form-urlencoded, set true. Defaults to false.
  * @return {String} The query in string from, ready to be concatenated with some action URL of form kind.
  */
 const getRequestBody = (data = {}, isPost = false) => {
@@ -1861,13 +1940,12 @@ const callTo = (to) => refer(`tel:${to}`);
 
 const idbSupported = () => {
   if (!window.indexedDB) {
-    clog("IDB:0");
     snackBar(
       "This browser is outdated for Schemester to work. Switch to Chrome/Edge/Safari/Firefox, or any modern browser.",
       "Learn more",
-      actionType.negative,
+      false,
       (_) => {
-        refer("https://google.com/search", {
+        referParent("https://google.com/search", {
           q: "modern+browsers",
         });
       }
@@ -1896,18 +1974,23 @@ const addNumberSuffixHTML = (number = Number) => {
   }
 };
 
-const setTimeGreeting = (element = new HTMLElement()) => {
-  var today = new Date();
-  if (today.getHours() < 4) {
-    element.innerHTML = "Good night!";
-  } else if (today.getHours() < 11) {
-    element.innerHTML = "Good morning!";
-  } else if (today.getHours() < 15) {
-    element.innerHTML = "Good afternoon";
-  } else if (today.getHours() < 20) {
-    element.innerHTML = "Good evening";
-  } else {
-    element.innerHTML = "Schemester";
+const addNumberSuffix = (number = Number) => {
+  var str = String(number);
+  switch (number) {
+    case 1:
+      return number + "st";
+    case 2:
+      return number + "nd";
+    case 3:
+      return number + "rd";
+    default: {
+      if (number > 9) {
+        if (str.charAt(str.length - 2) == "1") return number + "th";
+        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)));
+      } else {
+        return number + "th";
+      }
+    }
   }
 };
 
@@ -1929,13 +2012,13 @@ const getProperDate = (dateTillMillis) => {
   )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
 };
 
-function getNumericTime(time){
-  return Number(String(time).replace(':',constant.nothing));
-}
+const getNumericTime=(time)=> Number(String(time).replace(':',constant.nothing));
 
 const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
-const getButton = (id,label,type=actionType.positive)=>`<button class="${actionType.getButtonStyle(type)}" id="${id}">${label}</button>`;
 
+//The following methods return templates for certain elements to be inserted dynamically.
+
+const getButton = (id,label,type=actionType.positive)=>`<button class="${actionType.getButtonStyle(type)}" id="${id}">${label}</button>`;
 const getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
 const getCheckBox = (labelID, label, checkboxID) =>
@@ -1959,4 +2042,3 @@ const getDialogButton = (buttonClass, buttonID, label) =>
 const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
 const editIcon=(size)=>`<img width="${size}" src="/graphic/elements/editicon.svg"/>`
-const jstr = (obj) => JSON.stringify(obj);

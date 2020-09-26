@@ -124,7 +124,6 @@ const createAccount = (dialog, adminname, email, password, uiid) => {
   })
     .then((result) => {
       if (result.event == code.auth.ACCOUNT_CREATED) {
-        clog(result);
         saveDataLocally(result.user);
         return relocate(locate.admin.session, {
           u: result.user.uid,
@@ -166,7 +165,6 @@ const createAccount = (dialog, adminname, email, password, uiid) => {
 };
 
 function linkGenerator(target) {
-  clog("link generator");
   loadingBox(
     true,
     "Generating Link",
@@ -174,19 +172,16 @@ function linkGenerator(target) {
       "uiid"
     )} institute`
   );
-  postData(post.admin.manage, {
+  postJsonData(post.admin.manage, {
     type: "invitation",
     action: "create",
     target: target,
   })
     .then((response) => {
-      clog("link generate response");
-      clog(response);
       if (
         response.event == code.invite.LINK_EXISTS ||
         response.event == code.invite.LINK_CREATED
       ) {
-        clog("link generated box");
         let linkdialog = new Dialog();
         linkdialog.setDisplay(
           "Invitation Link",
@@ -209,8 +204,6 @@ function linkGenerator(target) {
           action: "get",
           specific: "allowTeacherAddSchedule",
         }).then((allowTeacherAddSchedule) => {
-          clog(allowTeacherAddSchedule);
-          clog("yeas");
           this.allowteacherschedule.turn(allowTeacherAddSchedule);
         });
         this.allowteacherschedule.onTurnChange(
@@ -284,15 +277,13 @@ function linkGenerator(target) {
 }
 
 function revokeLink(target) {
-  clog("revoke link");
-  postData(post.admin.manage, {
+  postJsonData(post.admin.manage, {
     type: "invitation",
     action: "disable",
     target: target,
   })
     .then((response) => {
       if (response.event == code.invite.LINK_DISABLED) {
-        clog("link disabled");
         snackBar("All links are inactive now.", null, false);
         let nolinkdialog = new Dialog();
         nolinkdialog.setDisplay(
@@ -319,7 +310,6 @@ function revokeLink(target) {
         );
         nolinkdialog.show();
       } else {
-        clog("disabled:false");
         snackBar(`Link couldn't be disabled.`, "Try again", false, (_) => {
           this.revokeLink(target);
         });

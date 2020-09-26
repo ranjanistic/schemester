@@ -71,8 +71,6 @@ class Active {
     }
 
     this.load();
-    clog(data.target);
-    clog("posting");
     let posturl,postaction;
     if(data.target == client.teacher){
       posturl = post.teacher.auth;
@@ -90,8 +88,6 @@ class Active {
       uiid: data.uiid,
       classname:data.classname
     }).then((response) => {
-        clog("response");
-        clog(response);
         if (response.event == code.auth.ACCOUNT_CREATED) {
           if (data.target == client.teacher) {
             relocate(locate.teacher.session, {
@@ -154,9 +150,9 @@ class Expired {
     this.view = getElement("userinvitationexpired");
     this.register = getElement("registerbutton");
     this.register.onclick = (_) => {
-      if(data.target == 'teacher')
+      if(data.target == client.teacher)
         showTeacherRegistration(true)
-      else if(data.target == 'student')
+      else if(data.target == client.student)
         showStudentRegistration(true)
     };
     this.loader = getElement("inviteloader");
@@ -173,7 +169,7 @@ class ReceivedInfo {
     this.target = getElement("target").innerHTML;
     this.instName = getElement("instname").innerHTML;
     try{
-      if(this.target == 'student') this.classname = getElement("classname").innerHTML;
+      if(this.target == client.student) this.classname = getElement("classname").innerHTML;
       this.expiresAt = getElement("expireat").innerHTML;
       getElement("expireat").innerHTML = getProperDate(String(this.expiresAt));
     }catch{

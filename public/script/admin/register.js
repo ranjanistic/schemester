@@ -488,7 +488,6 @@ class Stage2 {
     let periods = Number(this.totalPeriodsField.getInput());
     let pdur = Number(this.eachDurationField.getInput());
     let bdur = Number(this.breakDurationField.getInput());
-    clog((end - start - bdur) / pdur);
   }
   someChecked() {
     let valid = this.daychecks.some((check) => {
@@ -563,7 +562,6 @@ class Stage2 {
       for (let i = 1; i < dindex.length; i++) {
         days = `${days}, ${constant.weekdays[Number(dindex[i])]}`;
       }
-      clog(inst);
       confirm.setDisplay(
         "Confirmation",
         `<center >Proceed to ${this.updating?'update':'create'} <b>${sessionStorage.getItem(
@@ -702,7 +700,6 @@ class Stage2 {
               fromfile:inst?true:false,
               data,
             }).then((response) => {
-              clog(response);
               switch (response.event) {
                 case code.auth.SESSION_INVALID: {
                   return relocate(locate.admin.auth, {

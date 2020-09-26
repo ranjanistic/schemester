@@ -1,3 +1,7 @@
+/**
+ * Maintains the communicable codes between client and server, and among client and server themselves, ensuring uniformity
+ * & reducing errors in event reporting, and apart from that, some basic constants too.
+ */
 class Codes {
   constructor() {
     // this.domain = "http://localhost:3000";
@@ -5,7 +9,7 @@ class Codes {
     this.free = "Free";
     this.OK = "OK/true";
     this.NO = "NO/false";
-    
+
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";
@@ -14,8 +18,8 @@ class Codes {
       }
     }
 
-    class Database{
-      constructor(){
+    class Database {
+      constructor() {
         this.DBNAME = "schemesterDB";
         this.ADMIN_COLLECTION = "0administrators";
         this.INSTITUTE_COLLECTION = "1institutions";
@@ -89,7 +93,7 @@ class Codes {
         this.INSTITUTION_CREATED = "inst/institution-created";
         this.INSTITUTION_CREATION_FAILED = "inst/institution-not-created";
 
-        this.BACKUP_INSTITUTION = 'inst/backup-institute-file';
+        this.BACKUP_INSTITUTION = "inst/backup-institute-file";
 
         this.INSTITUTION_DEFAULTS_SET = "inst/institution-defaults-saved";
         this.INSTITUTION_DEFAULTS_UNSET = "inst/institution-defaults-not-saved";
@@ -101,10 +105,9 @@ class Codes {
         this.CLASS_NOT_FOUND = "inst/class-not-found";
         this.CLASSES_CREATED = "inst/classes-creation-success";
         this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
-        this.INCHARGE_EXISTS = 'inst/class-incharge-found';
-        this.INCHARGE_NOT_FOUND = 'inst/class-incharge-not-found';
-        this.INCHARGE_OCCUPIED = 'inst/incharge-assigned-another-class';
-        
+        this.INCHARGE_EXISTS = "inst/class-incharge-found";
+        this.INCHARGE_NOT_FOUND = "inst/class-incharge-not-found";
+        this.INCHARGE_OCCUPIED = "inst/incharge-assigned-another-class";
       }
     }
 
@@ -136,18 +139,18 @@ class Codes {
         this.CHANGE_PERIOD_DURATION = "action/timing-change-period-duration";
         this.CHANGE_BREAK_DURATION = "action/timing-change-break-duration";
 
-        this.CREATE_CLASSES = 'action/create-multiple-classes';
-        this.CREATE_NEW_CLASS = 'action/create-new-class';
+        this.CREATE_CLASSES = "action/create-multiple-classes";
+        this.CREATE_NEW_CLASS = "action/create-new-class";
         this.RENAME_CLASS = "action/rename-classroom";
         this.RENAME_SUBJECT = "action/rename-subject";
         this.SET_INCHARGE = "action/set-class-incharge";
-        this.REMOVE_CLASS = 'action/delete-classroom';
-        this.REMOVE_DAY = 'action/remove-day-schedule';
-        this.SWITCH_DAY = 'action/switch-day-schedule';
-        this.ADD_DAY = 'action/add-new-day';
-        this.REMOVE_PERIOD = 'action/remove-period';
-        this.SWITCH_PERIODS = 'action/switch-periods';
-        this.ADD_PERIOD = 'action/add-new-period';
+        this.REMOVE_CLASS = "action/delete-classroom";
+        this.REMOVE_DAY = "action/remove-day-schedule";
+        this.SWITCH_DAY = "action/switch-day-schedule";
+        this.ADD_DAY = "action/add-new-day";
+        this.REMOVE_PERIOD = "action/remove-period";
+        this.SWITCH_PERIODS = "action/switch-periods";
+        this.ADD_PERIOD = "action/add-new-period";
       }
     }
     class InvitationCodes {
@@ -224,7 +227,6 @@ class Codes {
     this.invite = new InvitationCodes();
     this.verify = new VerificationCodes();
     this.schedule = new ScheduleCodes();
-
   }
   event(code) {
     return {
@@ -238,6 +240,12 @@ class Codes {
     };
   }
 }
+
+/**
+ * The topmost client types among whole application.
+ * @note If in case these are to be renamed, then ensure that any hard files of application are also renamed, if they are of the 
+ * same names as any of the client, to ensure uniformity, otherwise, errors might occur.
+ */
 class Client {
   constructor() {
     this.admin = "admin";
@@ -245,6 +253,10 @@ class Client {
     this.student = "student";
   }
 }
+
+/**
+ * Constant values for the whole application to use.
+ */
 class Constant {
   constructor() {
     this.appName = "Schemester";
@@ -258,6 +270,7 @@ class Constant {
     this.put = "put";
     this.backbluecovered = false;
     this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
+    this.fetchJsonContent = "application/json";
     this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
     this.sessionID = "id";
@@ -266,30 +279,30 @@ class Constant {
     this.secondsInMinute = 60;
     this.minutesInHour = 60;
     this.hoursInDay = 24;
-    this.minutesInDay = this.hoursInDay*this.minutesInHour;
-    this.secondsInDay = this.minutesInDay*this.secondsInMinute;
-    this.millisInDay = this.secondsInDay*this.millisInSecond;
-    this.weekdays = Array(
+    this.minutesInDay = this.hoursInDay * this.minutesInHour;
+    this.secondsInDay = this.minutesInDay * this.secondsInMinute;
+    this.millisInDay = this.secondsInDay * this.millisInSecond;
+    this.weekdays = [
       "Sunday",
       "Monday",
       "Tuesday",
       "Wednesday",
       "Thursday",
       "Friday",
-      "Saturday"
-    );
-    this.weekdayscasual = Array(
+      "Saturday",
+    ];
+    this.weekdayscasual = [
       "sunday",
       "monday",
       "tuesday",
       "wednesday",
       "thursday",
       "friday",
-      "saturday"
-    );
-    this.shortDays = Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");
-    this.shortDaysCasual = Array("sun", "mon", "tue", "wed", "thu", "fri", "sat");
-    this.months = Array(
+      "saturday",
+    ];
+    this.shortDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    this.shortDaysCasual = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+    this.months = [
       "January",
       "February",
       "March",
@@ -301,9 +314,23 @@ class Constant {
       "September",
       "October",
       "November",
-      "December"
-    );
-    this.shortMonths = Array(
+      "December",
+    ];
+    this.monthsCasual = [
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
+    ];
+    this.shortMonths = [
       "Jan",
       "Feb",
       "Mar",
@@ -315,27 +342,45 @@ class Constant {
       "Sep",
       "Oct",
       "Nov",
-      "Dec"
-    );
+      "Dec",
+    ];
+    this.shortMonthsCasual = [
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "june",
+      "july",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
+    ];
   }
 }
 
+/**
+ * The location paths of server endpoints are defined in this class, specially meant for the client to use,
+ * along with other target parts of endpoints, for each type of client.
+ */
 class Locations {
   constructor() {
     this.homepage = "/home";
-    this.offline = "/offline"
+    this.offline = "/offline";
     this.root = "/";
     this.planspage = "/plans";
     class Admin {
       constructor() {
-        const root = '/admin';
+        const root = `/${client.admin}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
         class Target {
           constructor() {
             this.settings = "manage";
             this.dashboard = "dashboard";
-            this.manage = "manage";
+            this.manage = this.settings;
             this.addteacher = "addteacher";
             this.register = "registration";
             this.viewschedule = "viewschedule";
@@ -362,7 +407,7 @@ class Locations {
 
     class Teacher {
       constructor() {
-        const root = '/teacher';
+        const root = `/${client.teacher}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
         this.fragment = `${root}/fragment`;
@@ -390,7 +435,7 @@ class Locations {
 
     class Student {
       constructor() {
-        const root = '/student';
+        const root = `/${client.student}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
         this.fragment = `${root}/fragment`;
@@ -415,137 +460,174 @@ class Locations {
   }
 }
 
-class View{
-  constructor(){
-      this.homepage = 'home.ejs';
-      this.loader = 'loader.ejs';
-      this.plans = 'plans.ejs';
-      this.notfound = '404.ejs';
-      this.servererror = '500.ejs';
-      this.forbidden = '403.ejs';
-      this.offline = 'offline.ejs';
+/**
+ * Names of original view files in the application, and objects for specific client view files, meant for the sever to use.
+ * @note The values in this class must be renamed if any of the original file is renamed, as the server would look for the
+ * view paths specified in this class only, and will raise internal 404 error if not done.
+ */
+class View {
+  constructor() {
+    this.homepage = "home.ejs";
+    this.loader = "loader.ejs";
+    this.plans = "plans.ejs";
+    this.notfound = "404.ejs";
+    this.servererror = "500.ejs";
+    this.forbidden = "403.ejs";
+    this.offline = "offline.ejs";
 
-      this.userinvitaion = 'invitation.ejs';
-      this.verification = 'verification.ejs';
-      this.passwordreset = 'resetpassword.ejs';
-
-      this.admin = new AdminView();
-      this.teacher = new TeacherView();
-      this.student = new StudentView();
+    this.userinvitaion = "invitation.ejs";
+    this.verification = "verification.ejs";
+    this.passwordreset = "resetpassword.ejs";
+    this.admin = new AdminView();
+    this.teacher = new TeacherView();
+    this.student = new StudentView();
   }
 }
 
-class AdminView{
-  constructor(){
-      this.login = 'admin/admin_login.ejs';
-      this.dash = 'admin/admin_dash.ejs';
-      this.settings = 'admin/management.ejs';
-      this.registration = 'admin/edit_detail.ejs';
-      this.addTeacher = 'admin/teacher_filler.ejs';
-      this.scheduleview = 'admin/schedule_view.ejs';
-      this.users = 'admin/users.ejs';
-
-      this.target = new Locations().admin.target;
-      this.section = new Locations().admin.section;
+/**
+ * The paths of admin client view files, for server to use.
+ */
+class AdminView {
+  constructor() {
+    this.login = `${client.admin}/${client.admin}_login.ejs`;
+    this.dash = `${client.admin}/${client.admin}_dash.ejs`;
+    this.settings = `${client.admin}/management.ejs`;
+    this.registration = `${client.admin}/edit_detail.ejs`;
+    this.addTeacher = `${client.admin}/${client.teacher}_filler.ejs`;
+    this.scheduleview = `${client.admin}/schedule_view.ejs`;
+    this.users = `${client.admin}/users.ejs`;
+    this.target = new Locations().admin.target;
+    this.section = new Locations().admin.section;
   }
-  getViewByTarget(target = this.target.dashboard){
-      switch(target){
-          case this.target.manage:return this.settings;
-          case this.target.addteacher:return this.addTeacher;
-          case this.target.dashboard:return this.dash;
-          case this.target.register:return this.registration;
-          case this.target.viewschedule:return this.scheduleview;
-          case this.target.classes:return this.users;
-          case this.target.teachers:return this.users;
-          default:return this.getViewByTarget();
-      }
-  }
-}
-
-class TeacherView{
-  constructor(){
-      this.login = 'teacher/teacher_login.ejs';
-      this.dash = 'teacher/teacher_dash.ejs';
-      this.settings = 'teacher/teacher_settings.ejs';
-      this.addschedule = 'admin/teacher_filler.ejs';
-      class FragmentView{
-          constructor(){
-              this.fullschedule = 'teacher/fragments/fullweek.ejs';
-              this.today = 'teacher/fragments/today.ejs';
-              this.about = 'teacher/fragments/about.ejs';
-              this.classroom = 'teacher/fragments/classroom.ejs';
-          }
-      }
-      this.fragment = new FragmentView();
-      this.target = new Locations().teacher.target;
-  }
-  getViewByTarget(target = this.target.dash){
-      switch(target){
-          case this.target.dash:return this.dash;
-          case this.target.settings:return this.settings;
-          case this.target.fullweek:return this.fullschedule;
-          case this.target.addschedule:return this.addschedule;
-          case this.target.fragment.today:return this.fragment.today;
-          case this.target.fragment.fullweek:return this.fragment.fullschedule;
-          case this.target.fragment.classroom:return this.fragment.classroom;
-          case this.target.fragment.about:return this.fragment.about;
-          default:return this.getViewByTarget();
-      }
+  getViewByTarget(target = this.target.dashboard) {
+    switch (target) {
+      case this.target.manage:
+        return this.settings;
+      case this.target.addteacher:
+        return this.addTeacher;
+      case this.target.dashboard:
+        return this.dash;
+      case this.target.register:
+        return this.registration;
+      case this.target.viewschedule:
+        return this.scheduleview;
+      case this.target.classes:
+        return this.users;
+      case this.target.teachers:
+        return this.users;
+      default:
+        return this.getViewByTarget();
+    }
   }
 }
 
-class StudentView{
-  constructor(){
-      this.login = 'student/student_login.ejs';
-      this.dash = 'student/student_dash.ejs';
-      class FragmentView{
-          constructor(){
-              this.today = 'student/fragments/today.ejs';
-              this.fullschedule = 'student/fragments/fullweek.ejs';
-              this.classroom = 'student/fragments/classroom.ejs';
-              this.settings = 'student/fragments/about.ejs';
-          }
+/**
+ * The paths of teacher client view files, for server to use.
+ */
+class TeacherView {
+  constructor() {
+    this.login = `${client.teacher}/${client.teacher}_login.ejs`;
+    this.dash = `${client.teacher}/${client.teacher}_dash.ejs`;
+    this.addschedule = `${client.admin}/${client.teacher}_filler.ejs`;
+    class FragmentView {
+      constructor() {
+        this.fullschedule = `${client.teacher}/fragments/fullweek.ejs`;
+        this.today = `${client.teacher}/fragments/today.ejs`;
+        this.about = `${client.teacher}/fragments/about.ejs`;
+        this.classroom = `${client.teacher}/fragments/classroom.ejs`;
       }
-      this.fragment = new FragmentView();
-      this.target = new Locations().student.target;
+    }
+    this.fragment = new FragmentView();
+    this.target = new Locations().teacher.target;
   }
-  getViewByTarget(target = this.target.dash){
-      switch(target){
-          case this.target.dash:return this.dash;
-          case this.target.fragment.today:return this.fragment.today;
-          case this.target.fragment.fullweek:return this.fragment.fullschedule;
-          case this.target.fragment.settings:return this.fragment.settings;
-          case this.target.fragment.classroom:return this.fragment.classroom;
-          default:return this.getViewByTarget();
-      }
+  getViewByTarget(target = this.target.dash) {
+    switch (target) {
+      case this.target.dash:
+        return this.dash;
+      case this.target.settings:
+        return this.settings;
+      case this.target.fullweek:
+        return this.fullschedule;
+      case this.target.addschedule:
+        return this.addschedule;
+      case this.target.fragment.today:
+        return this.fragment.today;
+      case this.target.fragment.fullweek:
+        return this.fragment.fullschedule;
+      case this.target.fragment.classroom:
+        return this.fragment.classroom;
+      case this.target.fragment.about:
+        return this.fragment.about;
+      default:
+        return this.getViewByTarget();
+    }
   }
 }
 
+/**
+ * The paths of student client view files, for server to use.
+ */
+class StudentView {
+  constructor() {
+    this.login = `${client.student}/${client.student}_login.ejs`;
+    this.dash = `${client.student}/${client.student}_dash.ejs`;
+    class FragmentView {
+      constructor() {
+        this.today = `${client.student}/fragments/today.ejs`;
+        this.fullschedule = `${client.student}/fragments/fullweek.ejs`;
+        this.classroom = `${client.student}/fragments/classroom.ejs`;
+        this.settings = `${client.student}/fragments/about.ejs`;
+      }
+    }
+    this.fragment = new FragmentView();
+    this.target = new Locations().student.target;
+  }
+  getViewByTarget(target = this.target.dash) {
+    switch (target) {
+      case this.target.dash:
+        return this.dash;
+      case this.target.fragment.today:
+        return this.fragment.today;
+      case this.target.fragment.fullweek:
+        return this.fragment.fullschedule;
+      case this.target.fragment.settings:
+        return this.fragment.settings;
+      case this.target.fragment.classroom:
+        return this.fragment.classroom;
+      default:
+        return this.getViewByTarget();
+    }
+  }
+}
 
-
-class Gets{
-  constructor(){
-    const locate = new Locations();
+/**
+ * The endpoint paths of GET requests to server, meant for both client (to generate request) & server (to receive request).
+ */
+class Gets {
+  constructor() {
     this.root = locate.root;
     this.home = locate.homepage;
     this.offline = locate.offline;
-    this.authlogin = '/auth/login*';
-    this.session = '/session*';
-    this.external = '/external*';
-    this.download = '/download*';
-    this.fragment = '/fragment*';
-    this.notfound = '/404';
-    this.servererror = '/500';
-    this.forbidder = '/403';
+    this.authlogin = "/auth/login*";
+    this.session = "/session*";
+    this.external = "/external*";
+    this.download = "/download*";
+    this.fragment = "/fragment*";
+    this.notfound = "/404";
+    this.servererror = "/500";
+    this.forbidder = "/403";
   }
 }
 
+/**
+ * The endpoint paths of POST requests to server, currently meant for client to generate request.
+ */
 class Posts {
   constructor() {
-    this.logout = '/logout';
+    this.logout = "/logout";
     class Admin {
       constructor() {
-        const root = "/admin"
+        const root = `/${client.admin}`;
         this.login = `${root}/auth/login`;
         this.logout = `${root}/auth/logout`;
         this.signup = `${root}/auth/signup`;
@@ -563,8 +645,8 @@ class Posts {
         this.pseudousers = `${root}/pseudousers`;
         this.dashboard = `${root}/dashboard`;
 
-        class Target{
-          constructor(){
+        class Target {
+          constructor() {
             this.today = "today";
           }
         }
@@ -586,7 +668,7 @@ class Posts {
 
     class Teacher {
       constructor() {
-        const root = "/teacher"
+        const root = `/${client.teacher}`;
         this.auth = `${root}/auth`;
         this.sessionValidate = `${root}/session/validate`;
         this.schedule = `${root}/schedule`;
@@ -598,6 +680,8 @@ class Posts {
             this.login = "login";
             this.logout = "logout";
             this.signup = "signup";
+            this.fetch = "fetch";
+            this.update = "update";
           }
         }
         this.action = new Action();
@@ -607,7 +691,7 @@ class Posts {
 
     class Student {
       constructor() {
-        const root = '/student';
+        const root = `/${client.student}`;
         this.auth = `${root}/auth`;
         this.sessionValidate = `${root}/session/validate`;
         this.schedule = `${root}/schedule`;
@@ -618,6 +702,8 @@ class Posts {
             this.login = "login";
             this.logout = "logout";
             this.signup = "signup";
+            this.fetch = "fetch";
+            this.update = "update";
           }
         }
         this.action = new Action();
@@ -626,6 +712,11 @@ class Posts {
     this.student = new Student();
   }
 }
+
+/**
+ * This class maintains the theme settings for the whole application. Can be used to assign any element the properties of this class,
+ * for theme related settings.
+ */
 class Theme {
   constructor() {
     this.dark = "dark";
@@ -653,12 +744,56 @@ class Theme {
   }
   setTheme(theme = this.light) {
     localStorage.setItem(this.key, theme);
-    window.parent.document.getElementById('themecolor').setAttribute('content',theme == this.dark?'#739dec':'#216bf3')
+    window.parent.document
+      .getElementById("themecolor")
+      .setAttribute("content", theme == this.dark ? "#739dec" : "#216bf3");
     document.documentElement.setAttribute("data-theme", theme);
     window.parent.document.documentElement.setAttribute("data-theme", theme);
   }
 }
 
+/**
+ * Maintains keys for most of the locally stored values, meant for client side only.
+ */
+class Keys {
+  constructor() {
+    this.uiid = 'uiid';
+    this.email = 'email';
+    this.id = constant.sessionID;
+    this.uid = constant.sessionUID;
+    this.username = 'username';
+    this.theme = 'theme';
+    this.classroom = 'classroom';
+    class Admin{
+      constructor(){
+        this.isadmin = 'isAdmin';
+        this.forgotpassword = 'adminforgotpassword';
+      }
+    }
+    class Teacher{
+      constructor(){
+        this.isteacher = 'isAdmin';
+        this.rememberuiid = 'rememberteacheruiid';
+        this.forgotpassword = 'teacherforgotpassword';
+      }
+    }
+    class Student{
+      constructor(){
+        this.isstudent = 'isAdmin';
+        this.rememberuiid = 'rememberstudentuiid';
+        this.forgotpassword = 'studentforgotpassword';
+      }
+    }
+    this.admin = new Admin();
+    this.teacher = new Teacher();
+    this.student = new Student();
+  }
+}
+
+/**
+ * Maintains colors of the application and a type method to get specific color for specific Viewtype.
+ * @see ViewType().
+ */
 class Colors {
   constructor() {
     this.positive = "var(--positive)";
@@ -691,6 +826,10 @@ class Colors {
     }
   }
 }
+
+/**
+ * The input types for several default input field types, and custom made input types.
+ */
 class InputType {
   constructor() {
     this.name = "name";
@@ -706,6 +845,10 @@ class InputType {
     this.weekday = "weekday";
   }
 }
+/**
+ * The global general view type scheme applied througout the application.
+ * Also implements subsequent methods to provide style scheme (CSS classes) for specific element, according to the viewtype.
+ */
 class ViewType {
   constructor() {
     this.neutral = "neutral";
@@ -714,22 +857,6 @@ class ViewType {
     this.warning = "warning";
     this.active = "active";
     this.nothing = "nothing";
-  }
-  getCheckStyle(type = new ViewType()) {
-    switch (type) {
-      case this.neutral:
-        return "tickmark-positive";
-      case this.positive:
-        return "tickmark-positive";
-      case this.negative:
-        return "tickmark-negative";
-      case this.warning:
-        return "tickmark-warning";
-      case this.active:
-        return "tickmark-active";
-      default:
-        return "tickmark-positive";
-    }
   }
   getButtonStyle(type) {
     switch (type) {
@@ -779,7 +906,7 @@ class ViewType {
         return "snack-positive";
     }
   }
-  getSwitchStyle(type){
+  getSwitchStyle(type) {
     switch (type) {
       case this.positive:
         return "switch-positive";
@@ -794,20 +921,23 @@ class ViewType {
     }
   }
 }
+
 const click = "click",
   change = "change",
-  input = "input";
-const code = new Codes();
-const client = new Client();
-const value = new Constant();
-const constant = new Constant();
-const locate = new Locations();
-const theme = new Theme();
-const post = new Posts();
-const colors = new Colors();
-const validType = new InputType();
-const actionType = new ViewType();
-const bodyType = new ViewType();
+  input = "input",
+  code = new Codes(),
+  client = new Client(),
+  value = new Constant(),
+  constant = new Constant(),
+  locate = new Locations(),
+  key = new Keys(),
+  theme = new Theme(),
+  post = new Posts(),
+  colors = new Colors(),
+  validType = new InputType(),
+  actionType = new ViewType(),
+  bodyType = new ViewType();
+
 /**
  * Checks if given string is valid, according to its type given as second parameter.
  * @param {String} value The string value to be checked for validity.
@@ -831,25 +961,42 @@ const stringIsValid = (
     case validType.number:
       return !isNaN(value) && stringIsValid(String(value).trim());
     case validType.naturalnumber:
-      return stringIsValid(String(value).trim(),validType.number) && Number(value)>0;
+      return (
+        stringIsValid(String(value).trim(), validType.number) &&
+        Number(value) > 0
+      );
     case validType.wholenumber:
-      return stringIsValid(String(value).trim(),validType.number) && Number(value)>=0;
-    case validType.password:
-      return constant.passRegex.test(String(value))||true;
+      return (
+        stringIsValid(String(value).trim(), validType.number) &&
+        Number(value) >= 0
+      );
+    // case validType.password:
+    //   return constant.passRegex.test(String(value)) || true;
     case validType.username:
       return stringIsValid(String(value).trim());
     case validType.match:
       return value === ifMatchValue;
     case validType.weekday:
-      return constant.weekdayscasual.includes(value.toLowerCase())
+      return constant.weekdayscasual.includes(value.toLowerCase());
     default:
       return value != null && value != constant.nothing;
-
   }
 };
 
 try {
-  module.exports = {code:new Codes(),client:new Client(),view:new View(),get:new Gets(),validType:new InputType(),stringIsValid, isOK(val){return String(val)==String(code.OK)},clog(msg){console.log(msg)}};
-} catch {
-  
-}
+  module.exports = {
+    code: new Codes(),
+    client: new Client(),
+    view: new View(),
+    get: new Gets(),
+    key:new Keys(),
+    validType: new InputType(),
+    stringIsValid,
+    isOK(val) {
+      return String(val) == String(code.OK);
+    },
+    clog(msg) {
+      console.log(msg);
+    },
+  };
+} catch {}

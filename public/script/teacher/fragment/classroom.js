@@ -43,7 +43,6 @@ class Classroom {
             otherclass:this.data.otherclasses[c]
           }).then((resp)=>{
             const classroom = resp.classroom;
-            clog(classroom);
             this.inchargeOf.innerHTML = `<span class="positive">Classroom ${classroom.classname}</span>`;
             let listview = `
             <div class="group-text fmt-center">${classroom.inchargeID?classroom.inchargename:'No incharge assigned'}</div>
@@ -133,7 +132,6 @@ class Classroom {
           target: "pseudousers",
           action: "receive",
         }).then((students) => {
-        clog(students);
           if (students.event != code.NO) {
             const requestDialog = new Dialog();
             requestDialog.setBackgroundColor(colors.transparent);
@@ -212,11 +210,10 @@ class Classroom {
       "Generating Link",
       `A link is being created for your to share with students of class ${this.data.classname}`
     );
-    postData(post.teacher.classroom, {
+    postJsonData(post.teacher.classroom, {
       target:"invite",
       action:"create",
     }).then((response) => {
-        clog(response);
         if (
           response.event == code.invite.LINK_EXISTS ||
           response.event == code.invite.LINK_CREATED
@@ -285,14 +282,12 @@ class Classroom {
   };
 
   revokeLink() {
-    clog("revoke link");
-    postData(post.teacher.classroom, {
+    postJsonData(post.teacher.classroom, {
       target: "invite",
       action: "disable",
     })
       .then((response) => {
         if (response.event == code.invite.LINK_DISABLED) {
-          clog("link disabled");
           parent.snackbar("All links are inactive now.", null, false);
           const nolinkdialog = new Dialog();
           nolinkdialog.setDisplay(
@@ -352,7 +347,6 @@ class Student{
 class ReceiveData{
     constructor(){
       this.otherclasses = getElement("otherclasses").innerHTML.split(',');
-      clog(this.otherclasses);
       this.hasclass = getElement("hasclassroom").innerHTML=='true';
       if(this.hasclass){
         this.classname = getElement("classname").innerHTML;

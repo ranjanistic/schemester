@@ -38,18 +38,18 @@ class UIID{
     this.rememberuiid.onTurnChange(_=>{
       this.saveuiid = true;
       this.uiidField.onTextInput(_=>{
-        localStorage.setItem('uiid',this.uiidField.getInput());  
+        localStorage.setItem(key.student.rememberuiid,this.uiidField.getInput());  
       })
-      localStorage.setItem('uiid',this.uiidField.getInput());
+      localStorage.setItem(key.student.rememberuiid,this.uiidField.getInput());
     },_=>{
       this.saveuiid = false
-      localStorage.removeItem('uiid')
+      localStorage.removeItem(key.student.rememberuiid)
     })
-    if(localStorage.getItem('uiid')){
+    if(localStorage.getItem(key.student.rememberuiid)){
       if(!back){
         this.rememberuiid.turn();
-        this.uiidField.setInput(localStorage.getItem('uiid'));
-        sessionStorage.setItem('uiid',this.uiidField.getInput());
+        this.uiidField.setInput(localStorage.getItem(key.student.rememberuiid));
+        sessionStorage.setItem(key.uiid,this.uiidField.getInput());
         this.uiidField.activate();
         this.uiidField.disableInput();
         return new Classname();
@@ -73,9 +73,10 @@ class UIID{
         this.uiidField.activate();
         this.uiidField.disableInput();
         if(this.saveuiid){
-          localStorage.setItem('uiid', uiid);
+          localStorage.setItem(key.student.rememberuiid, uiid);
+          localStorage.setItem(key.uiid, uiid);
         }
-        sessionStorage.setItem('uiid',uiid);
+        sessionStorage.setItem(key.uiid,uiid);
         new Classname();
       } else {
         this.uiidField.showError('No such institution');
@@ -87,7 +88,7 @@ class UIID{
     });
   }
   uiidCheck(checkeduiid = null){
-    sessionStorage.setItem('uiid',checkeduiid);
+    sessionStorage.setItem(key.uiid,checkeduiid);
   }  
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
@@ -121,7 +122,7 @@ class Classname{
     };
   }
   getUIID(){
-    return sessionStorage.getItem('uiid');
+    return sessionStorage.getItem(key.uiid);
   }
   classnameProcedure(classname){
     postData(post.student.auth,{
@@ -150,10 +151,10 @@ class Classname{
 
   }
   classCheck(checkedEmail = null){
-    sessionStorage.setItem('userclass',checkedEmail);
+    sessionStorage.setItem(key.classroom,checkedEmail);
   }
   isClassChecked(){
-    return sessionStorage.getItem('userclass');
+    return sessionStorage.getItem(key.classroom);
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
@@ -188,10 +189,10 @@ class Email{
     };
   }
   getUIID(){
-    return sessionStorage.getItem('uiid');
+    return sessionStorage.getItem(key.uiid);
   }
   getClassname(){
-    return sessionStorage.getItem('userclass');
+    return sessionStorage.getItem(key.classroom);
   }
   emailIDProcedure(emailid){
     postData(post.student.auth,{
@@ -224,10 +225,10 @@ class Email{
 
   }
   emailCheck(checkedEmail = null){
-    sessionStorage.setItem('useremail',checkedEmail);
+    sessionStorage.setItem(key.email,checkedEmail);
   }
   isEmailChecked(){
-    return sessionStorage.getItem('useremail');
+    return sessionStorage.getItem(key.email);
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
@@ -253,7 +254,7 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    resumeElementRestriction(this.forgotPassword,"studentforgot",_=>{
+    resumeElementRestriction(this.forgotPassword,key.student.forgotpassword,_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
     });
 
@@ -285,13 +286,13 @@ class Password{
     });
   }
   getUIID(){
-    return sessionStorage.getItem('uiid');
+    return sessionStorage.getItem(key.uiid);
   }
   getClassname(){
-    return sessionStorage.getItem('userclass');
+    return sessionStorage.getItem(key.classroom);
   }
   getEmail(){
-    return sessionStorage.getItem('useremail');
+    return sessionStorage.getItem(key.email);
   }
   loader=(show=true)=>{
     visibilityOf(this.logInLoader, show);
@@ -319,7 +320,7 @@ class Password{
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
-        restrictElement(this.forgotPassword,120,'studentforgot',_=>{
+        restrictElement(this.forgotPassword,120,key.student.forgotpassword,_=>{
           this.forgotPassword.onclick = (_) => {this.linkSender()};
         });
       })
@@ -327,49 +328,48 @@ class Password{
   }
 
   handleAuthResult=(result)=>{
+    if(result.event == code.auth.AUTH_SUCCESS){
+      saveDataLocally(result.user);
+      return relocate(locate.student.session,{
+        u:result.user.uid,
+        target:result.target
+      });
+    }
+    this.loader(false);
     switch (result.event) {
-      case code.auth.AUTH_SUCCESS:{
-        saveDataLocally(result.user);
-        return relocate(locate.student.session,{
-          u:result.user.uid,
-          target:result.target
-        });
-      };
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);
-        this.proceed.innerHTML = "Retry";
-      }break;
+        return this.proceed.innerHTML = "Retry";
+      }
       case code.inst.INSTITUTION_NOT_EXISTS:{
         clearLocalData();
-        location.reload();
-      }break;
+        return location.reload();
+      }
       case code.auth.EMAIL_INVALID:{
-        this.previous.click();
-      }break;
+        return this.previous.click();
+      }
       case code.auth.REQ_LIMIT_EXCEEDED:{
         snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
-        this.proceed.textContent = "Disabled";
-      }break;
+        return this.proceed.textContent = "Disabled";
+      }
       case code.auth.ACCOUNT_RESTRICTED:{
         this.proceed.textContent = "Retry";
-        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)
-      });
-      }break;
+        return snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)
+        });
+      }
       case code.auth.AUTH_REQ_FAILED:{
         this.proceed.textContent = "Retry";
-        snackBar("Request failed.", null, false);
-      }break;
+        return snackBar("Request failed.", null, false);
+      }
       default: {
         this.proceed.textContent = "Retry";
         show(this.forgotPassword);
-        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
+        return snackBar(result.event+':'+result.msg, "Report");
       }
     }
-    this.loader(false);
   }
-
 }
 
-window.onload =_=> window.app = new StudentLogin();
+window.onload =_=> new StudentLogin();
 

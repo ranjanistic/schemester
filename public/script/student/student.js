@@ -100,7 +100,6 @@ const showStudentRegistration = (
               studialog.validateNow(4);
             } else {
               studialog.loader();
-              clog("posting");
               postJsonData(post.student.auth, {
                 action: post.student.action.signup,
                 pseudo: true,
@@ -111,11 +110,9 @@ const showStudentRegistration = (
                 password: studialog.getInputValue(4),
               })
                 .then((response) => {
-                  clog(response);
                   switch (response.event) {
                     case code.auth.ACCOUNT_CREATED:
                       {
-                        clog(response.user);
                         saveDataLocally(response.user);
                         relocate(locate.student.session, {
                           u: response.user.uid,
@@ -180,7 +177,6 @@ const showStudentRegistration = (
                       }
                       break;
                     default: {
-                      clog("in default");
                       studialog.hide();
                       snackBar(`${response.event}:${response.msg}`, "Report");
                     }

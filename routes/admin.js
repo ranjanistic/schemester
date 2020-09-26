@@ -299,7 +299,6 @@ admin.get(get.session, async(req, res) => {
       }
     });
 });
-const authFail=(e)=>({result:code.eventmsg(code.auth.AUTH_FAILED,e)});
 
 /**
  * For self account subdoc (Admin collection).
@@ -314,7 +313,7 @@ admin.post("/self", async (req, res) => {
   }
   session.verify(req, sessionsecret)
   .catch(e=>{
-    return authFail(e);
+    return authreqfailed(e);
   })
   .then(async (response) => {
     if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
@@ -594,18 +593,5 @@ admin.get(get.external, async (req, res) => {
     default:res.render(view.notfound);
   }
 });
-
-const getAdminShareData = (data = {}) => {
-  return {
-    isAdmin: true,
-    [session.sessionUID]: data._id,
-    username: data.username,
-    [session.sessionID]: data.email,
-    uiid: data.uiid,
-    createdAt: data.createdAt,
-    verified: data.verified,
-    vlinkexp: data.vlinkexp,
-  };
-};
 
 module.exports = admin;

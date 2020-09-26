@@ -21,7 +21,6 @@ class TeacherLogin{
   }
 }
 
-
 class UIID{
   constructor(back = false){
     hide(getElement("previous"));
@@ -38,19 +37,19 @@ class UIID{
     this.rememberuiid.onTurnChange(_=>{
       this.saveuiid = true;
       this.uiidField.onTextInput(_=>{
-        localStorage.setItem('uiid',this.uiidField.getInput());  
+        localStorage.setItem(key.teacher.rememberuiid,this.uiidField.getInput());
       })
-      localStorage.setItem('uiid',this.uiidField.getInput());
+      localStorage.setItem(key.teacher.rememberuiid,this.uiidField.getInput());
     },_=>{
       this.saveuiid = false
-      localStorage.removeItem('uiid')
+      localStorage.removeItem(key.teacher.rememberuiid)
     })
     
-    if(localStorage.getItem('uiid')){
+    if(localStorage.getItem(key.teacher.rememberuiid)){
       if(!back){
         this.rememberuiid.on();
-        this.uiidField.setInput(localStorage.getItem('uiid'));
-        sessionStorage.setItem('uiid',this.uiidField.getInput());
+        this.uiidField.setInput(localStorage.getItem(key.teacher.rememberuiid));
+        sessionStorage.setItem(key.uiid,this.uiidField.getInput());
         this.uiidField.activate();
         this.uiidField.disableInput();
         return new Email();
@@ -58,7 +57,7 @@ class UIID{
     }
     
     this.uiidField.validate();
-    this.uiidCheck(null);
+    this.uiidCheck();
     this.proceed.onclick =_=>{
       if(!this.uiidField.isValid()){
         return this.uiidField.validateNow();
@@ -70,7 +69,7 @@ class UIID{
    uiidProcedure(uiid){
     postJsonData(post.teacher.auth,{
       action:post.teacher.action.login,
-      type:'uiid',
+      type:key.uiid,
       uiid:uiid
     }).then(response=>{
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
@@ -78,9 +77,9 @@ class UIID{
         this.uiidField.activate();
         this.uiidField.disableInput();
         if(this.saveuiid){
-          localStorage.setItem('uiid', uiid);
+          localStorage.setItem(key.teacher.rememberuiid, uiid);
         }
-        sessionStorage.setItem('uiid',uiid);
+        sessionStorage.setItem(key.uiid,uiid);
         new Email();
       } else {
         this.uiidField.showError('No such institution');
@@ -92,9 +91,9 @@ class UIID{
     });
   }
   uiidCheck(checkeduiid = null){
-    sessionStorage.setItem('uiid',checkeduiid);
+    checkeduiid?sessionStorage.setItem(key.uiid,checkeduiid):sessionStorage.removeItem(key.uiid);
   }  
-  loader=(show=true)=>{
+  loader(show=true){
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.proceed, !show);
   }
@@ -127,7 +126,7 @@ class Email{
     };
   }
   getUIID(){
-    return sessionStorage.getItem('uiid');
+    return sessionStorage.getItem(key.uiid);
   }
   
   emailIDProcedure(emailid){
@@ -160,12 +159,12 @@ class Email{
 
   }
   emailCheck(checkedEmail = null){
-    sessionStorage.setItem('useremail',checkedEmail);
+    sessionStorage.setItem(key.email,checkedEmail);
   }
   isEmailChecked(){
-    return sessionStorage.getItem('useremail');
+    return sessionStorage.getItem(key.email);
   }
-  loader=(show=true)=>{
+  loader(show=true){
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.proceed, !show);
   }
@@ -189,11 +188,11 @@ class Password{
     hide(this.forgotPassword);
     this.passField.validate(_=>{hide(this.forgotPassword)});
 
-    resumeElementRestriction(this.forgotPassword,"teacherforgot",_=>{
+    resumeElementRestriction(this.forgotPassword,key.teacher.forgotpassword,_=>{
       this.forgotPassword.onclick = (_) => {this.linkSender()};
     });
 
-    this.previous.onclick = _=>{
+    this.previous.onclick=_=>{
       this.passField.hide();
       new Email();
     };
@@ -220,12 +219,12 @@ class Password{
     })
   }
   getEmail(){
-    return sessionStorage.getItem('useremail');
+    return sessionStorage.getItem(key.email);
   }
   getUIID(){
-    return sessionStorage.getItem('uiid');
+    return sessionStorage.getItem(key.uiid);
   }
-  loader=(show=true)=>{
+  loader(show=true){
     visibilityOf(this.logInLoader, show);
     visibilityOf(this.proceed, !show);
     opacityOf(this.view,show?0.5:1);
@@ -235,7 +234,7 @@ class Password{
     if(!stringIsValid(this.getEmail(),validType.email)){ this.previous.click(); return snackBar('Provide your valid email address');}
     snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
       this.forgotPassword.onclick = (_) => {};
-      snackBar(`Sending link to ${this.getEmail()}`);
+      snackBar(`Sending link to ${this.getEmail()}...`);
       postJsonData(post.teacher.manage,{
         external:true,
         type:"resetpassword",
@@ -250,57 +249,56 @@ class Password{
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
-        restrictElement(this.forgotPassword,120,'teacherforgot',_=>{
+        restrictElement(this.forgotPassword,120,key.teacher.forgotpassword,_=>{
           this.forgotPassword.onclick = (_) => {this.linkSender()};
         });
       })
     })
   }
 
-  handleAuthResult=(result)=>{
+  handleAuthResult(result){
+    if(result.event == code.auth.AUTH_SUCCESS){
+      saveDataLocally(result.user);
+      return relocate(locate.teacher.session,{
+        u:result.user.uid,
+        target:result.target
+      });
+    }
+    this.loader(false);
     switch (result.event) {
-      case code.auth.AUTH_SUCCESS:{
-        saveDataLocally(result.user);
-        return relocate(locate.teacher.session,{
-          u:result.user.uid,
-          target:result.target
-        });
-      };
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
         show(this.forgotPassword);
-        this.proceed.innerHTML = "Retry";
-      }break;
+        return this.proceed.innerHTML = "Retry";
+      }
       case code.inst.INSTITUTION_NOT_EXISTS:{
         clearLocalData();
-        location.reload();
-      }break;
+        return location.reload();
+      }
       case code.auth.EMAIL_INVALID:{
-        this.previous.click();
-      }break;
+        return this.previous.click();
+      }
       case code.auth.REQ_LIMIT_EXCEEDED:{
         snackBar("Too many unsuccessfull attempts, try again after a while.","Hide",actionType.negative);
-        this.proceed.textContent = "Disabled";
-      }break;
+        return this.proceed.textContent = "Disabled";
+      }
       case code.auth.ACCOUNT_RESTRICTED:{
         this.proceed.textContent = "Retry";
-        snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)
+        return snackBar("This account has been disabled. You might want to contact us directly.","Help",false,_=> {feedBackBox(true,getLogInfo(result.event,"This account has been disabled. You might want to contact us directly."),true)
       });
-      }break;
+      }
       case code.auth.AUTH_REQ_FAILED:{
         this.proceed.textContent = "Retry";
-        snackBar("Request failed.", null, false);
-      }break;
+        return snackBar("Request failed.", null, false);
+      }
       default: {
         this.proceed.textContent = "Retry";
         show(this.forgotPassword);
-        snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
+        return snackBar(result.event+':'+result.msg, "Report", false);
       }
     }
-    this.loader(false);
   }
-
 }
 
-window.onload =_=> window.app = new TeacherLogin();
+window.onload =_=> new TeacherLogin();
 

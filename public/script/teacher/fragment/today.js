@@ -149,7 +149,6 @@ class ReceiveData{
             this.totaldays = String(getElement("daysInWeek").innerHTML).split(',');
         }
         this.today = getElement("today").innerHTML == 'false'?false:true;
-        clog(this.today);
         if(this.today){
             this.classname = [];
             this.subject = [];

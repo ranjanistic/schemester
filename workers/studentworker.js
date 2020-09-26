@@ -33,7 +33,6 @@ class StudentWorker {
         i++;
       }
     }
-    clog(path);
     return path;
   };
 }
@@ -107,7 +106,7 @@ class Self {
         return studentdoc?student:code.event(code.auth.USER_NOT_EXIST);
       }
       async createAccount(uiid, classname, newstudent) {
-        clog("og");
+
         const doc = await Institute.findOneAndUpdate(
           {
             uiid: uiid,
@@ -119,7 +118,6 @@ class Self {
             $push: { [studentspath]: newstudent }, //new student push
           }
         );
-        clog(doc);
         return code.event(doc.value ? code.OK : code.NO);
       }
 
@@ -141,7 +139,6 @@ class Self {
             },
           }
         );
-        clog(doc);
         return code.event(doc.value ? code.OK : code.NO);
       }
 
@@ -150,7 +147,6 @@ class Self {
        */
       changeName = async (user, body) => {
         let student = await getStudentById(user.uiid, user.classname, user.id);
-        clog(student);
         const pseudo = student ? false : true;
         student = student
           ? student
@@ -173,7 +169,6 @@ class Self {
             ],
           }
         );
-        clog(newstudent.result);
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
 
@@ -182,7 +177,6 @@ class Self {
        */
       changePassword = async (user, body) => {
         let student = await getStudentById(user.uiid, user.classname, user.id);
-        clog(student);
         const pseudo = student ? false : true;
         student = student
           ? student
@@ -213,7 +207,7 @@ class Self {
             ],
           }
         );
-        clog(newstudent.result);
+
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
 
@@ -222,7 +216,6 @@ class Self {
        */
       changeEmailID = async (user, body) => {
         let student = await getStudentById(user.uiid, user.classname, user.id);
-        clog(student);
         const pseudo = student ? false : true;
         student = student
           ? student
@@ -251,7 +244,6 @@ class Self {
             ],
           }
         );
-        clog(newstudent.result);
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
 
@@ -260,7 +252,7 @@ class Self {
        */
       deleteAccount = async (user) => {
         let student = await getStudentById(user.uiid, user.classname, user.id);
-        clog(student);
+
         const pseudo = student ? false : true;
         student = student
           ? student
@@ -280,7 +272,6 @@ class Self {
             arrayFilters: [{ "outer.classname": user.classname }],
           }
         );
-        clog(newstudent.result);
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
     }
@@ -335,7 +326,6 @@ class Self {
           cid: body.cid,
           instID: body.instID,
         });
-        clog(linkdata); 
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
@@ -376,8 +366,7 @@ class Self {
   handlePassReset = async (user, body) => {
     switch (body.action) {
       case "send":{
-          clog("insend");
-          clog(body);
+
           if (!user) {
             //user not logged in
             const classdoc = await Institute.findOne({
@@ -386,7 +375,7 @@ class Self {
               },
               { projection: { _id: 1, "users.classes.$": 1 } }
             );
-            clog(classdoc);
+
             if (!classdoc) code.event(code.inst.CLASS_NOT_FOUND);
             let student = share.getStudentShareData(classdoc.users.classes[0].students.find((stud) =>stud.studentID == body.email));
             if (!student) {
@@ -399,30 +388,23 @@ class Self {
                 },
                 { projection: { _id: 1, "pseudousers.classes.$": 1 } }
               );
-              clog(pseudodoc);
               if (!pseudodoc) return code.event(code.inst.CLASS_NOT_FOUND); //don't tell if user not exists, while sending reset email.
               student = share.getPseudoStudentShareData(pseudodoc.pseudousers.classes[0].students.find((stud) =>stud.studentID == body.email));
-              clog(student);
               if (!student) return code.event(code.OK);
               body["instID"] = pseudodoc._id;
               body["cid"] = pseudodoc.pseudousers.classes[0]._id;
-              clog(body);
               return await this.handlePassReset({ id: student.uid }, body);  
             }
             body["instID"] = classdoc._id;
             body["cid"] = classdoc.users.classes[0]._id;
-            clog(body);
-            clog("here");
+
             return await this.handlePassReset({ id: student.uid }, body);
           }
-          clog("gotcha");
-          clog(user);
           const linkdata = await reset.generateLink(client.student, {
             uid: user.id,
             cid: body.cid,
             instID: body.instID,
           });
-          clog(linkdata);
           if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
           return await mailer.sendPasswordResetEmail(linkdata);
         }

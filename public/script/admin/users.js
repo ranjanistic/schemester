@@ -51,7 +51,6 @@ class Classrooms {
               }
             }
           }).then((resp) => {
-            clog(resp);
             if(resp.event == code.OK){
               return location.reload();
             }
@@ -129,7 +128,6 @@ class Classrooms {
                 cid: classtab.classID,
                 newinchargeID: setincharge.getInputValue(0).trim(),
               }).then((resp) => {
-                clog(resp);
                 if (resp.event == code.OK) {
                   return location.reload();
                 }
@@ -152,7 +150,6 @@ class Classrooms {
                           cid: classtab.classID,
                           newinchargeID: resp.inchargeID,
                         }).then((resp) => {
-                          clog(resp);
                           if (resp.event == code.OK) {
                             return location.reload();
                           }
@@ -285,7 +282,6 @@ class Teachers {
                 type: "personalinvite",
               })
                 .then((res) => {
-                  clog(res);
                   if (res.event == code.mail.MAIL_SENT) {
                     restrictElement(requests[p],60,`requestteacher${p}`,_=>{
                       requests[p].onclick=requests[p].onclick;
@@ -325,7 +321,6 @@ class Teachers {
           requestDialog.transparent();
           let bodytext = `<center>${teachers.length} people have requested to join as teacher.</center><br/>`;
           teachers.forEach((teacher, t) => {
-            clog(teacher);
             if (teacher.verified) {
               bodytext += `
               <div class="fmt-row tab-view" id="request${t}">
@@ -453,7 +448,6 @@ class Teachers {
                 classname: makeincharge.getInputValue(0).trim(),
                 newinchargeID: teachertab.teacherID,
               }).then((resp) => {
-                clog(resp);
                 if (resp.event == code.OK) {
                   return location.reload();
                 }
@@ -471,7 +465,6 @@ class Teachers {
                           classname: makeincharge.getInputValue(0).trim(),
                           newinchargeID: teachertab.teacherID,
                         }).then((resp) => {
-                          clog(resp);
                           if (resp.event == code.OK) {
                             return location.reload();
                           }
@@ -557,7 +550,6 @@ window.onload = (_) => {
       theme.setLight();
     }
   );
-  clog(getElement("client").innerHTML);
   getElement("client").innerHTML == client.teacher
     ? new Teachers()
     : new Classrooms();

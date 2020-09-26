@@ -39,14 +39,11 @@ class PasswordReset {
           },{
             returnOriginal:false
           });
-          clog(teacherdoc);
           if(!teacherdoc.value){
             const pseudodoc = await Institute.findOneAndUpdate({_id:ObjectId(data.instID),"pseudousers.teachers":{$elemMatch:{"_id":ObjectId(data.uid)}}},{
               $set:{"pseudousers.teachers.$.rlinkexp":exp}
               },{returnOriginal:false}
             );
-            clog("pseduo");
-            clog(pseudodoc);
             if(!pseudodoc.value) return false;
             const teacher = pseudodoc.value.pseudousers.teachers.find((teacher)=>String(teacher._id)==String(data.uid));
             to = teacher.teacherID;
@@ -59,7 +56,6 @@ class PasswordReset {
           link = `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&u=${data.uid}&exp=${exp}`;
         }break;
         case client.student:{
-          clog(data);
           const studdoc = await Institute.updateOne({_id:ObjectId(data.instID)},{
             $set:{
               "users.classes.$[outer].students.$[outer1].rlinkexp":exp
@@ -67,7 +63,6 @@ class PasswordReset {
           },{
             arrayFilters:[{"outer._id":ObjectId(data.cid)},{"outer1._id":ObjectId(data.uid)}]
           });
-          clog(studdoc.result);
           const classdoc = await Institute.findOne({_id:ObjectId(data.instID),
             "users.classes":{$elemMatch:{"_id":ObjectId(data.cid)}}
           },{projection:{"users.classes.$":1}});
@@ -83,7 +78,6 @@ class PasswordReset {
             },{
               arrayFilters:[{"outer.classname":classdoc.users.classes[0].classname},{"outer1._id":ObjectId(data.uid)}]
             });
-            clog(pseudodoc.result);
             if(!pseudodoc.result.nModified) return false;
             const doc = await Institute.findOne({_id:ObjectId(data.instID),
               "pseudousers.classes":{$elemMatch:{"classname":classdoc.users.classes[0].classname}}

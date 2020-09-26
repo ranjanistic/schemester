@@ -75,7 +75,6 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
       teachdialog.onButtonClick([
           (_) => {
             if (!teachdialog.allValid()) {
-              clog("invalid");
               teachdialog.validateNow(0, (_) => {
                 teachdialog.getInput(1).focus();
               });
@@ -88,8 +87,7 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
               teachdialog.validateNow(3);
             } else {
               teachdialog.loader();
-              clog("posting");
-              postData(post.teacher.auth, {
+              postJsonData(post.teacher.auth, {
                 action: post.teacher.action.signup,
                 pseudo: true,
                 uiid: teachdialog.getInputValue(0),
@@ -98,9 +96,7 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
                 password: teachdialog.getInputValue(3),
               })
                 .then((response) => {
-                  clog(response);
                   if(response.event == code.auth.ACCOUNT_CREATED){
-                    clog(response);
                     saveDataLocally(response.user);
                     return relocate(locate.teacher.session, {
                       u: response.user.uid,
@@ -134,7 +130,6 @@ const showTeacherRegistration = (visible = true, email = null, uiid = null) => {
                       "This doesn't seem like a name."
                     );
                     default: {
-                      clog("in default");
                       teachdialog.hide();
                       return snackBar(`${response.event}:${response.msg}`, "Report");
                     }

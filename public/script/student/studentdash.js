@@ -69,7 +69,6 @@ class StudentDash{
     }
 }
 async function linkSender(onsuccess=_=>{}){
-    clog("showing");
     snackBar(`To reset your password, a link will be sent to your email address.`,'Send Link',true,_=>{
       postJsonData(post.student.manage,{
         type:"resetpassword",
@@ -183,7 +182,6 @@ class Pseudostudent{
 }
 
 window.onload=_=>{
-    clog("dahsloaded")
      try{
         new StudentDash();
     }catch{

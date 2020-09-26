@@ -76,7 +76,6 @@ class Verification {
       type: "verification",
       action: "send",
     }).then((response) => {
-      clog(response);
       this.afterSend(response);
     }).catch((e) => {
       clog(e);
@@ -108,13 +107,10 @@ class Verification {
       case client.teacher:postlink = post.teacher.self;break;
       case client.student:postlink = post.student.self;break;
     }
-    clog(postlink);
     postJsonData(postlink,{
       target:"account",
       action:code.action.ACCOUNT_DELETE,
     }).then(response=>{
-      clog("theresponse");
-      clog(response);
       if(response.event == code.OK){
         finishSession(this.data.client,_=>{
           this.view.innerHTML = `<button class="positive-button" onclick="relocate(locate.homepage)">Explore schemester</button>`;

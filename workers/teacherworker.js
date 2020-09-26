@@ -85,7 +85,7 @@ class Self {
               "pseudousers.teachers.$":1
             }
           });
-          clog(share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid));
+
           return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
         }
         return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
@@ -171,7 +171,6 @@ class Self {
        */
       changePassword = async (user, body) => {
         let teacher = await getTeacherById(user.uiid,user.id);
-        clog(teacher);
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
@@ -195,7 +194,6 @@ class Self {
             },
           }
         );
-        clog(newteacher);
         return code.event(newteacher.value ? code.OK : code.NO);
       };
 
@@ -232,7 +230,6 @@ class Self {
             }
           });
         }
-        clog(newteacher);
         return code.event(newteacher.value? code.OK: code.NO);
       };
 
@@ -321,7 +318,6 @@ class Self {
           }
         }
         const adoc = await Admin.findOne({ _id: ObjectId(user.id) });
-        clog(adoc[this.getSpecificPath(body.specific)]);
         return code.event(
           adoc ? adoc[this.getSpecificPath(body.specific)] : code.NO
         );
@@ -360,7 +356,7 @@ class Self {
           uid: user.id,
           instID: body.instID,
         });
-        clog(linkdata);
+
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
@@ -438,13 +434,11 @@ class Self {
               body
             );
           }
-          clog(user);
           const linkdata = await reset.generateLink(client.teacher, {
             uid: user.id,
             instID: body.instID,
           });
           if(!linkdata) return 
-          clog(linkdata); code.event(code.mail.ERROR_MAIL_NOTSENT);
           return await mailer.sendPasswordResetEmail(linkdata);
       }
         break;
@@ -476,7 +470,6 @@ class Schedule {
       return code.event(code.schedule.SCHEDULE_EXISTS);
 
     if (incomplete) { //remove teacher schedule
-      clog("is incomplete");
       await Institute.findOneAndUpdate({ uiid: user.uiid },{
         $pull: { "schedule.teachers": { teacherID: body.teacherID } },
       });
@@ -524,9 +517,7 @@ class Schedule {
       },{
         arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.data.dayIndex}]
       });
-      clog("schedule overwritten?");
       //return if existing day is overwritten.
-      clog(doc.result);
       if(doc.result.nModified) return code.event(code.schedule.SCHEDULE_CREATED);
       doc = await Institute.findOneAndUpdate({
         uiid: user.uiid,
@@ -538,8 +529,6 @@ class Schedule {
       },{
         arrayFilters:[{"outer.teacherID":body.teacherID}]
       });
-      clog(doc.value);
-      clog("schedule appended?");
       return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED); //new day created.
     } else { 
       //no existing schedule teacherID
@@ -552,8 +541,6 @@ class Schedule {
           },
         }, //new teacher schedule push
       });
-      clog(doc.value);
-      clog("schedule created?");
       //return if teacher created in schedule
       return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);//new teacher new day created.
     }
@@ -569,7 +556,6 @@ class Schedule {
     });
     if(!scheduledoc) return false;
     const schedule = scheduledoc.schedule.teachers[0];
-    clog(schedule);
     
     fs.mkdir(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}`),()=>{
       const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
@@ -579,7 +565,6 @@ class Schedule {
     });
   }
   async getSchedule(user, body = {}){
-    clog(user);
     const teacheruser = await Institute.findOne({
         uiid: user.uiid,
         "users.teachers": { $elemMatch: { _id: ObjectId(user.id) } },
@@ -664,10 +649,6 @@ class Classroom {
     }
   }
   async updateClassroom(user, teacher, body, classroom) {
-    clog(user.uiid);
-    clog(classroom);
-    clog(teacher.teacherID);
-    clog(body.studentID);
     switch (body.specific) {
       case "addstudent": {
       }break;
@@ -679,7 +660,6 @@ class Classroom {
         },{
           arrayFilters:[{"outer.inchargeID":teacher.teacherID}]
         });
-        clog(deldoc.result)
         return code.event(deldoc.result.nModified?code.OK:code.NO);
       }
     }
@@ -727,7 +707,6 @@ class Classroom {
     classroom.students.forEach((stud,s)=>{
       classroom.students[s] = share.getStudentShareData(stud);
     });
-    clog(classroom);
     return {
       classroom: classroom,
       pseudostudents: pseudostudents,
@@ -736,7 +715,6 @@ class Classroom {
   }
 
   async handleInvitation(user, body, teacher, classroom,instID) {
-    clog(body);
     switch (body.action) {
       case "create":{
         return await invite.generateLink(client.student,{
@@ -787,7 +765,6 @@ class PseudoUsers {
     },
       { projection: { "pseudousers.classes.$": 1 } }
     );
-    clog(pclassdoc.pseudousers.classes[0].students);
     return pclassdoc
       ? pclassdoc.pseudousers.classes[0].students
       : code.event(code.NO);
@@ -832,7 +809,6 @@ class PseudoUsers {
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
   async rejectStudentRequest(user, body,classname) {
-    clog(body.studentID);
     const doc = await Institute.updateOne(
       {
         uiid: user.uiid,
@@ -846,14 +822,13 @@ class PseudoUsers {
         },
       }
     );
-    clog(doc.result);
+
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
 }
 module.exports = new TeacherWorker();
 
 async function getTeacherById(uiid,id,pseudo = false){
-  clog(pseudo);
   let path = pseudo?"pseudousers.teachers":"users.teachers";
   let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
   const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"_id":ObjectId(id)}}},{

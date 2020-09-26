@@ -73,7 +73,6 @@ class Today {
           switch (body.specific) {
             default: {
               const today = new Date().getDay();
-              clog(today);
               const instdoc = await Institute.findOne(
                 { uiid: user.uiid },
                 {
@@ -216,7 +215,6 @@ class Self {
        *
        */
       deleteAccount = async (user, uiid = null) => {
-        clog(uiid ? true : false);
         if (uiid) {
           const admin = await Admin.findOne({ _id: ObjectId(user.id) });
           if (admin.uiid != uiid) return code.event(code.auth.WRONG_UIID);
@@ -292,7 +290,6 @@ class Self {
           }
         }
         const adoc = await Admin.findOne({ _id: ObjectId(user.id) });
-        clog(adoc[this.getSpecificPath(body.specific)]);
         return code.event(
           adoc ? adoc[this.getSpecificPath(body.specific)] : code.NO
         );
@@ -330,7 +327,6 @@ class Self {
         const linkdata = await verify.generateLink(client.admin, {
           uid: user.id,
         });
-        clog(linkdata);
         if (!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
@@ -349,7 +345,6 @@ class Self {
         const linkdata = await reset.generateLink(client.admin, {
           uid: user.id,
         });
-        clog(linkdata);
         if (!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendPasswordResetEmail(linkdata);
       }
@@ -446,7 +441,6 @@ class Default {
                 path.dirname(require.main.filename) + `/backups/${user.uiid}`
               ),
               (err) => {
-                clog(err);
                 const filename = `${user.id}_${
                   user.uiid
                 }_${timer.getTheMoment()}.json`;
@@ -457,7 +451,7 @@ class Default {
                   ),
                   JSON.stringify(institute),
                   (err) => {
-                    clog(err);
+
                     sendPromptCallback(filename, err);
                   }
                 );
@@ -507,7 +501,7 @@ class Default {
         return code.event(newinst ? code.OK : code.NO);
       }
       async setBreakDuration(user, body) {
-        clog(body);
+        
         const newinst = await Institute.findOneAndUpdate(
           { uiid: user.uiid },
           { $set: { [this.breakminpath]: Number(body.breakduration) } }
@@ -579,7 +573,6 @@ class Default {
     }
   };
   handleRegistration = async (user, body) => {
-    clog(body.data);
     if (!stringIsValid(body.data.default.institute.email, validType.email))
       return code.event(code.auth.EMAIL_INVALID);
     if (!stringIsValid(body.data.default.institute.phone, validType.phone))
@@ -698,7 +691,6 @@ class Users {
             });
           }
         });
-        clog(teachers);
         return {
           event: code.OK,
           teachers: teachers,
@@ -880,7 +872,6 @@ class Users {
             });
           }
         });
-        clog(classes);
         return {
           event: code.OK,
           classes: classes,
@@ -898,7 +889,6 @@ class Users {
           user,
           body.newclass.classname
         );
-        clog(classroom);
         if (classroom) return code.event(code.inst.CLASS_EXISTS);
         const teacher = await Institute.findOne({uiid:user.uiid,"users.teachers":{$elemMatch:{"teacherID":body.newclass.inchargeID}}});
         if(!teacher) return code.event(code.inst.INCHARGE_NOT_FOUND);
@@ -957,7 +947,6 @@ class Users {
             );
           }
           case code.action.SET_INCHARGE: {
-            clog(body);
             let classroom = body.classname
               ? await this.getClassByClassname(user, body.classname)
               : await this.getClassBy_id(user, body.cid);
@@ -1160,9 +1149,7 @@ class Schedule {
               ],
             }
           );
-          clog("schedule overwritten?");
           //return if existing day is overwritten.
-          clog(doc.result);
           if (doc.result.nModified)
             return code.event(code.schedule.SCHEDULE_CREATED);
           doc = await Institute.findOneAndUpdate(
@@ -1176,7 +1163,6 @@ class Schedule {
               $push: { "schedule.teachers.$.days": body.data }, //new day push
             }
           );
-          clog("schedule appended?");
           //return if a new day is appended
           return code.event(
             doc.value
@@ -1199,7 +1185,6 @@ class Schedule {
               }, //new teacher schedule push
             }
           );
-          clog("schedule created?");
           //return if teacher created in schedule
           return code.event(
             doc.value
@@ -1242,7 +1227,6 @@ class Schedule {
                   nonusers.push(teacher.teacherID);
                 }
               });
-              clog(nonusers);
               return { nonusers: nonusers };
             }
             break;
@@ -1261,7 +1245,6 @@ class Schedule {
                   });
                 });
               });
-              clog(newClasses);
               return {
                 event: code.OK,
                 classes: newClasses,
@@ -1305,7 +1288,6 @@ class Schedule {
             {
               if (body.teacherID) {
                 //rename a class of a teacher
-                clog(body);
                 const teacherdoc = await Institute.findOne({
                   uiid: user.uiid,
                   "schedule.teachers": {
@@ -1343,7 +1325,6 @@ class Schedule {
                     });
                   }
                 });
-                clog(clashes);
                 if (clashes.length) {
                   if (!body.switchclash)
                     return {
@@ -1406,7 +1387,6 @@ class Schedule {
                 return code.event(tscheduledoc.value ? code.OK : code.NO);
               } else {
                 //renaming class for all teachers
-                clog(body);
                 try {
                   let result = await Promise.all(
                     inst.schedule.teachers.map(async (teacher) => {
@@ -1420,7 +1400,6 @@ class Schedule {
                                   body["dayIndex"] = day.dayIndex;
                                   body["period"] = p;
                                   const res = await this.scheduleUpdate(user,body,inst);
-                                  clog(res);
                                   resolve(res);
                                 }
                               })
@@ -1430,11 +1409,8 @@ class Schedule {
                       );
                     })
                   );
-                  clog("result");
-                  clog(result);
                   return code.event(code.OK);
                 } catch (e) {
-                  clog(e);
                   return code.event(code.NO);
                 }
               }
@@ -1483,7 +1459,6 @@ class Schedule {
             break;
           case code.action.RENAME_SUBJECT:
             {
-              clog(body);
               if (body.teacherID) {
                 //only change in subject shift of a teacher
                 const path = `schedule.teachers.$[outer].days.$[outer1].period.${body.period}.subject`;
@@ -1506,7 +1481,6 @@ class Schedule {
                     ],
                   }
                 );
-                clog(instdoc);
                 return code.event(instdoc.value ? code.OK : code.NO);
               } else {
                 //change in subject of all teachers (correction type)
@@ -1549,7 +1523,6 @@ class Schedule {
                   });
                 })
               );
-              clog(res);
               if (res.find((teacher)=>teacher.value==null)) return code.event(code.NO);
               const daysinweek = inst.default.timings.daysInWeek;
               daysinweek.push(body.newdayindex);
@@ -1652,7 +1625,6 @@ class Schedule {
                     daysinweek.push(dindex);
                   }
                 });
-                clog(daysinweek);
                 return await new Default().timings.setDaysInWeek(
                   user,
                   daysinweek
@@ -1692,8 +1664,6 @@ class Schedule {
                   );
                 })
               );
-              clog("resperiod");
-              clog(res);
               if (res.find((teacher) => teacher.find((day)=>day.value == null)?true:false))
                 return code.event(code.NO);
               return await defaults.timings.setPeriodsInDay(
@@ -1719,7 +1689,6 @@ class Schedule {
                               if (p == body.oldperiod) {
                                 const oldpcontent = period; //content of original period
                                 const newpcontent = day.period[body.newperiod]; //content of replacement period
-                                clog(oldpcontent);
                                 const opath = `schedule.teachers.${t}.days.${d}.period.${body.oldperiod}`;  //original period path
                                 const path = `schedule.teachers.${t}.days.${d}.period.${body.newperiod}`; //replacement period path
                                 doc = await Institute.findOneAndUpdate(
@@ -1740,7 +1709,6 @@ class Schedule {
                     );
                   })
                 );
-                clog(res);
                 return code.event(res ? code.OK : code.NO);
               }
             }
@@ -1775,8 +1743,6 @@ class Schedule {
                   );
                 })
               );
-              clog("removeresperiod");
-              clog(res);
               if (!res) return code.event(code.NO);
               return await defaults.timings.setPeriodsInDay(
                 user,
@@ -1803,7 +1769,6 @@ class Schedule {
               },
             }
           );
-          clog(doc);
           return code.event(doc.value ? code.OK : code.NO);
         }
       }
@@ -1881,7 +1846,6 @@ class Schedule {
       async scheduleCreate(user, body) {
         switch (body.specific) {
           case code.action.CREATE_CLASSES: {
-            clog(body);
             const userclasslist = [],
               pseudoclasslist = [];
             body.classes.forEach((Class) => {
@@ -1914,7 +1878,6 @@ class Schedule {
                 },
               }
             );
-            clog(doc);
             return code.event(
               doc.value
                 ? code.inst.CLASSES_CREATED
@@ -1937,8 +1900,7 @@ class Schedule {
                   switchclash: body.switchclash,
                 },
                 inst
-              );
-              clog(result);
+              );              
               if (result.event == code.NO) return result;
               return inst.users.classes.length
                 ? await new Users().classes.updateClass(user, body, inst)
@@ -1957,8 +1919,7 @@ class Schedule {
            */
           case "switchteacher": {
             //specific
-            clog("switching start");
-            clog(body);
+            
             let newteacherschedoc = await Institute.findOne(
               {
                 uiid: user.uiid,
@@ -1983,8 +1944,6 @@ class Schedule {
                 }
               }
             );
-            clog("new teacher classname");
-            clog(newteacherclassname);
             if (!found) return code.event(code.NO);
             //new teacher classname update with current classname (probable clash with old teacher id classname)
             const res = await teacher.scheduleUpdate(
@@ -2000,7 +1959,6 @@ class Schedule {
               },
               inst
             );
-            clog(res);
             return res;
           }
           default:
@@ -2034,7 +1992,6 @@ class Schedule {
     }
   };
   handleScheduleClassesAction = async (user, body, inst) => {
-    clog(body.action);
     switch (body.action) {
       case "receive":
         return await this.classes.scheduleReceive(user, body);
@@ -2087,7 +2044,6 @@ class Invite {
     class TeacherAction {
       constructor() {}
       inviteLinkCreation = async (user, inst, body) => {
-        clog("post create link ");
         const result = await invite.generateLink(
           body.target,
           {
@@ -2096,11 +2052,9 @@ class Invite {
           },
           body.daysvalid
         );
-        clog(result);
         return result;
       };
       inviteLinkDisable = async (inst, body) => {
-        clog("post disabe link");
         return await invite.disableInvitation(body.target, {
           instID: inst._id,
         });

@@ -1,4 +1,3 @@
-// const { clog } = require("../codes");
 
 /**
  * Script for admin/schedule_view, for individual schedule view w.r.t administrator.
@@ -255,7 +254,6 @@ class Teacher{
     }
     setDataForDindex(dayIndex = Number(this.data.weekdays[0])){
         if(!this.schedule){
-            clog("from cloud");
         postJsonData(post.admin.schedule,{
             target:client.teacher,
             action:'receive',
@@ -263,10 +261,8 @@ class Teacher{
             teacherID:this.data.teacherID,
             dayIndex:dayIndex
         }).then(response=>{
-            clog(response);
             if(response.event == code.OK){
                 this.schedule = response.schedule;
-                clog(this.schedule);
                 this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
                 this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
             } else {
@@ -276,13 +272,11 @@ class Teacher{
             clog(e);
         });
         } else {
-            clog("from memory");
             this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
             this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
         }
     }
     setPeriodsView(periods,index){
-        clog("period settter");
         let rows = constant.nothing;
         
         periods.forEach((period,p)=>{
@@ -355,7 +349,6 @@ class Teacher{
                     newclassname:this.classeditable[p].getInputValue()
                 }).then(response=>{
                     this.classeditable[p].load(false);
-                    clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
                         this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
@@ -415,7 +408,6 @@ class Teacher{
                     newsubject:this.subjecteditable[p].getInputValue()
                 }).then(response=>{
                     this.subjecteditable[p].load(false);
-                    clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
                         this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
@@ -433,7 +425,6 @@ class Teacher{
     }
     startPeriodTimers= async(index)=>{
         const gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-        clog(gap);
         const indicator = setInterval(async ()=>{
                 const date = new Date();
                 for(let p=0;p<this.data.totalperiods;p++){
@@ -581,17 +572,14 @@ class Class{
     }
     setDataForDindex(dayIndex = Number(this.data.weekdays[0])){
         if(!this.schedule){
-            clog("from cloud");
         postJsonData(post.admin.schedule,{
             target:client.student,
             action:'receive',
             classname:this.data.classname,
             dayIndex:dayIndex
         }).then(response=>{
-            clog(response);
             if(response.event == code.OK){
                 this.schedule = response.schedule;
-                clog(this.schedule);
                 this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
                 this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
             } else {
@@ -601,14 +589,12 @@ class Class{
             clog(e);
         });
         } else {
-            clog("from memory");
             this.theday = this.schedule.days.find((day)=>day.dayIndex == dayIndex)
             this.setPeriodsView([this.theday.period][0],this.data.weekdays.indexOf(String(dayIndex)));
         }
     }
 
     setPeriodsView(periods,index){
-        clog("period settter");
         let rows = constant.nothing;
         periods.forEach((period,p)=>{
             rows+=                    
@@ -688,7 +674,6 @@ class Class{
                     newsubject:this.subjecteditable[p].getInputValue()
                 }).then(response=>{
                     this.subjecteditable[p].load(false);
-                    clog(response);
                     if(response.event == code.OK){
                         this.schedule = null;
                         this.dayshows[this.data.weekdays.indexOf(this.currentdayIndex)].click();
@@ -740,7 +725,6 @@ class Class{
                     oldteacherID:this.teachereditable[p].displayText(),
                     newteacherID:this.teachereditable[p].getInputValue()
                 }).then(response=>{
-                    clog(response);
                     this.teachereditable[p].load(false);
                     if(response.event == code.OK){
                         this.schedule = null;
@@ -760,7 +744,6 @@ class Class{
     }
     startPeriodTimers= async(index)=>{
         const gap = (((this.data.periodduration - (this.data.periodduration%60))/60)*100) + (this.data.periodduration%60)
-        clog(gap);
         const indicator = setInterval(async ()=>{
             const date = new Date();
             for(let p=0;p<this.data.totalperiods;p++){

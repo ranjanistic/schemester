@@ -196,7 +196,6 @@ class TeacherFiller {
   }
 
   fillScheduleFromfile(teacher){
-    clog(teacher);
     try{
     teacher.days.forEach(day=>{
       day.period.forEach((period,p)=>{
@@ -287,7 +286,6 @@ class TeacherFiller {
       data: data,
     })
       .then((response) => {
-        clog(response);
         this.handleScheduleResponse(response);
       })
       .catch((error) => {
@@ -330,7 +328,6 @@ class TeacherFiller {
       data: data,
     })
       .then((response) => {
-        clog(response);
         this.handleScheduleResponse(response);
       })
       .catch((error) => {
@@ -400,7 +397,6 @@ class TeacherFiller {
                 target:client.teacher,
                 type:'personalinvite'
               }).then(res=>{
-                clog(res);
                 if(res.event == code.mail.MAIL_SENT){
                   snackBar(`Request email has been sent to ${sessionStorage.getItem("teacherID")}.`,'OK');
                   return new ScheduleComplete(this.data);
@@ -419,7 +415,6 @@ class TeacherFiller {
       }
     switch(response.event){
       case code.schedule.SCHEDULE_EXISTS:{
-          clog(response);
           if (this.data.isAdmin) {
             snackBar(
               `Schedule for ${sessionStorage.getItem(
@@ -456,7 +451,6 @@ class TeacherFiller {
               });
             };
           } else {
-            clog(response);
             this.teacherClass[response.clash.period].showError(
               `This class is already taken at this period by ${response.clash.clashwith}.`
             );
@@ -488,7 +482,6 @@ class ReceiveData {
     this.uiid = getElement("uiid").innerHTML;
     this.totalDays = String(getElement("daysInWeek").innerHTML).split(",");
     this.totalPeriods = Number.parseInt(getElement("periodsInDay").innerHTML);
-    clog(this.isAdmin);
     if (!this.isAdmin) {
       this.isTeacher = getElement("isTeacher").innerHTML ? true : false;
       this.teacherName = getElement("teachername").innerHTML;

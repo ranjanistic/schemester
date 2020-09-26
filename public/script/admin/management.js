@@ -752,7 +752,7 @@ class Schedule {
             this.reschedulePeriodsEditor();
           },
           (_) => {
-            clog("here");
+
             if (!this.scheduler.allValid()||Number(this.scheduler.getInputValue(0))<1||Number(this.scheduler.getInputValue(0))>periods) return this.scheduler.validateNow();
             this.scheduler.loader();
             postJsonData(post.admin.schedule, {
@@ -762,7 +762,7 @@ class Schedule {
               oldperiod: p,
               newperiod: Number(this.scheduler.getInputValue(0).trim())-1,
             }).then((response) => {
-              clog(response);
+
               if (response.event == code.OK) {
                 this.scheduler.loader(false);
                 snackBar(
@@ -788,7 +788,6 @@ class Schedule {
             specific: code.action.REMOVE_PERIOD,
             period: p,
           }).then((response) => {
-            clog(response);
             this.scheduler.loader(false);
             if (response.event == code.OK) {
               remainingperiods--;
@@ -944,7 +943,6 @@ class Schedule {
                 this.scheduler.getInputValue(0).toLowerCase().trim()
               ),
             }).then((response) => {
-              clog(response);
               if (response.event == code.OK) {
                 this.scheduler.loader(false);
                 snackBar(
@@ -973,7 +971,6 @@ class Schedule {
             specific: code.action.REMOVE_DAY,
             removedayindex: daysindices[d],
           }).then((response) => {
-            clog(response);
             this.scheduler.loader(false);
             if (response.event == code.OK) {
               remainingdays--;
@@ -1056,7 +1053,6 @@ class Security {
         postJsonData(post.admin.default,{
           target:code.inst.BACKUP_INSTITUTION
         }).then(resp=>{
-          clog(resp.url)
           snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
           hideLoader();
           restrictElement(this.backup,60,"backupinst",_=>{
@@ -1208,7 +1204,6 @@ class Security {
           postJsonData(post.admin.default,{
             target:code.inst.BACKUP_INSTITUTION
           }).then(resp=>{
-            clog(resp.url)
             snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
             refer(resp.url);
           }).catch(err=>{
@@ -1267,7 +1262,6 @@ class Security {
       type: "resetpassword",
       action: "send",
     }).then((response) => {
-      clog(response);
       if (response.event == code.mail.MAIL_SENT) {
         snackBar("A link for password reset has been sent to your email address.");
         restrictElement(this.sendpasslink,120,"sendpasslink",_=>{

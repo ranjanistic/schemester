@@ -18,12 +18,10 @@ class Dashboard {
           this.loader();
           new Today();
         };
-        clog("posting");
         postJsonData(post.admin.dashboard,{
           target:post.admin.target.today,
           action:post.admin.action.fetch,
         }).then(response=>{
-          clog(response);
           this.loader(false);
           if(response.timings.daysInWeek.includes(new Date().getDay())){
             const teachers = response.teachers;
@@ -180,7 +178,6 @@ class Dashboard {
  */
 class NoDataView {
   constructor() {
-    clog("NDV");
     this.data = new ReceiveData();
     sessionStorage.clear();
     this.addTeacher = getElement("addteacher");
@@ -217,7 +214,6 @@ class NoDataView {
  */
 class ConfirmClasses {
   constructor(receivedclasses) {
-    clog("CCS");
     sessionStorage.clear();
     class InchargeDialog {
       constructor(receivedclasses) {
@@ -317,7 +313,6 @@ class ConfirmClasses {
                 specific:code.action.CREATE_CLASSES,
                 classes:data,
               }).then((response) => {
-                clog(response);
                 if (response.event == code.inst.CLASSES_CREATED) {
                   location.reload();
                 } else {
@@ -428,8 +423,6 @@ class ConfirmClasses {
               oldclassname: this.classeditables[c].displayText(),
               newclassname: this.classeditables[c].getInputValue().trim(),
             }).then((response) => {
-              clog("dfsfsdf");
-              clog(response);
               this.classeditables[c].load(false);
               if (response.event == code.OK) {
                 this.classeditables[c].setDisplayText(
@@ -540,7 +533,6 @@ class BaseView {
           requestDialog.transparent();
           let bodytext = `<center>${this.data.requstees} people have requested to join ${this.data.instname} as teacher.</center><br/>`;
           teachers.forEach((teacher,t)=>{
-            clog(teacher);
             if(teacher.verified){
               bodytext += `
               <div class="fmt-row tab-view" id="request${t}">
@@ -623,7 +615,6 @@ class BaseView {
  */
 class ReceiveData {
   constructor() {
-    clog("RCVD");
     this.hasTeachers =
       getElement("hasTeachers").innerHTML == "true" ? true : false;
     this.hasTeacherSchedule =

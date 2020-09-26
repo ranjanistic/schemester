@@ -47,13 +47,11 @@ async function sendEmail(to, subject, html) {
   };
 
   const doc = transporter.sendMail(mailOptions).then(info=>{
-    clog("Email sent: " + info.response);
     return code.event(code.mail.MAIL_SENT);
   }).catch(error=>{
     clog(error);
     return code.event(code.mail.ERROR_MAIL_NOTSENT);
   });
-  clog(doc);
   return doc;
 }
 

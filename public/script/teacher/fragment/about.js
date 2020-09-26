@@ -80,7 +80,6 @@ class TeacherAbout {
         postJsonData(post.teacher.schedule,{
           action:code.schedule.CREATE_BACKUP
         }).then(resp=>{
-          clog(resp)
           parent.snackbar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
           restrictElement(this.backup,60,"backupschedule",_=>{
             this.backup.onclick=backup;

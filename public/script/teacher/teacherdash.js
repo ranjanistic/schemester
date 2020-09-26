@@ -218,7 +218,6 @@ class Pseudoteacher{
 }
 
 window.onload=_=>{
-    clog("dahsloaded");
      try{
         new TeacherDash();
     }catch{
