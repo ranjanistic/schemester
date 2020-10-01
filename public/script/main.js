@@ -1592,8 +1592,12 @@ const clearLocalData = (absolute = false) => {
     localStorage.clear();
   } else {
     const t = theme.getTheme();
+    const tuiid = localStorage.getItem(key.teacher.rememberuiid);
+    const suiid = localStorage.getItem(key.student.rememberuiid);
     localStorage.clear();
     theme.setTheme(t);
+    localStorage.setItem(key.teacher.rememberuiid,tuiid);
+    localStorage.setItem(key.student.rememberuiid,suiid);
   }
 };
 

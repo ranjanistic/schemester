@@ -3,37 +3,38 @@ const express = require("express"),
   {client,view,clog,get} = require("./public/script/codes"),
   server = express(),
   mongo = require('./config/db');
+
 server.set("view engine", "ejs");
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
 mongo.connectToServer(( err )=>{
-  if (err) console.log(err);
+  if (err) return clog(err);
   clog(`Connected to ${mongo.getDb().databaseName}`);
-  server.use(`/${client.admin}`, require("./routes/admin"));
-  server.use(`/${client.teacher}`, require("./routes/teacher"));
-  server.use(`/${client.student}`, require("./routes/student"));
+  server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
+  server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
+  server.use(`/${client.student}`, require(`./routes/${client.student}`));
 
   server.get(get.root, (req, res) => {
-    res.render(view.loader, { data:{ client: req.query.client ? req.query.client : null }});
+    res.render(view.loader, { data:{ client: req.query.client }});
   });
-  server.get(get.home, (_req, res) => {
+  server.get(get.home, (_, res) => {
     res.render(view.homepage);
   });
   server.get(get.offline,(_,res)=>{
     res.render(view.offline)
   });
-  server.get(get.notfound, (_req, _res, next) => {
+  server.get(get.notfound, (__, _, next) => {
     next();
   });
-  server.get(get.forbidder, (_req, _res, next) => {
+  server.get(get.forbidder, (__, _, next) => {
     next();
   });
-  server.get(get.servererror, (req, res, next) => {
+  server.get(get.servererror, (__, _, next) => {
     next();
   });
-  server.use((req, res, next) => {
+  server.use((req, res, _) => {
     res.status(404);
     res.format({
       html: function () {
@@ -48,7 +49,7 @@ mongo.connectToServer(( err )=>{
     });
   });
 
-  server.use((err, req, res) => {
+  server.use((err, _, res) => {
     res.status(err.status || 500);
     res.render(view.servererror, { error: err });
   });

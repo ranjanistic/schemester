@@ -45,7 +45,7 @@ class UIID{
       this.saveuiid = false
       localStorage.removeItem(key.student.rememberuiid)
     })
-    if(localStorage.getItem(key.student.rememberuiid)){
+    if(localStorage.getItem(key.student.rememberuiid)&&localStorage.getItem(key.student.rememberuiid)!='null'){
       if(!back){
         this.rememberuiid.turn();
         this.uiidField.setInput(localStorage.getItem(key.student.rememberuiid));
@@ -67,7 +67,7 @@ class UIID{
     };
   }
    uiidProcedure(uiid){
-    postData(post.student.auth,{action:post.student.action.login,type:'uiid',uiid:uiid}).then(response=>{
+    postJsonData(post.student.auth,{action:post.student.action.login,type:key.uiid,uiid:uiid}).then(response=>{
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
       if(response.event == code.inst.INSTITUTION_EXISTS){
         this.uiidField.activate();

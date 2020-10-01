@@ -45,7 +45,7 @@ class UIID{
       localStorage.removeItem(key.teacher.rememberuiid)
     })
     
-    if(localStorage.getItem(key.teacher.rememberuiid)){
+    if(localStorage.getItem(key.teacher.rememberuiid)&&localStorage.getItem(key.teacher.rememberuiid)!='null'){
       if(!back){
         this.rememberuiid.on();
         this.uiidField.setInput(localStorage.getItem(key.teacher.rememberuiid));
