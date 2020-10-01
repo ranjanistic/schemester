@@ -23,6 +23,7 @@ class Codes {
         this.DBNAME = "schemesterDB";
         this.ADMIN_COLLECTION = "0administrators";
         this.INSTITUTE_COLLECTION = "1institutions";
+        this.SESSION_COLLECTION = "2sessions";
       }
     }
     class Clientcodes {

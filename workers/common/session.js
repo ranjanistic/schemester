@@ -22,7 +22,7 @@ class Session {
     this.sessionID = "id";
     this.sessionUID = "uid";
     this.sessionKey = "bailment"; //bailment ~ amaanat
-    this.expiresIn = 30 * 86400; //days*seconds/day
+    this.expiresIn = 365 * 86400; //days*seconds/day
   }
   verify = async (request, secret) => {
     const token = request.signedCookies[this.sessionKey];
@@ -49,7 +49,11 @@ class Session {
           },
         };
     const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
-    return response.cookie(this.sessionKey, token, { signed: true });
+    try{
+      return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresIn*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
+    }catch(e){
+      clog(e)
+    }
   }
   finish = async (response) => {
     await response.clearCookie(this.sessionKey);

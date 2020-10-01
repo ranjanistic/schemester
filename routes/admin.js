@@ -1,6 +1,7 @@
 const express = require("express"),
   admin = express.Router(),
   cookieParser = require("cookie-parser"),
+  esession = require("express-session"),
   { ObjectId } = require("mongodb"),
   { check, validationResult } = require("express-validator"),
   {code,client,view,clog,get} = require("../public/script/codes"),
@@ -17,6 +18,7 @@ const express = require("express"),
   sessionsecret = session.adminsessionsecret;
 const invalidsession = {result:code.event(code.auth.SESSION_INVALID)},
   authreqfailed =(error)=>{ return {result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error)}}
+  
 admin.use(cookieParser(sessionsecret));
 
 admin.get(get.root, (_, res)=>{

@@ -3,11 +3,16 @@ const express = require("express"),
   {client,view,clog,get} = require("./public/script/codes"),
   server = express(),
   mongo = require('./config/db');
-
-server.set("view engine", "ejs");
-server.use(express.static("public"));
-server.use(bodyParser.urlencoded({ extended: true }));
+  server.set("view engine", "ejs");
+  server.use(express.static("public"));
+  server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
+
+//For localhost https env.
+// const https = require('https'),
+// fs = require('fs'),
+// key = fs.readFileSync('./localhost-key.pem'),
+// cert = fs.readFileSync('./localhost.pem');
 
 mongo.connectToServer(( err )=>{
   if (err) return clog(err);
@@ -55,5 +60,6 @@ mongo.connectToServer(( err )=>{
   });
   const server_port = process.env.PORT|| 3000 || 80;
   const server_host = '0.0.0.0' || 'localhost';
+  // https.createServer({key: key, cert: cert }, server).listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`)})
   server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`)})
 });
