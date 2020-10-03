@@ -1,7 +1,7 @@
 const CACHE_NAME = 'schemester-cache-v1';
 const urlsToCache = [
   //routes
-  '/', '', '/home', '/offline',
+  '/', '/home', '/offline','/manifest.json',
   //admin
   '/admin/auth/login',
   '/admin/session',
@@ -16,10 +16,38 @@ const urlsToCache = [
 
   //graphics
   '/graphic/schemester512.svg',
-
+  '/graphic/onethreeload.svg',
+  '/graphic/blueLoader.svg',
+  '/graphic/leftArrow.svg',
+  '/graphic/menudotsvertical.svg',
+  '/graphic/searchicon.svg',
+  '/graphic/elements/bellicon.svg',
+  '/graphic/elements/classicon.svg',
+  '/graphic/elements/editicon.svg',
+  '/graphic/elements/okicon.svg',
+  '/graphic/elements/reloadicon.svg',
+  '/graphic/elements/settingicon.svg',
+  '/graphic/elements/settings.svg',
+  '/graphic/elements/todayicon.svg',
+  '/graphic/elements/warnicon.svg',
+  '/graphic/elements/weekicon.svg',
+  '/graphic/icons/schemester128.png',
+  '/graphic/icons/schemester192.png',
+  '/graphic/icons/schemester256.png',
+  '/graphic/icons/schemester512.png',
+  '/graphic/icons/schemester512.svg',
+  '/graphic/illustrations/adminloginview.svg',
+  '/graphic/illustrations/teacherloginview.svg',
+  '/graphic/illustrations/studentloginview.svg',
+  '/graphic/illustrations/adminview.svg',
+  '/graphic/illustrations/teacherview.svg',
+  '/graphic/illustrations/studentview.svg',
+  '/graphic/illustrations/homebg.svg',
+  
   //stylesheets
   '/css/main.css',
   '/css/fmt.css',
+  '/css/switch.css',
 
   //fonts
   '/font/Jost.css',
@@ -30,6 +58,8 @@ const urlsToCache = [
   '/script/codes.js',
   '/script/main.js',
   '/script/homepage.js',
+  '/script/pwacompat.js',
+
   //admin
   '/script/admin/admin.js',
   '/script/admin/adminDash.js',
@@ -55,6 +85,12 @@ const urlsToCache = [
   '/script/student/fragment/today.js',
 ];
 
+self.addEventListener('message', (message) => {
+  if (message.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('install', (event)=> {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -63,6 +99,8 @@ self.addEventListener('install', (event)=> {
       })
   );
 });
+
+
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async _=> {
@@ -74,7 +112,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
+  if (event.request.method === 'GET') {
     event.respondWith((async _=> {
       try {
         const preloadResponse = await event.preloadResponse;
@@ -84,12 +122,11 @@ self.addEventListener('fetch', (event) => {
         const networkResponse = await fetch(event.request);
         return networkResponse;
       } catch (error) {
-        console.log('Fetch failed, returning offline page instead.', error);
+        console.log('Fetch failed', error);
         const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match('/offline');
-        return cachedResponse;
+        const resp =  await cache.match(event.request.url);
+        return resp?resp:await cache.match('/offline');;
       }
     })());
   }
-
 });

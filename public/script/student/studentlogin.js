@@ -84,7 +84,7 @@ class UIID{
       }
       this.loader(false);
     }).catch(e=>{
-      snackBar(e);
+      this.loader(false);
     });
   }
   uiidCheck(checkeduiid = null){
@@ -125,7 +125,7 @@ class Classname{
     return sessionStorage.getItem(key.uiid);
   }
   classnameProcedure(classname){
-    postData(post.student.auth,{
+    postJsonData(post.student.auth,{
       action:post.student.action.login,
       type:'classname',
       classname:classname,
@@ -146,6 +146,8 @@ class Classname{
           snackBar(response.event,null,false);
         }
       }
+      this.loader(false);
+    }).catch(e=>{
       this.loader(false);
     })
 
@@ -195,7 +197,7 @@ class Email{
     return sessionStorage.getItem(key.classroom);
   }
   emailIDProcedure(emailid){
-    postData(post.student.auth,{
+    postJsonData(post.student.auth,{
       action:post.student.action.login,
       type:'email',
       classname:this.getClassname(),
@@ -220,6 +222,8 @@ class Email{
           snackBar(response.event,null,false);
         }
       }
+      this.loader(false);
+    }).catch(e=>{
       this.loader(false);
     })
 
@@ -271,7 +275,7 @@ class Password{
     };
   }
   passwordProcedure(password){
-    postData(post.student.auth,{
+    postJsonData(post.student.auth,{
       action:post.student.action.login,
       type:'password',
       classname:this.getClassname(),
@@ -282,7 +286,7 @@ class Password{
     }).then(response=>{
       this.handleAuthResult(response);
     }).catch(e=>{
-      snackBar(e,null,false);
+      this.loader(false);
     });
   }
   getUIID(){

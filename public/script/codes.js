@@ -244,7 +244,7 @@ class Codes {
 
 /**
  * The topmost client types among whole application.
- * @note If in case these are to be renamed, then ensure that any hard files of application are also renamed, if they are of the 
+ * @note If in case these are to be renamed, then ensure that any hard files of application are also renamed, if they are of the
  * same names as any of the client, to ensure uniformity, otherwise, errors might occur.
  */
 class Client {
@@ -479,125 +479,125 @@ class View {
     this.userinvitaion = "invitation.ejs";
     this.verification = "verification.ejs";
     this.passwordreset = "resetpassword.ejs";
+    /**
+     * The paths of admin client view files, for server to use.
+     */
+    class AdminView {
+      constructor() {
+        this.login = `${client.admin}/${client.admin}_login.ejs`;
+        this.dash = `${client.admin}/${client.admin}_dash.ejs`;
+        this.settings = `${client.admin}/management.ejs`;
+        this.registration = `${client.admin}/edit_detail.ejs`;
+        this.addTeacher = `${client.admin}/${client.teacher}_filler.ejs`;
+        this.scheduleview = `${client.admin}/schedule_view.ejs`;
+        this.users = `${client.admin}/users.ejs`;
+        this.target = new Locations().admin.target;
+        this.section = new Locations().admin.section;
+      }
+      getViewByTarget(target = this.target.dashboard) {
+        switch (target) {
+          case this.target.manage:
+            return this.settings;
+          case this.target.addteacher:
+            return this.addTeacher;
+          case this.target.dashboard:
+            return this.dash;
+          case this.target.register:
+            return this.registration;
+          case this.target.viewschedule:
+            return this.scheduleview;
+          case this.target.classes:
+            return this.users;
+          case this.target.teachers:
+            return this.users;
+          default:
+            return this.getViewByTarget();
+        }
+      }
+    }
+
+    /**
+     * The paths of teacher client view files, for server to use.
+     */
+    class TeacherView {
+      constructor() {
+        this.login = `${client.teacher}/${client.teacher}_login.ejs`;
+        this.dash = `${client.teacher}/${client.teacher}_dash.ejs`;
+        this.addschedule = `${client.admin}/${client.teacher}_filler.ejs`;
+        class FragmentView {
+          constructor() {
+            this.fullschedule = `${client.teacher}/fragments/fullweek.ejs`;
+            this.today = `${client.teacher}/fragments/today.ejs`;
+            this.about = `${client.teacher}/fragments/about.ejs`;
+            this.classroom = `${client.teacher}/fragments/classroom.ejs`;
+          }
+        }
+        this.fragment = new FragmentView();
+        this.target = new Locations().teacher.target;
+      }
+      getViewByTarget(target = this.target.dash) {
+        switch (target) {
+          case this.target.dash:
+            return this.dash;
+          case this.target.settings:
+            return this.settings;
+          case this.target.fullweek:
+            return this.fullschedule;
+          case this.target.addschedule:
+            return this.addschedule;
+          case this.target.fragment.today:
+            return this.fragment.today;
+          case this.target.fragment.fullweek:
+            return this.fragment.fullschedule;
+          case this.target.fragment.classroom:
+            return this.fragment.classroom;
+          case this.target.fragment.about:
+            return this.fragment.about;
+          default:
+            return this.getViewByTarget();
+        }
+      }
+    }
+
+    /**
+     * The paths of student client view files, for server to use.
+     */
+    class StudentView {
+      constructor() {
+        this.login = `${client.student}/${client.student}_login.ejs`;
+        this.dash = `${client.student}/${client.student}_dash.ejs`;
+        class FragmentView {
+          constructor() {
+            this.today = `${client.student}/fragments/today.ejs`;
+            this.fullschedule = `${client.student}/fragments/fullweek.ejs`;
+            this.classroom = `${client.student}/fragments/classroom.ejs`;
+            this.settings = `${client.student}/fragments/about.ejs`;
+          }
+        }
+        this.fragment = new FragmentView();
+        this.target = new Locations().student.target;
+      }
+      getViewByTarget(target = this.target.dash) {
+        switch (target) {
+          case this.target.dash:
+            return this.dash;
+          case this.target.fragment.today:
+            return this.fragment.today;
+          case this.target.fragment.fullweek:
+            return this.fragment.fullschedule;
+          case this.target.fragment.settings:
+            return this.fragment.settings;
+          case this.target.fragment.classroom:
+            return this.fragment.classroom;
+          default:
+            return this.getViewByTarget();
+        }
+      }
+    }
+
     this.admin = new AdminView();
     this.teacher = new TeacherView();
     this.student = new StudentView();
-  }
-}
-
-/**
- * The paths of admin client view files, for server to use.
- */
-class AdminView {
-  constructor() {
-    this.login = `${client.admin}/${client.admin}_login.ejs`;
-    this.dash = `${client.admin}/${client.admin}_dash.ejs`;
-    this.settings = `${client.admin}/management.ejs`;
-    this.registration = `${client.admin}/edit_detail.ejs`;
-    this.addTeacher = `${client.admin}/${client.teacher}_filler.ejs`;
-    this.scheduleview = `${client.admin}/schedule_view.ejs`;
-    this.users = `${client.admin}/users.ejs`;
-    this.target = new Locations().admin.target;
-    this.section = new Locations().admin.section;
-  }
-  getViewByTarget(target = this.target.dashboard) {
-    switch (target) {
-      case this.target.manage:
-        return this.settings;
-      case this.target.addteacher:
-        return this.addTeacher;
-      case this.target.dashboard:
-        return this.dash;
-      case this.target.register:
-        return this.registration;
-      case this.target.viewschedule:
-        return this.scheduleview;
-      case this.target.classes:
-        return this.users;
-      case this.target.teachers:
-        return this.users;
-      default:
-        return this.getViewByTarget();
-    }
-  }
-}
-
-/**
- * The paths of teacher client view files, for server to use.
- */
-class TeacherView {
-  constructor() {
-    this.login = `${client.teacher}/${client.teacher}_login.ejs`;
-    this.dash = `${client.teacher}/${client.teacher}_dash.ejs`;
-    this.addschedule = `${client.admin}/${client.teacher}_filler.ejs`;
-    class FragmentView {
-      constructor() {
-        this.fullschedule = `${client.teacher}/fragments/fullweek.ejs`;
-        this.today = `${client.teacher}/fragments/today.ejs`;
-        this.about = `${client.teacher}/fragments/about.ejs`;
-        this.classroom = `${client.teacher}/fragments/classroom.ejs`;
-      }
-    }
-    this.fragment = new FragmentView();
-    this.target = new Locations().teacher.target;
-  }
-  getViewByTarget(target = this.target.dash) {
-    switch (target) {
-      case this.target.dash:
-        return this.dash;
-      case this.target.settings:
-        return this.settings;
-      case this.target.fullweek:
-        return this.fullschedule;
-      case this.target.addschedule:
-        return this.addschedule;
-      case this.target.fragment.today:
-        return this.fragment.today;
-      case this.target.fragment.fullweek:
-        return this.fragment.fullschedule;
-      case this.target.fragment.classroom:
-        return this.fragment.classroom;
-      case this.target.fragment.about:
-        return this.fragment.about;
-      default:
-        return this.getViewByTarget();
-    }
-  }
-}
-
-/**
- * The paths of student client view files, for server to use.
- */
-class StudentView {
-  constructor() {
-    this.login = `${client.student}/${client.student}_login.ejs`;
-    this.dash = `${client.student}/${client.student}_dash.ejs`;
-    class FragmentView {
-      constructor() {
-        this.today = `${client.student}/fragments/today.ejs`;
-        this.fullschedule = `${client.student}/fragments/fullweek.ejs`;
-        this.classroom = `${client.student}/fragments/classroom.ejs`;
-        this.settings = `${client.student}/fragments/about.ejs`;
-      }
-    }
-    this.fragment = new FragmentView();
-    this.target = new Locations().student.target;
-  }
-  getViewByTarget(target = this.target.dash) {
-    switch (target) {
-      case this.target.dash:
-        return this.dash;
-      case this.target.fragment.today:
-        return this.fragment.today;
-      case this.target.fragment.fullweek:
-        return this.fragment.fullschedule;
-      case this.target.fragment.settings:
-        return this.fragment.settings;
-      case this.target.fragment.classroom:
-        return this.fragment.classroom;
-      default:
-        return this.getViewByTarget();
-    }
   }
 }
 
@@ -722,7 +722,7 @@ class Theme {
   constructor() {
     this.dark = "dark";
     this.light = "light";
-    this.key = "theme";
+    this.key = key.theme;
   }
   setDark() {
     this.setTheme(this.dark);
@@ -758,31 +758,31 @@ class Theme {
  */
 class Keys {
   constructor() {
-    this.uiid = 'uiid';
-    this.email = 'email';
+    this.uiid = "uiid";
+    this.email = "email";
     this.id = constant.sessionID;
     this.uid = constant.sessionUID;
-    this.username = 'username';
-    this.theme = 'theme';
-    this.classroom = 'classroom';
-    class Admin{
-      constructor(){
-        this.isadmin = 'isAdmin';
-        this.forgotpassword = 'adminforgotpassword';
+    this.username = "username";
+    this.theme = "theme";
+    this.classroom = "classroom";
+    class Admin {
+      constructor() {
+        this.isadmin = "isAdmin";
+        this.forgotpassword = "adminforgotpassword";
       }
     }
-    class Teacher{
-      constructor(){
-        this.isteacher = 'isAdmin';
-        this.rememberuiid = 'rememberteacheruiid';
-        this.forgotpassword = 'teacherforgotpassword';
+    class Teacher {
+      constructor() {
+        this.isteacher = "isAdmin";
+        this.rememberuiid = "rememberteacheruiid";
+        this.forgotpassword = "teacherforgotpassword";
       }
     }
-    class Student{
-      constructor(){
-        this.isstudent = 'isAdmin';
-        this.rememberuiid = 'rememberstudentuiid';
-        this.forgotpassword = 'studentforgotpassword';
+    class Student {
+      constructor() {
+        this.isstudent = "isAdmin";
+        this.rememberuiid = "rememberstudentuiid";
+        this.forgotpassword = "studentforgotpassword";
       }
     }
     this.admin = new Admin();
@@ -990,7 +990,7 @@ try {
     client: new Client(),
     view: new View(),
     get: new Gets(),
-    key:new Keys(),
+    key: new Keys(),
     validType: new InputType(),
     stringIsValid,
     isOK(val) {

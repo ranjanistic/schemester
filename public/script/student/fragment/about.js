@@ -21,11 +21,7 @@ class StudentAbout {
   
       this.logout = getElement("logout");
       this.logout.onclick = (_) => {
-        finishSession(client.student,(_) => {
-          relocateParent(locate.student.login, {
-            email: localStorage.getItem("id"),
-          });
-        });
+        finishSession(client.student,(_) => {parent.location.reload()});
       };
       this.name = new Editable(
         "studentnameview",
@@ -104,7 +100,7 @@ class StudentAbout {
       delconf.setDisplay(
         "Delete?",
         `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
-          "id"
+          key.id
         )}</b> permanently? The following consequencies will take place:<br/>
           <div>
           <ul>

@@ -10,7 +10,7 @@ class Homepage{
         this.teacherSignup = getElement('registerTeacher');
         this.studentSignup = getElement('registerStudent');
         
-        this.getstarted = getElement('getStarted');
+        this.getstarted = getElement('getStarted'); 
         
         this.adminSignup.onclick=_=>{showadminregistration()};
         this.teacherSignup.onclick=_=>{showTeacherRegistration()};

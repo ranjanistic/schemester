@@ -1,7 +1,8 @@
-if (localStorage.getItem("theme")) {
+//Sets theme of whole application
+if (localStorage.getItem(theme.key)) {
   document.documentElement.setAttribute(
     "data-theme",
-    localStorage.getItem("theme")
+    localStorage.getItem(theme.key)
   );
 }
 
@@ -29,6 +30,9 @@ class Button{
   }
 }
 
+/**
+ * Class for schemester input field, having several specific methods.
+ */
 class TextInput {
   constructor(
     fieldId = String(),
@@ -149,6 +153,9 @@ class TextInput {
   }
 }
 
+/**
+ * Class for editable input view, with specific methods.
+ */
 class Editable{
   constructor(viewID,editviewID,textInput = new TextInput(),editID,viewText,saveID,cancelID,loaderID = null){
     this.view = getElement(viewID);
@@ -225,6 +232,7 @@ class Editable{
   }
 }
 
+/** @deprecated as of October 4, 2020 00:20 (IST). Use Switch class instead. */
 class Checkbox {
   constructor(
     containerId = String,
@@ -277,7 +285,6 @@ class Checkbox {
   }
 }
 
-const nothing=()=>{};
 class Switch{
   constructor(switchID,switchTextID,switchViewID,switchContainerID,viewType = bodyType.positive){
     this.switch = getElement(switchID);
@@ -457,7 +464,7 @@ const snackBar = (
     new Snackbar().hide();
   }
 ) => {
-  var snack = new Snackbar();
+  const snack = new Snackbar();
   snack.hide();
   if (text != constant.nothing) {
     snack.text.innerHTML = text;
@@ -836,9 +843,7 @@ class Dialog extends DialogID {
 /**
  * console.log() shorthand
  */
-const clog = (msg) => {
-  console.log(msg);
-};
+const clog = (msg) => console.log(msg);
 
 /**
  * Dialog box to re-authenticate client accoriding to the type of client.
@@ -851,7 +856,7 @@ const authenticateDialog = (
   isShowing = true,
   sensitive = false
 ) => {
-  var loginDialog = new Dialog();
+  const loginDialog = new Dialog();
   if (isShowing) {
     loginDialog.setDisplay(
       "Authentication Required",
@@ -870,7 +875,7 @@ const authenticateDialog = (
     if (sensitive) {
       loginDialog.setBackgroundColorType(bodyType.negative);
     }
-    loginDialog.validate(0);
+    loginDialog.validate();
     loginDialog.validate(1);
     loginDialog.onButtonClick(
       [
@@ -922,10 +927,7 @@ const authenticateDialog = (
 /**
  * Dialog box to change password of client accoriding to the type of client.
  */
-const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackBar(
-    "Your password was changed.",
-    "Done"
-  )}) => {
+const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackBar("Your password was changed.","Done")}) => {
   const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
@@ -1118,7 +1120,7 @@ const feedBackBox = (
   defaultText = String(),
   error = false
 ) => {
-  var feedback = new Dialog();
+  const feedback = new Dialog();
   feedback.setDisplay(
     "Contact Developers",
     "Are you facing any problem? Or want a feature that helps you in some way? Explain everything that here. " +
@@ -1302,7 +1304,14 @@ const resumeElementRestriction=(element,id,afterRestriction=_=>{},strict=false)=
   }  
 }
 
-let checkSessionValidation = (
+/**
+ * This method checks if session is valid for given client, and executes the provided methods accordingly.
+ * @param {String} clientType The global type of client to check session.
+ * @param {Function} validAction The method to execute if session is valid, defaults to navigating to client session main page.
+ * @param {Function} invalidAction The method to execute if session is invalid, defaults to navigating to schemester's homepage.
+ * @note The [clientType] can be derived from Client class in codes.js.
+ */
+const checkSessionValidation = (
   clientType = null,
   validAction = null,
   invalidAction = (_) => relocate(locate.homepage)
@@ -1314,7 +1323,7 @@ let checkSessionValidation = (
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
             } else {
-              if (validAction == null) {
+              if (!validAction) {
                 validAction = (_) => {
                   relocate(locate.admin.session, {
                     target: locate.admin.target.dashboard,
@@ -1325,9 +1334,10 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
+            clog(error);
             snackBar(
-              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
-              "Report"
+              'Network error?',
+              "Homepage",false,_=>{relocate(locate.homepage);}
             );
           });
       }
@@ -1339,7 +1349,7 @@ let checkSessionValidation = (
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
             } else {
-              if (validAction == null) {
+              if (!validAction) {
                 validAction = (_) => {
                   relocate(locate.teacher.session, {
                     target: locate.teacher.target.dash,
@@ -1350,9 +1360,10 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
+            clog(error);
             snackBar(
-              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
-              "Report",
+              'Network error?',
+              "Homepage",false,_=>{relocate(locate.homepage);}
             );
           });
       }
@@ -1363,7 +1374,7 @@ let checkSessionValidation = (
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
             } else {
-              if (validAction == null) {
+              if (!validAction) {
                 validAction = (_) => {
                   relocate(locate.student.session, {
                     target: locate.student.target.dash,
@@ -1374,44 +1385,14 @@ let checkSessionValidation = (
             }
           })
           .catch((error) => {
+            clog(error);
             snackBar(
-              getLogInfo(code.auth.AUTH_REQ_FAILED, (error)),
-              "Report",
+              'Network error?',
+              "Homepage",false,_=>{relocate(locate.homepage);}
             );
           });
-      }break;
+    }break;
     default: {
-      if (validAction == null) {
-        switch (clientType) {
-          case client.admin:
-            {
-              validAction = (_) => {
-                relocate(locate.admin.session, {
-                  target: locate.admin.target.dashboard,
-                });
-              };
-            }
-            break;
-          case client.teacher:
-            {
-              validAction = (_) => {
-                relocate(locate.teacher.session, {
-                  target: locate.teacher.target.dash,
-                });
-              };
-            }
-            break;
-          case client.student:
-            {
-              validAction = (_) => {
-                relocate(locate.student.session, {
-                  target: locate.student.target.dash,
-                });
-              };
-            }
-            break;
-        }
-      }
       checkSessionValidation(client.admin, null, (_) => {
         checkSessionValidation(client.teacher, null, (_) => {
           checkSessionValidation(client.student, null, (_) => {
@@ -1422,8 +1403,6 @@ let checkSessionValidation = (
     }
   }
 };
-
-
 
 const onSessionStatus = (
   clientType,
@@ -1448,11 +1427,10 @@ const onSessionStatus = (
 const validateTextField = (
   textfield = new TextInput(),
   type = validType.nonempty,
-  afterValidAction = _=>{},
+  afterValidAction =_=>{},
   ifmatchField = null
 ) => {
-  var error,
-    matcher = constant.nothing;
+  let error, matcher = constant.nothing;
   switch (type) {
     case validType.name:
       {
@@ -1651,7 +1629,7 @@ const setClassNames = (
  * @param {Number} index The index of element in given array to be shown. If not provided, defaults to null, and all elements will be shown.
  * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (hides the rest).
  */
-const showElement = (elements = Array, index = null, hideRest = true) => {
+const showElement = (elements = [], index = null, hideRest = true) => {
   if (hideRest) {
     for (let k = 0; k < elements.length; k++) {
       if (index != null) {
@@ -1671,7 +1649,7 @@ const showElement = (elements = Array, index = null, hideRest = true) => {
  * @param {Number} index The index of element in given array to be hidden. If not provided, defaults to null, and all elements will be hidden.
  * @param {Boolean} hideRest If false, the visiblity of rest of items in elements won't be affected. Defaults to true (shows the rest).
  */
-const hideElement = (elements = Array, index = null, showRest = true) => {
+const hideElement = (elements = [], index = null, showRest = true) => {
   if (showRest) {
     for (let k = 0; k < elements.length; k++) {
       if (index != null) {
@@ -1744,6 +1722,7 @@ const appendClass = (element = new HTMLElement(), appendingClass) =>
 
 const showLoader = (_) => show(getElement("navLoader"));
 const hideLoader = (_) => hide(getElement("navLoader"));
+
 /**
  * Sets the opacity of given HTML element.
  * @param {HTMLElement} element The element whose opacity is to be set.
@@ -1751,6 +1730,14 @@ const hideLoader = (_) => hide(getElement("navLoader"));
  */
 const opacityOf = (element = new HTMLElement(), value = 1) =>
   (element.style.opacity = String(value));
+
+/**
+ * Sets the opacity of HTML element(s) of given array.
+ * @param {Array} elements The array of whose element(s)'s opacity is to be set.
+ * @param {Number} value The numeric value of opacity of the element(s) to set. Defaults to 1. Must be >=0 & <=1.
+ * @param {Number} index The particular index element's opacity to be set. If not provided, will set the opacity for all elements.
+ */
+const opacityOfAll = (elements = [], value = 1,index = null) => index!=null? opacityOf(elements[index],value):elements.forEach((element)=>opacityOf(element,value))
 
 /**
  * Controls visiblity of the given HTML element, as per the condition. (using hidden attribute of HTMLElement)
@@ -1762,32 +1749,86 @@ const visibilityOf = (element = new HTMLElement(), visible = true) =>{
   (element.style.display = visible?constant.show:constant.hide);
 }
 
+/**
+ * Controls visiblity of the HTML elements in given array, as per the condition. (using hidden attribute of HTMLElement).
+ * @param {Array} elements The array of elements whose element's visibility is to be toggled.
+ * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown). The visibility of rest elements will be toggled oppositly.
+ * @param {Number} index If not set, all the elements will have the same visibility state, else the element at given index will have the provided visibility state, and others opposite.
+ */
 const visibilityOfAll = (elements = [], visible = true, index = null) =>
   index != null
     ? visibilityOf(elements[index], visible)
     : elements.forEach((element, _) => {
       visibilityOf(element, visible);
     });
+
+/** Hides the given element
+ * @param {HTMLElement} element The element to be hidden.
+ */
 const hide = (element = new HTMLElement()) => visibilityOf(element, false);
-const show = (element = new HTMLElement()) => visibilityOf(element, true);
+
+/** Hides the given element(s) in array
+ * @param {Array} elements The array element(s) to be hidden
+ * @param {Number} index The particular index element to be hidden. Will not affect visiblity of other elements if provided.
+ */
+const hideAll = (elements = [],index = null) => index!=null?hide(elements[index]):elements.forEach((element)=>{hide(element)});
+
+/** Shows the given element 
+ * @param {HTMLElement} element The element to be shown
+ */
+const show = (element = new HTMLElement()) => visibilityOf(element);
+
+/** Shows the given element(s) in array
+ * @param {Array} elements The array element(s) to be shown
+ * @param {Number} index The particular index element to be shown. Will not affect visiblity of other elements if provided.
+ */
+const showAll = (elements = [],index = null) => index!=null?show(elements[index]):elements.forEach((element)=>{show(element)});
+
+/**Checks if element is visible or not
+ * @param {HTMLElement} element The element whose visibility is to be determined
+ * @returns {Boolean} If element visible, true, or false otherwise.
+ */
 const isVisible = (element = new HTMLElement()) =>
-  element.style.display == constant.show;
+element.style.display != constant.hide || !element.hidden;
+
+/** Checks if element(s) in given array is/are visible or not.
+ * @param {Array} elements The array of elements whose visibility is to be determined for single or each.
+ * @param {Number} index The index of element to be checked in given array. If not provided, will check for any element.[using Array().some()]
+ * @returns {Boolean} If element(s) are visible, true, or false otherwise.
+ */
 const areVisible = (elements = [], index = null) =>
   index != null
     ? elements[index].style.display == constant.show
-    : elements.some((element, _) => {
-        return element.style.display == constant.show;
-      });
+    : elements.some((_, e) => {
+      return areVisible(elements,e)
+    });
 
+/**
+ * Returns name of week day as per index.
+ * @param {Number} dIndex 0=<dIndex<=6, the index of day to return
+ * @returns {String} The day name from weekdays
+ */
 const getDayName = (dIndex = Number) =>
-  dIndex < constant.weekdays.length && dIndex >= 0
-    ? constant.weekdays[dIndex]
-    : null;
+dIndex < constant.weekdays.length && dIndex >= 0
+? constant.weekdays[dIndex]
+: null;
+
+
+/**
+ * Returns name of month as per index.
+ * @param {Number} mIndex 0=<mIndex<=11, the index of month to return
+ * @returns {String} The month name from month array
+ */
 const getMonthName = (mIndex = Number) =>
   mIndex < constant.months.length && mIndex >= 0
     ? constant.months[mIndex]
     : null;
 
+/**
+ * Shorthand for window.document.getElementById() method
+ * @param {String} id The id of HTMLElement to return 
+ * @returns {HTMLElement} The element associated with provided id
+ */
 const getElement = (id) => document.getElementById(id);
 
 /**
@@ -1795,19 +1836,7 @@ const getElement = (id) => document.getElementById(id);
  * @param {String} path The path or link to be passed in replace() function of window.location
  * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
  */
-const relocate = (path = String, data = null) => {
-  if (data != null) {
-    let i = 0;
-    for (var key in data) {
-      if (data.hasOwnProperty(key)) {
-        path =
-          i > 0 ? `${path}&${key}=${data[key]}` : `${path}?${key}=${data[key]}`;
-        i++;
-      }
-    }
-  }
-  window.location.replace(path);
-};
+const relocate = (path = String, data = null) => window.location.replace(path+getRequestBody(data));
 
 /**
  * This function extends the ability of window.location.replace(), by allowing you to provide additional link data passed as query along with the link.
@@ -1815,27 +1844,44 @@ const relocate = (path = String, data = null) => {
  * @param {String} path The path or link to be passed in replace() function of window.location
  * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
  */
-const relocateParent = (path, data = null) => {
-  if (data != null) {
-    let i = 0;
-    for (var key in data) {
-      if (data.hasOwnProperty(key)) {
-        path =
-          i > 0 ? `${path}&${key}=${data[key]}` : `${path}?${key}=${data[key]}`;
-        i++;
-      }
-    }
-  }
-  window.parent.location.replace(path);
-};
+const relocateParent = (path, data = null) => window.parent.location.replace(path+getRequestBody(data));
+
+/**
+ * Sets location as per given params
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
+const refer = (href, data = null) => window.location.href = href+getRequestBody(data);
+
+/**
+ * Opens link in a new tab as per given params
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
+const referTab = (href, data = null) => window.open(href+getRequestBody(data));
+
+/**
+ * Sets parent location href as per given params. Useful in loading a url from an iframe source.
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
+const referParent = (href, data = null) => window.parent.location.href = href+getRequestBody(data);
+
+/**
+ * Opens a link in new tab as per given params. Useful in opening a new tab from an iframe source.
+ * @param {String} href The base url of location
+ * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
+ */
+const referParentTab = (href, data = null) => window.parent.open(href+getRequestBody(data));
 
 /**
  * @deprecated As of September 27, 2020 02:41 hours. See the new [postJsonData] method.
+ * 
  * Sends post request using browser fetch API, with x-www-form-urlencoded type body, and receives response in JSON format.
  * @param {String} url The endpoint location of post request. (same-origin)
  * @param {JSON} data The data to be sent along with request, key value type.
  * @returns {Promise} response object as a promise.
- */
+ */ 
 const postData = async (url = String, data = {}) => {
   const response = await fetch(url, {
     method: constant.post,
@@ -1854,67 +1900,32 @@ const postData = async (url = String, data = {}) => {
  * @returns {Promise} response object as a promise.
  */
 const postJsonData = async (url = String, data = {}) => {
-  const response = await fetch(url, {
-    method: constant.post,
-    mode: "same-origin",
-    headers: {
-      Accept: constant.fetchJsonContent,
-      "Content-Type": constant.fetchJsonContent,
-    },
-    body: JSON.stringify(data),
-  });
-  const content = await response.json();
-  return await content.result;
-};
-
-
-/**
- * Sets location as per given params
- * @param {String} href The base url of location
- * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
- */
-const refer = (href, data = null) => {
-  href += data != null ? getRequestBody(data) : constant.nothing;
-  window.location.href = href;
-};
-
-/**
- * Opens link in a new tab as per given params
- * @param {String} href The base url of location
- * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
- */
-const referTab = (href, data = null) => {
-  href += data != null ? getRequestBody(data) : constant.nothing;
-  window.open(href);
-};
-
-/**
- * Sets parent location href as per given params. Useful in loading a url from an iframe source.
- * @param {String} href The base url of location
- * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
- */
-const referParent = (href, data = null) => {
-  href += data != null ? getRequestBody(data) : constant.nothing;
-  window.parent.location.href = href;
-};
-
-/**
- * Opens a link in new tab as per given params. Useful in opening a new tab from an iframe source.
- * @param {String} href The base url of location
- * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
- */
-const referParentTab = (href, data = null) => {
-  href += data != null ? getRequestBody(data) : constant.nothing;
-  window.parent.open(href);
+  try{
+    const response = await fetch(url, {
+      method: constant.post,
+      mode: "same-origin",
+      headers: {
+        Accept: constant.fetchJsonContent,
+        "Content-Type": constant.fetchJsonContent,
+      },
+      body: JSON.stringify(data),
+    });
+    const content = await response.json();
+    return await content.result;
+  } catch (error){
+    if(!navigator.onLine){return snackBar('Network Error','',false)}
+    snackBar(error,'Report');
+  }
 };
 
 /**
  * Creates a string of queries to be passed along with any form action type link, from given JSON type data.
- * @param data The given key:value pairs of data to be converted into url query.
- * @param {Boolean} isPost The optional parameter, if body is to be converted to send with a post request of content-type: x-www-form-urlencoded, set true. Defaults to false.
+ * @param {JSON} data The given key:value pairs of data to be converted into url query.
+ * @param {Boolean} isPost The optional parameter, if body is to be converted to send with a post request of content-type: x-www-form-urlencoded, set true. Defaults to false for get request.
  * @return {String} The query in string from, ready to be concatenated with some action URL of form kind.
  */
 const getRequestBody = (data = {}, isPost = false) => {
+  if(!data) return constant.nothing;
   let i = 0;
   let body = constant.nothing;
   for (var key in data) {
@@ -1932,7 +1943,14 @@ const getRequestBody = (data = {}, isPost = false) => {
   return body;
 };
 
-
+/**
+ * To use browser get method to trigger email href.
+ * @param {String} to The address of receiver
+ * @param {String} subject The subject of email
+ * @param {String} body The body of email, non-html.
+ * @param {String} cc CC address
+ * @param {String} bcc BCC address
+ */
 const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constant.nothing,bcc=constant.nothing) => refer(`mailto:${to}`,{
   subject: subject,
   body: body,
@@ -1940,6 +1958,10 @@ const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constan
   bcc:bcc,
 });
 
+/**
+ * To use browser get method to trigger calling href.
+ * @param {String} to The contact number of receiver
+ */
 const callTo = (to) => refer(`tel:${to}`); 
 
 const idbSupported = () => {
@@ -1958,45 +1980,40 @@ const idbSupported = () => {
   return window.indexedDB;
 };
 
-const addNumberSuffixHTML = (number = Number) => {
+/**
+ * Adds string/html suffix to number passed (1->1st, etc).
+ * @param {Number} number The number to be suffixed
+ * @param {Boolean} html If true, then the suffex will be added as an html <sup> element, else simply concatenated as string.
+ * @returns {String} Suffixed number, html or simple string, based on previous parameter.
+ */
+const addNumberSuffixHTML = (number = Number,html = true) => {
   var str = String(number);
   switch (number) {
     case 1:
-      return number + "<sup>st</sup>";
+      return html?number + "<sup>st</sup>":number + "st";
     case 2:
-      return number + "<sup>nd</sup>";
+      return html?number + "<sup>nd</sup>":number + "nd";
     case 3:
-      return number + "<sup>rd</sup>";
+      return html?number + "<sup>rd</sup>":number + "rd";
     default: {
       if (number > 9) {
-        if (str.charAt(str.length - 2) == "1") return number + "<sup>th</sup>";
-        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)));
+        if (str.charAt(str.length - 2) == "1") return html?number + "<sup>th</sup>":number + "th";
+        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)),html);
       } else {
-        return number + "<sup>th</sup>";
+        return html?number + "<sup>th</sup>":number + "th";
       }
     }
   }
 };
 
-const addNumberSuffix = (number = Number) => {
-  var str = String(number);
-  switch (number) {
-    case 1:
-      return number + "st";
-    case 2:
-      return number + "nd";
-    case 3:
-      return number + "rd";
-    default: {
-      if (number > 9) {
-        if (str.charAt(str.length - 2) == "1") return number + "th";
-        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)));
-      } else {
-        return number + "th";
-      }
-    }
-  }
-};
+/**
+ * @deprecated This method is deprecated as of October 3, 2020 23:53 (IST). See the new addNumberSuffixHTML(Number, Boolean) method, on which this method relies too now.
+ * 
+ * Adds string suffix to number passed (1->1st, etc).
+ * @param {Number} number The number to be suffixed
+ * @returns {String} Suffixed number as string.
+ */
+const addNumberSuffix = (number = Number) => addNumberSuffixHTML(number,false);
 
 /**
  * Returns phrase readable form of date from standard Schemester form of date.
@@ -2005,17 +2022,12 @@ const addNumberSuffix = (number = Number) => {
  */
 const getProperDate = (dateTillMillis) => {
   dateTillMillis = String(dateTillMillis);
-  const year = dateTillMillis.substring(0, 4);
-  const month = dateTillMillis.substring(4, 6);
-  const date = dateTillMillis.substring(6, 8);
-  const hour = dateTillMillis.substring(8, 10);
-  const min = dateTillMillis.substring(10, 12);
-  const sec = dateTillMillis.substring(12, 14);
-  return `${getMonthName(
-    month - 1
-  )} ${date}, ${year} at ${hour}:${min} hours ${sec} seconds`;
+  return `${getMonthName(dateTillMillis.substring(4, 6) - 1)} ${dateTillMillis.substring(6, 8)}, ${dateTillMillis.substring(0, 4)} at ${dateTillMillis.substring(8, 10)}:${dateTillMillis.substring(10, 12)} hours ${dateTillMillis.substring(12, 14)} seconds`;
 };
 
+/**
+ * Returns HH:MM/HH:MM:ss as HHMM/HHMMss
+ */
 const getNumericTime=(time)=> Number(String(time).replace(':',constant.nothing));
 
 const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;

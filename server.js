@@ -10,9 +10,9 @@ server.use(bodyParser.json());
 
 //For localhost https env.
 // const https = require('https'),
-// fs = require('fs'),
-// key = fs.readFileSync('./localhost-key.pem'),
-// cert = fs.readFileSync('./localhost.pem');
+//   fs = require('fs'),
+//   key = fs.readFileSync('./localhost-key.pem'),
+//   cert = fs.readFileSync('./localhost.pem');
 
 mongo.connectToServer(( err )=>{
   if (err) return clog(err);

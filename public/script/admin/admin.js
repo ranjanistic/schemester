@@ -272,7 +272,7 @@ function linkGenerator(target) {
     })
     .catch((error) => {
       clog(error);
-      snackBar(error);
+      loadingBox(false);
     });
 }
 
@@ -316,6 +316,6 @@ function revokeLink(target) {
       }
     })
     .catch((error) => {
-      snackBar(error);
+      
     });
 }

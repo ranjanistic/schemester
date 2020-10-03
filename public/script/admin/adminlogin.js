@@ -87,7 +87,7 @@ class AdminLogin{
       .then((result) => {
         this.handleAuthResult(result);
       }).catch((error)=>{
-        snackBar(error,'Report');
+        this.loader(false);
       });
     }
   }

@@ -148,8 +148,9 @@ class Pseudoteacher{
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
             finishSession(client.teacher,(_) => {
+              const email  = localStorage.getItem(key.id);
                 relocateParent(locate.teacher.login, {
-                email: localStorage.getItem("id"),
+                  email: email,
                 });
             });
         };

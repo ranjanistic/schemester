@@ -120,11 +120,12 @@ class Pseudostudent{
         }
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
-        finishSession(client.student,(_) => {
+          finishSession(client.student,(_) => {
+            const email  = localStorage.getItem(key.id)
             relocateParent(locate.teacher.login, {
-            email: localStorage.getItem("id"),
+              email: email,
             });
-        });
+          });
         };
         this.name = new Editable(
             "studentnameview",

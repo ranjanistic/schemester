@@ -87,7 +87,7 @@ class UIID{
       }
       this.loader(false);
     }).catch(e=>{
-      snackBar(e);
+      this.loader(false);
     });
   }
   uiidCheck(checkeduiid = null){
@@ -155,6 +155,8 @@ class Email{
         }
       }
       this.loader(false);
+    }).catch(e=>{
+      this.loader(false);
     })
 
   }
@@ -215,7 +217,7 @@ class Password{
     }).then(response=>{
       this.handleAuthResult(response);
     }).catch(e=>{
-      snackBar(e,null,false);
+      this.loader(false);
     })
   }
   getEmail(){

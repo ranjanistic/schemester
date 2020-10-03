@@ -84,7 +84,13 @@
     <script async defer src="/script/pwacompat.js"></script>
   </head>
 
-  <body  style="background-image: url('/graphic/illustrations/homebg.svg');background-repeat: no-repeat;background-size: cover;">
+  <body
+    style="
+      background-image: url('/graphic/illustrations/homebg.svg');
+      background-repeat: no-repeat;
+      background-size: cover;
+    "
+  >
     <div class="fmt-top fmt-shadow" id="topBar">
       <img
         src="/graphic/icons/schemester512.svg"
@@ -243,7 +249,9 @@
             Schemester
           </span>
           <br />
-          <span class="group-text"> An autonomous online schedule management system. </span>
+          <span class="group-text">
+            An autonomous online schedule management system.
+          </span>
         </div>
         <br />
       </div>
@@ -325,17 +333,28 @@
 
     <!--foot note-->
     <footer class="fmt-row fmt-padding b-neutral">
-      <br/>
+      <br />
       <div class="caption questrial fmt-col fmt-half fmt-left fmt-padding">
         <div>
           Feel free to <a href="mailto:schemester@outlook.in">email us</a>.
         </div>
         <div>
-            Ask us your queries
-            <a target="_blank" rel="noreferrer" href="https://twitter.com/intent/tweet?screen_name=schemesterTweet&ref_src=twsrc%5Etfw">on twitter</a>.
+          Ask us your queries
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://twitter.com/intent/tweet?screen_name=schemesterTweet&ref_src=twsrc%5Etfw"
+            >on twitter</a
+          >.
         </div>
         <div>
-            Checkout our <a target="_blank" rel="noreferrer" href="https://instagram.com/schemesterinsta">instagram profile</a>.
+          Checkout our
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://instagram.com/schemesterinsta"
+            >instagram profile</a
+          >.
         </div>
       </div>
       <div class="fmt-col fmt-half fmt-padding">
@@ -346,7 +365,7 @@
           alt="Display Illustration Footer"
         />
       </div>
-      <br/>
+      <br />
     </footer>
 
     <div id="dialogView" class="dialog fmt-animate-opacity">
@@ -361,16 +380,36 @@
     </div>
   </body>
   <script>
-    if ('serviceWorker' in window.navigator) {
-    window.addEventListener('load', _=> {
-        navigator.serviceWorker.register('/sw.js')
-            .then((registration)=> {
-                console.log('SW:1:', registration.scope);
-            }).catch((err)=> {
-                console.log('SW:0:', err);
-            });
-    });
-}
+    if ("serviceWorker" in window.navigator) {
+      window.addEventListener("load", (_) => {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) => {
+            console.log("SW:1:", reg.scope);
+            reg.onupdatefound = () => {
+              var newServiceWorker = reg.installing;
+              newServiceWorker.onstatechange = ()=> {
+                if (newServiceWorker.state === "installed") {
+                  if (
+                    confirm("Updates are available, would you like to reload to update?")
+                  ) {
+                    newServiceWorker.postMessage("skipWaiting");
+                  }
+                }
+              };
+            };
+            navigator.serviceWorker.addEventListener(
+              "controllerchange",
+              ()=> {
+                window.location.reload();
+              }
+            );
+          })
+          .catch((err) => {
+            console.log("SW:0:", err);
+          });
+      });
+    }
   </script>
   <noscript id="noscript" class="dialog fmt-red" style="display: block">
     <div
