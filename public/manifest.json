@@ -9,16 +9,8 @@
     "start_url" : "/",
     "background_color" : "#216bf3",
     "display" : "standalone",
-    "orientation" : "natural",
     "scope" : "/",
     "theme_color" : "#216bf3",
-    "app": [
-      {
-      	"launch": {
-      	  "web_url": "https://schemester.herokuapp.com/"
-      	}
-      }
-    ],
     "categories": ["tools", "education"],
     "icons": [
       {
