@@ -1,4 +1,5 @@
 const CACHE_NAME = 'schemester-cache-v1';
+
 const urlsToCache = [
   //routes
   '/', '/home', '/offline','/manifest.json',
@@ -87,7 +88,15 @@ const urlsToCache = [
 
 self.addEventListener('message', (message) => {
   if (message.data === 'skipWaiting') {
-    self.skipWaiting();
+    caches.keys().then((cacheNames)=> {
+      Promise.all(
+        cacheNames.filter((cacheName)=>{}).map((cacheName)=> {
+          caches.delete(cacheName);
+        })
+      );
+    }).finally(()=>{
+      self.skipWaiting();
+    })
   }
 });
 

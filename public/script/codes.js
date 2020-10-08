@@ -760,6 +760,7 @@ class Keys {
   constructor() {
     this.uiid = "uiid";
     this.email = "email";
+    this.homelogintab = 'homelogintab';
     this.id = constant.sessionID;
     this.uid = constant.sessionUID;
     this.username = "username";
