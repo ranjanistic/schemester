@@ -1,11 +1,17 @@
 
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem('fragment')!=locate.teacher.target.fragment.classroom){
+if(sessionStorage.getItem(key.fragment)!=locate.teacher.target.fragment.classroom){
   parent.clickTab(2);
 }
 class Classroom {
   constructor() {
     this.data = new ReceiveData();
+    this.commbtn = getElement("chatbutton");
+    this.commbtn.onclick=_=>{
+      referParent(locate.teacher.session,{
+        target:locate.teacher.target.comms
+      });
+    }
     this.notifmenu = new Menu("notifications", "notificationbutton");
     this.setupmenu = new Menu("setup", "setupbutton");
     this.settings = getElement("classsetup");

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Comms</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+        <meta name="theme-color" content="#216bf3" id='themecolor'>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
+        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+        <link rel = "stylesheet" href="/css/fmt.css">
+        <link rel = "stylesheet" href="/css/main.css">
+        <link rel = "stylesheet" href="/css/switch.css">
+        <link href="/font/Jost.css" rel="stylesheet">
+        <link href="/font/Questrial.css" rel="stylesheet">
+        <script src="/script/codes.js"></script>
+        <script src="/script/main.js"></script>
+        <script src="/script/comms/comms.js"></script>
+    </head>
+    <body>
+        <div id="topBar" style="padding-bottom: 0;">
+            <div class="fmt-row">
+                <img src="/graphic/leftArrow.svg" class="circle-button" width="30" alt="Go back" id="exitcomms" onclick="history.back()">
+                <span>Comms</span>
+                <img class="fmt-spin-fast fmt-circle fmt-right" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
+                <img class="positive-button-togg fmt-right" width="40" src="/graphic/menudotsvertical.svg" id="chatmenu"/>
+                <img class="neutral-button-togg fmt-right" width="40" src="/graphic/elements/voicecallicon.svg" id="newvoicecall"/>
+                <img class="neutral-button-togg fmt-right" width="40" src="/graphic/elements/videocallicon.svg" id="newvideocall"/>
+            </div><br/>
+            <div class="fmt-row fmt-center" style="padding-bottom: 0;">
+                <button class="fmt-col half fmt-padding tab-section-selected" id="chatstab">
+                    Chats
+                </button>
+                <button class="fmt-col half fmt-padding tab-section" id="callstab">
+                    Calls
+                </button>
+            </div>
+        </div>
+        <div class="fmt-row fmt-padding-small" style="margin-top: 120px;">
+            <div class="fmt-col wide fmt-animate-left" id="chatlist">
+                <% [1,2,3,4,5,3,4,4,4,44,4,4,6].forEach((e,i) => { %>
+                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="room<%= i %>" >
+                        <span hidden id="roomid<%= i %>"><%= e %></span>
+                        <div class="fmt-col two-third group-text">
+                          <span class="positive" id="roomname<%= i %>"><%= e %></span><br/>
+                          <span class="questrial" id="lastmsg<%= i %>"><%= e %></span>
+                        </div>
+                        <div class="fmt-col third group-text">
+                          <span class="fmt-right caption" id="lastactive<%= i %>"><%= e %></span>
+                        </div>
+                    </button>
+                <% }) %>
+            </div>
+
+            <div class="fmt-col wide fmt-animate-right" id="calllist">
+                <% [1,2,3,33,4].forEach((e,i) => { %>
+                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="call<%= i %>" >
+                        <span hidden id="callid<%= i %>"><%= e %></span>
+                        <div class="fmt-col two-third group-text">
+                          <span class="positive" id="callto<%= i %>"><%= e %></span><br/>
+                          <span class="questrial" id="duration<%= i %>"><%= e %></span>
+                        </div>
+                        <div class="fmt-col third">
+                          <span class="fmt-right caption" id="reconnect<%= i %>"><img src="/graphic/elements/voicecallicon.svg" width="30"></span>
+                        </div>
+                    </button>
+                <% }) %>
+            </div>
+        </div>
+        <span hidden>
+            <span id="clienttype">teacher</span>
+            <span id="totalrooms">13</span>
+            <span id="totalcalls">5</span>
+        </span>
+    </body>
+</html>

@@ -1747,8 +1747,8 @@ const opacityOfAll = (elements = [], value = 1,index = null) => index!=null? opa
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
  */
 const visibilityOf = (element = new HTMLElement(), visible = true) =>{
-  (element.hidden = visible ? false : true);
-  (element.style.display = visible?constant.show:constant.hide);
+  element.hidden = !visible;
+  element.style.display = visible?constant.show:constant.hide;
 }
 
 /**
@@ -1757,12 +1757,15 @@ const visibilityOf = (element = new HTMLElement(), visible = true) =>{
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown). The visibility of rest elements will be toggled oppositly.
  * @param {Number} index If not set, all the elements will have the same visibility state, else the element at given index will have the provided visibility state, and others opposite.
  */
-const visibilityOfAll = (elements = [], visible = true, index = null) =>
+const visibilityOfAll = (elements = [], visible = true, index = null) =>{
   index != null
-    ? visibilityOf(elements[index], visible)
+    ?elements.forEach((element, e) => {
+      visibilityOf(element, e==index);
+    })
     : elements.forEach((element, _) => {
       visibilityOf(element, visible);
     });
+}
 
 /** Hides the given element
  * @param {HTMLElement} element The element to be hidden.
@@ -2059,4 +2062,6 @@ const getDialogButton = (buttonClass, buttonID, label) =>
   `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
 const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
+
 const editIcon=(size)=>`<img width="${size}" src="/graphic/elements/editicon.svg"/>`
+const appicon=(size=256)=>`/graphic/icons/schemester${size}.png`

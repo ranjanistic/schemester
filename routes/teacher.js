@@ -71,7 +71,7 @@ teacher.post("/auth",async(req,res)=>{
 });
 
 
-teacher.get("/session*", async (req, res) => {
+teacher.get(get.session, async (req, res) => {
   let data = req.query;
   session.verify(req, sessionsecret)
   .catch((e) => {

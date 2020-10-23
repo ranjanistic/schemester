@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Call · Schemester</title>
+        <title>Calling</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -18,8 +18,21 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
-        <script src="/script/calling.js"></script>
+        <script src="/script/comms/calling.js"></script>
     </head>
-    <body class="b-positive">
+    <body>
+        <div class="fmt-row fmt-center b-positive" style="padding-top:44px;min-height:125mm" id="info">
+            <div class="caption questrial neutral" id="callstate">Calling...</div>
+            <div class="group-heading neutral" id="calltoname">Priyanshu Ranjan</div>
+            <div class="questrial neutral" id="callto">priyanshuranjan88@gmail.com</div>
+            <div class="heading questrial neutral" id="timer">...</div>
+        </div>
+        <br/>
+        <div class="fmt-row fmt-center" style="padding-top:44px;" id="actions">
+            <button class="neutral-button fmt-padding" id="hold">Hold</button>
+            <button class="neutral-button fmt-padding" id="mute">Mute</button>
+            <button class="neutral-button fmt-padding" id="speakerphone">Loud</button>
+            <button class="negative-button fmt-padding" id="endcall">End</button>
+        </div>
     </body>
 </html>

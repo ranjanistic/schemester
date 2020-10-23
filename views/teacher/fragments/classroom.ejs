@@ -21,6 +21,22 @@
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
                     <span class="menu fmt-right">
+                        <button class="neutral-button-togg" id="setupbutton"><img width="25" src="/graphic/elements/settings.svg"/></button>
+                        <div class="menubox" id="setup">
+                            <section class="fmt-padding positive fmt-center">
+                                Actions
+                            </section>
+                            <% if(classroom) {%>
+                                <div class="fmt-center questrial" id="invitestudents">
+                                    Invite students
+                                </div>
+                                <div class="fmt-center questrial" id="chooseclass">
+                                    Choose class
+                                </div>
+                            <% } %>
+                        </div>
+                    </span>
+                    <span class="menu fmt-right">
                         <button class="neutral-button-togg" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" /></button>
                         <div class="menubox" id="notifications">
                             <section class="fmt-padding positive fmt-center">
@@ -53,20 +69,7 @@
                         </div>
                     </span>
                     <span class="menu fmt-right">
-                        <button class="neutral-button-togg" id="setupbutton"><img width="25" src="/graphic/elements/settings.svg"/></button>
-                        <div class="menubox" id="setup">
-                            <section class="fmt-padding positive fmt-center">
-                                Actions
-                            </section>
-                            <% if(classroom) {%>
-                                <div class="fmt-center questrial" id="invitestudents">
-                                    Invite students
-                                </div>
-                                <div class="fmt-center questrial" id="chooseclass">
-                                    Choose class
-                                </div>
-                            <% } %>
-                        </div>
+                        <button class="neutral-button-togg" id="chatbutton"><img width="25" src="/graphic/elements/chaticon.svg"/></button>
                     </span>
                 </div>
             </div>
@@ -78,11 +81,14 @@
                             <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among <%= classroom.students.length %> students" id="teacherSearch"/>
                             <br/><br/>
                             <% classroom.students.forEach((student,s) => {%>
-                                <div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="studentslate<%= s %>">
-                                    <div class="fmt-col fmt-twothird group-text">
-                                      <span class="positive" id="studentname<%= s %>"><%= student.username %></span><br/>
-                                      <span class="questrial" id="studentmail<%= s %>"><%= student.id %></span><br/>
-                                      <span class="negative caption fmt-right pointer" id="removestudent<%= s %>">Remove</span>
+                                <div class="fmt-row b-neutral fmt-half fmt-padding" style="margin:4px 0px" id="studentslate<%= s %>">
+                                    <div class="fmt-col two-third group-text">
+                                        <span class="" id="studentname<%= s %>"><%= student.username %></span><br/>
+                                        <span class="positive questrial caption pointer" id="studentmail<%= s %>" onclick="mailTo('<%= student.id %>')"><%= student.id %></span><br/>
+                                    </div>
+                                    <div class="fmt-row caption">
+                                        <span class="fmt-right pointer" id="removestudent<%= s %>"><img src="/graphic/elements/deleteicon.svg" width="30"></span>
+                                        <span class="fmt-right pointer" id="textstudent<%= s %>"><img src="/graphic/elements/chaticon.svg" width="30"></span>
                                     </div>
                                 </div>
                             <% }) %>

@@ -13,7 +13,7 @@
     --dead-text:#343434;
     --light-base:#eeeeeeee;
     --base-radius:12px;
-
+    --trans-delay:0.3s ease;
 }
 
 [data-theme="dark"] {
@@ -85,7 +85,7 @@ body{
 a{
     text-decoration: none;
     color:var(--positive);
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     cursor: pointer;
 }
 a:hover{
@@ -176,7 +176,7 @@ img{vertical-align:middle}
     font-size:22px;
     padding:22px;
     box-shadow: 1px 5px 10px #00000011;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
 }
 
 .container:hover{
@@ -189,7 +189,7 @@ img{vertical-align:middle}
     font-size:22px;
     padding:14px;
     box-shadow: 1px 5px 10px #00000011;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
 }
 .bottom-container{
     color:var(--secondary);
@@ -277,6 +277,10 @@ img{vertical-align:middle}
     color:var(--secondary);
     background-color:var(--active);
 }
+.b-warning{
+    color:var(--secondary);
+    background-color:var(--warning);
+}
 .show{
     display:block
 }
@@ -326,7 +330,7 @@ img{vertical-align:middle}
     padding:8px 12px;
     margin:6px 0;
     box-shadow: 1px 5px 10px #00000011;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
 }
 
 .tab-container:hover{
@@ -375,7 +379,7 @@ img{vertical-align:middle}
     font-size:22px;
     padding:12px 12px;
     border-radius:8px;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
 }
 
 .fit-container{
@@ -386,12 +390,41 @@ img{vertical-align:middle}
     margin:8px 0;
     padding:0px;
     box-shadow: 1px 5px 10px #00000011;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
 }
 
 .fit-container:hover{
     box-shadow: 1px 5px 10px #00000044;
 }
+
+.tab-section{
+    outline:none;
+    padding: 12px 18px;
+    color:var(--base);
+    background-color: transparent;
+    border: 4px solid var(--positive);
+    border-radius: 8px;
+    transition: var(--trans-delay);
+    cursor:pointer;
+}
+.tab-section-selected{
+    outline:none;
+    padding: 12px 18px;
+    color:var(--base);
+    border: 4px solid var(--positive);
+    transition: var(--trans-delay);
+    cursor:pointer;
+    outline:none;
+    padding: 12px 18px;
+    background-color: #00000031;
+    border-bottom: 4px solid var(--base);
+}
+
+.tab-section:active{
+    border-top: 4px solid var(--base);
+    background-color: #00000031;
+}
+
 .bottom-tab{
     bottom:0;
     background-color: var(--secondary);
@@ -399,7 +432,7 @@ img{vertical-align:middle}
     box-shadow: -5px -5px 10px #00000011;
     font-family:'Questrial','sans-serif';
     font-weight:bold;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
     position:fixed;
     width:100%;
     z-index:1
@@ -408,7 +441,7 @@ img{vertical-align:middle}
     color:var(--dead-text);
     background:var(--secondary);
     border-radius:4px 4px 0 0;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     padding:4px 8px;
     font-size:14px;
     outline:none;
@@ -429,7 +462,7 @@ img{vertical-align:middle}
     background:#216bf333;
     font-size:16px;
     border-radius:4px 4px 0 0;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     padding:4px 8px;
     font-size:14px;
     outline:none;
@@ -456,9 +489,9 @@ img{vertical-align:middle}
     border-radius: 12px;
     font-size:22px;
     padding:4px;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
     box-shadow: 0px 6px 15px #00000033;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
 }
 
 .text-field{
@@ -576,7 +609,7 @@ img{vertical-align:middle}
     border-radius: 4px;
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
     cursor: pointer;
 }
 .positive-button:hover{
@@ -596,7 +629,7 @@ img{vertical-align:middle}
     border-radius: 4px;
     box-shadow: 1px 5px 10px #00000022;
     padding:4px 12px 4px 12px;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
     cursor: pointer;
 }
 .positive-button-togg:active{
@@ -724,7 +757,7 @@ img{vertical-align:middle}
     background-color: var(--secondary);
     color:var(--positive);
     margin:12px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     font-size: 18px;
     font-family: 'Questrial',sans-serif;
 }
@@ -740,7 +773,7 @@ img{vertical-align:middle}
     background-color: var(--positive);
     color:var(--secondary);
     margin:12px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     font-size: 18px;
     font-family: 'Questrial',sans-serif;
 }
@@ -756,7 +789,7 @@ img{vertical-align:middle}
     background-color: var(--negative);
     color:var(--secondary);
     margin:12px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     font-size: 18px;
     font-family: 'Questrial',sans-serif;
 }
@@ -772,7 +805,7 @@ img{vertical-align:middle}
     background-color: var(--warning);
     color:var(--secondary);
     margin:12px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     font-size: 18px;
     font-family: 'Questrial',sans-serif;
 }
@@ -788,7 +821,7 @@ img{vertical-align:middle}
     background-color: var(--active);
     color:var(--secondary);
     margin:12px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     font-size: 18px;
     font-family: 'Questrial',sans-serif;
 }
@@ -877,7 +910,7 @@ img{vertical-align:middle}
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
   /* Hide the browser's default radio button */
@@ -899,7 +932,7 @@ img{vertical-align:middle}
     background-color: var(--positive);
     border-radius: 50%;
     box-shadow: 1px 5px 10px #00000022;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
   .radio-container:hover{
@@ -928,13 +961,13 @@ img{vertical-align:middle}
     content: "";
     position: absolute;
     display: none;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
   /* Show the indicator (dot/circle) when checked */
   .radio-container input:checked ~ .checkmark:after {
     display: block;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
   }
   
   /* Style the indicator (dot/circle) */
@@ -960,7 +993,7 @@ img{vertical-align:middle}
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
   /* Hide the browser's default radio button */
@@ -981,7 +1014,7 @@ img{vertical-align:middle}
     border: 2px solid var(--secondary);
     background-color: var(--secondary);
     border-radius:8px;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
   /* On mouse-over, add a grey background color */
@@ -989,7 +1022,7 @@ img{vertical-align:middle}
     background-color: var(--positive);
     border: 2px solid var(--positive);
     color:var(--secondary);
-    transition:0.3s ease;
+    transition:var(--trans-delay);
     box-shadow:0 3px 8px 0 #00000023;
   }
   
@@ -999,7 +1032,7 @@ img{vertical-align:middle}
     color:var(--positive);
     padding:12px;
     border: 2px solid var(--positive);
-    transition:0.3s ease;
+    transition:var(--trans-delay);
   }
   
 .dropdown {
@@ -1035,7 +1068,7 @@ img{vertical-align:middle}
     overflow: auto;
     z-index: 1;
     cursor:pointer;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
 
   }
   
@@ -1045,7 +1078,7 @@ img{vertical-align:middle}
     padding: 8px 12px;
     text-decoration: none;
     display: block;
-    transition:0.3s ease;
+    transition:var(--trans-delay);
 }
 .dropdown-content a:hover {
     background-color: var(--base);
@@ -1078,7 +1111,7 @@ img{vertical-align:middle}
     padding:12px;
     min-width: fit-content;
     margin:4px 0;
-    transition: 0.3s ease;
+    transition: var(--trans-delay);
     background-color: var(--secondary);
     cursor: pointer;
   }

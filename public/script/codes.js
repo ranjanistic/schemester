@@ -417,6 +417,9 @@ class Locations {
             this.dash = "dash";
             this.settings = "settings";
             this.addschedule = "addschedule";
+            this.comms = "comms";
+            this.calling = "calling";
+            this.chatroom = "chatroom";
             class Fragment {
               constructor() {
                 this.today = "today";
@@ -443,6 +446,9 @@ class Locations {
         class Target {
           constructor() {
             this.dash = "dash";
+            this.comms = "comms";
+            this.calling = "calling";
+            this.chatroom = "chatroom";
             class Fragment {
               constructor() {
                 this.today = "today";
@@ -479,6 +485,16 @@ class View {
     this.userinvitaion = "invitation.ejs";
     this.verification = "verification.ejs";
     this.passwordreset = "resetpassword.ejs";
+
+    class Comms{
+      constructor(){
+        this.commview = `comms/commview.ejs`;
+        this.calling = `comms/calling.ejs`;
+        this.chatroom = `comms/chatroom.ejs`;
+      }
+    }
+    this.comms = new Comms();
+
     /**
      * The paths of admin client view files, for server to use.
      */
@@ -534,6 +550,7 @@ class View {
         }
         this.fragment = new FragmentView();
         this.target = new Locations().teacher.target;
+        this.comms = new Comms();
       }
       getViewByTarget(target = this.target.dash) {
         switch (target) {
@@ -545,6 +562,12 @@ class View {
             return this.fullschedule;
           case this.target.addschedule:
             return this.addschedule;
+          case this.target.comms:
+            return this.comms.commview;
+          case this.target.calling:
+            return this.comms.calling;
+          case this.target.chatroom:
+            return this.comms.chatroom;
           case this.target.fragment.today:
             return this.fragment.today;
           case this.target.fragment.fullweek:
@@ -576,6 +599,7 @@ class View {
         }
         this.fragment = new FragmentView();
         this.target = new Locations().student.target;
+        this.comms = new Comms();
       }
       getViewByTarget(target = this.target.dash) {
         switch (target) {
@@ -583,6 +607,13 @@ class View {
             return this.dash;
           case this.target.fragment.today:
             return this.fragment.today;
+          case this.target.comms:
+            return this.comms.commview;
+          case this.target.calling:
+            return this.comms.calling;
+          case this.target.chatroom:
+            return this.comms.chatroom;
+          case this.target.fragment.today:
           case this.target.fragment.fullweek:
             return this.fragment.fullschedule;
           case this.target.fragment.settings:
@@ -594,7 +625,6 @@ class View {
         }
       }
     }
-
     this.admin = new AdminView();
     this.teacher = new TeacherView();
     this.student = new StudentView();
@@ -761,6 +791,7 @@ class Keys {
     this.uiid = "uiid";
     this.email = "email";
     this.homelogintab = 'homelogintab';
+    this.fragment = "fragment";
     this.id = constant.sessionID;
     this.uid = constant.sessionUID;
     this.username = "username";

@@ -1,6 +1,7 @@
 const {code,clog} = require('../public/script/codes'),
   {MongoClient} = require('mongodb'),
-getLink=(cloud=false)=>cloud?`mongodb+srv://ranjanistic:ggD2zo319tfQ6M8f@realmcluster.njdl8.mongodb.net/${code.db.DBNAME}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${code.db.DBNAME}`;
+  config = require('./config.json'),
+getLink=(cloud=false)=>cloud?`mongodb+srv://${config.name}:${config.pass}@realmcluster.njdl8.mongodb.net/${code.db.DBNAME}?retryWrites=true&w=majority`:`mongodb://localhost:27017/${code.db.DBNAME}`;
 var _db;
 module.exports = {
   connectToServer: ( callback )=>{

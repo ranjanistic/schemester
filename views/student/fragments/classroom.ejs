@@ -19,7 +19,23 @@
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
                     <span class="menu fmt-right">
+                        <button class="neutral-button-togg" id="setupbutton"><img width="25" src="/graphic/elements/settings.svg"/></button>
+                        <div class="menubox" id="setup">
+                            <section class="fmt-padding positive fmt-center">
+                                Actions
+                            </section>
+                            <% if(classroom) {%>
+                                <div class="fmt-center questrial" id="chooseclass">
+                                    Choose class
+                                </div>
+                            <% } %>
+                        </div>
+                    </span>
+                    <span class="menu fmt-right">
                         <button class="neutral-button-togg" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" /></button>
+                    </span>
+                    <span class="menu fmt-right">
+                        <button class="neutral-button-togg" id="chatbutton"><img width="25" src="/graphic/elements/chaticon.svg"/></button>
                     </span>
                 </div>
             </div>

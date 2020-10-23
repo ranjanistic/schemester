@@ -55,15 +55,15 @@ class TeacherDash{
         this.tabicons = ['/graphic/elements/todayicon.svg','/graphic/elements/weekicon.svg','/graphic/elements/classicon.svg','/graphic/elements/settingicon.svg'];
         this.fragpath = [locate.teacher.target.fragment.today,locate.teacher.target.fragment.fullweek,locate.teacher.target.fragment.classroom,locate.teacher.target.fragment.settings];
         this.tabs.forEach((tab,t)=>{
-            tab.onclick=_=>{
-                this.showLoader(tab);
-                sessionStorage.setItem('fragment',this.fragpath[t]);
-                this.selectTab(tab);
-                this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
-                this.frame.onload=_=>{
-                    this.hideLoader(tab)
-                }
+          tab.onclick=_=>{
+            this.showLoader(tab);
+            sessionStorage.setItem('fragment',this.fragpath[t]);
+            this.selectTab(tab);
+            this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
+            this.frame.onload=_=>{
+                this.hideLoader(tab)
             }
+          }
         });
         
         visibilityOf(tabs.classroom,localStorage.getItem('hideclassroom'))
