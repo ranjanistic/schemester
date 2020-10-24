@@ -4,7 +4,7 @@
  */
 class Codes {
   constructor() {
-    // this.domain = "http://localhost:3000";
+    // this.domain = "https://localhost:3000";
     this.domain = "https://schemester.herokuapp.com";
     this.free = "Free";
     this.OK = "OK/true";
@@ -13,6 +13,7 @@ class Codes {
     class Servercodes {
       constructor() {
         this.DATABASE_ERROR = "server/database-error:";
+        this.SERVER_ERROR = "server/server-error:";
         this.UIID_TAKEN = "server/uiid-already-taken";
         this.UIID_AVAILABLE = "server/uiid-available";
       }
@@ -104,6 +105,7 @@ class Codes {
 
         this.CLASS_EXISTS = "inst/class-exists";
         this.CLASS_NOT_FOUND = "inst/class-not-found";
+        this.CLASS_JOIN_FAILED = "inst/failed-to-join-classroom";
         this.CLASSES_CREATED = "inst/classes-creation-success";
         this.CLASSES_CREATION_FAILED = "inst/classes-creation-failed";
         this.INCHARGE_EXISTS = "inst/class-incharge-found";

@@ -44,18 +44,10 @@
                             </section>
                             <% var notifs = false %>
                             <% if(pseudostudents.length) {%>
-                                <% legitstudents = Array() %> 
-                                <% for(let i=0;i<pseudostudents.length;i++) {
-                                    if(pseudostudents[i].verified) {
-                                        legitstudents.push(pseudostudents[i]);
-                                    }
-                                } %>
-                                <% if(legitstudents.length) {%>
-                                    <% notifs = true %>
-                                    <div id="studentrequests">
-                                        👩‍🎓 <span id="requestees"><%= legitstudents.length %></span> pending requests.
-                                    </div>
-                                <% } %>
+                                <% notifs = true %>
+                                <div id="studentrequests">
+                                    👩‍🎓 <span id="requestees"><%= pseudostudents.length %></span> pending requests.
+                                </div>
                             <% } %>
                             <% if(!notifs) {%>
                                 <section class="fmt-center group-text">

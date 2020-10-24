@@ -39,25 +39,27 @@ class StudentWorker {
 
 class Self {
   constructor() {
-    const path = `users.classes`;
-    const pseudopath = `pseudousers.classes`;
+    const classpath = `users.classes`;
+    const pseudoclasspath = `pseudousers.classes`;
+    const studentspath = `users.students`;
+    const pseudostudentspath = `pseudousers.students`;
+    const studentsclasspath = `${classpath}.$.students`;
+    const pseudostudentsclasspath = `${pseudoclasspath}.$.students`;
 
-    const studentspath = `${path}.$.students`;
-    const pseudostudentspath = `${pseudopath}.$.students`;
-
-    this.path = path;
-    this.pseudopath = pseudopath;
-
+    this.classpath = classpath;
+    this.pseudoclasspath = pseudoclasspath;
     this.studentspath = studentspath;
     this.pseudostudentspath = pseudostudentspath;
-
+    this.studentsclasspath = studentsclasspath;
+    this.pseudostudentsclasspath = pseudostudentsclasspath;
+    this.uid = "_id";
     this.classname = "classname";
     class Account {
       constructor() {
-        this.path = path;
-        this.pseudopath = pseudopath;
-        this.studentspath = studentspath;
-        this.pseudostudentspath = pseudostudentspath;
+        this.path = classpath;
+        this.pseudopath = pseudoclasspath;
+        this.studentspath = studentsclasspath;
+        this.pseudostudentspath = pseudostudentsclasspath;
         this.classname = "classname";
         this.uid = "_id";
         this.username = "username";
@@ -73,53 +75,32 @@ class Self {
       async getAccount(user){
         let studentdoc = await Institute.findOne({
           uiid:user.uiid,
-          "users.classes":{
-            $elemMatch:{"classname":user.classname}
+          [studentspath]:{
+            $elemMatch:{[this.uid]:ObjectId(user.id)}
           }
         },{
           projection:{
-            "_id":0,
-            "users.classes.$":1
+            [this.uid]:0,
+            "users.students.$":1
           }
         });
-        let student;
-        if(studentdoc){
-          student = share.getStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(user.id)),user.uiid);
-        }
-        if(!student){
-          studentdoc = await Institute.findOne({
-            uiid:user.uiid,
-            "pseudousers.classes":{
-              $elemMatch:{"classname":user.classname}
-            }
-          },{
-            projection:{
-              "_id":0,
-              "pseudousers.classes.$":1
-            }
-          });
-          if(studentdoc){
-            student = share.getPseudoStudentShareData(studentdoc.users.classes[0].students.find((stud)=>String(stud._id)==String(user.id)),user.uiid);
+        if(studentdoc)
+          return studentdoc.users.students[0];
+        studentdoc = await Institute.findOne({
+          uiid:user.uiid,
+          [pseudostudentspath]:{
+            $elemMatch:{[this.uid]:ObjectId(user.id)}
           }
-          return studentdoc?student:code.event(code.auth.USER_NOT_EXIST); //if no class then obiviously no student.
-        }
-        return studentdoc?student:code.event(code.auth.USER_NOT_EXIST);
+        },{
+          projection:{
+            [this.uid]:0,
+            "pseudousers.students.$":1
+          }
+        });
+        studentdoc.pseudousers.students[0]['pseudo'] = true;
+        return studentdoc?studentdoc.pseudousers.students[0]:false;
       }
-      async createAccount(uiid, classname, newstudent) {
 
-        const doc = await Institute.findOneAndUpdate(
-          {
-            uiid: uiid,
-            [path]: {
-              $elemMatch: { classname: classname },
-            }, //existing classname
-          },
-          {
-            $push: { [studentspath]: newstudent }, //new student push
-          }
-        );
-        return code.event(doc.value ? code.OK : code.NO);
-      }
 
       /**
        * This will create an account in a class of the pseudousers object of instiution, and will be shown as a requestee student to join the classroom.
@@ -127,157 +108,216 @@ class Self {
        * @param {String} classname The classname of classroom in which request is to be sent.
        * @param {JSON} pseudostudent The student data for which pseudo account will be created.
        */
-      async createPseudoAccount(uiid, classname, pseudostudent) {
-        const doc = await Institute.findOneAndUpdate(
-          {
+      async createAccount(uiid, newstudent,pseudo = true) {
+        const doc = await Institute.findOneAndUpdate({
             uiid: uiid,
-            [pseudopath]: { $elemMatch: { classname: classname } },
           },
           {
-            $push: {
-              [pseudostudentspath]: pseudostudent,
-            },
+            $push: { [pseudo?pseudostudentspath:studentspath]: newstudent }, //new student account push
           }
         );
         return code.event(doc.value ? code.OK : code.NO);
       }
 
+      async getStudentByEmail(uiid, email, pseudo = false) {
+        const path = pseudo ? "pseudousers.students" : "users.students";
+        const getpath = `${path}.$`;
+        const cdoc = await Institute.findOne(
+          { uiid: uiid, [path]: { $elemMatch: { studentID: email } } },
+          {
+            projection: {
+              [getpath]: 1,
+            },
+          }
+        );
+        if (!cdoc) return false;
+        const student = pseudo
+          ? cdoc.pseudousers.students[0]
+          : cdoc.users.students[0];
+        return student ? student : false;
+      }
+      
+
       /**
-       * To change current teacher's user name
+       * This will create add student to the given class of instiution, and will be shown as a requestee student to join the classroom if pseudo = true (default).
+       * @param {String} uiid The unique institute ID
+       * @param {String} classname The classname of classroom in which request is to be sent.
+       * @param {JSON} student The student data, should only contain username & studentID.
+       * @param {Boolean} pseudo Defaults to true. If true, will add student in pseudousers.classes classroom, as a request, otherwise in users.classes classroom, as student.
+       */
+      async addStudentToClass(uiid,classname,student,pseudo = true){
+        const doc = await Institute.findOneAndUpdate({
+          uiid:uiid,
+          [pseudo?pseudoclasspath:classpath]:{$elemMatch:{classname:classname}}
+        },{
+          $push:{
+            [pseudo?pseudostudentsclasspath:studentsclasspath]:student
+          }
+        });
+        return code.event(doc.value ? code.OK : code.NO); 
+      }
+
+      /**
+       * Changes the student's username, everywhere.
        */
       changeName = async (user, body) => {
-        let student = await getStudentById(user.uiid, user.classname, user.id);
+        let student = await getStudentById(user.uiid, user.id);
         const pseudo = student ? false : true;
         student = student
           ? student
-          : await getStudentById(user.uiid, user.classname, user.id, true);
+          : await getStudentById(user.uiid, user.id, true);
         if (!student) return code.event(code.auth.USER_NOT_EXIST);
         const namepath = pseudo
-          ? `${pseudopath}.$[outer].students.$[outer1].${this.username}`
-          : `${this.path}.$[outer].students.$[outer1].${this.username}`;
-        const newstudent = await Institute.updateOne(
+          ? `${pseudostudentspath}.$.${this.username}`
+          : `${studentspath}.$.${this.username}`;
+        const accdoc = await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          [pseudo?pseudostudentspath:studentspath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}
+        },{
+          $set:{[namepath]:body.newname}
+        }); //updating in student account
+
+        if(!accdoc.value) return code.event(code.NO);
+        const nameclasspath = pseudo
+          ? `${pseudoclasspath}.$[outer].students.$[outer1].${this.username}`
+          : `${classpath}.$[outer].students.$[outer1].${this.username}`;
+        const newstudent = await Institute.update(
           { uiid: user.uiid },
           {
             $set: {
-              [namepath]: body.newname,
+              [nameclasspath]: body.newname,
             },
           },
           {
             arrayFilters: [
               { "outer.classname": user.classname },
-              { "outer1._id": ObjectId(user.id) },
+              { "outer1.studentID": student.studentID },
             ],
           }
-        );
+        );  //updating in all classrooms
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
 
       /**
-       * To change current students's user password
+       * Changes the student's account password.
        */
       changePassword = async (user, body) => {
-        let student = await getStudentById(user.uiid, user.classname, user.id);
+        let student = await getStudentById(user.uiid, user.id);
         const pseudo = student ? false : true;
         student = student
           ? student
-          : await getStudentById(user.uiid, user.classname, user.id, true);
+          : await getStudentById(user.uiid, user.id, true);
         if (!student) return code.event(code.auth.USER_NOT_EXIST);
+
         const passpath = pseudo
-          ? `${pseudopath}.$[outer].students.$[outer1].${this.password}`
-          : `${this.path}.$[outer].students.$[outer1].${this.password}`;
+          ? `${pseudostudentspath}.$.${this.password}`
+          : `${studentspath}.$.${this.password}`;
         const rlinkpath = pseudo
-          ? `${pseudopath}.$[outer].students.$[outer1].${this.rlinkexp}`
-          : `${this.path}.$[outer].students.$[outer1].${this.rlinkexp}`;
+        ? `${pseudostudentspath}.$.${this.rlinkexp}`
+        : `${studentspath}.$.${this.rlinkexp}`;
+
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
-        const newstudent = await Institute.updateOne(
-          { uiid: user.uiid },
-          {
-            $set: {
-              [passpath]: epassword,
-            },
-            $unset: {
-              [rlinkpath]: null,
-            },
+        const accdoc = await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          [studentspath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}
+        },{
+          $set:{
+            [passpath]:epassword
           },
-          {
-            arrayFilters: [
-              { "outer.classname": user.classname },
-              { "outer1._id": ObjectId(user.id) },
-            ],
-          }
-        );
-
-        return code.event(newstudent.result.nModified ? code.OK : code.NO);
+          $unset: {
+            [rlinkpath]: null,
+          },
+        }); //updating in student account
+        return code.event(accdoc.value ? code.OK : code.NO);
       };
 
       /**
-       *
+       * Changes email address of a student, everywhere.
        */
       changeEmailID = async (user, body) => {
-        let student = await getStudentById(user.uiid, user.classname, user.id);
+        let student = await getStudentById(user.uiid, user.id);
         const pseudo = student ? false : true;
         student = student
           ? student
-          : await getStudentById(user.uiid, user.classname, user.id, true);
+          : await getStudentById(user.uiid, user.id, true);
         if (!student) return code.event(code.auth.USER_NOT_EXIST);
         if (student.studentID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
         const mailpath = pseudo
-          ? `${pseudopath}.$[outer].students.$[outer1].${this.studentID}`
-          : `${this.path}.$[outer].students.$[outer1].${this.studentID}`;
+          ? `${pseudostudentspath}.$.${this.studentID}`
+          : `${studentspath}.$.${this.studentID}`;
         const verifypath = pseudo
-          ? `${pseudopath}.$[outer].students.$[outer1].${this.verified}`
-          : `${this.path}.$[outer].students.$[outer1].${this.verified}`;
-        const newstudent = await Institute.updateOne(
+          ? `${pseudostudentspath}.$.${this.verified}`
+          : `${studentspath}.$.${this.verified}`;
+        const accdoc = await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          [pseudo?pseudostudentspath:studentspath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}
+        },{
+          $set:{[mailpath]:body.newemail,[verifypath]: false}
+        }); //updating in student account
+        if(!accdoc.value) return code.event(code.NO);
+
+        const mailclasspath = pseudo
+          ? `${pseudoclasspath}.$[outer].students.$[outer1].${this.studentID}`
+          : `${classpath}.$[outer].students.$[outer1].${this.studentID}`;
+        const newstudent = await Institute.update(
           { uiid: user.uiid },
           {
             $set: {
-              [mailpath]: body.newemail,
-              [verifypath]: false,
+              [mailclasspath]: body.newemail,
             },
           },
           {
             arrayFilters: [
               { "outer.classname": user.classname },
-              { "outer1._id": ObjectId(user.id) },
+              { "outer1.studentID": student.studentID },
             ],
           }
-        );
+        );  //updating in all classrooms
         return code.event(newstudent.result.nModified ? code.OK : code.NO);
       };
 
       /**
-       *
+       * Delete student account, and remove from classrooms.
        */
       deleteAccount = async (user) => {
-        let student = await getStudentById(user.uiid, user.classname, user.id);
-
+        let student = await getStudentById(user.uiid, user.id);
         const pseudo = student ? false : true;
         student = student
           ? student
-          : await getStudentById(user.uiid, user.classname, user.id, true);
+          : await getStudentById(user.uiid, user.id, true);
         if (!student) return code.event(code.auth.USER_NOT_EXIST);
-        const studentpath = pseudo
-          ? `${pseudopath}.$[outer].students`
-          : `${this.path}.$[outer].students`;
-        const newstudent = await Institute.updateOne(
+        const delacc = await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          [pseudo?pseudostudentspath:studentspath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}
+        },{
+          $pull:{
+            [pseudo?pseudostudentspath:studentspath]:{[this.uid]:ObjectId(user.id)}
+          }
+        });//removing student account
+        if(!delacc.value) return code.event(code.NO);
+        const studentcpath =  `${classpath}.$[outer].students`;
+        const pstudentcpath = `${pseudoclasspath}.$[outer].students`;
+        const delcstudent = await Institute.updateOne(
           { uiid: user.uiid },
           {
             $pull: {
-              [studentpath]: { _id: ObjectId(user.id) },
+              [pstudentcpath]: { [this.studentID]: student.studentID },
+              [studentcpath]: { [this.studentID]: student.studentID },
             },
           },
           {
             arrayFilters: [{ "outer.classname": user.classname }],
           }
-        );
-        return code.event(newstudent.result.nModified ? code.OK : code.NO);
+        );  //removing from all classrooms
+        return code.event(code.OK);
       };
     }
+
     class Preferences {
       constructor() {
-        this.studentspath = studentspath;
+        this.studentspath = studentsclasspath;
         this.object = `prefs`;
       }
       getSpecificPath(specific) {
@@ -330,36 +370,37 @@ class Self {
         return await mailer.sendVerificationEmail(linkdata);
       }
       case "check": {
-        let classdoc = await Institute.findOne(
+        let studdoc = await Institute.findOne(
           {
             uiid: user.uiid,
-            [this.path]: { $elemMatch: { [this.classname]: user.classname } },
+            [this.studentspath]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
           },
-          { projection: { "users.classes.$": 1 } }
+          { projection: { "users.students.$": 1 } }
         );
-        if (!classdoc) {
-          return false;
-        }
-        let student = classdoc.users.classes[0].students.find((stud) => String(stud._id) == String(user.id));
-        if (!student) {
-          classdoc = await Institute.findOne(
-            {
-              uiid: user.uiid,
-              [this.pseudopath]: {
-                $elemMatch: { [this.classname]: user.classname },
-              },
-            },
-            { projection: { "pseudousers.classes.$": 1 } }
-          );
-          student = classdoc.pseudousers.classes[0].students.find((stud) => String(stud._id) == String(user.id));
-          if (!student) return false;
+        let student;
+        if(studdoc){
+          student = studdoc.users.students[0];
           return code.event(
             student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
           );
         }
-        return code.event(
-          student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
-        );
+        if (!studdoc) {
+          studdoc = await Institute.findOne(
+            {
+              uiid: user.uiid,
+              [this.pseudostudentspath]: {
+                $elemMatch: { [this.uid]: ObjectId(user.id) },
+              },
+            },
+            { projection: { "pseudousers.students.$": 1 } }
+          );
+          if(!studdoc) return false;
+          student = studdoc.pseudousers.students[0];
+          return code.event(
+            student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
+          );
+        }
+        
       }
     }
   };
@@ -488,28 +529,28 @@ class Schedule {
 
 module.exports = new StudentWorker();
 
-async function getStudentById(uiid, classname, id, pseudo = false) {
-  let path = pseudo ? "pseudousers.classes" : "users.classes";
-  let getpath = pseudo ? "pseudousers.classes.$" : "users.classes.$";
-  const cdoc = await Institute.findOne(
-    { uiid: uiid, [path]: { $elemMatch: { classname: classname } } },
+async function getStudentById(uiid, id, pseudo = false) {
+  const path = pseudo ? "pseudousers.students" : "users.students";
+  const getpath =`${path}.$`;
+  const sdoc = await Institute.findOne(
+    { uiid: uiid, [path]: { $elemMatch: { _id: ObjectId(id) } } },
     {
       projection: {
         [getpath]: 1,
       },
     }
   );
-  if (!cdoc) return false;
-  let student = pseudo
-    ? cdoc.pseudousers.classes[0].students.find((stud) =>String(stud._id) == String(id))
-    : cdoc.users.classes[0].students.find((stud) => String(stud._id) == String(id));
+  if (!sdoc) return false;
+  const student = pseudo
+    ? sdoc.pseudousers.students[0]
+    : sdoc.users.students[0];
   return student ? student : false;
 }
-async function getStudentByEmail(uiid, classname, email, pseudo = false) {
-  const path = pseudo ? "pseudousers.classes" : "users.classes";
-  const getpath = pseudo ? "pseudousers.classes.$" : "users.classes.$";
+async function getStudentByEmail(uiid, email, pseudo = false) {
+  const path = pseudo ? "pseudousers.students" : "users.students";
+  const getpath = `${path}.$`;
   const cdoc = await Institute.findOne(
-    { uiid: uiid, [path]: { $elemMatch: { classname: classname } } },
+    { uiid: uiid, [path]: { $elemMatch: { studentID: email } } },
     {
       projection: {
         [getpath]: 1,
@@ -518,7 +559,7 @@ async function getStudentByEmail(uiid, classname, email, pseudo = false) {
   );
   if (!cdoc) return false;
   const student = pseudo
-    ? cdoc.pseudousers.classes[0].students.find((stud) => stud.studentID == email)
-    : cdoc.users.classes[0].students.find((stud) => stud.studentID == email);
+    ? cdoc.pseudousers.students[0]
+    : cdoc.users.students[0];
   return student ? student : false;
 }

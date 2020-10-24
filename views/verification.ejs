@@ -53,7 +53,7 @@
                     <div class="fmt-row questrial">
                         Dear <%= user.username %>,<br/><br/>
                         Before you explore and enjoy the benefits of Schemester,
-                        your account (<span class="positive"><%= user.id %></span>) needs to be verified to justify your authenticity.
+                        your account (<span class="positive break"><%= user.id %></span>) needs to be verified to justify your authenticity.
                         <br/><br/>If you click the blue button, a link will be sent to your provided email address, and you should visit that link before it expires.</br>
                         This small step will get you verified, and would be a giant leap for us, as we'll fully trust you after that.
                         <br/>
@@ -61,7 +61,7 @@
                     </div><br/><br/>
                     <div class="fmt-row">
                         <img class="fmt-spin-fast fmt-center fmt-left" width="50" src="/graphic/blueLoader.svg" id="verifyLoader"/>
-                        <button class="positive-button fmt-left" id="sendlink">Send link to <%= user.id %> </button>
+                        <button class="positive-button fmt-left" id="sendlink">Send link to <span class="break"><%= user.id %></span></button>
                         <button class="active-button fmt-left" id="checkverified">Check</button>
                         <button class="fmt-right negative-button" id="resetaccount">Reset account</button>
                         <button class="fmt-right neutral-button" id="later">Not now</button>

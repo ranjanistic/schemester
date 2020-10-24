@@ -118,6 +118,7 @@ class Self {
     class Account {
       constructor() {
         this.defaults = new Default();
+        this.uid = "_id";
         this.username = "username";
         this.email = "email";
         this.password = "password";
@@ -141,7 +142,7 @@ class Self {
       }
 
       /**
-       *
+       * Rename everywhere
        */
       changeName = async (user, body) => {
         const newadmin = await Admin.findOneAndUpdate(
@@ -157,7 +158,7 @@ class Self {
           : code.event(code.NO);
       };
       /**
-       *
+       * Change account password, revoke pass reset link
        */
       changePassword = async (user, body) => {
         const salt = await bcrypt.genSalt(10);
@@ -177,7 +178,7 @@ class Self {
       };
 
       /**
-       *
+       *Change email address everywhere
        */
       changeEmailID = async (user, admin, body) => {
         if (admin.email == body.newemail)
@@ -203,7 +204,7 @@ class Self {
       };
 
       /**
-       *
+       * change phone everywhere
        */
       changePhone = async (user, body) => {
         return code.event(
@@ -212,7 +213,7 @@ class Self {
       };
 
       /**
-       *
+       * Delete admin account
        */
       deleteAccount = async (user, uiid = null) => {
         if (uiid) {
@@ -637,10 +638,12 @@ class Default {
           default: body.data.default,
           users: {
             teachers: [],
+            students:[],
             classes: [],
           },
           pseudousers: {
             teachers: [],
+            students:[],
             classes: [],
           },
           schedule: {

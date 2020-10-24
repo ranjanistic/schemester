@@ -112,6 +112,7 @@ class Register {
       `);
       const teacherscheduleswitch = new Switch('teacherscheduleswitch');
       const teacheraccountswitch = new Switch('teacheraccountswitch');
+      const studentaccountswitch = new Switch('studentaccountswitch');
       const classroomswitch = new Switch('classroomswitch');
       try{
         teacherscheduleswitch.onTurnChange(_=>{
@@ -124,6 +125,11 @@ class Register {
         },_=>{
           sessionStorage.removeItem('fileteacheraccount');
         });
+        studentaccountswitch.onTurnChange(_=>{
+          sessionStorage.setItem('filestudentaccount',true);
+        },_=>{
+          sessionStorage.removeItem('filestudentaccount');
+        });
         classroomswitch.onTurnChange(_=>{
           sessionStorage.setItem('fileclasses',true);
         },_=>{
@@ -132,7 +138,10 @@ class Register {
       }catch{};
       choosedialog.createActions(['Apply','Cancel'],[actionType.positive,actionType.neutral]);
       choosedialog.onButtonClick([_=>{
-        choosedialog.setDisplay('Confirm Data',`${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}${sessionStorage.getItem('fileclasses')?', & Classrooms':''} will be created from your file.`);
+        choosedialog.setDisplay('Confirm Data',`${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, 
+        ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''},
+        ${sessionStorage.getItem('filestudentaccount')?'Student accounts':''}
+        ${sessionStorage.getItem('fileclasses')?', & Classrooms':''} will be created from your file.`);
         choosedialog.createActions(['Confirm','Abort'],[actionType.positive,actionType.neutral]);
         choosedialog.onButtonClick([_=>{
           setClasses();
@@ -144,6 +153,7 @@ class Register {
           inst = null;
           sessionStorage.removeItem('fileteacherschedule');
           sessionStorage.removeItem('fileteacheraccount');
+          sessionStorage.removeItem('filestudentaccount');
           sessionStorage.removeItem('fileclasses');
           choosedialog.hide();
         }])
@@ -151,6 +161,7 @@ class Register {
         inst = null;
         sessionStorage.removeItem('fileteacherschedule');
         sessionStorage.removeItem('fileteacheraccount');
+        sessionStorage.removeItem('filestudentaccount');
         sessionStorage.removeItem('fileclasses');
         choosedialog.hide();
       }]);
@@ -604,7 +615,10 @@ class Stage2 {
           </ul>
           ${inst?
           `<div class="fmt-row">
-            With ${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}${sessionStorage.getItem('fileclasses')?', & Classrooms':''} from your file.
+            With ${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, 
+            ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}
+            ${sessionStorage.getItem('filestudentaccount')?'Student accounts':''}
+            ${sessionStorage.getItem('fileclasses')?', & Classrooms':''} from your file.
           </div>`:''}
         </div>`
       );
@@ -657,10 +671,12 @@ class Stage2 {
               schedule:sessionStorage.getItem('fileteacherschedule')?inst.schedule:{teachers:[]},
               users:{
                 teachers:sessionStorage.getItem('fileteacheraccount')?inst.users.teachers:[],
+                students:sessionStorage.getItem('filestudentaccount')?inst.users.students:[],
                 classes:sessionStorage.getItem('fileclasses')?inst.users.classes:[]
               },
               pseudousers:{
                 teachers:sessionStorage.getItem('fileteacheraccount')?inst.pseudousers.teachers:[],
+                students:sessionStorage.getItem('filestudentaccount')?inst.pseudousers.students:[],
                 classes:sessionStorage.getItem('fileclasses')?inst.pseudousers.classes:[]
               },
               invite:inst.invite,

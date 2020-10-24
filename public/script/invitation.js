@@ -18,12 +18,7 @@ class Active {
       "userpasserror",
       validType.password
     );
-    this.passConfirmField = new TextInput(
-      "userpassconffield",
-      "userconfpass",
-      "userconfpasserror",
-      validType.match
-    );
+    
 
     this.nameField.validate((_) => {
       this.emailField.inputFocus();
@@ -31,10 +26,7 @@ class Active {
     this.emailField.validate((_) => {
       this.passField.inputFocus();
     });
-    this.passField.validate((_) => {
-      this.passConfirmField.inputFocus();
-    });
-    this.passConfirmField.validate((_) => {}, this.passField);
+    this.passField.validate();
 
     this.acceptinvite = getElement("acceptInvitation");
     this.rejectinvite = getElement("rejectInvitation");
@@ -53,14 +45,10 @@ class Active {
       !(
         this.nameField.isValid() &&
         this.emailField.isValid() &&
-        this.passField.isValid() &&
-        this.passConfirmField.isValid(this.passField.getInput())
+        this.passField.isValid()
       )
     ) {
-      this.passConfirmField.validateNow((_) => {}, this.passField);
-      this.passField.validateNow((_) => {
-        this.passConfirmField.inputFocus();
-      });
+      this.passField.validateNow();
       this.emailField.validateNow((_) => {
         this.passField.inputFocus();
       });
@@ -83,7 +71,7 @@ class Active {
       action: postaction,
       username: this.nameField.getInput().trim(),
       email: this.emailField.getInput().trim(),
-      password: this.passField.getInput().trim(),
+      password: this.passField.getInput(),
       pseudo:!data.personal,
       uiid: data.uiid,
       classname:data.classname
@@ -110,7 +98,8 @@ class Active {
                 email:this.emailField.getInput()
               });
             })
-            return this.emailField.showError("Account already exists");}
+            return this.emailField.showError("Account already exists");
+          }
           default: {
             if (!navigator.onLine) {
               snackBar("Network error", null, false);

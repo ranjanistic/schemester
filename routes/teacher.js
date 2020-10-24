@@ -181,6 +181,9 @@ teacher.get(get.fragment, (req, res) => {
     })
     .then(async (response) => {
       const query = req.query;
+      try{
+
+      
       switch (query.fragment) {
         case view.teacher.target.fragment.today: {
           worker.schedule.getSchedule(response.user, {dayIndex:Number(query.day)})
@@ -253,6 +256,9 @@ teacher.get(get.fragment, (req, res) => {
           });
         }break;
         default:return res.render(view.notfound);
+      }
+      }catch{
+        res.render(view.servererror);
       }
     });
 });

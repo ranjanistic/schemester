@@ -64,14 +64,15 @@
                         <span class="fmt-right error-caption" id="usermailerror"></span>
                     </fieldset>
                     <fieldset class="text-field fmt-row" id="userpassfield">
-                        <legend class="field-caption" >Create your password</legend>
-                        <input class="text-input" required autocomplete="new-password" placeholder="A strong password" type="password" id="userpass" name="userpassword">
+                        <legend class="field-caption">Type your password</legend>
+                        <input class="text-input" required autocomplete="new-password"
+                        <% if(invite.target == 'student') { %>
+                            placeholder="Type existing or create a new password"
+                        <% } else { %>
+                            placeholder="A strong password"
+                        <% } %>
+                            type="password" id="userpass" name="userpassword">
                         <span class="fmt-right error-caption" id="userpasserror"></span>
-                    </fieldset>
-                    <fieldset class="text-field fmt-row" id="userpassconffield">
-                        <legend class="field-caption" >Type again to confirm</legend>
-                        <input class="text-input" required autocomplete="new-password" placeholder="Confirm password" type="password" id="userconfpass" name="confuserpassword">
-                        <span class="fmt-right error-caption" id="userconfpasserror"></span>
                     </fieldset>
                     <br/>
                     <div class="fmt-row">

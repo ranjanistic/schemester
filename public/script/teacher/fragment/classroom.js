@@ -141,15 +141,15 @@ class Classroom {
           if (students.event != code.NO) {
             const requestDialog = new Dialog();
             requestDialog.setBackgroundColor(colors.transparent);
-            requestDialog.createActions(Array("Hide"), Array(bodyType.neutral));
+            requestDialog.createActions(["Hide"], [bodyType.neutral]);
             requestDialog.onButtonClick(
-              Array((_) => {
+              [(_) => {
                 requestDialog.hide();
-              })
+              }]
             );
             let bodytext = `<center>These people have requested to join ${this.data.classname} as student.</center><br/>`;
             students.forEach((student, t) => {
-              if (student.verified) {
+              
                 bodytext += `
               <div class="fmt-row tab-view" id="request${t}">
                 <div class="fmt-col fmt-half group-text">
@@ -162,12 +162,11 @@ class Classroom {
                 </div>
               </div>
               `;
-              }
             });
             bodytext += `</div>`;
             requestDialog.setDisplay("Student requests", bodytext);
-            const rejects = Array();
-            const accepts = Array();
+            const rejects = [];
+            const accepts = [];
             students.forEach((student, t) => {
               rejects.push(getElement(`reject${t}`));
               accepts.push(getElement(`accept${t}`));

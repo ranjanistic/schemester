@@ -44,12 +44,12 @@ class TeacherWorker {
 
 class Self {
   constructor() {
-    const path = `users.teachers`;
-    const pseudopath = `pseudousers.teachers`;
+    const teacherpath = `users.teachers`;
+    const pseudoteacherpath = `pseudousers.teachers`;
     class Account {
       constructor() {
-        this.path = path;
-        this.pseudopath = pseudopath;
+        this.path = teacherpath;
+        this.pseudopath = pseudoteacherpath;
         this.username = "username";
         this.uid = "_id";
         this.teacherID = "teacherID";
@@ -64,31 +64,30 @@ class Self {
       async getAccount(user){
         let teacherdoc = await Institute.findOne({
           uiid:user.uiid,
-          "users.teachers":{
-            $elemMatch:{"_id":ObjectId(user.id)}
+          [teacherpath]:{
+            $elemMatch:{[this.uid]:ObjectId(user.id)}
           }
         },{
           projection:{
-            "_id":0,
+            [this.uid]:0,
             "users.teachers.$":1
           }
         });
-        if(!teacherdoc){
-          teacherdoc = await Institute.findOne({
-            uiid:user.uiid,
-            "pseudousers.teachers":{
-              $elemMatch:{"_id":ObjectId(user.id)}
-            }
-          },{
-            projection:{
-              "_id":0,
-              "pseudousers.teachers.$":1
-            }
-          });
+        if(teacherdoc)
+          return share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid)
+        teacherdoc = await Institute.findOne({
+          uiid:user.uiid,
+          [pseudoteacherpath]:{
+            $elemMatch:{[this.uid]:ObjectId(user.id)}
+          }
+        },{
+          projection:{
+            [this.uid]:0,
+            "pseudousers.teachers.$":1
+          }
+        });
 
-          return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
-        }
-        return teacherdoc?share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+        return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
       }
 
       async createAccount(uiid, newteacher) {
@@ -96,7 +95,7 @@ class Self {
           { uiid: uiid },
           {
             $push: {
-              [path]: newteacher,
+              [teacherpath]: newteacher,
             },
           }
         );
@@ -122,7 +121,7 @@ class Self {
           },
           {
             $push: {
-              [pseudopath]: pseudoteacher,
+              [pseudoteacherpath]: pseudoteacher,
             },
           }
         );
@@ -137,8 +136,8 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const namepath = pseudo?`${pseudopath}.$.${this.username}`:`${this.path}.$.${this.username}`;
-        const path = pseudo?pseudopath:this.path;
+        const namepath = pseudo?`${pseudoteacherpath}.$.${this.username}`:`${this.path}.$.${this.username}`;
+        const path = pseudo?pseudoteacherpath:this.path;
         let newteacher = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -174,9 +173,9 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const passpath = pseudo?`${pseudopath}.$.${this.password}`:`${this.path}.$.${this.password}`;
-        const rlinkpath = pseudo?`${pseudopath}.$.${this.rlinkexp}`:`${this.path}.$.${this.rlinkexp}`;
-        const path = pseudo?pseudopath:this.path;
+        const passpath = pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.path}.$.${this.password}`;
+        const rlinkpath = pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.path}.$.${this.rlinkexp}`;
+        const path = pseudo?pseudoteacherpath:this.path;
 
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
@@ -205,9 +204,9 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const mailpath = pseudo?`${pseudopath}.$.${this.teacherID}`:`${this.path}.$.${this.teacherID}`;
-        const verifiedpath = pseudo?`${pseudopath}.$.${this.verified}`:`${this.path}.$.${this.verified}`;
-        const path = pseudo?pseudopath:this.path;
+        const mailpath = pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.path}.$.${this.teacherID}`;
+        const verifiedpath = pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.path}.$.${this.verified}`;
+        const path = pseudo?pseudoteacherpath:this.path;
 
         if (teacher.teacherID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
@@ -241,7 +240,7 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const path = pseudo?pseudopath:this.path;
+        const path = pseudo?pseudoteacherpath:this.path;
         const deluser = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -684,9 +683,6 @@ class Classroom {
     let pseudostudents = [];
     if(pclassdoc){
       pseudostudents = pclassdoc.pseudousers.classes[0].students;
-      pseudostudents.forEach((stud,s)=>{
-        pseudostudents[s] = share.getStudentShareData(stud);
-      })
     }
     let classroom = classdoc.users.classes[0];
     let todayschedule = await new Schedule().getSchedule(user);
@@ -707,6 +703,7 @@ class Classroom {
     classroom.students.forEach((stud,s)=>{
       classroom.students[s] = share.getStudentShareData(stud);
     });
+    
     return {
       classroom: classroom,
       pseudostudents: pseudostudents,
@@ -778,30 +775,37 @@ class PseudoUsers {
           $elemMatch: { classname: classname },
         },
       },
-      { projection: { "pseudousers.classes.$": 1 } }
+      { projection: { "pseudousers.classes.$": 1,"pseudousers.students":1 } }
     );
     if (!pclassdoc) return code.event(code.NO);
-    let student;
-    const found = pclassdoc.pseudousers.classes[0].students.some((stud) => {
-      if (stud.studentID == body.studentID) {
-        student = stud;
-        return true;
-      }
-    });
-    if (!found) return code.event(code.NO);
+    let student = pclassdoc.pseudousers.classes[0].students.find((stud)=>stud.studentID == body.studentID);
+    let studaccount = pclassdoc.pseudousers.students.find((acc)=>acc.studentID==body.studentID);
+    const query = studaccount?{
+      $push: {
+        "users.classes.$.students": student,
+        "users.students":studaccount
+      },
+      $pull: {
+        "pseudousers.classes.$[outer].students": {
+          studentID: student.studentID,
+        },
+        "pseudousers.students":{studentID:studaccount.studentID}
+      },
+    }:{
+      $push: {
+        "users.classes.$.students": student,
+      },
+      $pull: {
+        "pseudousers.classes.$[outer].students": {
+          studentID: student.studentID,
+        },
+      },
+    }
+    if (!student) return code.event(code.NO);
     const doc = await Institute.updateOne({
         uiid: user.uiid,
         "users.classes": { $elemMatch: { classname: classname } },
-      },{
-        $push: {
-          "users.classes.$.students": student,
-        },
-        $pull: {
-          "pseudousers.classes.$[outer].students": {
-            studentID: student.studentID,
-          },
-        },
-      },
+      },query,
       {
         arrayFilters: [{ "outer.classname": classname }],
       }
