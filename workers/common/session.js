@@ -181,7 +181,8 @@ class Session {
                   if (!classdoc && !pseudoclassdoc)
                     return code.event(code.auth.CLASS_NOT_EXIST);
                   const pseudo = pseudoclassdoc.pseudousers.classes[0].students.find((stud)=>stud.studentID == body.email)?true:false;
-                  const isinanyclass = classdoc.users.classes[0].students.find((stud) =>stud.studentID == body.email)?true:false||pseudo;
+                  const isintheclass = classdoc.users.classes[0].students.find((stud) =>stud.studentID == body.email)?true:false||pseudo;
+                  const isinanyclass = await studentworker.classes.getClassesByStudentID(body.uiid,body.email);
                   try{
                     if(!isinanyclass){  //then delete the student's account
                       let account = await studentworker.self.account.getStudentByEmail(body.uiid,body.email,false);
@@ -192,14 +193,13 @@ class Session {
                           uiid:body.uiid,
                           classname:body.classname
                         });
-                        clog(del);
                       }
                     }
                   }catch(e){
                     clog(e);
                   }
                   return code.event(
-                    isinanyclass
+                    isintheclass
                       ? code.auth.USER_EXIST
                       : code.auth.USER_NOT_EXIST
                   );
@@ -257,83 +257,21 @@ class Session {
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.teachersessionsecret: {
-        let teacherdoc = await Institute.findOne(
-          {
-            uiid: resp.user.uiid,
-            "users.teachers": { $elemMatch: { _id: ObjectId(resp.user.id) } },
-          },
-          { projection: { _id: 0, "users.teachers.$": 1 } }
-        );
-        const pseudoteacherdoc = await Institute.findOne(
-          {
-            uiid: resp.user.uiid,
-            "pseudousers.teachers": {
-              $elemMatch: { _id: ObjectId(resp.user.id) },
-            },
-          },
-          { projection: { _id: 0, "pseudousers.teachers.$": 1 } }
-        );
-        if (!teacherdoc && !pseudoteacherdoc)
-          return code.event(code.auth.USER_NOT_EXIST);
-        const teacher = teacherdoc
-          ? teacherdoc.users.teachers[0]
-          : pseudoteacherdoc.pseudousers.teachers[0];
-        if (body.email != teacher.teacherID)
-          return code.event(code.auth.EMAIL_INVALID);
+        const teacher = await teacherworker.self.account.getAccount(resp.user,true);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        if (body.email != teacher.teacherID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, teacher.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
         this.createSession(res, teacher._id, resp.user.uiid, secret);
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.studentsessionsecret: {
-        const classdoc = await Institute.findOne(
-          {
-            uiid: resp.user.uiid,
-            "users.classes": { $elemMatch: { classname: resp.user.classname } },
-          },
-          { projection: { "users.classes.$": 1 } }
-        );
-        if (!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);
-        let student;
-        const found = classdoc.users.classes[0].students.some((stud) => {
-          if (String(stud._id) == String(resp.user.id)) {
-            student = stud;
-            return true;
-          }
-        });
-        const pseudoclassdoc = await Institute.findOne(
-          {
-            uiid: resp.user.uiid,
-            "pseudousers.classes": {
-              $elemMatch: { classname: resp.user.classname },
-            },
-          },
-          { projection: { _id: 0, "pseudousers.classes.$": 1 } }
-        );
-        let pstudent;
-        const pfound = pseudoclassdoc.pseudousers.classes[0].students.some(
-          (stud) => {
-            if (String(stud._id) == String(resp.user.id)) {
-              pstudent = stud;
-              return true;
-            }
-          }
-        );
-        if (!found && !pfound) return code.event(code.auth.USER_NOT_EXIST);
-        student = found ? student : pstudent;
-        if (body.email != student.studentID)
-          return code.event(code.auth.EMAIL_INVALID);
+        const student = await studentworker.self.account.getAccount(resp.user,true);
+        if (!student) return code.event(code.auth.USER_NOT_EXIST);
+        if (body.email != student.studentID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, student.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(
-          res,
-          student._id,
-          resp.user.uiid,
-          secret,
-          found
-            ? classdoc.users.classes[0].classname
-            : pseudoclassdoc.pseudousers.classes[0].classname
-        );
+        this.createSession(res, student._id, resp.user.uiid, secret,resp.user.classname);
         return code.event(code.auth.AUTH_SUCCESS);
       }
     }

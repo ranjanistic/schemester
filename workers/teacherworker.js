@@ -17,6 +17,7 @@ class TeacherWorker {
     this.schedule = new Schedule();
     this.classroom = new Classroom();
     this.pseudo = new PseudoUsers();
+    this.comms = new Comms();
   }
   toSession = (u, query = { target: view.teacher.target.dash }) => {
     let path = `/${client.teacher}/session?u=${u}`;
@@ -48,8 +49,8 @@ class Self {
     const pseudoteacherpath = `pseudousers.teachers`;
     class Account {
       constructor() {
-        this.path = teacherpath;
-        this.pseudopath = pseudoteacherpath;
+        this.teacherpath = teacherpath;
+        this.pseudoteacherpath = pseudoteacherpath;
         this.username = "username";
         this.uid = "_id";
         this.teacherID = "teacherID";
@@ -59,35 +60,48 @@ class Self {
         this.vlinkexp = "vlinkexp";
         this.rlinkexp = "rlinkexp";
       }
-      //send feedback emails
+      //todo:send feedback emails
 
-      async getAccount(user){
-        let teacherdoc = await Institute.findOne({
-          uiid:user.uiid,
-          [teacherpath]:{
-            $elemMatch:{[this.uid]:ObjectId(user.id)}
-          }
-        },{
+      /**
+       * @param {JSON} user The session user object.
+       * @param {Boolean} raw If true, will return exact account data (including password, encrypted), else will return through sharedata methods. Defaults to false.
+       */
+      async getAccount(user,raw = false){
+        let teacher = await this.getTeacherById(user.uiid,user.id);
+        if(teacher)
+          return raw?teacher:share.getTeacherShareData(teacher,user.uiid);
+        teacher = this.getTeacherById(user.uiid,user.id,true);
+        if(!teacher) return false;
+        if(raw) teacher['pseudo'] = true;
+        return raw?teacher:share.getPseudoTeacherShareData(teacher,user.uiid);
+      }
+
+      async getTeacherById(uiid,id,pseudo = false){
+        const path = pseudo ? pseudoteacherpath : teacherpath;
+        const getpath = `${path}.$`;
+        const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{[this.uid]:ObjectId(id)}}},{
           projection:{
-            [this.uid]:0,
-            "users.teachers.$":1
+            [getpath]:1
           }
         });
-        if(teacherdoc)
-          return share.getTeacherShareData(teacherdoc.users.teachers[0],user.uiid)
-        teacherdoc = await Institute.findOne({
-          uiid:user.uiid,
-          [pseudoteacherpath]:{
-            $elemMatch:{[this.uid]:ObjectId(user.id)}
+        return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
+      }
+      async getTeacherByEmail(uiid, email, pseudo = false) {
+        const path = pseudo ? pseudoteacherpath : teacherpath;
+        const getpath = `${path}.$`;
+        const cdoc = await Institute.findOne(
+          { uiid: uiid, [path]: { $elemMatch: { teacherID: email } } },
+          {
+            projection: {
+              [getpath]: 1,
+            },
           }
-        },{
-          projection:{
-            [this.uid]:0,
-            "pseudousers.teachers.$":1
-          }
-        });
-
-        return teacherdoc?share.getPseudoTeacherShareData(teacherdoc.pseudousers.teachers[0],user.uiid):code.event(code.auth.USER_NOT_EXIST);
+        );
+        if (!cdoc) return false;
+        const teacher = pseudo
+          ? cdoc.pseudousers.teachers[0]
+          : cdoc.users.teachers[0];
+        return teacher ? teacher : false;
       }
 
       async createAccount(uiid, newteacher) {
@@ -136,8 +150,8 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const namepath = pseudo?`${pseudoteacherpath}.$.${this.username}`:`${this.path}.$.${this.username}`;
-        const path = pseudo?pseudoteacherpath:this.path;
+        const namepath = pseudo?`${pseudoteacherpath}.$.${this.username}`:`${this.teacherpath}.$.${this.username}`;
+        const path = pseudo?pseudoteacherpath:this.teacherpath;
         let newteacher = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -173,9 +187,9 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const passpath = pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.path}.$.${this.password}`;
-        const rlinkpath = pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.path}.$.${this.rlinkexp}`;
-        const path = pseudo?pseudoteacherpath:this.path;
+        const passpath = pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.teacherpath}.$.${this.password}`;
+        const rlinkpath = pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.teacherpath}.$.${this.rlinkexp}`;
+        const path = pseudo?pseudoteacherpath:this.teacherpath;
 
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
@@ -204,9 +218,9 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const mailpath = pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.path}.$.${this.teacherID}`;
-        const verifiedpath = pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.path}.$.${this.verified}`;
-        const path = pseudo?pseudoteacherpath:this.path;
+        const mailpath = pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.teacherpath}.$.${this.teacherID}`;
+        const verifiedpath = pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.teacherpath}.$.${this.verified}`;
+        const path = pseudo?pseudoteacherpath:this.teacherpath;
 
         if (teacher.teacherID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
@@ -240,7 +254,7 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const path = pseudo?pseudoteacherpath:this.path;
+        const path = pseudo?pseudoteacherpath:this.teacherpath;
         const deluser = await Institute.findOneAndUpdate({
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
@@ -351,45 +365,21 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
+        const inst = await Institute.findOne({uiid:user.uiid},{projection:{"_id":1}});
+        if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const linkdata = await verify.generateLink(client.teacher, {
           uid: user.id,
-          instID: body.instID,
+          instID: inst._id,
         });
-
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
       case "check": {
-        const teacherdoc = await Institute.findOne(
-          {
-            uiid: user.uiid,
-            "users.teachers": { $elemMatch: { _id: ObjectId(user.id) } },
-          },
-          {
-            projection: { "users.teachers.$": 1 },
-          }
-        );
-        if (!teacherdoc) {
-          const pseudodoc = await Institute.findOne(
-            {
-              uiid: user.uiid,
-              "pseudousers.teachers": {
-                $elemMatch: { _id: ObjectId(user.id) },
-              },
-            },
-            {
-              projection: { "pseudousers.teachers.$": 1 },
-            }
-          );
-          if (!pseudodoc) return code.event(code.auth.USER_NOT_EXIST);
-          return code.event(
-            pseudodoc.pseudousers.teachers[0].verified
-              ? code.verify.VERIFIED
-              : code.verify.NOT_VERIFIED
-          );
-        }
+        const teacher = await this.account.getAccount(user);
+        if (!teacher)
+          return code.event(code.auth.USER_NOT_EXIST);
         return code.event(
-          teacherdoc.users.teachers[0].verified
+          teacher.verified
             ? code.verify.VERIFIED
             : code.verify.NOT_VERIFIED
         );
@@ -399,54 +389,46 @@ class Self {
   handlePassReset = async (user, body) => {
     switch (body.action) {
       case "send":{
-          if (!user) {
-            //user not logged in
-            const userdoc = await Institute.findOne({
-                uiid: body.uiid,
-                "users.teachers": { $elemMatch: { teacherID: body.email } },
-              },
-              { projection: { _id: 1, "users.teachers.$": 1 } }
-            );
-            if (!userdoc) {
-              const pseudodoc = await Institute.findOne(
-                {
-                  uiid: body.uiid,
-                  "pseudousers.teachers": {
-                    $elemMatch: { teacherID: body.email },
-                  },
-                },
-                { projection: { _id: 1, "pseudousers.teachers.$": 1 } }
-              );
-              if (!pseudodoc) return { result: code.event(code.OK) }; //don't tell if user not exists, while sending reset email.
-              body["instID"] = pseudodoc._id;
-              return await this.handlePassReset({
-                  id: share.getPseudoTeacherShareData(
-                    pseudodoc.pseudousers.teachers[0]
-                  ).uid,
-                },
-                body
-              );
-            }
-            body["instID"] = userdoc._id;
-            return await this.handlePassReset(
-              { id: share.getTeacherShareData(userdoc.users.teachers[0]).uid },
-              body
-            );
+        let inst;
+        if (!user) {
+          inst = await Institute.findOne({uiid:body.uiid},{projection:{"_id":1}});
+          //user not logged in
+          if(!inst) return code.event(code.OK);
+          let teacher = await this.account.getTeacherByEmail(body.uiid,body.email)
+          if (!teacher) {
+            teacher = await this.account.getTeacherByEmail(body.uiid,body.email,true);
+            if (!teacher) return code.event(code.OK); //don't tell if user not exists, while sending reset email.
           }
-          const linkdata = await reset.generateLink(client.teacher, {
-            uid: user.id,
-            instID: body.instID,
-          });
-          if(!linkdata) return 
-          return await mailer.sendPasswordResetEmail(linkdata);
-      }
-        break;
+          return await this.handlePassReset({ id: share.getTeacherShareData(teacher).uid,uiid:body.uiid },body);
+        } else{
+          inst = await Institute.findOne({uiid:user.uiid},{projection:{"_id":1}});
+        }
+        const linkdata = await reset.generateLink(client.teacher, {
+          uid: user.id,
+          instID: inst._id,
+        });
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendPasswordResetEmail(linkdata);
+      }break;
     }
   };
 }
 
 class Schedule {
-  constructor() {}
+  constructor() {
+    this.account = new Self().account;
+    this.schedulepath = `schedule.teachers`;
+    this.getschedulepath = `${this.schedulepath}.$`
+    this.teachername = `teachername`;
+    this.teacherID = `teacherID`;
+    this.days = `days`;
+      this.dayIndex = `dayIndex`;
+      this.absent = `absent`;
+      this.period = `period`;
+        this.classname = `classname`;
+        this.subject = `subject`;
+        this.hold = `hold`;
+  }
   async scheduleUpload(user, body) {
     const inst = await Institute.findOne({ uiid: user.uiid });
     if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
@@ -564,27 +546,17 @@ class Schedule {
     });
   }
   async getSchedule(user, body = {}){
-    const teacheruser = await Institute.findOne({
-        uiid: user.uiid,
-        "users.teachers": { $elemMatch: { _id: ObjectId(user.id) } },
-      },
-      { projection: { _id: 0, default:1,"users.teachers.$": 1 } }
-    );
-    if (!teacheruser)
-      return false;
-    const teacher = teacheruser.users.teachers[0];
-    const teacherschedule = await Institute.findOne({
-        uiid: user.uiid,
-        "schedule.teachers": { $elemMatch: { teacherID: teacher.teacherID } },
-      },
-      {
-        projection: {
-          _id: 0,
-          "schedule.teachers.$": 1,
-        },
-      }
-    );
-    const timings = teacheruser.default.timings;
+    let teacher = await this.account.getAccount(user);
+    if(!teacher) return false;
+    
+    const inst = await Institute.findOne({uiid: user.uiid},{ projection: { _id: 0, default:1} });
+    if (!inst) return false;
+    const teacherschedule = await Institute.findOne({uiid: user.uiid,
+      [this.schedulepath]: { $elemMatch: { [this.teacherID]: teacher.id } },
+    },{
+      projection: {[this.getschedulepath]: 1},
+    });
+    const timings = inst.default.timings;
     if (!teacherschedule) return { schedule:false,timings:timings};
     const schedule = teacherschedule.schedule.teachers[0].days;
     if (body.dayIndex == null) return { schedule: schedule, timings: timings };
@@ -830,6 +802,30 @@ class PseudoUsers {
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
 }
+
+class Comms{
+  constructor(){
+    this.comms = "comms";
+    this.roomname = "roomname";
+    this.people = "people";
+    this.chats = "chats";
+    this.voicecalls = "voicecalls";
+    this.videocalls = "videocalls";
+  }
+  chatroom(){
+
+  }
+  voicecalling(){
+
+  }
+  videocalling(){
+
+  }
+  createNewRoom(user){
+
+  }
+}
+
 module.exports = new TeacherWorker();
 
 async function getTeacherById(uiid,id,pseudo = false){

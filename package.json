@@ -24,7 +24,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
     "nodejs-nodemailer-outlook": "^1.2.3",
-    "nodemailer": "^6.4.10"
+    "nodemailer": "^6.4.10",
+    "pusher": "^4.0.0"
   },
   "devDependencies": {
     "es6-promisify": "^6.1.1",

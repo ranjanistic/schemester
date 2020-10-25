@@ -4,7 +4,6 @@ const express = require("express"),
   teacher = express.Router(),
   path = require('path'),
   cookieParser = require("cookie-parser"),
-  { check, validationResult } = require("express-validator"),
   {code,client,view,get,clog} = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
@@ -80,70 +79,43 @@ teacher.get(get.session, async (req, res) => {
   .then(async (response) => {
     if (!session.valid(response)) return res.redirect(worker.toLogin(data));
     if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
-    const userinst = await Institute.findOne({
-      uiid: response.user.uiid,
-      "users.teachers": {
-        $elemMatch: { _id: ObjectId(response.user.id) },
-      },
-    },{
+    let teacher = await worker.self.account.getAccount(response.user);
+    if(!teacher) session.finish(res).then((response) => {
+      if (response) res.redirect(worker.toLogin(data));
+    });
+    const inst = await Institute.findOne({uiid: response.user.uiid},{
       projection: {
         _id: 1,
         uiid: 1,
         default: 1,
         schedule: 1,
-        "users.teachers.$": 1,
         preferences:1
       },
     });
-    if (!userinst){
-      //checking if membership requested (pseudo user)
-      const pseudodoc = await Institute.findOne({
-        uiid:response.user.uiid,
-        "pseudousers.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
-      },{
-        projection:{
-          "pseudousers.teachers.$":1
-        }
-      });
-      if(!pseudodoc){
-        return session.finish(res).then((response) => {
-          if (response) res.redirect(worker.toLogin(data));
-        });
-      }
-      const teacher = share.getPseudoTeacherShareData(pseudodoc.pseudousers.teachers[0]);
-      if (!teacher.verified) return res.render(view.verification, { user: teacher });
+    if (!teacher.verified) return res.render(view.verification, { user: teacher });
+
+    if (teacher.pseudo) //if membership requested (pseudo user)
       return res.render(view.teacher.getViewByTarget(view.teacher.target.dash), {teacher,target:{fragment:null}});
-    }
-
     //user teacher exists
-    const teacher = share.getTeacherShareData(userinst.users.teachers[0]);
-    if (!teacher.verified)
-      return res.render(view.verification, { user: teacher });
-      
-    const scheduledoc = await Institute.findOne({
-        uiid: response.user.uiid,
-        "schedule.teachers": { $elemMatch: { teacherID: teacher.id } },
-    },{
-        projection: { _id: 0, "schedule.teachers.$": 1 },
-    });
 
-    if (!scheduledoc) {
+    let scheddoc = await worker.schedule.getSchedule(response.user);
+    let schedule = scheddoc.schedule
+    if (!schedule) {
       //no schedule for this user teacher
-      if(userinst.preferences.allowTeacherAddSchedule){
+      if(inst.preferences.allowTeacherAddSchedule){
         return res.render(view.teacher.addschedule, {
           user: teacher,
-          inst:userinst,
+          inst:inst,
         });
       } else {
         data.target = view.teacher.target.dash;
       }
     } else {
       //schedule exists;
-      const schedule = scheduledoc.schedule.teachers[0];
       if (
-        Object.keys(schedule.days).length !=
-        userinst.default.timings.daysInWeek.length
-      ) {
+        Object.keys(schedule).length !=
+        scheddoc.timings.daysInWeek.length
+      ) { //incomplete schedule
         Institute.findOneAndUpdate(
           { uiid: response.user.uiid },
           {
@@ -161,12 +133,13 @@ teacher.get(get.session, async (req, res) => {
     try {
       return res.render(view.teacher.getViewByTarget(data.target), {
         teacher,
-        userinst,
+        inst,
         target:{
           fragment:data.fragment
         }
       });
     } catch (e) {
+      clog(e);
       return res.redirect(worker.toLogin());
     }
   });
@@ -427,15 +400,20 @@ teacher.post("/manage", async (req, res) => {
     })
     .then(async (response) => {
       if (!session.valid(response)) return res.json({ result: response });
-      const inst = await Institute.findOne({uiid:response.user.uiid},{projection:{"_id":1}});
-      if(!inst) return false;
-      body['instID'] = inst._id;
       switch (body.type) {
         case verify.type: return res.json({result:await worker.self.handleVerification(response.user,body)});
         case reset.type:return res.json({result:await worker.self.handlePassReset(response.user,body)});
         default: return res.sendStatus(500);
       }
     });
+});
+
+teacher.post("/comms",async (req,res)=>{
+  switch(req.body.action){
+    case "chat":worker.comms.chatroom();break;
+    case "voicecall":worker.comms.voicecalling();break;
+    case "videocall":worker.comms.videocalling();break;
+  }
 });
 
 teacher.post("/find", async (req, res) => {

@@ -19,6 +19,7 @@
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
         <script src="/script/comms/comms.js"></script>
+        <script async="true" defer src="https://js.pusher.com/7.0/pusher.min.js"></script>
     </head>
     <body>
         <div id="topBar" style="padding-bottom: 0;">
@@ -55,7 +56,7 @@
                 <% }) %>
             </div>
 
-            <div class="fmt-col wide fmt-animate-right" id="calllist">
+            <div class="fmt-col wide fmt-animate-right" id="calllist" >
                 <% [1,2,3,33,4].forEach((e,i) => { %>
                     <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="call<%= i %>" >
                         <span hidden id="callid<%= i %>"><%= e %></span>

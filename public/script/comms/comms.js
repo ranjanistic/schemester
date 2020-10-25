@@ -32,7 +32,6 @@ class Comms{
 
         this.tabs = [this.chattab,this.calltab];
         this.lists = [this.chatlist,this.calllist];
-        this.selectTab();
         this.tabs.forEach((tab,t)=>{
             tab.onclick=_=>{
                 this.selectTab(tab);
@@ -72,6 +71,7 @@ class Comms{
                 })
             }
         }
+        this.chattab.click();
         this.notificationpermitcheck();
     }
     selectTab(tab = this.chattab){

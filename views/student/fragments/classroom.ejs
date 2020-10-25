@@ -15,7 +15,7 @@
             <div class="fmt-row">
                 <div class="fmt-col three-fifth">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Class</div>
-                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeof">Classroom <%= classroom.classname %></div>
+                    <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="inchargeof">Classroom <span id="classname"><%= classroom.classname %></span></div>
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
                     <span class="menu fmt-right">
@@ -92,7 +92,8 @@
             <button id="snackButton"></button>
         </div>
         <span hidden>
-            <span id="classname"><%= classroom.classname %></span>
+            <span id="classes"><%= classes %></span>
+            <span id="pseudoclasses"><%= pseudoclasses %></span>
         </span>
     </body>
 </html>

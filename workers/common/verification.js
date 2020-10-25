@@ -25,7 +25,7 @@ class Verification {
    * @returns {JSON} Returns expiry time according to SGT notation, and the generated link, as key value pairs
    *  of exp,link.
    */
-  generateLink = async (target, data = {}, validity = this.defaultValidity) => {
+  async generateLink (target, data = {}, validity = this.defaultValidity){
     const exp = time.getTheMomentMinute(validity);
     let link = String();
     let to;

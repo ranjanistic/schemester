@@ -11,6 +11,7 @@ class StudentWorker {
   constructor() {
     this.self = new Self();
     this.schedule = new Schedule();
+    this.classes = new Classroom();
   }
   toSession = (u, query = { target: view.student.target.dash }) => {
     let path = `/${client.student}/session?u=${u}`;
@@ -72,35 +73,33 @@ class Self {
       }
       //send feedback emails
 
-      async getAccount(user){
-        let studentdoc = await Institute.findOne({
-          uiid:user.uiid,
-          [studentspath]:{
-            $elemMatch:{[this.uid]:ObjectId(user.id)}
-          }
-        },{
-          projection:{
-            [this.uid]:0,
-            "users.students.$":1
-          }
-        });
-        if(studentdoc)
-          return studentdoc.users.students[0];
-        studentdoc = await Institute.findOne({
-          uiid:user.uiid,
-          [pseudostudentspath]:{
-            $elemMatch:{[this.uid]:ObjectId(user.id)}
-          }
-        },{
-          projection:{
-            [this.uid]:0,
-            "pseudousers.students.$":1
-          }
-        });
-        studentdoc.pseudousers.students[0]['pseudo'] = true;
-        return studentdoc?studentdoc.pseudousers.students[0]:false;
+      async getAccount(user,raw = false){
+        let student = await this.getStudentById(user.uiid,user.id);
+        if(student)
+          return raw?student:share.getStudentShareData(student,user.uiid);
+        student = this.getStudentById(user.uiid,user.id,true);
+        if(!student) return false;
+        if(raw) student['pseudo'] = true;
+        return raw?student:share.getPseudoStudentShareData(student,user.uiid);
       }
 
+      async getStudentById(uiid, id, pseudo = false) {
+        const path = pseudo ? [pseudostudentspath] : [studentspath];
+        const getpath =`${path}.$`;
+        const sdoc = await Institute.findOne(
+          { uiid: uiid, [path]: { $elemMatch: { _id: ObjectId(id) } } },
+          {
+            projection: {
+              [getpath]: 1,
+            },
+          }
+        );
+        if (!sdoc) return false;
+        const student = pseudo
+          ? sdoc.pseudousers.students[0]
+          : sdoc.users.students[0];
+        return student ? student : false;
+      }
 
       /**
        * This will create an account in a class of the pseudousers object of instiution, and will be shown as a requestee student to join the classroom.
@@ -361,101 +360,61 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case "send": {
+        const inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
+        if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const linkdata = await verify.generateLink(client.student, {
           uid: user.id,
-          cid: body.cid,
-          instID: body.instID,
+          instID: inst._id,
         });
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
-      }
+      } break;
       case "check": {
-        let studdoc = await Institute.findOne(
-          {
-            uiid: user.uiid,
-            [this.studentspath]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
-          },
-          { projection: { "users.students.$": 1 } }
+        const student = await this.account.getAccount(user);
+        if (!student)
+          return code.event(code.auth.USER_NOT_EXIST);
+        return code.event(
+          student.verified
+            ? code.verify.VERIFIED
+            : code.verify.NOT_VERIFIED
         );
-        let student;
-        if(studdoc){
-          student = studdoc.users.students[0];
-          return code.event(
-            student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
-          );
-        }
-        if (!studdoc) {
-          studdoc = await Institute.findOne(
-            {
-              uiid: user.uiid,
-              [this.pseudostudentspath]: {
-                $elemMatch: { [this.uid]: ObjectId(user.id) },
-              },
-            },
-            { projection: { "pseudousers.students.$": 1 } }
-          );
-          if(!studdoc) return false;
-          student = studdoc.pseudousers.students[0];
-          return code.event(
-            student.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
-          );
-        }
-        
-      }
+      }        
     }
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
       case "send":{
-
-          if (!user) {
-            //user not logged in
-            const classdoc = await Institute.findOne({
-                uiid: body.uiid,
-                "users.classes": { $elemMatch: { classname: body.classname } },
-              },
-              { projection: { _id: 1, "users.classes.$": 1 } }
-            );
-
-            if (!classdoc) code.event(code.inst.CLASS_NOT_FOUND);
-            let student = share.getStudentShareData(classdoc.users.classes[0].students.find((stud) =>stud.studentID == body.email));
-            if (!student) {
-              const pseudodoc = await Institute.findOne(
-                {
-                  uiid: body.uiid,
-                  "pseudousers.classes": {
-                    $elemMatch: { classname: body.classname },
-                  },
-                },
-                { projection: { _id: 1, "pseudousers.classes.$": 1 } }
-              );
-              if (!pseudodoc) return code.event(code.inst.CLASS_NOT_FOUND); //don't tell if user not exists, while sending reset email.
-              student = share.getPseudoStudentShareData(pseudodoc.pseudousers.classes[0].students.find((stud) =>stud.studentID == body.email));
-              if (!student) return code.event(code.OK);
-              body["instID"] = pseudodoc._id;
-              body["cid"] = pseudodoc.pseudousers.classes[0]._id;
-              return await this.handlePassReset({ id: student.uid }, body);  
-            }
-            body["instID"] = classdoc._id;
-            body["cid"] = classdoc.users.classes[0]._id;
-
-            return await this.handlePassReset({ id: student.uid }, body);
+        let inst;
+        if (!user) {
+          inst = await Institute.findOne({uiid:body.uiid},{projection:{[this.uid]:1}});
+          if(!inst) return code.event(code.OK);
+          //user not logged in
+          let student = await this.account.getStudentByEmail(body.uiid,body.email);
+          if (!student) {
+            student = await this.account.getStudentByEmail(body.uiid,body.email,true);
+            if (!student) return code.event(code.OK);
           }
-          const linkdata = await reset.generateLink(client.student, {
-            uid: user.id,
-            cid: body.cid,
-            instID: body.instID,
-          });
-          if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
-          return await mailer.sendPasswordResetEmail(linkdata);
+          return await this.handlePassReset({ id: share.getPseudoStudentShareData(student).uid,uiid:body.uiid }, body);
+        } else {
+          inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
         }
+        const linkdata = await reset.generateLink(client.student, {
+          uid: user.id,
+          instID: inst._id,
+        });
+        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        return await mailer.sendPasswordResetEmail(linkdata);
+      }
     }
   };
 }
 
 class Schedule {
-  constructor() {}
-  getSchedule = async (user, dayIndex = null) => {
+  constructor() {
+    this.account = new Self().account;
+    this.classes = new Classroom();
+  }
+  async getSchedule (user, dayIndex = null){
     const teacherdoc = await Institute.findOne({uiid: user.uiid},{
       projection: {
         _id: 0,
@@ -517,15 +476,85 @@ class Schedule {
                 hold: period.hold,
               };
             }
-          });}
+          })};
         });
         let done = !days.find((day) => day.period.includes(undefined))?true:false;
         return !done;
       });
+      //todo: schedule of other classes of student in place of free periods of base class of student.
+      // let student = await this.account.getAccount(user);
+      // let classrooms = await this.classes.getClassesByStudentID(user.uiid,student.id);
+      // classrooms.classes.map((Class)=>{
+      //   return new Promise(async(resolve)=>{
+      //     if(Class.classname!=user.classname){
+      //       await this.getSchedule({id:user.id,uiid:user.uiid,classname:Class.classname});
+      //     }
+      //     resolve()
+      //   })
+      // })
+      // days.forEach((day,d)=>{
+      //   day.period.forEach((period,p)=>{
+      //     if(period==undefined){
+
+      //     }
+      //   })
+      // })
+      // clog(days[0].period[0]==undefined?true:false);
       return { schedule: days, timings: timings };
     }
   };
 }
+
+class Classroom{
+  constructor(){
+    this.classpath = `users.classes`;
+    this.pseudoclasspath = `pseudousers.classes`;
+  }
+  /**
+   * Finds all classrooms of given student ID in institution of given uiid. (including pseudo classes)
+   * @param {String} uiid The uiid of institution
+   * @param {String} studentID The student ID (email address) of student to be searched in classrooms.
+   * @param {Boolean} classnameonly If true, will only return array of classnames, else array of classes with details. Defaults to false.
+   * @returns {JSON} JSON object of JSONArrays classes & pseudoclasses.
+   */
+  async getClassesByStudentID(uiid,studentID,classnameonly = false){
+    const cdoc = await Institute.findOne({
+      uiid:uiid
+    },{
+      projection:{
+        [this.classpath]:1,
+        [this.pseudoclasspath]:1
+      }
+    });
+    if(!cdoc) return false;
+    let classes = [];
+    cdoc.users.classes.forEach((Class)=>{
+      if(Class.students.find((stud)=>stud.studentID == studentID)?true:false){
+        classes.push(Class)
+      }
+    });
+    let pclasses = [];
+    cdoc.pseudousers.classes.forEach((Class)=>{
+      if(Class.students.find((stud)=>stud.studentID == studentID)?true:false){
+        pclasses.push(Class)
+      }
+    });
+    if(!(classes.length||pclasses.length)) return false;
+    if(classnameonly){
+      classes.forEach((Class,c)=>{
+        classes[c] = Class.classname;
+      });
+      pclasses.forEach((pClass,c)=>{
+        pclasses[c] = pClass.classname;
+      });
+    }
+    return {
+      classes:classes,
+      pseudoclasses:pclasses
+    };
+  }
+}
+
 
 module.exports = new StudentWorker();
 
