@@ -63,8 +63,10 @@ class Self {
       //todo:send feedback emails
 
       /**
+       * Returns the teacher account associated with current user session.
        * @param {JSON} user The session user object.
        * @param {Boolean} raw If true, will return exact account data (including password, encrypted), else will return through sharedata methods. Defaults to false.
+       * @returns {JSON} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
        */
       async getAccount(user,raw = false){
         let teacher = await this.getTeacherById(user.uiid,user.id);
@@ -180,30 +182,26 @@ class Self {
       };
 
       /**
-       * To change current teacher's user password (pseudo or user)
+       * To change current teacher's account password (pseudo or user)
        */
       changePassword = async (user, body) => {
         let teacher = await getTeacherById(user.uiid,user.id);
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const passpath = pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.teacherpath}.$.${this.password}`;
-        const rlinkpath = pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.teacherpath}.$.${this.rlinkexp}`;
-        const path = pseudo?pseudoteacherpath:this.teacherpath;
-
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
         const newteacher = await Institute.findOneAndUpdate(
           {
             uiid: user.uiid,
-            [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
+            [pseudo?pseudoteacherpath:this.teacherpath]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
           },
           {
             $set: {
-              [passpath]: epassword,
+              [pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.teacherpath}.$.${this.password}`]: epassword,
             },
             $unset: {
-              [rlinkpath]: null,
+              [pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.teacherpath}.$.${this.rlinkexp}`]: null,
             },
           }
         );
@@ -218,32 +216,33 @@ class Self {
         const pseudo = teacher?false:true;
         teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const mailpath = pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.teacherpath}.$.${this.teacherID}`;
-        const verifiedpath = pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.teacherpath}.$.${this.verified}`;
-        const path = pseudo?pseudoteacherpath:this.teacherpath;
 
         if (teacher.teacherID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
         const someteacher = await getTeacherByEmail(user.uiid,body.newemail);
         if (someteacher) return code.event(code.auth.USER_EXIST);
         const newteacher = await Institute.findOneAndUpdate(
-          { uiid: user.uiid, [path]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},
+          { uiid: user.uiid, [pseudo?pseudoteacherpath:this.teacherpath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},
           {
             $set: {
-              [mailpath]: body.newemail,
-              [verifiedpath]: false,
+              [pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.teacherpath}.$.${this.teacherID}`]: body.newemail,
+              [pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.teacherpath}.$.${this.verified}`]: false,
             },
           }
         );
-        if(newteacher.value){
-          const sched = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
-          {
-            $set:{
-              "schedule.teachers.$.teacherID":body.newemail
-            }
-          });
-        }
-        return code.event(newteacher.value? code.OK: code.NO);
+        if(!newteacher.value) return code.event(code.NO);        
+        let res = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
+        {
+          $set:{
+            "schedule.teachers.$.teacherID":body.newemail
+          }
+        });
+        res = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
+          $set:{
+            "users.classes.$.inchargeID":body.newemail
+          }
+        });
+        return code.event(code.OK);
       };
 
       /**
@@ -636,6 +635,27 @@ class Classroom {
     }
   }
 
+  /**
+   * Returns classes taken by given teacherID from schedule.
+   * @param {String} uiid The uiid of institute.
+   * @param {String} teacherID The teacher ID of teacher (email address) to be looked in.
+   * @returns {Array} classes taken by the teacher.
+   */
+  async getClassesByTeacherID(uiid,teacherID){
+    let tscheddoc = await Institute.findOne({uiid:uiid,'schedule.teachers':{$elemMatch:{teacherID:teacherID}}});
+    let classes = [];
+    tscheddoc.days.forEach((day)=>{
+      day.period.forEach((period)=>{
+        if(!classes.includes(period.classname)){
+          classes.push(period.classname);
+        }
+      })
+    });
+    return classes.length?classes:false;
+  }
+  /**
+   * returns assigned classroom of given teacher, with pseudo students and other classes taken by the teacher.
+   */
   async getClassroom(user, teacher, body) {
     let classdoc = await Institute.findOne({
         uiid: user.uiid,

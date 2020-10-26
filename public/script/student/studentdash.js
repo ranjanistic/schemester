@@ -85,20 +85,21 @@ async function linkSender(onsuccess=_=>{}){
       })
     })
 }
-  function snackbar(
+
+function snackbar(
     text = String(),
     actionText = 'OK',
     isNormal = actionType.positive,
     action = () => {
       new Snackbar().hide();
     }
-  ){
-    snackBar(
-        text,
-        actionText,
-        isNormal,
-        _=>{action()}
-    )
+){
+  snackBar(
+      text,
+      actionText,
+      isNormal,
+      _=>{action()}
+  )
 }
 class Pseudostudent{
     constructor(){

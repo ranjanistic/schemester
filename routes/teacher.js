@@ -315,11 +315,7 @@ teacher.post("/classroom",async(req,res)=>{
     })
     .then(async(response) => {
       if(!session.valid(response)) return res.json(invalidsession);
-      const teacherdoc = await Institute.findOne({uiid:response.user.uiid, "users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}},
-        {projection:{"users.teachers.$":1,"_id":1}}
-      );
-      const teacher = teacherdoc.users.teachers[0];
-      const instID = teacherdoc._id;
+      const teacher = await worker.self.account.getAccount(response.user,true);
       const classdoc = await Institute.findOne({uiid:response.user.uiid, "users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
         projection:{"users.classes.$":1}
       });
@@ -328,7 +324,7 @@ teacher.post("/classroom",async(req,res)=>{
       switch(body.target){
         case "classroom":return res.json({ result:await worker.classroom.manageClassroom(response.user,body,teacher,classroom)});
         case "pseudousers": return res.json({ result:await worker.pseudo.managePseudousers(response.user,body,teacher)});
-        case "invite":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom,instID)});
+        case "invite":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom,inst._id)});
       }
     });
 });

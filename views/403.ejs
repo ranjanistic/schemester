@@ -51,7 +51,8 @@
         </div >
         <script type="text/javascript">
             document.getElementById('returnFrom403').onclick=()=>{
-                parent.window.location.replace('/');
+                relocateParent(locate.root);
+                // window.parent.location.replace('/');
             };
         </script>
     </body>

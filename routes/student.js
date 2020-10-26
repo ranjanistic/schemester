@@ -139,6 +139,9 @@ student.get(get.fragment, (req, res) => {
           let classroom = await worker.classes.getClassesByStudentID(response.user.uiid,student.id);
           query.classname = query.classname?query.classname:classroom.classes.find((Class)=>Class.classname == response.user.classname).classname;
           let classnames = await worker.classes.getClassesByStudentID(response.user.uiid,student.id,true);
+          if(!classroom.classes.find((Class)=>Class.classname == query.classname)){
+            return res.render(view.notfound);
+          }
           return res.render(view.student.getViewByTarget(query.fragment), {
             classroom:classroom.classes.find((Class)=>Class.classname == query.classname),
             classes:classnames.classes,
@@ -205,14 +208,28 @@ student.post("/manage", async (req, res) => {
 
 student.post("/session/validate", async (req, res) => {
   session
-    .verify(req, sessionsecret)
+  .verify(req, sessionsecret)
     .then((response) => {
       return res.json({ result: response });
     })
     .catch((error) => {
       return res.json(authreqfailed(error));
     });
-});
+  });
+
+  student.post('/classroom',async(req,res)=>{
+    session
+    .verify(req, sessionsecret)
+    .then(async(response) => {
+      if (!session.valid(response)) return res.json({ result: response });
+      const body = req.body;
+      switch(body.action){
+        case "request":return res.json({result:await worker.classes.handleClassRequest(response.user,body)});
+        default:return res.json({result:null});
+      }
+    })
+})
+
 
 student.get(get.external, async (req, res) => {
   const query = req.query;
@@ -235,7 +252,7 @@ student.get(get.external, async (req, res) => {
         });
       return;
     }
-    case reset.type:{
+    case reset.type:{ //pass reset link
       reset.handlePasswordResetLink(query,client.student).then(async(resp)=>{
         if (!resp) return res.render(view.notfound);
         return res.render(view.passwordreset, { user: resp.user,uiid:resp.uiid,classname:resp.classname});

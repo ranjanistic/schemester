@@ -1,5 +1,6 @@
 <html style="padding-bottom:20px">
     <head>
+        <title>Classroom (Frame)</title>
         <link rel = "stylesheet" href="/css/fmt.css">
         <link rel = "stylesheet" href="/css/main.css">
         <link rel = "stylesheet" href="/css/switch.css">
@@ -19,16 +20,19 @@
                 </div>
                 <div class="fmt-col two-fifth" style="margin: 12px 0;">
                     <span class="menu fmt-right">
-                        <button class="neutral-button-togg" id="setupbutton"><img width="25" src="/graphic/elements/settings.svg"/></button>
+                        <button class="positive-button-togg" id="setupbutton"><img width="25" src="/graphic/elements/menuicon.svg"/></button>
                         <div class="menubox" id="setup">
                             <section class="fmt-padding positive fmt-center">
                                 Actions
                             </section>
                             <% if(classroom) {%>
-                                <div class="fmt-center questrial" id="chooseclass">
-                                    Choose class
-                                </div>
+                            <div class="fmt-center questrial" id="chooseclass">
+                                Choose class
+                            </div>
                             <% } %>
+                            <div class="fmt-center questrial" id="joinclass">
+                                Join class
+                            </div>
                         </div>
                     </span>
                     <span class="menu fmt-right">
@@ -84,7 +88,7 @@
             <% } %>
         </div>
         <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
+            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
             </div>
         </div>
         <div id="snackBar" class="fmt-animate-bottom">

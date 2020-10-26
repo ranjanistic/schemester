@@ -622,6 +622,7 @@ img{vertical-align:middle}
 }
 
 .positive-button-togg{
+    outline:none;
     background-color: var(--positive);
     color:var(--secondary);
     margin: 4px;

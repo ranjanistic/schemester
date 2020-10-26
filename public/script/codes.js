@@ -708,6 +708,7 @@ class Posts {
         this.self = `${root}/self`;
         this.manage = `${root}/manage`;
         this.classroom = `${root}/classroom`;
+        this.comms = `${root}/comms`;
         class Action {
           constructor() {
             this.login = "login";
@@ -715,6 +716,7 @@ class Posts {
             this.signup = "signup";
             this.fetch = "fetch";
             this.update = "update";
+
           }
         }
         this.action = new Action();
@@ -730,6 +732,8 @@ class Posts {
         this.schedule = `${root}/schedule`;
         this.self = `${root}/self`;
         this.manage = `${root}/manage`;
+        this.classroom = `${root}/classroom`;
+        this.comms = `${root}/comms`;
         class Action {
           constructor() {
             this.login = "login";
@@ -737,6 +741,8 @@ class Posts {
             this.signup = "signup";
             this.fetch = "fetch";
             this.update = "update";
+            this.withdraw = "withdraw";
+            this.join = "join";
           }
         }
         this.action = new Action();
