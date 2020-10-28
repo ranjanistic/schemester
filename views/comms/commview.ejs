@@ -18,6 +18,7 @@
         <link href="/font/Questrial.css" rel="stylesheet">
         <script src="/script/codes.js"></script>
         <script src="/script/main.js"></script>
+        <script src="/script/device.js"></script>
         <script src="/script/comms/comms.js"></script>
         <script async="true" defer src="https://js.pusher.com/7.0/pusher.min.js"></script>
     </head>
@@ -42,39 +43,39 @@
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 120px;">
             <div class="fmt-col wide fmt-animate-left" id="chatlist">
-                <% [1,2,3,4,5,3,4,4,4,44,4,4,6].forEach((e,i) => { %>
-                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="room<%= i %>" >
-                        <span hidden id="roomid<%= i %>"><%= e %></span>
+                <% rooms.forEach((room,r) => { %>
+                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="room<%= r %>" >
+                        <span hidden id="roomid<%= r %>"><%= room._id %></span>
                         <div class="fmt-col two-third group-text">
-                          <span class="positive" id="roomname<%= i %>"><%= e %></span><br/>
-                          <span class="questrial" id="lastmsg<%= i %>"><%= e %></span>
+                          <span class="positive" id="roomname<%= r %>"><%= room.roomname %></span><br/>
+                          <span class="questrial" id="lastmsg<%= r %>"><%= room.lastmsg?room.lastmsg:'No messages yet.' %></span>
                         </div>
                         <div class="fmt-col third group-text">
-                          <span class="fmt-right caption" id="lastactive<%= i %>"><%= e %></span>
+                          <span class="fmt-right caption" id="lastactive<%= r %>"><%= room.lastactive %></span>
                         </div>
                     </button>
                 <% }) %>
             </div>
 
-            <div class="fmt-col wide fmt-animate-right" id="calllist" >
-                <% [1,2,3,33,4].forEach((e,i) => { %>
-                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="call<%= i %>" >
-                        <span hidden id="callid<%= i %>"><%= e %></span>
+            <div class="fmt-col wide fmt-animate-right" id="calllist" hidden>
+                <% calls.forEach((call,c) => { %>
+                    <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="call<%= c %>" >
                         <div class="fmt-col two-third group-text">
-                          <span class="positive" id="callto<%= i %>"><%= e %></span><br/>
-                          <span class="questrial" id="duration<%= i %>"><%= e %></span>
+                          <span class="positive" id="callto<%= c %>"><%= call.roomname %></span><br/>
+                          <span class="questrial" id="duration<%= c %>"><%= call.duration %></span>
+                          <span class="questrial" id="time<%= c %>"><%= call.time %></span>
                         </div>
                         <div class="fmt-col third">
-                          <span class="fmt-right caption" id="reconnect<%= i %>"><img src="/graphic/elements/voicecallicon.svg" width="30"></span>
+                          <span class="fmt-right caption" id="reconnect<%= c %>"><img src="/graphic/elements/voicecallicon.svg" width="30"></span>
                         </div>
                     </button>
                 <% }) %>
             </div>
         </div>
         <span hidden>
-            <span id="clienttype">teacher</span>
-            <span id="totalrooms">13</span>
-            <span id="totalcalls">5</span>
+            <span id="clienttype"><%= client %></span>
+            <span id="totalrooms"><%= rooms.length %></span>
+            <span id="totalcalls"><%= calls.length %></span>
         </span>
     </body>
 </html>

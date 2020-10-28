@@ -1,6 +1,7 @@
 const Institute = require("../config/db").getInstitute(),
   fs = require("fs"),
   path = require("path"),
+  pusher = require("pusher"),
   {code,client,view,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   session = require("./common/session"),
@@ -567,10 +568,17 @@ class Schedule {
 
 class Classroom {
   constructor() {
-    this.path = "users.classes";
+    this.account = new Self().account;
+    this.classpath = "users.classes";
+    this.studentpath = "users.students";
+    this.schedulepath = "schedule.teachers";
+    this.uid = "_id";
     this.classname = "classname";
-    this.incharge = "incharge";
+    this.inchargename = "inchargename";
+    this.inchargeID = "inchargeID";
     this.students = "students";
+      this.username = "username";
+      this.studentID = "studentID";
 
     class Manage {
       constructor() {}
@@ -606,7 +614,7 @@ class Classroom {
           { uiid: user.uiid },
           {
             $push: {
-              [this.path]: data,
+              [this.classpath]: data,
             },
           }
         );
@@ -653,6 +661,9 @@ class Classroom {
     });
     return classes.length?classes:false;
   }
+
+
+
   /**
    * returns assigned classroom of given teacher, with pseudo students and other classes taken by the teacher.
    */
@@ -703,26 +714,91 @@ class Classroom {
     };
   }
 
-  async handleInvitation(user, body, teacher, classroom,instID) {
+  /**
+   * Returns student account by ID.
+   * @param {JSON} user
+   * @param {String} studentID
+   * @param {Boolean} fullaccount If false, will return full student account (filtered via sharedata module), else returns only name and id. Defaults to false.
+   */
+  async getStudentByStudentID(user,studentID,fullaccount = false){
+    const teacher = await this.account.getAccount(user);
+    if(!teacher) return false;
+    const studpath = await Institute.findOne({uiid:user.uiid,[this.studentpath]:{$elemMatch:{[this.studentID]:studentID}}},{projection:{[`${this.studentpath}.$`]:1}});
+    return fullaccount?share.getStudentShareData(studpath.users.students[0]):{username:studpath.users.students[0].username,studentID:studpath.users.students[0].studentID};
+  }
+
+  async getClassroomByClassID(user,classid){
+    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.uid]:ObjectId(classid)}}});
+    if(!classdoc) return false;
+    return classdoc.users.classes[0];
+  }
+
+  async getClassroomByClassname(user,classname){
+    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.classname]:classname}}});
+    if(!classdoc) return false;
+    return classdoc.users.classes[0];
+  }
+
+  async getClassroomByInchargeID(user,inchargeID){
+    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.inchargeID]:inchargeID}}});
+    if(!classdoc) return false;
+    return classdoc.users.classes[0];
+  }
+
+  async getClassroomsBySchedule(user,classnameonly = true,pseudostudents = false){
+    const teacher = await this.account.getAccount(user);
+    const scheddoc = await Institute.findOne({uiid:user.uiid,[this.schedulepath]:{$elemMatch:{'teacherID':teacher.id}}},{
+      projection:{[`${this.schedulepath}.$`]:1}
+    });
+    let classnames = [];
+    scheddoc.teachers[0].days.forEach((day)=>{
+      day.period.forEach((period)=>{
+        if(!classnames.includes(period.classname)){
+          classnames.push(period.classname);
+        }
+      })
+    });
+    if(!classnames.length) return false;
+    if(classnameonly) return classnames;
+
+    //users.classes
+    let classes = [];
+    const classdoc = await Institute.findOne({uiid:user.uiid},{projection:{[`${this.classpath}`]:1}});
+    classnames.forEach((cname)=>{
+      const theclass = classdoc.users.classes.find((Class)=>Class.classname == cname);
+      if(theclass) classes.push(theclass);
+    });
+    if(!classes.length) return false;
+    if(!pseudostudents) return classes;
+
+    //including pseudostudents
+    const pseudodoc = await Institute.findOne({uiid:user.uiid},{projection:{'pseudousers.classes':1}});
+    classes.forEach((Class,c)=>{
+      const pclass = pseudodoc.pseudousers.classes.find((pClass)=>pClass.classname == Class.classname);
+      if(pclass) classes[c]['pseudostudents'] = pclass.students;
+    });
+    return classes;
+  }
+
+  async handleInvitation(user, body, classroom) {
+    const inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
     switch (body.action) {
       case "create":{
         return await invite.generateLink(client.student,{
           cid:classroom._id,
-          instID:instID
+          instID:inst._id
         });
       }break;
       case "disable":{
         return await invite.disableInvitation(client.student,{
           cid:classroom._id,
-          instID:instID
+          instID:inst._id
         });
       }
         
     }
     return;
   }
-
-  async createStudentInviteLink() {}
 }
 
 class PseudoUsers {
@@ -825,13 +901,165 @@ class PseudoUsers {
 
 class Comms{
   constructor(){
+    this.account = new Self().account;
+    this.classes = new Classroom();
+    this.id = "_id";
     this.comms = "comms";
     this.roomname = "roomname";
     this.people = "people";
     this.chats = "chats";
+    this.lastmsg = "lastmsg";
     this.voicecalls = "voicecalls";
     this.videocalls = "videocalls";
   }
+  /**
+   * Returns rooms and calls.
+   * @param {JSON} user 
+   * @param {String} teacherID 
+   */
+  async getRoomAndCallList(user){
+    const teacher = await this.account.getAccount(user);
+    const inst = await Institute.findOne({uiid:user.uiid},{
+      projection:{[this.comms]:1,"users.classes":1}
+    });
+    let rooms = [];
+    let calls = [];
+    let calltimes = [];
+    inst.comms.forEach((room)=>{
+      if(room.people.find((person)=>person.id==teacher.id)){
+        rooms.push({
+          [this.id]:room._id,
+          [this.roomname]:room.roomname,
+          [this.people]:room.people,
+          [this.lastmsg]:room.chats[room.chats.length-1]
+        });
+        room.voicecalls.forEach((call)=>{
+          calltimes.push(call.time);
+        });
+      }
+    });
+    calltimes.sort();
+    inst.comms.forEach((room)=>{
+      if(room.people.find((person)=>person.id==teacher.id)){
+        calltimes.forEach((time)=>{
+          if(room.voicecalls.find((call)=>call.time==time)){
+            calls.push(room.voicecalls);
+            if(room.roomname) return calls[calls.length-1][this.roomname] = room.roomname;
+            room.people.forEach((person)=>{
+              if(person.id!=teacher.id){
+                calls[calls.length-1][this.roomname] += `${person.username}, `;
+              }
+            });
+            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].trim()
+            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].substr(0,calls[calls.length-1][this.roomname].length-2);
+          }
+        })
+      }
+    })
+    const classroom = inst.users.classes.find((Class)=>Class.inchargeID==teacher.id);
+    if(classroom){
+      if(rooms.find((room)=>room.roomname==classroom.classname)?false:true){
+        rooms.push({
+          [this.roomname]:classroom.classname,
+          [this.people]:classroom.students
+        });
+      }
+    }
+    return rooms.length?{rooms:rooms,calls:calls}:false;
+  }
+
+
+  async getRoom(user,roomdata){
+    const teacher = await this.account.getAccount(user);
+    let room;
+    if(roomdata.roomid) room = await this.getRoomByID(user.uiid,roomdata.roomid);
+    else if(roomdata.roomname) {
+      room = await this.getRoomByName(user.uiid,roomdata.roomname)
+      if(!room){
+        const classes = await this.classes.getClassroomsBySchedule(user,false);
+        if(classes){  //if classroom is being accessed by teacher
+          const theclass = classes.find((Class)=>Class.classname==roomdata.roomname);
+          if(theclass) {
+            theclass.students.forEach((student,s)=>{
+              theclass.students[s]['id'] = student.studentID;
+              delete theclass.students[s]['studentID'];
+            });
+            this.createNewRoom(user,theclass.students,theclass._id,theclass.classname);
+          }
+        }
+      }
+    } else if(roomdata.personid){
+      room = await this.getSinglePersonRoom(user.uiid,roomdata.personid)
+      if(!room){
+        const student = await this.classes.getStudentByStudentID(user,roomdata.personid);
+        room = await this.createNewRoom(user,[{
+          username:student.username,
+          id:student.studentID
+        }]);
+      }
+    };
+    if(!room) return code.event(code.comms.ROOM_NOT_FOUND);
+    if(!room.people.find((person)=>person.id==teacher.id)) return code.event(code.comms.ROOM_ACCESS_DENIED);
+    if(room.blocked.includes(teacher.id)) return code.event(code.comms.BLOCKED_FROM_ROOM);
+    return room;
+  }
+
+  async getRoomByID(uiid,roomid){
+    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.id]:ObjectId(roomid)}}},{
+      projection:{[`${this.comms}.$`]:1}
+    });
+    if(!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+  async getRoomByName(uiid,roomname){
+    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.roomname]:roomname}}},{
+      projection:{[`${this.comms}.$`]:1}
+    });
+    if(!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+  
+  async getSinglePersonRoom(uiid,personid){
+    const roomdoc = await Institute.findOne({uiid:uiid},{
+      projection:{[`${this.comms}`]:1}
+    });
+    if(!roomdoc) return false;
+    const room = roomdoc.find((room)=>{
+      (room.people.length == 2) && (room.people.find((person)=>person.id==personid))
+    });
+    return room?room:false;
+  }
+
+  /**
+   * Creates a new room in comms.
+   * @returns {Promise} The new room if created, else false.
+   */
+  async createNewRoom(user,people = [],roomID = new ObjectId(),roomname = String()){
+    const teacher = await this.account.getAccount(user);
+    if(!teacher) return false;
+    if(!people.length) return false;
+    people.push({
+      username:teacher.username,
+      id:teacher.id
+    });
+    const newroom = {
+      _id:roomID,
+      roomname:roomname,
+      people:people,
+      chats:[],
+      voicecalls:[],
+      videocalls:[],
+      blocked:[]
+    };
+    const donedoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $push:{
+        [this.comms]:newroom
+      }
+    });
+    if(!donedoc.value) return false;
+    return newroom;
+  }
+  
   chatroom(){
 
   }
@@ -839,9 +1067,6 @@ class Comms{
 
   }
   videocalling(){
-
-  }
-  createNewRoom(user){
 
   }
 }

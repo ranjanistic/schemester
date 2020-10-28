@@ -71,17 +71,17 @@ teacher.post("/auth",async(req,res)=>{
 
 
 teacher.get(get.session, async (req, res) => {
-  let data = req.query;
+  let query = req.query;
   session.verify(req, sessionsecret)
   .catch((e) => {
-    return res.redirect(worker.toLogin(data));
+    return res.redirect(worker.toLogin(query));
   })
   .then(async (response) => {
-    if (!session.valid(response)) return res.redirect(worker.toLogin(data));
-    if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
+    if (!session.valid(response)) return res.redirect(worker.toLogin(query));
+    if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
     let teacher = await worker.self.account.getAccount(response.user);
     if(!teacher) session.finish(res).then((response) => {
-      if (response) res.redirect(worker.toLogin(data));
+      if (response) res.redirect(worker.toLogin(query));
     });
     const inst = await Institute.findOne({uiid: response.user.uiid},{
       projection: {
@@ -108,7 +108,7 @@ teacher.get(get.session, async (req, res) => {
           inst:inst,
         });
       } else {
-        data.target = view.teacher.target.dash;
+        query.target = view.teacher.target.dash;
       }
     } else {
       //schedule exists;
@@ -124,18 +124,34 @@ teacher.get(get.session, async (req, res) => {
         );
       } else {
         if (
-          data.target == view.teacher.target.addschedule ||
-          data.target == undefined
+          query.target == view.teacher.target.addschedule ||
+          query.target == undefined
         )
           return res.redirect(worker.toLogin({target:view.teacher.target.dash}));
       }
     }
     try {
-      return res.render(view.teacher.getViewByTarget(data.target), {
+      if(query.target == view.teacher.target.comms){ //communication room
+        const comms = await worker.comms.getRoomAndCallList(response.user);
+        return res.render(view.teacher.getViewByTarget(query.target), {
+          client:client.teacher,
+          rooms: comms.rooms,
+          calls:comms.calls
+        });
+      }
+      clog(query);
+      if(query.target == view.teacher.target.chatroom){
+        const room = await worker.comms.getRoom(response.user,query.rid);
+        return res.render(view.teacher.getViewByTarget(query.target), {
+          client:client.teacher,
+          room,
+        });
+      }
+      return res.render(view.teacher.getViewByTarget(query.target), {
         teacher,
         inst,
         target:{
-          fragment:data.fragment
+          fragment:query.fragment
         }
       });
     } catch (e) {
@@ -324,7 +340,7 @@ teacher.post("/classroom",async(req,res)=>{
       switch(body.target){
         case "classroom":return res.json({ result:await worker.classroom.manageClassroom(response.user,body,teacher,classroom)});
         case "pseudousers": return res.json({ result:await worker.pseudo.managePseudousers(response.user,body,teacher)});
-        case "invite":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,teacher,classroom,inst._id)});
+        case "invite":return res.json({ result: await worker.classroom.handleInvitation(response.user,body,classroom)});
       }
     });
 });

@@ -220,6 +220,16 @@ class Codes {
         this.FREE = "Free";
       }
     }
+
+    class Comms{
+      constructor(){
+        this.ROOM_NOT_FOUND = "comms/room-not-exist";
+        this.ROOM_ACCESS_DENIED = "comms/room-not-allowed";
+        this.BLOCKED_FROM_ROOM = "comms/blocked-from-room";
+        this.CALL_CONNECTED = "comms/call-connected";
+        this.CALL_DISCONNECTED = "comms/call-disconnected";
+      }
+    }
     this.auth = new Authcodes();
     this.client = new Clientcodes();
     this.server = new Servercodes();
@@ -230,6 +240,7 @@ class Codes {
     this.invite = new InvitationCodes();
     this.verify = new VerificationCodes();
     this.schedule = new ScheduleCodes();
+    this.comms =new Comms();
   }
   event(code) {
     return {

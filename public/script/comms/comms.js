@@ -7,6 +7,7 @@ class Comms{
         this.sessionpath;
         this.chatroompath;
         this.callingpath;
+        clog(this.data.client)
         switch(this.data.client){
             case client.admin:{
                 this.sessionpath = locate.admin.session;
@@ -44,10 +45,10 @@ class Comms{
         for(let r=0;r<this.data.totalrooms;r++){
             this.rooms.push(new Room(
                 getElement(`room${r}`),
-                getElement(`roomid${r}`),
-                getElement(`roomname${r}`),
-                getElement(`lastmsg${r}`),
-                getElement(`lastactive${r}`)
+                getElement(`roomid${r}`).innerHTML,
+                getElement(`roomname${r}`).innerHTML,
+                getElement(`lastmsg${r}`).innerHTML,
+                getElement(`lastactive${r}`).innerHTML
             ));
             this.rooms[r].roomtab.onclick=_=>{
                 refer(this.sessionpath,{
@@ -59,7 +60,6 @@ class Comms{
         for(let c=0;c<this.data.totalcalls;c++){
             this.calls.push(new Call(
                 getElement(`call${c}`),
-                getElement(`callid${c}`),
                 getElement(`callto${c}`),
                 getElement(`duration${c}`),
                 getElement(`reconnect${c}`)
@@ -72,25 +72,12 @@ class Comms{
             }
         }
         this.chattab.click();
-        this.notificationpermitcheck();
+        device.onNotifyPermit();
     }
     selectTab(tab = this.chattab){
         this.tabs.forEach((Tab)=>{
             replaceClass(Tab,"tab-section","tab-section-selected",Tab==tab);
         });
-    }
-    notificationpermitcheck(){
-        if (("Notification" in window) && Notification.permission !== "granted") {
-            Notification.requestPermission().then(permission=>{
-                if(permission === "granted"){
-                    new Notification("Hi there!",{silent:false,body:"This is the body",icon:appicon(256),requireInteraction:true,image:appicon(256)});
-                }
-            }).catch(e=>{
-                clog(e);
-            })
-        } else{
-            // new Notification("Hi there!",{silent:false,body:"This is the body",icon:appicon(256),requireInteraction:false});
-        }
     }
 }
 
@@ -100,8 +87,7 @@ class Room{
         this.roomid = roomid;
         this.roomname = roomname;
         this.lastmsg = lastmsg;
-        this.lastactive = lastactive;
-        
+        this.lastactive = lastactive;   
     }
 }
 
