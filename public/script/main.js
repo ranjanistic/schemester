@@ -507,6 +507,7 @@ const min=(numbers = [])=>{
 class DialogID {
   viewId = "dialogView";
   boxId = "dialogBox";
+  imagedivId = "dialogImagediv";
   imageId = "dialogImage";
   contentId = "dialogContent";
   headingId = "dialogHeading";
@@ -542,7 +543,9 @@ class DialogID {
     return "dialogButton" + index;
   }
   basicDialogContent = `
-      <img class="fmt-col fmt-third fmt-center" id="dialogImage" width="100%"/>
+    <div class="fmt-col fmt-third fmt-center" id="dialogImagediv">
+      <img id="dialogImage" width="100%"/>
+    </div>
     <div class="fmt-col fmt-twothird" id="dialogContent">
       <div class="fmt-row" id="dialogHeading"></div>
       <div class="fmt-row" id="dialogSubHeading"></div>
@@ -721,7 +724,11 @@ class Dialog extends DialogID {
       this.content.classList.remove("fmt-twothird");
     } else {
       this.content.classList.add("fmt-twothird");
-      this.image.src = imgsrc;
+      if(typeof imgsrc == "string"){
+        this.image.src = imgsrc;
+      } else {
+        getElement(this.imagedivId).classList.add("fmt-padding");
+      }
     }
     replaceClass(
       this.content,

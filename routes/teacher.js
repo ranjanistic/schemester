@@ -134,14 +134,17 @@ teacher.get(get.session, async (req, res) => {
       if(query.target == view.teacher.target.comms){ //communication room
         const comms = await worker.comms.getRoomAndCallList(response.user);
         return res.render(view.teacher.getViewByTarget(query.target), {
-          client:client.teacher,
+          client:teacher,
           rooms: comms.rooms,
           calls:comms.calls
         });
       }
-      clog(query);
       if(query.target == view.teacher.target.chatroom){
-        const room = await worker.comms.getRoom(response.user,query.rid);
+        const room = await worker.comms.getRoom(response.user,{
+          rid:query.rid?query.rid:false,
+          roomname:query.roomname?query.roomname:false,
+          personid:query.personid?query.personid:false
+        });
         return res.render(view.teacher.getViewByTarget(query.target), {
           client:client.teacher,
           room,

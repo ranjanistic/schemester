@@ -82,13 +82,20 @@ class Classroom {
     this.invitestudents.onclick=_=>{
       this.linkGenerator();
     }
-    this.students = Array();
+    this.students = [];
     for(let s = 0;s<this.data.studentcount;s++){
       this.students.push(new Student(
         getElement(`studentmail${s}`).innerHTML,
         getElement(`studentname${s}`).innerHTML,
+        getElement(`textstudent${s}`),
         getElement(`removestudent${s}`)
-        ));
+      ));
+      this.students[s].textStud.onclick=_=>{
+        referParent(locate.teacher.session,{
+          target:locate.teacher.target.chatroom,
+          personid:this.students[s].studentID
+        });
+      }
     }
     this.students.forEach((stud,s)=>{
       stud.removestudent.onclick=_=>{
@@ -209,7 +216,7 @@ class Classroom {
     }
   }
 
-  linkGenerator = () => {
+  linkGenerator(){
     loadingBox(
       true,
       "Generating Link",
@@ -219,19 +226,21 @@ class Classroom {
       target:"invite",
       action:"create",
     }).then((response) => {
-        if (
-          response.event == code.invite.LINK_EXISTS ||
+      if (
+        response.event == code.invite.LINK_EXISTS ||
           response.event == code.invite.LINK_CREATED
-        ) {
+          ) {
           const linkdialog = new Dialog();
           linkdialog.setDisplay(
             "Invitation Link",
             `<center><a target="_blank" rel="noreferrer" href="${response.link}">${response.link}</a>
-            <br/>This Link will automatically expire on <b>${getProperDate(
+            <br/>Share with students to let them join your class. This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
             )}</b><br/><br/>
-          </center>`
+          </center>`,
+          true
           );
+          new QRCode(getElement(linkdialog.imagedivId),response.link);
           linkdialog.createActions(
             ["Disable link", "Copy", "Hide"],
             [actionType.negative, actionType.positive, actionType.neutral]
@@ -329,23 +338,12 @@ class Classroom {
 }
 
 class Student{
-  constructor(studID,studName,remstud){
+  constructor(studID,studName,message,remstud){
     this.classname = new ReceiveData().classname;
     this.studentID = studID;
     this.studentName = studName;
+    this.textStud = message;
     this.removestudent = remstud;
-  }
-  message(message){
-    postJsonData(post.teacher.classroom,{
-      target:"classroom",
-      action:"notify",
-      studentID:this.studentID,
-      message:message
-    }).then((resp)=>{
-      if(resp.event != code.OK){
-        parent.snackbar('Unable to send','Try again');
-      }
-    });
   }
 }
 

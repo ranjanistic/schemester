@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Chatroom</title>
+        <title>Chatroom · <%= room?room.roomname?room.roomname:room.people.length==2?room.people.find((person)=>person.id!=client.id).username:'':'' %></title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -20,18 +20,60 @@
         <script src="/script/main.js"></script>
         <script src="/script/comms/chatroom.js"></script>
     </head>
-    <body class="b-positive">
+    <body class="">
         <div id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="30" alt="Go back" id="exitchat">
-            <span>Chatroom</span>
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="30" alt="Go back" id="exitchat" onclick="history.back()">
+            <span id="roomname"><%= room?room.roomname?room.roomname:room.people.length==2?room.people.find((person)=>person.id!=client.id).username:'':'' %></span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="30" src="/graphic/onethreeload.svg" id="navLoader"/>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="30" src="/graphic/menudotsvertical.svg" id="chatmenu"/>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="30" src="/graphic/menudotsvertical.svg" id="voicecall"/>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="30" src="/graphic/menudotsvertical.svg" id="videocall"/>
+            <img class="positive-button-togg fmt-right" width="40" src="/graphic/menudotsvertical.svg" id="roominfo"/>
+            <img class="neutral-button-togg fmt-right" width="40" src="/graphic/elements/voicecallicon.svg" id="voicecall"/>
+            <img class="neutral-button-togg fmt-right" width="40" src="/graphic/elements/videocallicon.svg" id="videocall"/>
         </div>
-
+        <div style="margin:62px 0;">
+        <% if (room) { %>
+            <div id="chatwindow" class="fmt-padding-small">
+                <% room.chats.forEach((chat,c) => { %>
+                 <div class="fmt-row <%= (chat.id == client.id)?'mychatrow':'chatrow' %>"  id="chat<%= c %>">
+                    <div class="fmt-col three-fourth">
+                        <div class="caption" id="username<%= c %>"><%= chat.username %></div>
+                        <div hidden id="id<%= c %>"><%= chat.id %></div>
+                        <div class="group-text" id="text<%= c %>"><%= chat.text %></div>
+                    </div>
+                    <div class="fmt-col fourth">
+                        <div class="fmt-right caption questrial" id="time<%= c %>"><%= chat.time %></div>
+                    </div>
+                 </div>
+                <% }) %>
+                <% if (!room.chats.length) { %>
+                    <div class="fmt-center group-text">No messages yet.</div>
+                <% } %>
+            </div>
+            <div class="fmt-bottom fmt-padding-small b-positive" id="usercontrols">
+                <div class="fmt-col fmt-right sixth">
+                    <button class="fmt-right neutral-button " width="30" id="sendmsg">
+                        Send
+                    </button>
+                </div>
+                <div class="fmt-col two-third fmt-padding-small">
+                    <textarea rows="1" class="fmt-right wide dropdown-input fmt-padding-small" placeholder="Type message" id="textinput"></textarea>
+                </div>
+            </div>
+            
+            <span hidden>
+                <span id="roomid"><%= room._id %></span>
+                <span id="totalchats"><%= room.chats.length %></span>
+                <span id="totalpeople"><%= room.people.length %></span>
+            </span>
+        <% } else { %>
+            <div  class="fmt-padding heading black">
+                404.<br/>Room not found.
+            </div>
+        <% } %>
+        </div>
         <span hidden>
-            <span id="clienttype"><%= client %></span>
+            <span id="clientType"><%= client.isTeacher?'teacher':client.isStudent?'student':'' %></span>
+            <span id="isroom"><%= room?true:false %></span>
         </span>
+            
     </body>
 </html>

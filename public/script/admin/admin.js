@@ -198,6 +198,7 @@ function linkGenerator(target) {
           </div>
           </center>`
         );
+        new QRCode(getElement(linkdialog.imagedivId),response.link);
         this.allowteacherschedule = new Switch("teachereditschedulei");
         postJsonData(post.admin.manage, {
           type: "preferences",

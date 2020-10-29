@@ -47,8 +47,15 @@
                     <button class="fmt-row wide neutral-button fmt-padding" style="margin:4px 0px" id="room<%= r %>" >
                         <span hidden id="roomid<%= r %>"><%= room._id %></span>
                         <div class="fmt-col two-third group-text">
-                          <span class="positive" id="roomname<%= r %>"><%= room.roomname %></span><br/>
-                          <span class="questrial" id="lastmsg<%= r %>"><%= room.lastmsg?room.lastmsg:'No messages yet.' %></span>
+                          <span class="positive" id="roomname<%= r %>">
+                            <% if (room.roomname) { %>
+                                <%= room.roomname %>
+                            <% } else { %>
+                                <%= room.people.find((person)=>person.id!=client.id).username %> 
+                            <% } %>
+                            </span><br/>
+
+                          <span class="questrial" id="lastmsg<%= r %>"><%= room.chats?room.chats.length?room.chats[room.chats.length-1]:'No messages yet.':'No messages yet' %></span>
                         </div>
                         <div class="fmt-col third group-text">
                           <span class="fmt-right caption" id="lastactive<%= r %>"><%= room.lastactive %></span>
@@ -73,7 +80,7 @@
             </div>
         </div>
         <span hidden>
-            <span id="clienttype"><%= client %></span>
+            <span id="clienttype"><%= client.isTeacher?'teacher':client.isStudent?'student':'' %></span>
             <span id="totalrooms"><%= rooms.length %></span>
             <span id="totalcalls"><%= calls.length %></span>
         </span>

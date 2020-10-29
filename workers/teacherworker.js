@@ -48,6 +48,7 @@ class Self {
   constructor() {
     const teacherpath = `users.teachers`;
     const pseudoteacherpath = `pseudousers.teachers`;
+    this.uid = "_id";
     class Account {
       constructor() {
         this.teacherpath = teacherpath;
@@ -391,7 +392,7 @@ class Self {
       case "send":{
         let inst;
         if (!user) {
-          inst = await Institute.findOne({uiid:body.uiid},{projection:{"_id":1}});
+          inst = await Institute.findOne({uiid:body.uiid},{projection:{[this.uid]:1}});
           //user not logged in
           if(!inst) return code.event(code.OK);
           let teacher = await this.account.getTeacherByEmail(body.uiid,body.email)
@@ -401,7 +402,7 @@ class Self {
           }
           return await this.handlePassReset({ id: share.getTeacherShareData(teacher).uid,uiid:body.uiid },body);
         } else{
-          inst = await Institute.findOne({uiid:user.uiid},{projection:{"_id":1}});
+          inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
         }
         const linkdata = await reset.generateLink(client.teacher, {
           uid: user.id,
@@ -751,7 +752,7 @@ class Classroom {
       projection:{[`${this.schedulepath}.$`]:1}
     });
     let classnames = [];
-    scheddoc.teachers[0].days.forEach((day)=>{
+    scheddoc.schedule.teachers[0].days.forEach((day)=>{
       day.period.forEach((period)=>{
         if(!classnames.includes(period.classname)){
           classnames.push(period.classname);
@@ -931,7 +932,7 @@ class Comms{
           [this.id]:room._id,
           [this.roomname]:room.roomname,
           [this.people]:room.people,
-          [this.lastmsg]:room.chats[room.chats.length-1]
+          [this.chats]:room.chats
         });
         room.voicecalls.forEach((call)=>{
           calltimes.push(call.time);
@@ -972,7 +973,7 @@ class Comms{
   async getRoom(user,roomdata){
     const teacher = await this.account.getAccount(user);
     let room;
-    if(roomdata.roomid) room = await this.getRoomByID(user.uiid,roomdata.roomid);
+    if(roomdata.rid) room = await this.getRoomByID(user.uiid,roomdata.rid);
     else if(roomdata.roomname) {
       room = await this.getRoomByName(user.uiid,roomdata.roomname)
       if(!room){
@@ -984,12 +985,12 @@ class Comms{
               theclass.students[s]['id'] = student.studentID;
               delete theclass.students[s]['studentID'];
             });
-            this.createNewRoom(user,theclass.students,theclass._id,theclass.classname);
+            room = await this.createNewRoom(user,theclass.students,theclass._id,theclass.classname);
           }
         }
       }
     } else if(roomdata.personid){
-      room = await this.getSinglePersonRoom(user.uiid,roomdata.personid)
+      room = await this.getSinglePersonRoom(user.uiid,roomdata.personid);
       if(!room){
         const student = await this.classes.getStudentByStudentID(user,roomdata.personid);
         room = await this.createNewRoom(user,[{
@@ -997,7 +998,7 @@ class Comms{
           id:student.studentID
         }]);
       }
-    };
+    } else return false;
     if(!room) return code.event(code.comms.ROOM_NOT_FOUND);
     if(!room.people.find((person)=>person.id==teacher.id)) return code.event(code.comms.ROOM_ACCESS_DENIED);
     if(room.blocked.includes(teacher.id)) return code.event(code.comms.BLOCKED_FROM_ROOM);
@@ -1024,9 +1025,9 @@ class Comms{
       projection:{[`${this.comms}`]:1}
     });
     if(!roomdoc) return false;
-    const room = roomdoc.find((room)=>{
-      (room.people.length == 2) && (room.people.find((person)=>person.id==personid))
-    });
+    const room = roomdoc.comms.find((room)=>
+      (room.people.length == 2) && (room.people.find((person)=>person.id==personid))?true:false
+    );
     return room?room:false;
   }
 
@@ -1064,12 +1065,23 @@ class Comms{
 
   }
   voicecalling(){
-
+    const voicecall = {
+      time:'',
+      username:'',
+      id:'',
+      duration:0
+    };
   }
   videocalling(){
-
+    const videocall = {
+      time:'',
+      username:'',
+      id:'',
+      duration:0
+    };
   }
 }
+
 
 module.exports = new TeacherWorker();
 

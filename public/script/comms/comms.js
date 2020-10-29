@@ -46,15 +46,15 @@ class Comms{
             this.rooms.push(new Room(
                 getElement(`room${r}`),
                 getElement(`roomid${r}`).innerHTML,
-                getElement(`roomname${r}`).innerHTML,
+                getElement(`roomname${r}`).innerHTML.trim(),
                 getElement(`lastmsg${r}`).innerHTML,
                 getElement(`lastactive${r}`).innerHTML
             ));
             this.rooms[r].roomtab.onclick=_=>{
                 refer(this.sessionpath,{
                     target:this.chatroompath,
-                    rid:this.rooms[r].roomid
-                })
+                    [this.rooms[r].roomid?'rid':'roomname']:this.rooms[r].roomid?this.rooms[r].roomid:this.rooms[r].roomname
+                });
             }
         }
         for(let c=0;c<this.data.totalcalls;c++){
@@ -104,6 +104,7 @@ class Call{
 class ReceiveData{
     constructor(){
         this.client = getElement('clienttype').innerHTML
+        clog(this.client);
         this.totalrooms = Number(getElement('totalrooms').innerHTML);
         this.totalcalls = Number(getElement('totalcalls').innerHTML);
     }

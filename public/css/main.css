@@ -1123,3 +1123,31 @@ img{vertical-align:middle}
     background-color: var(--light-base);
     opacity:50%;
 }
+
+.chatrow{
+    background-color: var(--secondary);
+    margin: 8px 4px;
+    padding:4px 12px;
+    border: 2px solid var(--base-text);
+    border-color: var(--secondary) var(--secondary) var(--secondary) var(--base-text);
+    box-shadow: 1px 5px 5px #00000022;
+    cursor:pointer;
+    transition: var(--trans-delay);
+}
+.chatrow:active{
+    background-color: var(--base);
+    border-right-width: 4px;
+    border-color: var(--base) var(--base-text) var(--base) var(--base);
+    box-shadow: 1px 5px 5px #00000000;
+}
+
+.mychatrow{
+    background-color: var(--secondary);
+    margin: 8px 4px;
+    padding:4px 12px;
+    border: 2px solid var(--base-text);
+    border-color: var(--base) var(--base-text) var(--base) var(--base);
+    box-shadow: 1px 5px 5px #00000022;
+    cursor:pointer;
+    transition: var(--trans-delay);   
+}

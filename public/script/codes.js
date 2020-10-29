@@ -5,6 +5,7 @@
 class Codes {
   constructor() {
     // this.domain = "https://localhost:3000";
+    // this.domain = "https://192.168.43.56:3000";
     this.domain = "https://schemester.herokuapp.com";
     this.free = "Free";
     this.OK = "OK/true";
