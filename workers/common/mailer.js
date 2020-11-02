@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer"),
     ejs = require("ejs"),
     path = require("path"),
+    config = require("../../config/config.json"),
     { code, client, clog } = require("../../public/script/codes");
 
 class Mailer {
@@ -17,39 +18,29 @@ class Mailer {
     switch (invitee) {
       case client.teacher:{
         const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/invitation.ejs"), { institute:body.institute, invitor:body.invitor, email:body.to,link:body.link,usertype:invitee });
-        return await Promise.resolve(sendEmail(body.to,`${body.institute} Teacher Invitation | Schemester`,data));
-      }break;
-      case client.student:{}break;
-      case client.admin:{}break;
+        return await Promise.resolve(sendEmail(body.to,`${body.institute} Teacher Invitation · Schemester`,data));
+      };
+      case client.student:{
+        const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/invitation.ejs"), { institute:body.institute, invitor:body.invitor, email:body.to,link:body.link,usertype:invitee });
+        return await Promise.resolve(sendEmail(body.to,`${body.institute} Student Invitation · Schemester`,data));
+      };
+      case client.admin:{
+        const data = await ejs.renderFile(path.join(__dirname+"/../../views/mail/invitation.ejs"), { institute:body.institute, invitor:body.invitor, email:body.to,link:body.link,usertype:invitee });
+        return await Promise.resolve(sendEmail(body.to,`${body.institute} Admin Invitation · Schemester`,data));
+      };
     }
   }
 }
 
 async function sendEmail(to, subject, html) {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com",
-    secureConnection: false,
-    port: 587,
-    auth: {
-      user: "schemester@outlook.in",
-      pass: "G$TU5i?(%;SU8=H",
-    },
-    starttls: {
-      ciphers: "SSLv3",
-    },
-  });
-
-  const mailOptions = {
-    from: "schemester@outlook.in",
+  const doc = nodemailer.createTransport(config.mailconfig).sendMail({
+    from: config.email,
     to: to,
     subject: subject,
     html: html,
-  };
-
-  const doc = transporter.sendMail(mailOptions).then(info=>{
-    return code.event(code.mail.MAIL_SENT);
+  }).then(info=>{
+    return code.event(info.accepted.includes(to)?code.mail.MAIL_SENT:code.mail.ERROR_MAIL_NOTSENT);
   }).catch(error=>{
-    clog(error);
     return code.event(code.mail.ERROR_MAIL_NOTSENT);
   });
   return doc;

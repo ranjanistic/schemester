@@ -3,15 +3,16 @@ const express = require("express"),
   {client,view,clog,get} = require("./public/script/codes"),
   server = express(),
   mongo = require('./config/db');
-  server.set("view engine", "ejs");
-  server.use(express.static("public"));
-  server.use(bodyParser.urlencoded({ extended: true }));
+
+server.set("view engine", "ejs");
+server.use(express.static("public"));
+server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
 //For localhost https env.
 // const https = require('https'),fs = require('fs'),key = fs.readFileSync('./localhost-key.pem'),cert = fs.readFileSync('./localhost.pem');
 
-mongo.connectToServer(( err )=>{
+mongo.connectToDB(( err )=>{
   if (err) return clog(err);
   clog(`Connected to ${mongo.getDb().databaseName}`);
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));

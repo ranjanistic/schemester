@@ -68,29 +68,52 @@ student.post("/auth",async(req,res)=>{
 });
 
 student.get(get.session, async (req, res) => {
-  let data = req.query;
+  let query = req.query;
   session.verify(req, sessionsecret)
     .catch((e) => {
-      return res.redirect(worker.toLogin(data));
+      return res.redirect(worker.toLogin(query));
     })
     .then(async (response) => {
-      if (!session.valid(response)) return res.redirect(worker.toLogin(data));
-      if (data.u != response.user.id) return res.redirect(worker.toLogin(data));
+      if (!session.valid(response)) return res.redirect(worker.toLogin(query));
+      if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
       let student = await worker.self.account.getAccount(response.user);
       if(!student) return session.finish(res).then((response) => {
-        if (response) res.redirect(worker.toLogin(data));
+        if (response) res.redirect(worker.toLogin(query));
       });
       if (!student.verified) return res.render(view.verification, { user: student });
       let classrooms = await worker.classes.getClassesByStudentID(response.user.uiid,student.id);
       if(student.pseudo)
         return res.render(view.student.getViewByTarget(view.student.target.dash), {student: student,target:{fragment:null},pseudoclasses:classrooms.pseudoclasses});
       try {
-        return res.render(view.student.getViewByTarget(data.target), {
-          student,
-          target: {
-            fragment: data.fragment,
-          },
-        });
+        switch(query.target){
+          case view.student.target.comms:{
+            const comms = await worker.comms.getRoomAndCallList(response.user);
+            return res.render(view.student.getViewByTarget(query.target), {
+              client:student,
+              rooms:comms.rooms,
+              calls:comms.calls
+            });
+          }
+          case view.student.target.chatroom:{
+            const room = await worker.comms.getRoom(response.user,{
+              rid:query.rid?query.rid:false,
+              roomname:query.roomname?query.roomname:false,
+              personid:query.personid?query.personid:false
+            });
+            if(!room) return res.render(view.notfound);
+            if(room.event == code.comms.BLOCKED_FROM_ROOM) return res.render(view.forbidden);
+            return res.render(view.student.getViewByTarget(query.target), {
+              client:student,
+              room,
+            });
+          }
+          default:return res.render(view.student.getViewByTarget(query.target), {
+            student,
+            target: {
+              fragment: query.fragment,
+            },
+          });
+        }
       } catch (e) {
         clog(e);
         return res.redirect(worker.toLogin());

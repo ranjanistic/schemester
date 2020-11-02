@@ -74,7 +74,7 @@ class Self {
         let teacher = await this.getTeacherById(user.uiid,user.id);
         if(teacher)
           return raw?teacher:share.getTeacherShareData(teacher,user.uiid);
-        teacher = this.getTeacherById(user.uiid,user.id,true);
+        teacher = await this.getTeacherById(user.uiid,user.id,true);
         if(!teacher) return false;
         if(raw) teacher['pseudo'] = true;
         return raw?teacher:share.getPseudoTeacherShareData(teacher,user.uiid);
@@ -597,7 +597,7 @@ class Classroom {
       case "update":
         return await this.updateClassroom(user, teacher, body, classroom);
       case "receive":
-        return await this.getClassroom(user, teacher,body);
+        return await this.getClassroom(user,body);
       case "manage":
         return await this.manage.handleSettings(user, body, teacher, classroom);
     }
@@ -668,10 +668,11 @@ class Classroom {
   /**
    * returns assigned classroom of given teacher, with pseudo students and other classes taken by the teacher.
    */
-  async getClassroom(user, teacher, body) {
+  async getClassroom(user, body) {
+    const teacher = await this.account.getAccount(user);
     let classdoc = await Institute.findOne({
         uiid: user.uiid,
-        "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
+        "users.classes": { $elemMatch: { inchargeID: teacher.id } },
       },
       { projection: { "users.classes.$": 1 } }
     );
@@ -691,13 +692,14 @@ class Classroom {
     let classroom = classdoc.users.classes[0];
     let todayschedule = await new Schedule().getSchedule(user);
     let otherclasses = [];
+    if(todayschedule.schedule){
     todayschedule.schedule.forEach(day=>{
       day.period.forEach((period)=>{
         if(!otherclasses.includes(period.classname)){
           otherclasses.push(period.classname);
         }
       });
-    });
+    });}
     if(body&&otherclasses.includes(body.otherclass)){//a specific classes needed
       classdoc = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.otherclass}}},{
         projection:{"users.classes.$":1}
@@ -707,11 +709,11 @@ class Classroom {
     classroom.students.forEach((stud,s)=>{
       classroom.students[s] = share.getStudentShareData(stud);
     });
-    
+    const classes = await this.getClassroomsBySchedule(user);
     return {
       classroom: classroom,
       pseudostudents: pseudostudents,
-      otherclasses:otherclasses
+      otherclasses:otherclasses.length?otherclasses:classes
     };
   }
 
@@ -741,9 +743,13 @@ class Classroom {
   }
 
   async getClassroomByInchargeID(user,inchargeID){
-    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.inchargeID]:inchargeID}}});
+    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.inchargeID]:inchargeID}}},{
+      projection:{"users.classes.$":1,"pseudousers.classes":1}
+    });
     if(!classdoc) return false;
-    return classdoc.users.classes[0];
+    let theclass = classdoc.users.classes[0];
+    theclass['pseudostudents'] = classdoc.pseudousers.classes.find((pclass)=>pclass.classname==theclass.classname).students;
+    return theclass;
   }
 
   async getClassroomsBySchedule(user,classnameonly = true,pseudostudents = false){
@@ -752,6 +758,7 @@ class Classroom {
       projection:{[`${this.schedulepath}.$`]:1}
     });
     let classnames = [];
+    if(!scheddoc) return false
     scheddoc.schedule.teachers[0].days.forEach((day)=>{
       day.period.forEach((period)=>{
         if(!classnames.includes(period.classname)){
@@ -999,7 +1006,7 @@ class Comms{
         }]);
       }
     } else return false;
-    if(!room) return code.event(code.comms.ROOM_NOT_FOUND);
+    if(!room) return false;
     if(!room.people.find((person)=>person.id==teacher.id)) return code.event(code.comms.ROOM_ACCESS_DENIED);
     if(room.blocked.includes(teacher.id)) return code.event(code.comms.BLOCKED_FROM_ROOM);
     return room;

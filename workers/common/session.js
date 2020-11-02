@@ -9,6 +9,7 @@ const { ObjectId } = require("mongodb"),
   bcrypt = require("../../node_modules/bcryptjs"),
   Institute = require("../../config/db").getInstitute(),
   Admin = require("../../config/db").getAdmin(),
+  time = require("./timer"),
   adminworker = require("../adminworker"),
   teacherworker = require("../teacherworker"),
   studentworker = require("../studentworker"),
@@ -91,34 +92,20 @@ class Session {
             }
             default: {
               if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-              const userdoc = await Institute.findOne(
-                {
-                  uiid: body.uiid,
-                  "users.teachers": { $elemMatch: { teacherID: body.email } },
-                },
-                { projection: { "users.teachers.$": 1 } }
-              );
-              const pseudouserdoc = await Institute.findOne(
-                {
-                  uiid: body.uiid,
-                  "pseudousers.teachers": {
-                    $elemMatch: { teacherID: body.email },
-                  },
-                },
-                { projection: { "pseudousers.teachers.$": 1 } }
-              );
+              let teacher = await teacherworker.self.account.getTeacherByEmail(body.uiid,body.email);
+              const pteacher = await teacherworker.self.account.getTeacherByEmail(body.uiid,body.email,true);
               switch (body.type) {
                 case "email":
-                  return userdoc || pseudouserdoc
+                  return teacher || pteacher
                     ? code.event(code.auth.USER_EXIST)
                     : code.event(code.auth.USER_NOT_EXIST);
                 case "password": {
                   const { password, uiid, target } = body;
-                  if (!userdoc && !pseudouserdoc)
+                  if (!teacher && !pteacher)
                     return code.event(code.auth.USER_NOT_EXIST);
-                  const teacher = userdoc
-                    ? userdoc.users.teachers[0]
-                    : pseudouserdoc.pseudousers.teachers[0];
+                  teacher = teacher
+                    ? teacher
+                    : pteacher;
                   const isMatch = await bcrypt.compare(
                     password,
                     teacher.password
@@ -127,9 +114,9 @@ class Session {
                   this.createSession(response, teacher._id, uiid, secret);
                   return {
                     event: code.auth.AUTH_SUCCESS,
-                    user: userdoc
-                      ? share.getTeacherShareData(teacher)
-                      : share.getPseudoTeacherShareData(teacher),
+                    user: pteacher
+                    ? share.getPseudoTeacherShareData(teacher)
+                    : share.getTeacherShareData(teacher),
                     target: target,
                   };
                 }
@@ -296,7 +283,7 @@ class Session {
           email: email,
           password: epassword,
           uiid: uiid,
-          createdAt: Date.now(),
+          createdAt: time.getTheMoment(false),
           verified: false,
           prefs: {
             showemailtoteacher: false,
@@ -323,15 +310,9 @@ class Session {
             return code.event(code.auth.PASSWORD_INVALID);
           const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-          const userdoc = await Institute.findOne({
-            uiid: uiid,
-            "users.teachers": { $elemMatch: { teacherID: email } },
-          });
-          const pseudouserdoc = await Institute.findOne({
-            uiid: uiid,
-            "pseudousers.teachers": { $elemMatch: { teacherID: email } },
-          });
-          if (userdoc || pseudouserdoc) return code.event(code.auth.USER_EXIST);
+          let teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email);
+          const pteacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,true);
+          if (teacher || pteacher) return code.event(code.auth.USER_EXIST);
           const salt = await bcrypt.genSalt(10);
           const epassword = await bcrypt.hash(password, salt);
           const newteacher = {
@@ -339,7 +320,7 @@ class Session {
             username: username,
             teacherID: email,
             password: epassword,
-            createdAt: Date.now(),
+            createdAt: time.getTheMoment(false),
             verified: false,
             vacations: [],
             prefs: {
@@ -348,36 +329,14 @@ class Session {
           };
           let result = pseudo
             ? await teacherworker.self.account.createPseudoAccount(
-                uiid,
-                newteacher
-              )
+              uiid,
+              newteacher
+            )
             : await teacherworker.self.account.createAccount(uiid, newteacher);
           if (result.event == code.NO)
             return code.event(code.auth.ACCOUNT_CREATION_FAILED);
-          const teacherdoc = pseudo
-            ? await Institute.findOne(
-                {
-                  uiid: uiid,
-                  "pseudousers.teachers": { $elemMatch: { teacherID: email } },
-                },
-                {
-                  projection: { _id: 0, "pseudousers.teachers.$": 1 },
-                }
-              )
-            : await Institute.findOne(
-                {
-                  uiid: uiid,
-                  "users.teachers": { $elemMatch: { teacherID: email } },
-                },
-                {
-                  projection: { _id: 0, "users.teachers.$": 1 },
-                }
-              );
-
-          if (!teacherdoc) return code.event(code.auth.USER_NOT_EXIST);
-          const teacher = pseudo
-            ? teacherdoc.pseudousers.teachers[0]
-            : teacherdoc.users.teachers[0];
+          teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,pseudo)
+          if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
           this.createSession(response, teacher._id, uiid, secret);
           return {
             event: code.auth.ACCOUNT_CREATED,
@@ -395,39 +354,22 @@ class Session {
           return code.event(code.auth.PASSWORD_INVALID);
         const inst = await Institute.findOne({ uiid: uiid });
         if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
-        let classdoc = await Institute.findOne(
-          {
-            uiid: uiid,
-            "users.classes": { $elemMatch: { classname: classname } },
-          },
-          { projection: { "users.classes.$": 1 } }
-        );
-        if (!classdoc) return code.event(code.auth.CLASS_NOT_EXIST);  //if classroom not in users
-        if (classdoc.users.classes[0].students.find((stud) => stud.studentID == email)) return code.event(code.auth.USER_EXIST);  //if student in the classroom
-        let pclassdoc = await Institute.findOne({
-          uiid: uiid,
-          "pseudousers.classes": { $elemMatch: { classname: classname } },
-        },
-          { projection: { "pseudousers.classes.$": 1 } }
-        );
-        if (!pclassdoc) return code.event(code.auth.CLASS_NOT_EXIST); //if classroom not in pseudo
-        if (pclassdoc.pseudousers.classes[0].students.find((stud) => stud.studentID == email)) return code.event(code.auth.USER_EXIST); //if student in pseudo classroom 
-        let student = await Institute.findOne({
-          uiid:uiid,
-          "users.students":{$elemMatch:{studentID:email}},
-        },{
-          projection:{"users.students.$":1}
-        });
+        const classroom = await studentworker.classes.getClassByClassname(uiid,classname);
+        if (!classroom) return code.event(code.auth.CLASS_NOT_EXIST);  //if classroom not in users
+        if (classroom.students.find((stud) => stud.studentID == email)) return code.event(code.auth.USER_EXIST);  //if student in the classroom
+        const pclassroom = await studentworker.classes.getClassByClassname(uiid,classname,true);
+        if (!pclassroom) return code.event(code.auth.CLASS_NOT_EXIST); //if classroom not in pseudo
+        if (pclassroom.students.find((stud) => stud.studentID == email)) return code.event(code.auth.USER_EXIST); //if student in pseudo classroom 
+        let student = await studentworker.self.account.getStudentByEmail(uiid,email);
         if(student){  //if student account exists in institute, add student to the classroom (according to pseudo)
+          const isMatch = await bcrypt.compare(password, student.password);
+          if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
           return await studentworker.self.account.addStudentToClass(uiid,classname,{username :student.username,studentID:student.studentID},pseudo)
         }
-        let pstudent = await Institute.findOne({
-          uiid:uiid,
-          "pseudousers.students":{$elemMatch:{studentID:email}},
-        },{
-          projection:{"pseudousers.students.$":1}
-        });
+        let pstudent = await studentworker.self.account.getStudentByEmail(uiid,email,true);
         if(pstudent){  //if pseudo student account exists in institute, add student to the pseudo classroom
+          const isMatch = await bcrypt.compare(password, student.password);
+          if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
           return await studentworker.self.account.addStudentToClass(uiid,classname,{username :pstudent.username,studentID:pstudent.studentID})
         }
         //creating new student account in institution according to pseudo
@@ -439,7 +381,7 @@ class Session {
           studentID: email,
           password: epassword,
           className: classname,
-          createdAt: Date.now(),
+          createdAt: time.getTheMoment(false),
           verified: false,
           prefs: {},
         }
@@ -447,7 +389,7 @@ class Session {
         if (result.event == code.NO)
           return code.event(code.auth.ACCOUNT_CREATION_FAILED);
         //adding student to classroom
-        result =  await studentworker.self.account.addStudentToClass(uiid,classname,{username :newstudent.username,studentID:newstudent.studentID},pseudo)
+        result = await studentworker.self.account.addStudentToClass(uiid,classname,{username :newstudent.username,studentID:newstudent.studentID},pseudo)
         if(result.event == code.NO) return code.event(code.inst.CLASS_JOIN_FAILED);
         this.createSession(response, newstudent._id, uiid, secret, classname);
         return {

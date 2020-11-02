@@ -28,9 +28,11 @@
                                 Actions
                             </section>
                             <% if(classroom) {%>
-                                <div class="fmt-center questrial" id="invitestudents">
-                                    Invite students
-                                </div>
+                                <% if (!other) { %>
+                                    <div class="fmt-center questrial" id="invitestudents">
+                                        Invite students
+                                    </div>
+                                <% } %>
                                 <div class="fmt-center questrial" id="chooseclass">
                                     Choose class
                                 </div>
@@ -46,7 +48,7 @@
                             <% var notifs = false %>
                             <% if(pseudostudents.length) {%>
                                 <% notifs = true %>
-                                <div id="studentrequests">
+                                <div class="fmt-center questrial" id="studentrequests">
                                     👩‍🎓 <span id="requestees"><%= pseudostudents.length %></span> pending requests.
                                 </div>
                             <% } %>
@@ -56,7 +58,7 @@
                                 </sectionn>
                             <% } else {%>
                                 <section class="fmt-center positive">
-                                    🕗
+                                    <img src="/graphic/elements/todayicon.svg" width="20"/>
                                 </sectionn>
                                 <% } %>
                         </div>
@@ -69,6 +71,15 @@
             <% if(classroom){ %>
                 <div class="fmt-row" id="studentsview">
                     <br/>
+                    <% if (other) { %>
+                        <div class="group-text fmt-center">
+                            <%= classroom.inchargeID?classroom.inchargename:'No incharge assigned' %>
+                        </div>
+                        <div class="group-text positive fmt-center">
+                            <%= classroom.inchargeID?classroom.inchargeID:'' %>
+                        </div>
+                        <br/>
+                    <% } %>
                     <% if(classroom.students.length){ %>
                         <div class="fmt-row" id="studentslist">
                             <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among <%= classroom.students.length %> students" id="teacherSearch"/>
@@ -77,10 +88,12 @@
                                 <div class="fmt-row b-neutral fmt-half fmt-padding" style="margin:4px 0px" id="studentslate<%= s %>">
                                     <div class="fmt-col two-third group-text">
                                         <span class="" id="studentname<%= s %>"><%= student.username %></span><br/>
-                                        <span class="positive questrial caption pointer" id="studentmail<%= s %>" onclick="mailTo('<%= student.id %>')"><%= student.id %></span><br/>
+                                        <span class="positive questrial caption pointer" id="studentmail<%= s %>" onclick="mailTo('<%= student.id %>')"><%= student.studentID %></span><br/>
                                     </div>
                                     <div class="fmt-row caption">
-                                        <span class="fmt-right pointer" id="removestudent<%= s %>"><img src="/graphic/elements/deleteicon.svg" width="30"></span>
+                                        <% if (!other) { %>
+                                            <span class="fmt-right pointer" id="removestudent<%= s %>"><img src="/graphic/elements/deleteicon.svg" width="30"></span>
+                                        <% } %>
                                         <span class="fmt-right pointer" id="textstudent<%= s %>"><img src="/graphic/elements/chaticon.svg" width="30"></span>
                                     </div>
                                 </div>
@@ -91,7 +104,9 @@
                             <br/><br/>
                             No students yet.
                             <br/><br/>
-                            <button class="active-button" id="invitestudents">Invite students</button>
+                            <% if (!other) { %>
+                                <button class="active-button" id="invitestudents">Invite students</button>
+                            <% } %>
                         </div>
                     <% } %>
                 </div>
@@ -125,6 +140,7 @@
             <button id="snackButton"></button>
         </div>
         <span hidden>
+                <span id="other"><%= other %></span>
                 <span id="otherclasses"><%= otherclasses %></span>
                 <span id="hasclassroom"><%= classroom?true:false %></span>
             <% if(classroom) {%>

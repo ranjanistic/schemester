@@ -89,6 +89,11 @@ class Active {
             });
           }
           return;
+        } else if(response.event == code.OK){
+          relocate(locate.student.session, {
+            target: locate.student.target.dash,
+            fragment:locate.student.target.fragment.classroom
+          });
         }
         this.load(false);
         switch (response.event) {
@@ -99,6 +104,19 @@ class Active {
               });
             })
             return this.emailField.showError("Account already exists");
+          }
+          case code.auth.WRONG_PASSWORD:{
+            if(data.target==client.student){
+              this.passField.showError(`${getButton('forgotpass','Forgot',actionType.active)}`);
+              return getElement('forgotpass').onclick=_=>{
+                snackBar('Please attempt a login with your existing classroom to proceed for your password reset.','Login',true,_=>{
+                  referTab(locate.student.login,{
+                    email:this.emailField.getInput(),
+                    uiid:data.uiid,
+                  });
+                })
+              }
+            }
           }
           default: {
             if (!navigator.onLine) {

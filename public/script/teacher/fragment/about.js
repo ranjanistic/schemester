@@ -141,17 +141,7 @@ class TeacherAbout {
     delconf.onButtonClick(
       [
         (_) => {
-          delconf.loader();
-          postJsonData(post.teacher.self, {
-            target: "account",
-            action: code.action.ACCOUNT_DELETE,
-          }).then((response) => {
-            if (response.event == code.OK) {
-              relocateParent(locate.root);
-            } else {
-              parent.snackbar("Action Failed");
-            }
-          });
+          
         },
         (_) => {
           delconf.hide();
@@ -168,6 +158,20 @@ class TeacherAbout {
           delconf.hide();
         }
       }, 1000);
+
+      delconf.getDialogButton(0).onclick=_=>{
+        delconf.loader();
+          postJsonData(post.teacher.self, {
+            target: "account",
+            action: code.action.ACCOUNT_DELETE,
+          }).then((response) => {
+            if (response.event == code.OK) {
+              relocateParent(locate.root);
+            } else {
+              parent.snackbar("Action Failed");
+            }
+          });
+      }
     })
   }
   sendForgotLink() {

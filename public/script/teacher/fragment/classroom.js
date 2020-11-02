@@ -21,7 +21,6 @@ class Classroom {
       }
     }
     localStorage.removeItem('hideclassroom');
-    this.inchargeOf = getElement("inchargeOf");
     this.studentlist = getElement("studentslist");
     this.studentsview = getElement("studentsview");
     this.chooseclass = getElement("chooseclass");
@@ -30,47 +29,20 @@ class Classroom {
       this.data.otherclasses.forEach((Class,c)=>{
         viewbody+=`
         <div class="fmt-row fmt-center">
-          <button class="half ${Class == this.data.classname?'active-button':'positive-button'}" id="classbutton${c}">${Class != this.data.classname?Class:`${Class} (yours) `}</button>
+          <button class="half ${Class == sessionStorage.getItem('inchargeof')?'active-button':'positive-button'}" id="classbutton${c}">${Class != sessionStorage.getItem('inchargeof')?Class:`${Class} (yours) `}</button>
         </div>`;
       });
       const classchoose = new Dialog();
       classchoose.setDisplay('Choose class',`These are the classes you take in your schedule, choose anyone to view.<br/>${viewbody}`);
       let classbtns = [];
-      this.data.otherclasses.forEach((_,c)=>{
+      this.data.otherclasses.forEach((Class,c)=>{
         classbtns.push(getElement(`classbutton${c}`));
         classbtns[c].onclick=_=>{
-          if(this.data.otherclasses[c] == this.data.classname){
-            return parent.clickTab(2);
-          }
           classchoose.loader();
-          postJsonData(post.teacher.classroom,{
-            target:'classroom',
-            action:'receive',
-            otherclass:this.data.otherclasses[c]
-          }).then((resp)=>{
-            const classroom = resp.classroom;
-            this.inchargeOf.innerHTML = `<span class="positive">Classroom ${classroom.classname}</span>`;
-            let listview = `
-            <div class="group-text fmt-center">${classroom.inchargeID?classroom.inchargename:'No incharge assigned'}</div>
-            ${classroom.inchargeID?'<div class="group-text positive fmt-center">${classroom.inchargeID}</div>':''}<br/>
-            <input type="text" class="fmt-row dropdown-input fmt-padding-small wide" placeholder="Search among ${classroom.students.length} students" id="teacherSearch"/><br/><br/>`;
-            if(!classroom.students.length){
-              listview = `<div class="fmt-center group-text fmt-padding">
-              No students yet.
-              </div>`
-            }else{
-            classroom.students.forEach((stud,s)=>{
-              listview += `<div class="fmt-row wide b-neutral fmt-padding" style="margin:4px 0px" id="studentslate${s}">
-              <div class="fmt-col fmt-twothird group-text">
-                <span class="positive" id="studentname${s}">${stud.username}</span><br/>
-                <span class="questrial" id="studentmail${s}">${stud.id}</span><br/>
-              </div>
-            </div>`
-            })}
-            this.studentsview.innerHTML = listview;
-            hide(this.invitestudents);
-            classchoose.hide();
-          })
+          return relocate(locate.teacher.fragment,{
+            fragment:locate.teacher.target.fragment.classroom,
+            classname:Class
+          });
         }
       });
       classchoose.createActions(['Hide']);
@@ -78,17 +50,13 @@ class Classroom {
       classchoose.onButtonClick([_=>{classchoose.hide()}]);
       classchoose.show();
     };
-    this.invitestudents = getElement("invitestudents");
-    this.invitestudents.onclick=_=>{
-      this.linkGenerator();
-    }
     this.students = [];
     for(let s = 0;s<this.data.studentcount;s++){
       this.students.push(new Student(
         getElement(`studentmail${s}`).innerHTML,
         getElement(`studentname${s}`).innerHTML,
         getElement(`textstudent${s}`),
-        getElement(`removestudent${s}`)
+        this.data.other?null:getElement(`removestudent${s}`)
       ));
       this.students[s].textStud.onclick=_=>{
         referParent(locate.teacher.session,{
@@ -97,6 +65,14 @@ class Classroom {
         });
       }
     }
+
+    if(this.data.other) return;
+
+    this.invitestudents = getElement("invitestudents");
+    this.invitestudents.onclick=_=>{
+      this.linkGenerator();
+    }
+
     this.students.forEach((stud,s)=>{
       stud.removestudent.onclick=_=>{
         const removeconfirm = new Dialog();
@@ -147,7 +123,7 @@ class Classroom {
         }).then((students) => {
           if (students.event != code.NO) {
             const requestDialog = new Dialog();
-            requestDialog.setBackgroundColor(colors.transparent);
+            requestDialog.transparent();
             requestDialog.createActions(["Hide"], [bodyType.neutral]);
             requestDialog.onButtonClick(
               [(_) => {
@@ -155,8 +131,7 @@ class Classroom {
               }]
             );
             let bodytext = `<center>These people have requested to join ${this.data.classname} as student.</center><br/>`;
-            students.forEach((student, t) => {
-              
+            students.forEach((student, t) => {              
                 bodytext += `
               <div class="fmt-row tab-view" id="request${t}">
                 <div class="fmt-col fmt-half group-text">
@@ -187,7 +162,7 @@ class Classroom {
                   if (resp.event == code.OK) {
                     hide(getElement(`request${t}`));
                     parent.snackbar(
-                      `Rejected ${student.username} (${student.id})`,
+                      `Rejected ${student.username} (${student.studentID})`,
                       null,
                       false
                     );
@@ -204,7 +179,7 @@ class Classroom {
                 }).then((resp) => {
                   if (resp.event == code.OK) {
                     hide(getElement(`request${t}`));
-                    parent.snackbar(`Accepted ${student.username} (${student.id})`);
+                    parent.snackbar(`Accepted ${student.username} (${student.studentID})`);
                   }
                   requestDialog.loader(false);
                 });
@@ -310,11 +285,11 @@ class Classroom {
               so that they can join the classroom.`
           );
           nolinkdialog.createActions(
-            Array("Create Link", "Abort"),
-            Array(actionType.positive, actionType.negative)
+            ["Create Link", "Abort"],
+            [actionType.positive, actionType.negative]
           );
           nolinkdialog.onButtonClick(
-            Array(
+            [
               (_) => {
                 nolinkdialog.hide();
                 this.linkGenerator();
@@ -322,7 +297,7 @@ class Classroom {
               (_) => {
                 nolinkdialog.hide();
               }
-            )
+            ]
           );
           nolinkdialog.show();
         } else {
@@ -338,8 +313,7 @@ class Classroom {
 }
 
 class Student{
-  constructor(studID,studName,message,remstud){
-    this.classname = new ReceiveData().classname;
+  constructor(studID,studName,message,remstud = null){
     this.studentID = studID;
     this.studentName = studName;
     this.textStud = message;
@@ -349,10 +323,15 @@ class Student{
 
 class ReceiveData{
     constructor(){
+      this.other = getElement('other').innerHTML=='true';
       this.otherclasses = getElement("otherclasses").innerHTML.split(',');
+      this.otherclasses = this.otherclasses=='false'?[]:this.otherclasses;
       this.hasclass = getElement("hasclassroom").innerHTML=='true';
       if(this.hasclass){
         this.classname = getElement("classname").innerHTML;
+        if(!this.other){
+          sessionStorage.setItem('inchargeof',this.classname);
+        }
         this.studentcount = Number(getElement("totalstudents").innerHTML);
         try{
         this.requestees = getElement("requestees").innerHTML;

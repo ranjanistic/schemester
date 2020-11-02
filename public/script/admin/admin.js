@@ -196,7 +196,7 @@ function linkGenerator(target) {
                 <span class="switch-positive" id="teachereditscheduleview"></span>
               </label>
           </div>
-          </center>`
+          </center>`,true
         );
         new QRCode(getElement(linkdialog.imagedivId),response.link);
         this.allowteacherschedule = new Switch("teachereditschedulei");

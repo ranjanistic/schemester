@@ -131,32 +131,35 @@ teacher.get(get.session, async (req, res) => {
       }
     }
     try {
-      if(query.target == view.teacher.target.comms){ //communication room
-        const comms = await worker.comms.getRoomAndCallList(response.user);
-        return res.render(view.teacher.getViewByTarget(query.target), {
-          client:teacher,
-          rooms: comms.rooms,
-          calls:comms.calls
-        });
-      }
-      if(query.target == view.teacher.target.chatroom){
-        const room = await worker.comms.getRoom(response.user,{
-          rid:query.rid?query.rid:false,
-          roomname:query.roomname?query.roomname:false,
-          personid:query.personid?query.personid:false
-        });
-        return res.render(view.teacher.getViewByTarget(query.target), {
-          client:client.teacher,
-          room,
-        });
-      }
-      return res.render(view.teacher.getViewByTarget(query.target), {
-        teacher,
-        inst,
-        target:{
-          fragment:query.fragment
+      switch(query.target){
+        case view.teacher.target.comms:{
+          const comms = await worker.comms.getRoomAndCallList(response.user);
+          return res.render(view.teacher.getViewByTarget(query.target), {
+            client:teacher,
+            rooms: comms.rooms,
+            calls:comms.calls
+          });
         }
-      });
+        case view.teacher.target.chatroom:{
+          const room = await worker.comms.getRoom(response.user,{
+            rid:query.rid?query.rid:false,
+            roomname:query.roomname?query.roomname:false,
+            personid:query.personid?query.personid:false
+          });
+          if(!room) return res.render(view.notfound);
+          return res.render(view.teacher.getViewByTarget(query.target), {
+            client:teacher,
+            room,
+          });
+        }
+        default:return res.render(view.teacher.getViewByTarget(query.target), {
+          teacher,
+          inst,
+          target:{
+            fragment:query.fragment
+          }
+        });
+      }
     } catch (e) {
       clog(e);
       return res.redirect(worker.toLogin());
@@ -218,22 +221,27 @@ teacher.get(get.fragment, (req, res) => {
           return;
         }
         case view.teacher.target.fragment.classroom: {
-          const teacherdoc = await Institute.findOne({
-            uiid:response.user.uiid,"users.teachers":{$elemMatch:{"_id":ObjectId(response.user.id)}}
-          },{projection:{"users.teachers.$":1}});
-          const teacher = teacherdoc.users.teachers[0];
-          worker.classroom.getClassroom(response.user,teacher)
-            .then((resp) => {
-              return res.render(view.teacher.getViewByTarget(query.fragment), {
-                classroom: resp.classroom,
-                pseudostudents:resp.pseudostudents,
-                teacher:share.getTeacherShareData(teacher),
-                otherclasses:resp.otherclasses
-              });
-            })
-            .catch((e) => {
-              return res.render(view.servererror,{error:e});
-            });
+      
+          const teacher = await worker.self.account.getAccount(response.user);
+          
+          const inchargeof = await worker.classroom.getClassroomByInchargeID(response.user,teacher.id);
+          const classes = await worker.classroom.getClassroomsBySchedule(response.user,false,true);
+          if(classes){
+            query.classname = query.classname?query.classname:classes.find((Class)=>Class.classname == inchargeof.classname).classname;
+          } else if(!query.classname) query.classname = inchargeof.classname;
+          const classnames = await worker.classroom.getClassroomsBySchedule(response.user);
+          if(classnames){
+            if(!classes.find((Class)=>Class.classname == query.classname)){
+              return res.render(view.notfound);
+            }
+          }
+          return res.render(view.teacher.getViewByTarget(query.fragment), {
+            classroom: classes?classes.find((Class)=>Class.classname==query.classname):inchargeof,
+            pseudostudents:inchargeof.pseudostudents,
+            teacher,
+            otherclasses:classnames,
+            other:query.classname!=inchargeof.classname
+          });
         }break;
         case view.teacher.target.fragment.about: {
           const teacherdoc = await Institute.findOne({

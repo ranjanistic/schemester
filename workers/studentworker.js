@@ -12,6 +12,7 @@ class StudentWorker {
     this.self = new Self();
     this.schedule = new Schedule();
     this.classes = new Classroom();
+    this.comms = new Comms();
   }
   toSession = (u, query = { target: view.student.target.dash }) => {
     let path = `/${client.student}/session?u=${u}`;
@@ -84,7 +85,7 @@ class Self {
         let student = await this.getStudentById(user.uiid,user.id);
         if(student)
           return raw?student:share.getStudentShareData(student,user.uiid);
-        student = this.getStudentById(user.uiid,user.id,true);
+        student = await this.getStudentById(user.uiid,user.id,true);
         if(!student) return false;
         if(raw) student['pseudo'] = true;
         return raw?student:share.getPseudoStudentShareData(student,user.uiid);
@@ -320,7 +321,7 @@ class Self {
       };
 
       /**
-       * Delete student account, and remove from classrooms.
+       * Delete student account, and remove from all occurrences.
        */
       deleteAccount = async (user) => {
         let student = await getStudentById(user.uiid, user.id);
@@ -338,7 +339,6 @@ class Self {
           }
         });//removing student account
         if(!delacc.value) return code.event(code.NO);
-        
         const classroom = await new Classroom().getClassesByStudentID(user.uiid,student.studentID,true);
 
         //removing student from pseudousers.classes
@@ -363,7 +363,7 @@ class Self {
           classroom.classes.map((Class)=>{
             return new Promise(async(resolve)=>{
               const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
-                $set:{
+                $pull:{
                   [`${classpath}.$[theclass].students`]:{[this.studentID]:student.studentID}
                 }
               },{
@@ -373,6 +373,40 @@ class Self {
             })
           })
         );
+
+        //deleting personal rooms.
+        const singlerooms = await new Comms().get1to1RoomsofPerson(user.uiid,student.studentID);
+        if(singlerooms)
+          res = await Promise.all(
+            singlerooms.map((room)=>{
+              return new Promise(async(resolve)=>{
+                const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+                  $pull:{
+                    [`comms`]:{"_id":ObjectId(room._id)}
+                  }
+                })
+                resolve(doc);
+              })
+            })
+          );
+
+        //removing from chatrooms
+        const list = await new Comms().getRoomAndCallList(user);
+        if(list)
+          res = await Promise.all(
+            list.rooms.map((room)=>{
+              return new Promise(async(resolve)=>{
+                const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+                  $pull:{
+                    [`comms.$[theroom].people`]:{"id":student.studentID}
+                  }
+                },{
+                  arrayFilters:[{[`theroom.${this.uid}`]:ObjectId(room._id)}]
+                })
+                resolve(doc);
+              })
+            })
+          )
         return code.event(code.OK);
       };
     }
@@ -571,9 +605,8 @@ class Schedule {
 class Classroom{
   constructor(){
     this.account = new Self().account;
+    this.classname = "classname";
   }
-
-
 
   /**
    * Finds all classrooms of given student ID in institution of given uiid. (including pseudo classes)
@@ -619,6 +652,11 @@ class Classroom{
     };
   }
 
+  async getClassByClassname(uiid,classname,pseudo = false){
+    const doc = await Institute.findOne({uiid:uiid,[pseudo?this.account.pseudoclasspath:this.account.classpath]:{$elemMatch:{[this.classname]:classname}}},{projection:{[pseudo?`${this.account.pseudoclasspath}.$`:`${this.account.classpath}.$`]:1}});
+    return doc?pseudo?doc.pseudousers.classes[0]:doc.users.classes[0]:false;
+  }
+
   async removeStudentFromClass(uiid,classname,studentID,pseudo = true){
     const doc = await Institute.findOneAndUpdate({
       uiid:uiid,
@@ -656,6 +694,168 @@ class Classroom{
       case "join":return await this.joinPseudoClass(user,body.classname);
       case "withdraw": return await this.removePseudoRequest(user,body.classname);
     }
+  }
+}
+
+class Comms{
+  constructor(){
+    this.account = new Self().account;
+    this.classes = new Classroom();
+    this.id = "_id";
+    this.comms = "comms";
+    this.roomname = "roomname";
+    this.people = "people";
+    this.chats = "chats";
+    this.lastmsg = "lastmsg";
+    this.voicecalls = "voicecalls";
+    this.videocalls = "videocalls";
+  }
+
+  async getRoomAndCallList(user){
+    const student = await this.account.getAccount(user);
+    const inst = await Institute.findOne({uiid:user.uiid},{
+      projection:{[this.comms]:1,"users.classes":1}
+    });
+    let rooms = [];
+    let calls = [];
+    let calltimes = [];
+    inst.comms.forEach((room)=>{
+      if(room.people.find((person)=>person.id==student.id)){
+        rooms.push({
+          [this.id]:room._id,
+          [this.roomname]:room.roomname,
+          [this.people]:room.people,
+          [this.chats]:room.chats
+        });
+        room.voicecalls.forEach((call)=>{
+          calltimes.push(call.time);
+        });
+      }
+    });
+    calltimes.sort();
+    inst.comms.forEach((room)=>{
+      if(room.people.find((person)=>person.id==student.id)){
+        calltimes.forEach((time)=>{
+          if(room.voicecalls.find((call)=>call.time==time)){
+            calls.push(room.voicecalls);
+            if(room.roomname) return calls[calls.length-1][this.roomname] = room.roomname;
+            room.people.forEach((person)=>{
+              if(person.id!=student.id){
+                calls[calls.length-1][this.roomname] += `${person.username}, `;
+              }
+            });
+            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].trim()
+            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].substr(0,calls[calls.length-1][this.roomname].length-2);
+          }
+        })
+      }
+    });
+
+    //No non-existent rooms to be shown. Classrooms to be shown only if the room in comms exist. (to be only created by incharge,involuntarily)
+    const classroom = await this.classes.getClassesByStudentID(user.uiid,student.id);
+    if(classroom){
+      classroom.classes.forEach((Class)=>{
+        if(!rooms.find((room)=>String(room[this.id])==String(Class[this.id]))){
+          if(inst.comms.find((room)=>String(room[this.id])==String(Class[this.id]))?true:false){
+            rooms.push({
+              [this.roomname]:Class.classname,
+            });
+          }
+        }
+      })
+    }
+    return rooms.length?{rooms:rooms,calls:calls}:false;
+  }
+
+  async getRoom(user,roomdata){
+    const student = await this.account.getAccount(user);
+    let room;
+    if(roomdata.rid) room = await this.getRoomByID(user.uiid,roomdata.rid);
+    else if(roomdata.roomname) {
+      room = await this.getRoomByName(user.uiid,roomdata.roomname)
+      if(room){
+        if(!room.people.find((person)=>person.id==student.id)){ //checking if student is in the room, pushing if not
+          const classrooms = await this.classes.getClassesByStudentID(user.uiid,student.id,true);
+          if(classrooms.classes.includes(roomdata.roomname)){
+            const res = await this.addStudentToRoom(user,room._id);
+            if(res.event != code.OK) room = false;
+            else room = await this.getRoomByID(user.uiid,room._id);
+          }
+        }
+      }
+      //Student cannot create a room for their classroom. Only incharge can do that, involuntarily.
+    } else if(roomdata.personid){
+      room = await this.getSinglePersonRoom(user.uiid,roomdata.personid);
+      if(!room){
+        const person = await this.account.getStudentById(user.uiid,roomdata.personid);
+        if(person&&person.studentID!=student.id){
+          room = await this.createNewRoom(user,[{
+            username:person.username,
+            id:person.studentID
+          }]);
+        }
+      }
+    } else return false;
+    if(!room) return false;
+    if(!room.people.find((person)=>person.id==student.id)) return code.event(code.comms.ROOM_ACCESS_DENIED);
+    if(room.blocked.includes(student.id)) return code.event(code.comms.BLOCKED_FROM_ROOM);
+    return room;
+  }
+
+
+  async getRoomByID(uiid,roomid){
+    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.id]:ObjectId(roomid)}}},{
+      projection:{[`${this.comms}.$`]:1}
+    });
+    if(!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+  async getRoomByName(uiid,roomname){
+    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.roomname]:roomname}}},{
+      projection:{[`${this.comms}.$`]:1}
+    });
+    if(!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+  
+  async getSinglePersonRoom(uiid,personid){
+    const roomdoc = await Institute.findOne({uiid:uiid},{
+      projection:{[`${this.comms}`]:1}
+    });
+    if(!roomdoc) return false;
+    const room = roomdoc.comms.find((room)=>
+      (room.people.length == 2) && (room.people.find((person)=>person.id==personid))?true:false
+    );
+    return room?room:false;
+  }
+
+  async get1to1RoomsofPerson(uiid,personid){
+    const roomdoc = await Institute.findOne({uiid:uiid},{
+      projection:{[`${this.comms}`]:1}
+    });
+    if(!roomdoc) return false;
+    let rooms = [];
+    roomdoc.comms.forEach((room)=>{
+      if((room.people.find((person)=>person.id==personid))?true:false&&(room.people.length == 2)){
+        rooms.push(room);
+      }
+    });
+    return rooms.length?rooms:false;
+  }
+
+  async addStudentToRoom(user,roomID){
+    const student = await this.account.getAccount(user);
+    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $push:{
+        "comms.$[theroom].people":{
+          username:student.username,
+          id:student.id
+        }
+      }
+    },{
+      arrayFilters:[{"theroom._id":ObjectId(roomID)}]
+    });
+    return code.event(doc.value?code.OK:code.NO);
   }
 }
 

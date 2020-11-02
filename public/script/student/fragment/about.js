@@ -120,17 +120,7 @@ class StudentAbout {
       delconf.onButtonClick(
         [
           (_) => {
-            delconf.loader();
-            postJsonData(post.student.self, {
-              target: "account",
-              action: code.action.ACCOUNT_DELETE,
-            }).then((response) => {
-              if (response.event == code.OK) {
-                relocate(locate.root);
-              } else {
-                parent.snackbar("Action Failed");
-              }
-            });
+            
           },
           (_) => {
             delconf.hide();
@@ -148,6 +138,20 @@ class StudentAbout {
             clearInterval(timer);
           }
         }, 1000);
+        delconf.getDialogButton(0).onclick=_=>{
+          delconf.loader();
+          postJsonData(post.student.self, {
+            target: "account",
+            action: code.action.ACCOUNT_DELETE,
+          }).then((response) => {
+            if (response.event == code.OK) {
+              relocateParent(locate.root);
+            } else {
+              delconf.loader(false);
+              parent.snackbar("Action Failed");
+            }
+          });
+        }
       })
     }
 }
