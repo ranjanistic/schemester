@@ -415,6 +415,7 @@ class TeacherFiller {
       }
     switch(response.event){
       case code.schedule.SCHEDULE_EXISTS:{
+        this.load(false);
           if (this.data.isAdmin) {
             snackBar(
               `Schedule for ${sessionStorage.getItem(
@@ -426,7 +427,7 @@ class TeacherFiller {
                 referTab(locate.admin.session, {
                   target: locate.admin.target.viewschedule,
                   type: client.teacher,
-                  [response.id ? "t" : "teacherID"]: response.uid
+                  [response.id ?"teacherID":"id"]: response.uid
                     ? response.uid
                     : response.id,
                 });

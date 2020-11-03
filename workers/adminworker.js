@@ -129,9 +129,9 @@ class Self {
         this.rlinkexp = "rlinkexp";
       }
 
-      async getAccount(user) {
+      async getAccount(user,raw = false) {
         const userdoc = await Admin.findOne({ _id: ObjectId(user.id) });
-        return userdoc ? userdoc : code.event(code.NO);
+        return userdoc?raw?userdoc:share.getAdminShareData(userdoc):false;
       }
 
       //send feedback emails
@@ -675,7 +675,28 @@ class Default {
 class Users {
   constructor() {
     class Teachers {
-      constructor() {}
+      constructor() {
+        this.teacherpath = `users.teachers`;
+        this.pseudoteacherpath = `pseudousers.teachers`;
+        this.uid = "_id";
+        this.teacherID = "teacherID";
+      }
+      async getTeacherByID(user,id,pseudo = false){
+        const tdoc = await Institute.findOne({uiid:user.uiid,[pseudo?this.pseudoteacherpath:this.teacherpath]:{$elemMatch:{[this.uid]:ObjectId(id)}}},{
+         projection:{
+           [pseudo?`${this.pseudoteacherpath}.$`:`${this.teacherpath}.$`]:1
+         } 
+        });
+        return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
+      }
+      async getTeacherByTeacherID(user,teacherID,pseudo = false){
+        const tdoc = await Institute.findOne({uiid:user.uiid,[pseudo?this.pseudoteacherpath:this.teacherpath]:{$elemMatch:{[this.teacherID]:teacherID}}},{
+         projection:{
+           [pseudo?`${this.pseudoteacherpath}.$`:`${this.teacherpath}.$`]:1
+         } 
+        });
+        return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
+      }
       searchTeacher = async (inst, body) => {
         let teachers = Array();
         inst.users.teachers.forEach((teacher, t) => {
@@ -699,6 +720,9 @@ class Users {
           teachers: teachers,
         };
       };
+
+
+
       async sendInvitation(user, body) {
         const inst = await Institute.findOne({ uiid: user.uiid });
         const admin = await new Self().account.getAccount(user);
@@ -1040,6 +1064,11 @@ class Users {
 class Schedule {
   constructor() {
     const defaults = new Default();
+
+    this.teacherschedulepath = "schedule.teachers";
+    this.teacherID = "teacherID";
+
+
     class TeacherAction {
       constructor() {}
       async scheduleUpload(body, inst) {
@@ -1205,7 +1234,6 @@ class Schedule {
        */
       async scheduleReceive(body, inst) {
         let filter, options;
-        console.log(body);
         switch (body.specific) {
           case "single":
             {
@@ -1261,13 +1289,11 @@ class Schedule {
         }
         const teacherInst = await Institute.findOne(filter, options);
         if (!teacherInst) {
-          console.log("no");
           return code.event(code.schedule.SCHEDULE_NOT_EXIST);
         }
         switch (body.specific) {
           case "single":
             {
-              console.log(teacherInst.schedule.teachers[0]);
               return {
                 event: code.OK,
                 schedule: teacherInst.schedule.teachers[0],
@@ -1778,7 +1804,54 @@ class Schedule {
     }
     const teacher = new TeacherAction();
     class ClassAction {
-      constructor() {}
+      constructor() {
+
+      }
+
+      async getScheduleByClassname(user,classname){
+        const teacherdoc = await Institute.findOne({uiid: user.uiid},{
+          projection: {
+            _id: 0,
+            default: 1,
+            "schedule.teachers": 1,
+          }
+        });
+        const timings = teacherdoc.default.timings;
+        const days = Array(timings.daysInWeek.length);
+        teacherdoc.schedule.teachers.some((teacher) => {
+          teacher.days.forEach((day, d) => {
+            try {
+              if (days[d].dayIndex != day.dayIndex) {
+                days.push({
+                  dayIndex: day.dayIndex,
+                  period: Array(timings.periodsInDay),
+                });
+              }
+            } catch {
+              days[d] = {
+                dayIndex: day.dayIndex,
+                period: Array(timings.periodsInDay),
+              };
+            }
+            if(days[d].period.includes(undefined)){
+            day.period.forEach((period, p) => {
+              if (period.classname == classname) {
+                days[d].period[p] = {
+                  teachername:teacher.teachername,
+                  teacherID: teacher.teacherID,
+                  subject: period.subject,
+                  hold: period.hold,
+                };
+              }
+            })};
+          });
+          let done = !days.find((day) => day.period.includes(undefined))?true:false;
+          return !done;
+        });
+
+        return days;
+      }
+
       async scheduleReceive(user, body) {
         if (body.classname) {
           const teacherdoc = await Institute.findOne(
@@ -1980,6 +2053,21 @@ class Schedule {
     return scheduledoc ? scheduledoc.schedule : code.event(code.NO);
   }
 
+  async getScheduleByTeacherID(user,teacherID){
+    const tscheddoc = await Institute.findOne({ //finding schedule with teacherID
+      uiid: user.uiid,
+      [this.teacherschedulepath]: {
+        $elemMatch: { [this.teacherID]: teacherID},
+      },
+    },{
+      projection: {
+        _id: 0,
+        [`${this.teacherschedulepath}.$`]: 1,
+      },
+    });
+    return tscheddoc?tscheddoc.schedule.teachers[0]:false;
+  }
+
   handleScheduleTeachersAction = async (user, body, inst) => {
     switch (body.action) {
       case "upload":
@@ -2009,7 +2097,43 @@ class Schedule {
 }
 
 class Classroom {
-  constructor() {}
+  constructor() {
+    this.classpath = "users.classes";
+    this.pseudoclasspath = "pseudousers.classes";
+    this.uid = "_id";
+    this.classname = "classname";
+    this.inchargeID = "inchargeID";
+  }
+
+  async getClassByClassID(user,id){
+    const cdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.uid]:ObjectId(id)}}},{
+      projection:{
+        [`${this.classpath}.$`]:1
+      }
+    });
+    return cdoc?cdoc.users.classes[0]:false;
+  }
+
+  async getClassByClassname(user,classname,pseudo = false){
+    const cdoc = await Institute.findOne({uiid:user.uiid,[pseudo?this.pseudoclasspath:this.classpath]:{$elemMatch:{[this.classname]:classname}}},{
+      projection:{
+        [pseudo?`${this.pseudoclasspath}.$`:`${this.classpath}.$`]:1
+      }
+    });
+    return cdoc?pseudo?cdoc.pseudousers.classes[0]:cdoc.users.classes[0]:false;
+  }
+  
+  async getClassByInchargeID(user,inchargeID,pseudo = false){
+    const cdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.inchargeID]:inchargeID}}},{
+      projection:{
+        [`${this.classpath}.$`]:1
+      }
+    });
+    if(!cdoc) return false;
+    if(!pseudo) return cdoc.users.classes[0];
+    return await this.getClassByClassname(user,cdoc.users.classes[0].classname,true); //pseudoclass
+  }
+
   async getClasses(user, body) {
     switch (body.specific) {
       case "teacherclasses": {

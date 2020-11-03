@@ -34,7 +34,7 @@ class Classrooms {
           this.addclass.loader();
           postJsonData(post.admin.users, {
             target: client.student,
-            action:"update",
+            action:"update", 
             specific: code.action.CREATE_NEW_CLASS,
             newclass:{
               _id:null,
@@ -58,7 +58,7 @@ class Classrooms {
             switch(resp.event){
               case code.inst.CLASS_EXISTS:return this.addclass.showFieldError(0,'Classroom already exists');
               case code.inst.INCHARGE_OCCUPIED:return this.addclass.showFieldError(1,`Already an incharge of ${resp.inchargeof}`);
-              case code.inst.INCHARGE_NOT_FOUND:return this.addclass.showFieldError(1,`No such user exists.`);
+              case code.inst.INCHARGE_NOT_FOUND:return this.addclass.showFieldError(1,`No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${this.addclass.getInputValue(1).trim()}'})">Add teacher?</a>`);
               default:return snackBar(resp.event,'Report',false);
             };
           });
@@ -134,7 +134,7 @@ class Classrooms {
                 setincharge.loader(false);
                 switch (resp.event) {
                   case code.inst.INCHARGE_NOT_FOUND:{
-                    return setincharge.inputField[0].showError('No such user exists');
+                    return setincharge.inputField[0].showError(`No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${setincharge.getInputValue(0).trim()}'})">Add teacher?</a>`);
                   }
                   case code.inst.INCHARGE_OCCUPIED:
                     return snackBar(

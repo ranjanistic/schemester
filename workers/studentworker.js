@@ -382,7 +382,7 @@ class Self {
               return new Promise(async(resolve)=>{
                 const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
                   $pull:{
-                    [`comms`]:{"_id":ObjectId(room._id)}
+                    [`comms`]:{[this.uid]:ObjectId(room._id)}
                   }
                 })
                 resolve(doc);

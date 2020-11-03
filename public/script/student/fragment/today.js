@@ -31,7 +31,7 @@ class StudentToday{
                 this.todayactions();
             }
         }
-        // this.startTimers();
+        this.startTimers();
     }
     controlVisibility(){
         // hideElement(this.periodActions);

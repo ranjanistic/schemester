@@ -989,7 +989,7 @@ class Comms{
           const theclass = classes.find((Class)=>Class.classname==roomdata.roomname);
           if(theclass) {
             theclass.students.forEach((student,s)=>{
-              theclass.students[s]['id'] = student.studentID;
+              theclass.students[s][this.id] = student.studentID;
               delete theclass.students[s]['studentID'];
             });
             room = await this.createNewRoom(user,theclass.students,theclass._id,theclass.classname);
