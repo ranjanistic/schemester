@@ -1,6 +1,12 @@
 /**
  * Maintains the communicable codes between client and server, and among client and server themselves, ensuring uniformity
  * & reducing errors in event reporting, and apart from that, some basic constants too.
+ * https://github.com/ranjanistic/schemester-web/blob/master/DOCUMENTATION.md#codesjspublicscriptcodesjs
+ */
+
+/**
+ * The string codes to communicate with server, and to receive to act accordingly.
+ * [See doc](https://github.com/ranjanistic/schemester-web/blob/master/DOCUMENTATION.md#string-codes)
  */
 class Codes {
   constructor() {
@@ -765,51 +771,14 @@ class Posts {
 }
 
 /**
- * This class maintains the theme settings for the whole application. Can be used to assign any element the properties of this class,
- * for theme related settings.
- */
-class Theme {
-  constructor() {
-    this.dark = "dark";
-    this.light = "light";
-    this.key = key.theme;
-  }
-  setDark() {
-    this.setTheme(this.dark);
-  }
-  setLight() {
-    this.setTheme(this.light);
-  }
-  switch() {
-    this.isLight() ? this.setDark() : this.setLight();
-  }
-  isLight() {
-    return this.getTheme() == this.light;
-  }
-  isDark() {
-    return this.getTheme() == this.dark;
-  }
-
-  getTheme() {
-    return localStorage.getItem(this.key);
-  }
-  setTheme(theme = this.light) {
-    localStorage.setItem(this.key, theme);
-    window.parent.document
-      .getElementById("themecolor")
-      .setAttribute("content", theme == this.dark ? "#739dec" : "#216bf3");
-    document.documentElement.setAttribute("data-theme", theme);
-    window.parent.document.documentElement.setAttribute("data-theme", theme);
-  }
-}
-
-/**
  * Maintains keys for most of the locally stored values, meant for client side only.
  */
 class Keys {
   constructor() {
     this.uiid = "uiid";
     this.email = "email";
+    this.dark = "dark";
+    this.light = "light";
     this.homelogintab = 'homelogintab';
     this.fragment = "fragment";
     this.id = constant.sessionID;
@@ -843,40 +812,43 @@ class Keys {
   }
 }
 
+
 /**
- * Maintains colors of the application and a type method to get specific color for specific Viewtype.
- * @see ViewType().
+ * This class maintains the theme settings for the whole application. Can be used to assign any element the properties of this class,
+ * for theme related settings.
  */
-class Colors {
+class Theme {
   constructor() {
-    this.positive = "var(--positive)";
-    this.negative = "var(--negative)";
-    this.active = "var(--active)";
-    this.warning = "var(--warning)";
-    this.white = "#ffffff";
-    this.black = "#000000";
-    this.transparent = "#00000056";
-    this.base = this.positive;
+    this.dark = key.dark;
+    this.light = key.light;
+    this.key = key.theme;
   }
-  getColorByType(type) {
-    switch (type) {
-      case actionType.positive:
-        return this.positive;
-      case actionType.negative:
-        return this.negative;
-      case actionType.neutral:
-        return this.white;
-      case actionType.active:
-        return this.active;
-      case actionType.nothing: {
-        return this.transparent;
-      }
-      default: {
-        return type == false
-          ? this.getColorByType(actionType.negative)
-          : this.getColorByType(actionType.positive);
-      }
-    }
+  switch() {
+    this.isLight() ? this.setDark() : this.setLight();
+  }
+  setDark() {
+    this.setTheme(this.dark);
+  }
+  setLight() {
+    this.setTheme(this.light);
+  }
+  isLight() {
+    return this.getTheme() == this.light;
+  }
+  isDark() {
+    return this.getTheme() == this.dark;
+  }
+
+  getTheme() {
+    return localStorage.getItem(this.key);
+  }
+  setTheme(theme = this.light) {
+    localStorage.setItem(this.key, theme);
+    window.parent.document
+      .getElementById("themecolor")
+      .setAttribute("content", theme == this.dark ? "#739dec" : "#216bf3");
+    document.documentElement.setAttribute("data-theme", theme);
+    window.parent.document.documentElement.setAttribute("data-theme", theme);
   }
 }
 
@@ -898,6 +870,7 @@ class InputType {
     this.weekday = "weekday";
   }
 }
+
 /**
  * The global general view type scheme applied througout the application.
  * Also implements subsequent methods to provide style scheme (CSS classes) for specific element, according to the viewtype.
@@ -971,6 +944,43 @@ class ViewType {
         return "switch-active";
       default:
         return "switch-positive";
+    }
+  }
+}
+
+/**
+ * Maintains colors of the application and a type method to get specific color for specific Viewtype.
+ * @see ViewType().
+ */
+class Colors {
+  constructor() {
+    this.positive = "var(--positive)";
+    this.negative = "var(--negative)";
+    this.active = "var(--active)";
+    this.warning = "var(--warning)";
+    this.white = "#ffffff";
+    this.black = "#000000";
+    this.transparent = "#00000056";
+    this.base = this.positive;
+  }
+  getColorByType(type) {
+    switch (type) {
+      case actionType.positive:
+        return this.positive;
+      case actionType.negative:
+        return this.negative;
+      case actionType.neutral:
+        return this.white;
+      case actionType.active:
+        return this.active;
+      case actionType.nothing: {
+        return this.transparent;
+      }
+      default: {
+        return type == false
+          ? this.getColorByType(actionType.negative)
+          : this.getColorByType(actionType.positive);
+      }
     }
   }
 }

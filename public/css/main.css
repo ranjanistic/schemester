@@ -1,3 +1,8 @@
+/*
+* The main stylesheet to be included in every view.
+* Documentation: https://github.com/ranjanistic/schemester-web/blob/master/DOCUMENTATION.md#maincsspubliccssmaincss
+*/
+
 :root {
     --positive: #216bf3;
     /* --negative: #c40c0c; */

@@ -2,17 +2,23 @@
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-This repo hosts the source code for [schemester](https://schemester.herokuapp.com). Following are the steps to begin local development.
+This repo hosts the source code for [schemester](https://schemester.herokuapp.com). 
+Jump to [documentation](DOCUMENTATION.md).
 
-> Cloning
-```
+Following are the steps to begin local development.
+
+## Cloning
+
+```bash
 git clone https://github.com/ranjanistic/schemester-web.git
 ```
-```
+
+```bash
 gh repo clone ranjanistic/schemester-web
 ```
-## Web
-### The project stands upon
+
+## Stands upon
+
 - [npm](http://npmjs.com/)
 - [Node.js](https://nodejs.org/)
 - [Express.js](https://expressjs.com/)
@@ -20,50 +26,74 @@ gh repo clone ranjanistic/schemester-web
 - [Vanilla JS](http://vanilla-js.com/)
 - [HTML](https://www.w3schools.com/html/), [CSS](https://www.w3schools.com/css/)
 
-### APIs used
+## APIs used
+
 - [Pusher.js](https://github.com/pusher/pusher-js)
 - [LocalStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage)
 - [SessionStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage)
 - [IndexedDB](https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API)
 
-> Local run
->> Install dependencies
-  ```
+## Local run
+
+- ### Install dependencies
+
+  ```bash
   npm install
   ```
->> Run server
-  ```
+
+- ### Run server
+
+  ```bash
   node server
   ```
-  ```
+
+  ```bash
   nodemon server
   ```
-> [Contributing](CONTRIBUTING.md)
->> Switch branches
+
+## [Contributing](CONTRIBUTING.md)
+
+### Switch branches
+
 - For [administrator](../../tree/admin-feature) sector
-```
-git checkout admin-feature
-```
+
+    ```bash
+    git checkout admin-feature
+    ```
+
 - For [teacher](../../tree/teacher-feature) sector
-```
-git checkout teacher-feature
-```
+
+    ```bash
+    git checkout teacher-feature
+    ```
+
 - For [student](../../tree/student-feature) sector
-```
-git checkout admin-feature
-```
->> On changes done
-```
+
+    ```bash
+    git checkout admin-feature
+    ```
+
+### On changes done
+
+```bash
 git status
 git add .
 ```
->> Before pushing
+
+### Before pushing
 
 Use ```git cz``` instead of commit for better assist, or simply ```git commit``` for generic commit.
 
->> Push to branch-name
-```
+### Push to branch-name
+
+```bash
 git push -u origin/branch-name
 ```
->> See [contribution guidelines](CONTRIBUTING.md) for detailed explanation including local DB, link, and server environment setup.
 
+## Footnotes
+
+- _See [contribution guidelines](CONTRIBUTING.md) for detailed explanation including local DB, link, and server environment setup._
+
+- _See [application documentation](DOCUMENTATION.md) for step by step developement guide, definitions & explanations with snippets of use cases._
+
+- _Apart from documentation, in-code documentation is also provided wherever possible or required._

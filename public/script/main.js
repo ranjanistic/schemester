@@ -1,3 +1,11 @@
+/**
+ * This file maintains the Classes and methods to be used by client side,
+ * defining the boilerplate and repetitive codes, so the at the other scripts do not have to 
+ * be filled with the same, with Classes for custom made elements which provide useful methods
+ * for direct utilization of large code pieces, shortening the code length in other scripts.
+ * https://github.com/ranjanistic/schemester-web/blob/master/DOCUMENTATION.md#mainjspublicscriptmainjs
+ */
+
 //Sets theme of whole application
 if (localStorage.getItem(theme.key)) {
   document.documentElement.setAttribute(
@@ -232,59 +240,6 @@ class Editable{
   }
 }
 
-/** @deprecated as of October 4, 2020 00:20 (IST). Use Switch class instead. */
-class Checkbox {
-  constructor(
-    containerId = String,
-    labelId = String,
-    checkboxId = String,
-    checkViewId = null,
-    type = actionType.positive
-  ) {
-    this.container = getElement(containerId);
-    this.label = getElement(labelId);
-    this.checkbox = getElement(checkboxId);
-    if (checkViewId) {
-      this.checkview = getElement(checkViewId);
-      this.type = type;
-      setClass(this.checkview, actionType.getCheckStyle(this.type));
-    }
-  }
-  setLabel(text = String) {
-    this.label.innerHTML = text;
-  }
-  onCheckChange(checked = _=>{}, unchecked = _=>{}) {
-    this.checkbox.addEventListener(change, (_) => {
-      if (this.checkbox.checked) {
-        checked();
-      } else {
-        unchecked();
-      }
-    });
-  }
-  isChecked() {
-    return this.checkbox.checked;
-  }
-  check() {
-    this.checkbox.checked = true;
-  }
-  uncheck() {
-    this.checkbox.checked = false;
-  }
-  checked(ischecked = true) {
-    this.checkbox.checked = ischecked;
-  }
-  show() {
-    show(this.container);
-  }
-  hide() {
-    hide(this.container);
-  }
-  visible(isvisible = true) {
-    visibilityOf(this.container, isvisible);
-  }
-}
-
 class Switch{
   constructor(switchID,switchTextID,switchViewID,switchContainerID,viewType = bodyType.positive){
     this.switch = getElement(switchID);
@@ -380,7 +335,7 @@ class Snackbar {
     hide(this.bar);
   }
 
-  createSnack(text, type) {
+  createSnack(text, type = bodyType.positive) {
     this.text.innerHTML = text;
     setDefaultBackground(this.bar, type);
   }
@@ -783,14 +738,14 @@ class Dialog extends DialogID {
   getDialogButton(index) {
     return this.dialogButtons[index];
   }
-  onChipClick(functions = Array) {
+  onChipClick(functions = []) {
     this.optionsRadio.forEach((radio, index) => {
       radio.onclick = () => {
         functions[index]();
       };
     });
   }
-  onButtonClick(functions = Array) {
+  onButtonClick(functions = []) {
     this.dialogButtons.forEach((button, index) => {
       button.onclick = () => {
         if (this.inputField) {
