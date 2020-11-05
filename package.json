@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "commit": "cz"
   },
   "author": "Priyanshu Ranjan",
   "license": "ISC",
@@ -28,8 +29,15 @@
     "pusher": "^4.0.0"
   },
   "devDependencies": {
+    "commitizen": "^4.2.2",
+    "cz-conventional-changelog": "^3.3.0",
     "es6-promisify": "^6.1.1",
     "nodemon": "^2.0.6",
     "workbox-cli": "^3.5.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }
