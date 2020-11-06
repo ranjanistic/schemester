@@ -41,11 +41,11 @@ gh repo clone ranjanistic/schemester-web
   npm install
   ```
 
-### Generate locahost certificate
+### Generate localhost certificate
 
 The session is only created on https (secured) protocol, therefore, before you proceed to steps to run server (for first time setup only), go through the following steps.
 
-#### Setting locahost on https
+#### Setting localhost on https
 
 First, refer to & follow the [mkcert installation steps](https://github.com/FiloSottile/mkcert#installation) to enable ```mkcert``` command on your system.
 
@@ -91,7 +91,7 @@ Connected to schemesterDB
 listening on 3000
 ```
 
-instead of the previous log (with https), then you must haven't followed [these crucial steps](#setting-locahost-on-https).
+instead of the previous log (with https), then you must haven't followed [these crucial steps](#setting-localhost-on-https).
 
 After ensuring that ```listening on 3000 (https)``` is being logged on node console, you can proceed towards contribution.
 
