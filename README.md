@@ -121,7 +121,7 @@ They replace the conventional ```git commit``` command, for better commit messag
 ### Push to branch-name
 
 ```bash
-git push -u origin/branch-name
+git push -u origin branch-name
 ```
 
 ## Footnotes
