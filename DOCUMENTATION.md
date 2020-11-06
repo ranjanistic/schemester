@@ -16,7 +16,7 @@ npm install
 npm run devserver
 ```
 
-This should start your local server on https, and following log must be visible (if [these steps](README.md#generate-locahost-certificate) were followed for the first time).
+This should start your local server on https, and following log must be visible (if [these steps](README.md#generate-localhost-certificate) were followed for the first time).
 
 ```bash
 Connected to schemesterDB
