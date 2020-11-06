@@ -13,14 +13,14 @@ git clone https://github.com/ranjanistic/schemester-web.git
 git branch branch-name  #name your own branch if you don't want to work on any existing branches
 git checkout branch-name
 npm install
-nodemon server
+npm run devserver
 ```
 
-This should start your local server, and following log must be visible.
+This should start your local server on https, and following log must be visible (if [these steps](README.md#generate-locahost-certificate) were followed for the first time).
 
 ```bash
 Connected to schemesterDB
-listening on 3000
+listening on 3000 (https)
 ```
 
 ## Familiarization

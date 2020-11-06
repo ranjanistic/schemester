@@ -5,8 +5,8 @@ const { ObjectId } = require("mongodb"),
     validType,
     stringIsValid,
   } = require("../../public/script/codes"),
-  jwt = require("../../node_modules/jsonwebtoken"),
-  bcrypt = require("../../node_modules/bcryptjs"),
+  jwt = require("jsonwebtoken"),
+  bcrypt = require("bcryptjs"),
   Institute = require("../../config/db").getInstitute(),
   Admin = require("../../config/db").getAdmin(),
   time = require("./timer"),
@@ -25,7 +25,7 @@ class Session {
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 365 * 86400; //days*seconds/day
   }
-  verify = async (request, secret) => {
+  async verify (request, secret){
     const token = request.signedCookies[this.sessionKey];
     try {
       if (!token) return code.event(code.auth.SESSION_INVALID);

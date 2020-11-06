@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "An autonomous schedule management system primarily target on educational niche.",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "node server.js",
-    "commit": "cz"
+    "devserver": "nodemon server.js",
+    "commit": "git status && git add . && git status && git cz",
+    "sendmail": "node tests/sendmail.js",
+    "gentoken": "node tests/keygen.js"
   },
   "author": "Priyanshu Ranjan",
   "license": "ISC",
@@ -21,10 +25,8 @@
     "express-session": "^1.17.1",
     "express-validator": "^6.6.0",
     "fs": "0.0.1-security",
-    "heroku": "^7.42.13",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.5.9",
-    "nodejs-nodemailer-outlook": "^1.2.3",
     "nodemailer": "^6.4.10",
     "pusher": "^4.0.0"
   },
@@ -32,8 +34,8 @@
     "commitizen": "^4.2.2",
     "cz-conventional-changelog": "^3.3.0",
     "es6-promisify": "^6.1.1",
-    "nodemon": "^2.0.6",
-    "workbox-cli": "^3.5.0"
+    "mocha": "^8.2.1",
+    "nodemon": "^2.0.6"
   },
   "config": {
     "commitizen": {

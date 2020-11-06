@@ -1,7 +1,8 @@
 const nodemailer = require("nodemailer"),
     ejs = require("ejs"),
     path = require("path"),
-    config = require("../../config/config.json"),
+    {email,mail,ssh} = require("../../config/config.json"),
+    jwt = require("jsonwebtoken"),
     { code, client, clog } = require("../../public/script/codes");
 
 class Mailer {
@@ -33,17 +34,25 @@ class Mailer {
 }
 
 async function sendEmail(to, subject, html) {
-  const doc = nodemailer.createTransport(config.mailconfig).sendMail({
-    from: config.email,
+  const doc = nodemailer.createTransport({
+    host: mail.host,
+    secureConnection: mail.secureConnection,
+    port: mail.port,
+    auth: {
+      user: mail.auth.user,
+      pass: jwt.verify(mail.auth.pass,ssh)
+    },
+    starttls: mail.starttls
+  }).sendMail({
+    from: email,
     to: to,
     subject: subject,
     html: html,
   }).then(info=>{
     return code.event(info.accepted.includes(to)?code.mail.MAIL_SENT:code.mail.ERROR_MAIL_NOTSENT);
   }).catch(error=>{
-    return code.event(code.mail.ERROR_MAIL_NOTSENT);
+    return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT,error);
   });
-  return doc;
 }
 
 module.exports = new Mailer();

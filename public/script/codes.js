@@ -25,15 +25,6 @@ class Codes {
         this.UIID_AVAILABLE = "server/uiid-available";
       }
     }
-
-    class Database {
-      constructor() {
-        this.DBNAME = "schemesterDB";
-        this.ADMIN_COLLECTION = "0administrators";
-        this.INSTITUTE_COLLECTION = "1institutions";
-        this.SESSION_COLLECTION = "2sessions";
-      }
-    }
     class Clientcodes {
       constructor() {
         this.NETWORK_FAILURE = "client/network-error";
@@ -240,7 +231,6 @@ class Codes {
     this.auth = new Authcodes();
     this.client = new Clientcodes();
     this.server = new Servercodes();
-    this.db = new Database();
     this.mail = new Mailcodes();
     this.action = new ActionCodes();
     this.inst = new InstitutionCodes();

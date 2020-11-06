@@ -2,7 +2,7 @@
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-This repo hosts the source code for [schemester](https://schemester.herokuapp.com). 
+This repo hosts the source code for [schemester](https://schemester.herokuapp.com).
 Jump to [documentation](DOCUMENTATION.md).
 
 Following are the steps to begin local development.
@@ -35,54 +35,88 @@ gh repo clone ranjanistic/schemester-web
 
 ## Local run
 
-- ### Install dependencies
+### Install dependencies
 
   ```bash
   npm install
   ```
 
-- ### Run server
+### Generate locahost certificate
+
+The session is only created on https (secured) protocol, therefore, before you proceed to steps to run server (for first time setup only), go through the following steps.
+
+#### Setting locahost on https
+
+First, refer to & follow the [mkcert installation steps](https://github.com/FiloSottile/mkcert#installation) to enable ```mkcert``` command on your system.
+
+After that, in the project root path,
+
+```bash
+mkcert -install
+```
+
+This will create local CA certificate on your system trust store. Then,
+
+```bash
+mkcert localhost
+```
+
+This will create ```localhost.pem``` &amp; ```localhost-key.pem``` files locally in project root. Now the local server will use these files to run over https.
+
+### Run server
 
   ```bash
-  node server
+  npm run devserver
   ```
+
+Alternatively,
 
   ```bash
   nodemon server
   ```
 
-## [Contributing](CONTRIBUTING.md)
+Otherwise conventionally,```npm start``` or ```node server``` would also start the server, but changes won't reload automatically.
+
+Above commands must log -
+
+```bash
+Connected to schemesterDB
+listening on 3000 (https)
+```
+
+Or if you're seeing -
+
+```bash
+Connected to schemesterDB
+listening on 3000
+```
+
+instead of the previous log (with https), then you must haven't followed [these crucial steps](#setting-locahost-on-https).
+
+After ensuring that ```listening on 3000 (https)``` is being logged on node console, you can proceed towards contribution.
+
+## Contributing
+
+See detailed contribution guide [here](CONTRIBUTING.md).
 
 ### Switch branches
 
-- For [administrator](../../tree/admin-feature) sector
-
-    ```bash
-    git checkout admin-feature
-    ```
-
-- For [teacher](../../tree/teacher-feature) sector
-
-    ```bash
-    git checkout teacher-feature
-    ```
-
-- For [student](../../tree/student-feature) sector
-
-    ```bash
-    git checkout admin-feature
-    ```
+  The master branch is the production branch linked to the cloud hosting server, therefore it shouldn't be used to push non-crucial-to-the-moment commits, as cloud server re-builds the application on each commit, which can potentially disrupt the live webapplication for users. See CONTRIBUTING.md for details.
 
 ### On changes done
 
 ```bash
-git status
-git add .
+npm run commit
 ```
 
-### Before pushing
+Alternatively,
 
-Use ```git cz``` instead of commit for better assist, or simply ```git commit``` for generic commit.
+```bash
+git add .
+git cz
+```
+
+They replace the conventional ```git commit``` command, for better commit messages.
 
 ### Push to branch-name
 
