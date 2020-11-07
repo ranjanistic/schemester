@@ -2,7 +2,7 @@
 class IDB{
     constructor(version = 1){
         this.version = version;
-        this.dbName = code.db.DBNAME;
+        this.dbName = "schemesterDB";
         this.keypath = new KeyPath();
         this.txmode  = new TXMode();
         this.objStore = new ObjectStore();

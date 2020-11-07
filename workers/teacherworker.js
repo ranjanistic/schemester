@@ -1,4 +1,5 @@
-const Institute = require("../config/db").getInstitute(),
+const Admin = require("../config/db").getAdmin(),
+Institute = require("../config/db").getInstitute(),
   fs = require("fs"),
   path = require("path"),
   pusher = require("pusher"),
@@ -15,6 +16,7 @@ const Institute = require("../config/db").getInstitute(),
 class TeacherWorker {
   constructor() {
     this.self = new Self();
+    this.institute = new Institution();
     this.schedule = new Schedule();
     this.classroom = new Classroom();
     this.pseudo = new PseudoUsers();
@@ -413,6 +415,26 @@ class Self {
       }break;
     }
   };
+}
+
+class Institution{
+  constructor(){
+
+  }
+  async getDefaultsWithAdminPrefs(user){
+    const inst = await Institute.findOne({uiid:user.uiid},{projection:{"default":1}});
+    await Promise.all(
+      inst.default.admin.map((admin,a)=>{
+        return new Promise(async(resolve)=>{
+          const useradmin = await Admin.findOne({"email":admin.email});
+          inst.default.admin[a]['phonevisible'] = useradmin.prefs.showphonetoteacher
+          inst.default.admin[a]['emailvisible'] = useradmin.prefs.showemailtoteacher
+          resolve(inst);
+        })
+      })
+    );
+    return inst.default;
+  }
 }
 
 class Schedule {

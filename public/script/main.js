@@ -15,12 +15,11 @@ if (localStorage.getItem(theme.key)) {
 }
 
 class Button{
-  constructor(buttonid,actiontype=actionType.positive){
+  constructor(buttonid){
     this.button = getElement(buttonid);
-    setClassNames(this.button,actionType.getButtonStyle(actiontype));
   }
   setType(actiontype = actionType.positive){
-    setClassNames(this.button,actionType.getButtonStyle(actiontype));
+    appendClass(this.button,actionType.getButtonStyle(actiontype));
   }
   onclick(action=_=>{}){
     this.action = action;
@@ -294,6 +293,14 @@ class Switch{
   }
   visible(isvisible = true) {
     visibilityOf(this.switchContainer, isvisible);
+  }
+}
+
+class ThemeSwitch{
+  constructor(switchID){
+    this.darkmode = new Switch(switchID);
+    this.darkmode.turn(theme.isDark());
+    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
   }
 }
 
@@ -696,8 +703,10 @@ class Dialog extends DialogID {
   loader(show = true,onloadAction=_=>{}) {
     visibilityOf(this.loading, show);
     opacityOf(this.box,show?0.5:1);
-    for (var k = 0; k < this.dialogButtons.length; k++) {
-      visibilityOf(this.dialogButtons[k], !show);
+    if(this.dialogButtons){
+      for (var k = 0; k < this.dialogButtons.length; k++) {
+        visibilityOf(this.dialogButtons[k], !show);
+      }
     }
     if(this.inputField)
       this.inputField.forEach((field,_)=>{
@@ -1708,7 +1717,8 @@ const opacityOfAll = (elements = [], value = 1,index = null) => index!=null? opa
  * @param {HTMLElement} element The element whose visibility is to be toggled.
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
  */
-const visibilityOf = (element = new HTMLElement(), visible = true) =>{
+const visibilityOf = (element, visible = true) =>{
+  if(!element) return;
   element.hidden = !visible;
   element.style.display = visible?constant.show:constant.hide;
 }

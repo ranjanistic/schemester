@@ -5,9 +5,7 @@
 class Schedule{
     constructor(){
         this.data = new ReceiveData();
-        this.darkmode = new Switch('darkmode');
-        this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        new ThemeSwitch('darkmode');
         sessionStorage.removeItem('switchclash');
         this.back = getElement("back");
         this.back.onclick=_=>{window.history.back()}

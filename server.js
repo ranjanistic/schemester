@@ -61,7 +61,10 @@ mongo.connectToDB(( err )=>{
     const key = fs.readFileSync('./localhost-key.pem');
     const cert = fs.readFileSync('./localhost.pem');
     https.createServer({key: key, cert: cert }, server).listen(server_port, server_host, ()=>{ clog(`listening on ${server_port} (https)`)})
-  }catch{ //for cloud server
-    server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`)})
+  }catch(e){ //for cloud server
+    server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`);
+      if(server_port == 3000 && e.errno == -4058)
+        clog("WARNING: Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
+    })
   }
 });

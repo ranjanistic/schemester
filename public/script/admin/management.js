@@ -47,7 +47,8 @@ class Management {
     this.back = getElement("backFromSettings");
     this.contactDevs = getElement("contactDevelopers");
     this.logout = getElement("logoutAdmin");
-    this.admin = new Admin();
+    this.data = new ReceiveData();
+    this.admin = new Admin(this.data);
     this.inst = new Institution();
     this.schedule = new Schedule();
     this.security = new Security();
@@ -107,7 +108,7 @@ class Management {
 }
 
 class Admin {
-  constructor() {
+  constructor(data) {
     this.name = new Editable(
       "adminName",
       "adminnameeditor",
@@ -287,6 +288,72 @@ class Admin {
       }
     }
     new Preferences();
+    this.inviteadmin = new Button("inviteadmin");
+    this.inviteadmin.onclick(_=>{
+      const adminlink = new Dialog();
+      adminlink.transparent();
+      adminlink.loader();
+      postJsonData(post.admin.manage, {
+        type: "invitation",
+        action: "create",
+        target: client.admin,
+      }).then(response=>{
+        if (
+          response.event == code.invite.LINK_EXISTS ||
+          response.event == code.invite.LINK_CREATED
+        ) {
+          let linkdialog = new Dialog();
+          linkdialog.setDisplay(
+            "Admin Invitation Link",
+            `<center>
+              <a href="${response.link}" target="_blank" rel="noreferrer">${response.link}</a>
+              <br/>This Link will automatically expire on <b>${getProperDate(String(response.exp))}</b><br/>
+            </center>`,true
+          );
+          new QRCode(getElement(linkdialog.imagedivId),response.link);
+          linkdialog.createActions(
+            ["Disable Link", "Copy", "Done"],
+            [actionType.negative, actionType.positive, actionType.neutral]
+          );
+          linkdialog.onButtonClick(
+            [
+              (_) => {
+                linkdialog.loader();
+                revokeLink(client.admin);
+              },
+              (_) => {
+                navigator.clipboard
+                  .writeText(response.link)
+                  .then((_) => {
+                    snackBar("Link copied to clipboard.");
+                  })
+                  .catch((err) => {
+                    snackBar(
+                      "Failed to copy, please do it manually.",
+                      null,
+                      false
+                    );
+                  });
+              },
+              (_) => {
+                linkdialog.hide();
+              }
+            ]
+          );
+          linkdialog.show();
+        }
+        switch (response.event) {
+          case code.invite.LINK_EXISTS:
+            return snackBar("This link already exists and can be shared.");
+          case code.invite.LINK_CREATED:
+            return snackBar("Share this with the administrator.");
+          case code.invite.LINK_CREATION_FAILED:
+            return snackBar(`Unable to generate link:${response.msg}`, "Report");
+          default:
+            return snackBar(`Error:${response.event}:${response.msg}`, "Report");
+        }
+      })
+    })
   }
 }
 
@@ -411,17 +478,7 @@ class Institution {
       constructor() {
         this.allowteacherschedule = new Switch("teachereditschedule");
         this.scheduleActive = new Switch("scheduleactive");
-        this.darkmode = new Switch("darkmode");
-        this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(
-          (_) => {
-            theme.setDark();
-          },
-          (_) => {
-            theme.setLight();
-          }
-        );
-
+        new ThemeSwitch('darkmode');
         this.allowteacherschedule.onTurnChange(
           (_) => {
             postJsonData(post.admin.manage, {
@@ -1447,6 +1504,20 @@ class Users {
     try {
       this.classes = new Classes();
     } catch {}
+  }
+}
+
+class ReceiveData{
+  constructor(){
+    this.totalotheradmins = Number(getElement('totalotheradmins').innerHTML)
+    this.otheradmins = [];
+    for(let o =0;o<this.totalotheradmins;o++){
+      this.otheradmins.push({
+        username:getElement(`otheradminname${o}`),
+        email:getElement(`otheradminemail${o}`),
+        phone:getElement(`otheradminphone${o}`)
+      });
+    }
   }
 }
 

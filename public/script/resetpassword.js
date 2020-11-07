@@ -1,6 +1,7 @@
 class ResetPassword{
     constructor(){
         this.data = new ReceiveData();
+        new ThemeSwitch('darkmode');
         if(this.data.expired){
             return new Expired();
         }

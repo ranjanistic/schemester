@@ -23,8 +23,8 @@ const Admin = require("../config/db").getAdmin(),
 
 class AdminWorker {
   constructor() {
+    this.inst = new Institution();
     this.today = new Today();
-
     this.self = new Self();
     this.default = new Default();
     this.users = new Users();
@@ -356,17 +356,21 @@ class Self {
 class Default {
   constructor() {
     const object = "default";
-    class Admin {
+    class Admins {
       constructor() {
         this.object = "admin";
         this.path = `${object}.${this.object}`;
-        this.namepath = `${this.path}.username`;
-        this.emailpath = `${this.path}.email`;
-        this.phonepath = `${this.path}.phone`;
+        this.username = "username";
+        this.email = "email";
+        this.phone = "phone";
+        this.namepath = `${this.path}.$.${this.username}`;
+        this.emailpath = `${this.path}.$.${this.email}`;
+        this.phonepath = `${this.path}.$.${this.phone}`;
       }
       async setEmail(user, body) {
+        const admin = await Admin.findOne({ _id: ObjectId(user.id) });
         const newinst = await Institute.findOneAndUpdate(
-          { uiid: user.uiid },
+          { uiid: user.uiid,[this.path]:{$elemMatch:{[this.email]:admin.id}}},
           {
             $set: {
               [this.emailpath]: body.newemail,
@@ -376,8 +380,9 @@ class Default {
         return code.event(newinst ? code.OK : code.NO);
       }
       async setName(user, body) {
+        const admin = await Admin.findOne({ _id: ObjectId(user.id) });
         const newinst = await Institute.findOneAndUpdate(
-          { uiid: user.uiid },
+          { uiid: user.uiid,[this.path]:{$elemMatch:{[this.email]:admin.id}}},
           {
             $set: {
               [this.namepath]: body.newname,
@@ -387,8 +392,9 @@ class Default {
         return code.event(newinst ? code.OK : code.NO);
       }
       async setPhone(user, body) {
+        const admin = await Admin.findOne({ _id: ObjectId(user.id) });
         const newinst = await Institute.findOneAndUpdate(
-          { uiid: user.uiid },
+          { uiid: user.uiid,[this.path]:{$elemMatch:{[this.email]:admin.id}}},
           {
             $set: {
               [this.phonepath]: body.newphone,
@@ -526,7 +532,7 @@ class Default {
       }
       async getInfo() {}
     }
-    this.admin = new Admin();
+    this.admin = new Admins();
     this.institute = new Institution();
     this.timings = new Timing();
   }
@@ -651,6 +657,11 @@ class Default {
           },
           invite: {
             teacher: {
+              active: false,
+              createdAt: 0,
+              expiresAt: 0,
+            },
+            admin: {
               active: false,
               createdAt: 0,
               expiresAt: 0,
@@ -2096,6 +2107,64 @@ class Schedule {
   };
 }
 
+class Institution{
+  constructor(){
+    this.account = new Self().account;
+    this.uid = "_id";
+    this.default = "default";
+  }
+  async joinInstituteAsAdmin(instID,admin){
+    const doc = await Institute.findOneAndUpdate({[this.uid]:ObjectId(instID)},{
+      $push:{
+        [`${this.default}.admin`]:{
+          username:admin.username,
+          email:admin.email,
+          phone:admin.phone?admin.phone:''
+        }
+      }
+    });
+    return doc.value?true:false;
+  }
+
+  async isAdminOfInstitute(uiid,email){
+    const emails = await this.getAdminsOfInstitute(uiid);
+    return emails.includes(email);
+  }
+
+  async getAdminsOfInstitute(uiid,emailonly = true){
+    const inst = await Institute.findOne({uiid:uiid},{projection:{"default.admin":1}});
+    if(!emailonly)
+      return inst.default.admin
+    let emails = [];
+    inst.default.admin.forEach((admin)=>{
+      emails.push(admin.email);
+    });
+    return emails;
+  }
+
+  async leaveInstitute(user){
+    const admin = await this.account.getAccount(user);
+    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $pull:{
+        "default.admin":{email:admin.id}
+      }
+    });
+    return code.event(doc.value?code.OK:code.NO);
+  }
+
+  async removeAdminFromInstitute(user,adminemail){
+    const admin = await this.account.getAccount(user);
+    if(admin.id == adminemail) return false;
+    const doc = await Institute.findOneAndUpdate({uiid:user.uiid},{
+      $pull:{
+        "default.admin":{email:adminemail}
+      }
+    });
+    return code.event(doc.value?code.OK:code.NO);
+  }
+}
+
+
 class Classroom {
   constructor() {
     this.classpath = "users.classes";
@@ -2188,13 +2257,42 @@ class Invite {
       };
     }
     this.teacher = new TeacherAction();
+    class AdminAction {
+      constructor() {}
+      inviteLinkCreation = async (user, inst, body) => {
+        const result = await invite.generateLink(
+          body.target,
+          {
+            uid: user.id,
+            instID: inst._id,
+          },
+          body.daysvalid
+        );
+        return result;
+      };
+      inviteLinkDisable = async (inst, body) => {
+        return await invite.disableInvitation(body.target, {
+          instID: inst._id,
+        });
+      };
+    }
+    this.admin = new AdminAction();
   }
   handleInvitation = async (user, inst, body) => {
-    switch (body.action) {
-      case "create":
-        return await this.teacher.inviteLinkCreation(user, inst, body);
-      case "disable":
-        return await this.teacher.inviteLinkDisable(inst, body);
+    if(body.target == client.teacher){
+      switch (body.action) {
+        case "create":
+          return await this.teacher.inviteLinkCreation(user, inst, body);
+        case "disable":
+          return await this.teacher.inviteLinkDisable(inst, body);
+      }
+    } else if(body.target==client.admin){
+      switch (body.action) {
+        case "create":
+          return await this.admin.inviteLinkCreation(user, inst, body);
+        case "disable":
+          return await this.admin.inviteLinkDisable(inst, body);
+      }
     }
   };
   async getInvitation(user) {

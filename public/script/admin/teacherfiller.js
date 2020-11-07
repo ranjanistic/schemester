@@ -3,16 +3,7 @@ class TeacherFiller {
   constructor() {
     sessionStorage.clear();
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-    this.darkmode = new Switch("darkmode");
-    this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(
-      (_) => {
-        theme.setDark();
-      },
-      (_) => {
-        theme.setLight();
-      }
-    );
+    new ThemeSwitch('darkmode');
     this.data = new ReceiveData();
     this.view = getElement("workbox");
     this.back = getElement("back");

@@ -93,14 +93,18 @@
                         <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.institute.phone %>')"><%= defaults.institute.phone %></span>
                     </div>
                     <div class="fmt-row  tab-container b-neutral">
-                        <div class="caption">Administrator</div>
-                        <div class="group-text questrial"><%= defaults.admin.username %></div>
-                        <% if(adminemailvisible) {%>
-                            <span class="group-text questrial positive pointer" onclick="mailTo('<%= defaults.admin.email %>')"><%= defaults.admin.email %></span>
-                        <% } %>
-                        <% if(adminphonevisible) {%>
-                        <br/><span class="group-text questrial active pointer" onclick="callTo('<%= defaults.admin.phone %>')"><%= defaults.admin.phone %></span>
-                        <% } %>
+                        <div class="caption">Admins</div>
+                        <% defaults.admin.forEach(admin => { %>
+                            <div class="fmt-row">
+                            <span class="group-text questrial"><%= admin.username %></span>
+                            <% if(admin.emailvisible) {%>
+                                <a class="fmt-right" onclick="mailTo('<%= admin.email %>')"><img src="/graphic/elements/voicecallicon.svg" width="30"></a>
+                            <% } %>
+                            <% if(admin.phonevisible) {%>
+                                <a class="fmt-right" onclick="callTo('<%= admin.phone %>')"><img src="/graphic/elements/voicecallicon.svg" width="30"></a>
+                            <% } %>
+                            </div>
+                        <% }) %>
                     </div>
                     <% 
                         function getDaysArray(indices){

@@ -4,6 +4,10 @@
   "description": "An autonomous schedule management system primarily target on educational niche.",
   "main": "server.js",
   "type": "commonjs",
+  "maintainers": ["ranjanistic"],
+  "homepage": "https://schemester.herokuapp.com",
+  "readme": "README.md",
+  "private":true,
   "scripts": {
     "test": "mocha",
     "start": "node server.js",

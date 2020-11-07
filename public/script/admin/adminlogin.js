@@ -3,9 +3,7 @@ class AdminLogin{
   constructor(){
     value.backbluecovered = true;
     this.view = getElement("workbox");
-    this.darkmode = new Switch('darkmode');
-    this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+    new ThemeSwitch('darkmode');
     
     this.emailField = new TextInput("email_fieldset","adminemail","emailError",validType.email);
     this.passField = new TextInput("password_fieldset","adminpassword","passError",validType.nonempty);

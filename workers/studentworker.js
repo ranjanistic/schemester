@@ -1,4 +1,5 @@
-const Institute = require("../config/db").getInstitute(),
+const Admin = require("../config/db").getAdmin(),
+Institute = require("../config/db").getInstitute(),
   {code,client,view,clog} = require("../public/script/codes"),
   verify = require("./common/verification"),
   bcrypt = require("bcryptjs"),
@@ -10,6 +11,7 @@ const Institute = require("../config/db").getInstitute(),
 class StudentWorker {
   constructor() {
     this.self = new Self();
+    this.institute = new Institution();
     this.schedule = new Schedule();
     this.classes = new Classroom();
     this.comms = new Comms();
@@ -505,6 +507,27 @@ class Self {
     }
   };
 }
+
+class Institution{
+  constructor(){
+
+  }
+  async getDefaultsWithAdminPrefs(user){
+    const inst = await Institute.findOne({uiid:user.uiid},{projection:{"default":1}});
+    await Promise.all(
+      inst.default.admin.map((admin,a)=>{
+        return new Promise(async(resolve)=>{
+          const useradmin = await Admin.findOne({"email":admin.email});
+          inst.default.admin[a]['phonevisible'] = useradmin.prefs.showphonetostudent
+          inst.default.admin[a]['emailvisible'] = useradmin.prefs.showemailtostudent
+          resolve(inst);
+        })
+      })
+    );
+    return inst.default;
+  }
+}
+
 
 class Schedule {
   constructor() {

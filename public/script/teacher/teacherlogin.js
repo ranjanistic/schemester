@@ -9,9 +9,7 @@ class TeacherLogin{
     this.logInLoader = getElement("loginLoader");
     this.proceed = getElement("proceed");
     this.loader(false);
-    this.darkmode = new Switch('darkmode');
-    this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+    new ThemeSwitch('darkmode');
     new UIID();
   }
   

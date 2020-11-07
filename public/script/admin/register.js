@@ -8,16 +8,7 @@ class Register {
     this.settings = getElement("settingsButton");
     this.logout = getElement("logoutAdminButton");
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-    this.darkmode = new Switch("darkmode");
-    this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(
-      (_) => {
-        theme.setDark();
-      },
-      (_) => {
-        theme.setLight();
-      }
-    );
+    new ThemeSwitch('darkmode');
     this.finalize = getElement("registrationComplete");
     this.stage1Loader = getElement("stage1load");
     this.stage2Loader = getElement("stage2load");
@@ -643,11 +634,11 @@ class Stage2 {
             });
             const data = inst?{
               default: {
-                admin: {
+                admin: [{
                   username: sessionStorage.getItem("adname"),
                   email: sessionStorage.getItem("ademail"),
                   phone: sessionStorage.getItem("adphone"),
-                },
+                }],
                 institute: {
                   instituteName: sessionStorage.getItem("instname"),
                   email: sessionStorage.getItem("instemail"),

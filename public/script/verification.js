@@ -1,5 +1,6 @@
 class Verification {
   constructor() {
+    new ThemeSwitch('darkmode');
     this.view = getElement("workbox");
     value.backbluecovered = true;
     this.data = new ReceiveData();

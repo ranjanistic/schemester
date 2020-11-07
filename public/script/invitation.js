@@ -57,7 +57,6 @@ class Active {
       });
       return;
     }
-
     this.load();
     let posturl,postaction;
     if(data.target == client.teacher){
@@ -66,15 +65,17 @@ class Active {
     }else if(data.target == client.student){
       posturl = post.student.auth;
       postaction = post.student.action.signup;
+    } else if(data.target == client.admin){
+      posturl = post.admin.auth;
+      postaction = post.admin.action.signup;
     }
     postJsonData(posturl, {
       action: postaction,
       username: this.nameField.getInput().trim(),
       email: this.emailField.getInput().trim(),
       password: this.passField.getInput(),
-      pseudo:!data.personal,
       uiid: data.uiid,
-      classname:data.classname
+      isinvite:true
     }).then((response) => {
         if (response.event == code.auth.ACCOUNT_CREATED) {
           if (data.target == client.teacher) {
@@ -87,6 +88,11 @@ class Active {
               u: response.user.uid,
               target: locate.student.target.dash,
             });
+          } else if(data.target == client.admin){
+            relocate(locate.admin.session, {
+              u: response.user.uid,
+              target: locate.admin.target.dash,
+            });
           }
           return;
         } else if(response.event == code.OK){
@@ -97,7 +103,19 @@ class Active {
         }
         this.load(false);
         switch (response.event) {
+          case code.invite.LINK_INVALID:{
+            return window.parent.location.reload();
+          }
           case code.auth.USER_EXIST:{
+            if(data.target == client.admin){
+              this.emailField.showError("Already an admin");
+              return snackBar(`This account already has access to ${data.instName}.`,'Sign In',true,_=>{
+                refer(locate.admin.login,{
+                  email:this.emailField.getInput(),
+                  uiid:data.uiid
+                });
+              })
+            }
             snackBar('Try signing in?','Sign In',true,_=>{
               refer(data.target==client.teacher?locate.teacher.login:locate.student.login,{
                 email:this.emailField.getInput()
@@ -105,17 +123,15 @@ class Active {
             })
             return this.emailField.showError("Account already exists");
           }
-          case code.auth.WRONG_PASSWORD:{
-            if(data.target==client.student){
-              this.passField.showError(`${getButton('forgotpass','Forgot',actionType.active)}`);
-              return getElement('forgotpass').onclick=_=>{
-                snackBar('Please attempt a login with your existing classroom to proceed for your password reset.','Login',true,_=>{
-                  referTab(locate.student.login,{
-                    email:this.emailField.getInput(),
-                    uiid:data.uiid,
-                  });
-                })
-              }
+          case code.auth.WRONG_PASSWORD:{            
+            this.passField.showError(`${getButton('forgotpass','Forgot',actionType.active)}`);
+            return getElement('forgotpass').onclick=_=>{
+              snackBar(`Please attempt a login with your existing ${data.target==client.student?'classroom':'institution'} to proceed for your password reset.`,'Login',true,_=>{
+                referTab(data.target==client.admin?locate.admin.login:locate.student.login,{
+                  email:this.emailField.getInput(),
+                  uiid:data.target==client.student?data.uiid:constant.nothing,
+                });
+              })
             }
           }
           default: {
@@ -188,6 +204,7 @@ class ReceivedInfo {
 class Invitation {
   constructor() {
     this.data = new ReceivedInfo();
+    new ThemeSwitch('darkmode');
     try {
       new Expired(this.data);
     } catch {

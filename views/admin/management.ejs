@@ -113,7 +113,7 @@
                         <!--account settings box-->
                         <div class="fmt-row sub-container fmt-animate-opacity" id="accountSettingsBox">
                             <div class="fmt-col fmt-half">
-                                <span class="sub-heading">Admin</span>
+                                <span class="sub-heading">You</span>
                                 <div class="positive" id="adminName">
                                     <span class="caption">Admin name</span><br/>
                                     <span id="adminnameview"><%= adata.username %></span>
@@ -130,7 +130,7 @@
                                 </div>
 
                                 <div class="caption">Email address</div>
-                                <div class="active" id="adminEmailAddress"><%= adata.id %></div>
+                                <div class="active break" id="adminEmailAddress"><%= adata.id %></div>
 
                                 <div class="positive" id="adminPhoneNumber">
                                     <span class="caption">Contact Number</span><br/>
@@ -140,7 +140,7 @@
                                 <div id="adminphoneeditor">
                                     <fieldset style="margin:0" class="text-field questrial" id="adminphonefield">
                                         <legend class="field-caption">Your phone</legend>
-                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.admin.phone %>" placeholder="Available to teachers of <%= inst.default.institute.instituteName %>" type="text" id="adminphoneinput" name="adminname" >
+                                        <input class="text-input" style="font-size:18px" required value="<%= inst.default.admin.phone %>" placeholder="For security reasons." type="text" id="adminphoneinput" name="adminname" >
                                         <span class="fmt-right error-caption"  id="adminphoneerror"></span>
                                     </fieldset>
                                     <button class="positive-button caption" id="saveadminphone">Save</button>
@@ -150,53 +150,71 @@
                                 <div id="adminCreationTime"><%= adata.createdAt %></div>
                             </div>
                             <div class="fmt-col fmt-half">
-                                <span class="sub-heading">Settings</span>
+                                <span class="group-heading">Visibility</span>
                                 <div class="fmt-row switch-view caption" id="phonevisibilitycontainer">
-                                    Show phone number to
-                                    <div>
+                                    <span class="fmt-left">Phone Number</span>
                                     <span class="fmt-left switch-text active" style="padding:0 4px">Teachers</span>
                                     <label class="fmt-left switch-container">
-                                      <input type="checkbox" id="teacherphonevcheck"
+                                    <input type="checkbox" id="teacherphonevcheck"
                                         <% if(adata.prefs.showphonetoteacher){%>
                                             checked
                                         <% } %>
-                                      >
-                                      <span class="switch-active" id="teacherphonevcheckview"></span>
+                                    >
+                                    <span class="switch-active" id="teacherphonevcheckview"></span>
                                     </label>                                    
                                     <span class="fmt-left switch-text warning " style="padding:0 4px">Students</span>
                                     <label class="fmt-left switch-container">
-                                      <input type="checkbox" id="studentphonevcheck"
+                                    <input type="checkbox" id="studentphonevcheck"
                                         <% if(adata.prefs.showphonetostudent){%>
                                             checked
                                         <% } %>
-                                      >
-                                      <span class="switch-warning " id="studentphonevcheckview"></span>
+                                    >
+                                    <span class="switch-warning " id="studentphonevcheckview"></span>
                                     </label>
-                                    </div>
                                 </div>
                                 <div class="fmt-row switch-view caption" id="mailvisibilitycontainer">
-                                    Show email ID to
-                                    <div>
+                                    <span class="fmt-left">Email Address</span>
                                     <span class="fmt-left switch-text active" style="padding:0 4px">Teachers</span>
                                     <label class="fmt-left switch-container">
-                                      <input type="checkbox" id="teachermailvcheck" 
+                                        <input type="checkbox" id="teachermailvcheck" 
                                         <% if(adata.prefs.showemailtoteacher){%>
                                             checked
                                         <% } %>
                                         >
-                                      <span class="switch-active" id="teachermailvcheckview"></span>
+                                        <span class="switch-active" id="teachermailvcheckview"></span>
                                     </label>                                    
                                     <span class="fmt-left switch-text warning " style="padding:0 4px">Students</span>
                                     <label class="fmt-left switch-container">
-                                      <input type="checkbox" id="studentmailvcheck"
-                                      <% if(adata.prefs.showemailtostudent){%>
+                                        <input type="checkbox" id="studentmailvcheck"
+                                        <% if(adata.prefs.showemailtostudent){%>
                                         checked
                                         <% } %>
-                                      >
-                                      <span class="switch-warning " id="studentmailvcheckview"></span>
+                                        >
+                                        <span class="switch-warning " id="studentmailvcheckview"></span>
                                     </label>
-                                    </div>
                                 </div>
+                                <br/>
+                                <span class="group-heading">Admins</span>
+                                <button class="neutral-button-togg fmt-right" id="inviteadmin">🔗</button>
+                                <% for( let a = 0; a < inst.default.admin.length; a++ ) { %>
+                                    <% if(inst.default.admin[a].email !== adata.id){ %>
+                                        <div class="fmt-row group-text neutral-button-togg">
+                                            <span id="otheradminname<%= a %>"><%= inst.default.admin[a].username %></span>
+                                            <span id="otheradminemail<%= a %>" hidden><%= inst.default.admin[a].email %></span>
+                                            <span id="otheradminphone<%= a %>" hidden><%= inst.default.admin[a].phone %></span>
+                                            <span class="fmt-right">
+                                               <a id="otheradminchat<%= a %>"><img src="/graphic/elements/chaticon.svg" width="30"></a>
+                                               <a href="tel:<%= inst.default.admin[a].phone %>"><img src="/graphic/elements/voicecallicon.svg" width="30"></a>
+                                               <a href="mailto:<%= inst.default.admin[a].email %>">📧</a>
+                                               <a id="otheradminremove<%= a %>"><img src="/graphic/elements/deleteicon.svg" width="30"></a>
+                                            </span>
+                                        </div>
+                                    <% } %>
+                                <% } %>
+                                <span id="totalotheradmins" hidden><%= inst.default.admin.length-1 %></span>
+                                <% if (inst.default.admin.length==1) { %>
+                                 <div class="group-text">Only you.</div>
+                                <% } %>
                             </div>
                         </div>
                         <!--institution settings box-->
@@ -249,7 +267,7 @@
                                 </div>
 
                                 <span class="caption">UIID</span><br/>
-                                <span class="positive" id="uiid"><%= adata.uiid %></span><br/>
+                                <span class="positive" id="uiid"><%= inst.uiid %></span><br/>
                                 <span class="caption">Subscription till</span><br/>
                                 <span  id="subscriptionTill">...</span ><br/>
                             </div>

@@ -56,8 +56,7 @@
                     <div class="fmt-row">
                         <fieldset class="text-field-active" id="adminNameField">
                             <legend class="field-caption">Name visible to people of your institution</legend>
-                            <span style="font-size: 24px;" id="adminNameView"><%= adata.username %> </span>
-                            <!-- <input class="text-input" required autocomplete="name"  placeholder="Miss/Mrs/Mr/Dr." type="text" id="adminName" name="adminDetails"> -->
+                            <span style="font-size: 24px;" id="adminNameView"><%= adata.username %></span>
                             <span class="fmt-right error-caption"  id="adminNameError"></span>
                         </fieldset>
                     </div>
@@ -73,7 +72,7 @@
                         <fieldset class="text-field fmt-right" id="adminPhoneField">
                             <legend class="field-caption">Your contact number</legend>
                             <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails"  value="<%= inst?inst.default?inst.default.admin.phone:null:null %>">
-                            <span class="fmt-right error-caption"  id="adminPhoneError"></span><!-- add break in span -->
+                            <span class="fmt-right error-caption"  id="adminPhoneError"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -93,7 +92,7 @@
                         <div class="fmt-row">
                             <fieldset class="text-field-active" id="uiidField">
                                 <legend class="field-caption">UIID Permanent</legend>
-                                <span style="font-size: 24px;" id="uiidView"><%= adata.uiid %></span>
+                                <span style="font-size: 24px;" id="uiidView"><%= uiid %></span>
                                 <!-- <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" > -->
                                 <span class="fmt-right error-caption"  id="uiidError"></span>
                             </fieldset>

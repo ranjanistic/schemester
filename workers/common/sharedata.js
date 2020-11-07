@@ -9,13 +9,13 @@ class ShareData {
    * @param {JSON} data The data of an admin from database.
    * @returns {JSON} Filters confidential values from given data, and returns in shareable form.
    */
-  getAdminShareData(data = {}) {
+  getAdminShareData(data = {},uiid) {
     return data?{
       isAdmin: true,
       [this.uid]: data._id,
       username: data.username,
       [this.id]: data.email,
-      uiid: data.uiid,
+      uiid: uiid?uiid:data.uiid,
       createdAt: data.createdAt,
       verified: data.verified,
       vlinkexp: data.vlinkexp,

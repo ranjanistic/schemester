@@ -1,8 +1,6 @@
 class Homepage{
     constructor(){
-        this.darkmode = new Switch('darkmode');
-        this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        new ThemeSwitch('darkmode');
         this.logintabs = getElement('logintabs');
         const adminlogintab = `<div class="fmt-col fmt-third fmt-padding-small">
         <button

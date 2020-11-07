@@ -5,6 +5,7 @@ const { ObjectId } = require("mongodb"),
     validType,
     stringIsValid,
   } = require("../../public/script/codes"),
+  {session,ssh} = require("../../config/config.json"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
   Institute = require("../../config/db").getInstitute(),
@@ -17,15 +18,13 @@ const { ObjectId } = require("mongodb"),
 
 class Session {
   constructor() {
-    this.adminsessionsecret = "adminschemesterSecret2001";
-    this.teachersessionsecret = "teacherschemesterSecret2001";
-    this.studentsessionsecret = "studentschemesterSecret2001";
-    this.sessionID = "id";
-    this.sessionUID = "uid";
+    this.adminsessionsecret = jwt.verify(session.adminkey,ssh);
+    this.teachersessionsecret = jwt.verify(session.teacherkey,ssh);
+    this.studentsessionsecret = jwt.verify(session.studentkey,ssh);
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 365 * 86400; //days*seconds/day
   }
-  async verify (request, secret){
+  verify (request, secret){
     const token = request.signedCookies[this.sessionKey];
     try {
       if (!token) return code.event(code.auth.SESSION_INVALID);
@@ -66,17 +65,29 @@ class Session {
     switch (secret) {
       case this.adminsessionsecret: {
         //admin login
-        const { email, password, uiid, target } = body;
+        const { email, password, uiid } = body;
         const admin = await Admin.findOne({ email: email });
         if (!admin) return code.event(code.auth.USER_NOT_EXIST);
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        if (uiid != admin.uiid) return code.event(code.auth.WRONG_UIID);
-        this.createSession(response, admin._id, admin.uiid, secret);
+        if (!admin.uiid.includes(uiid)) return code.event(code.auth.WRONG_UIID);
+        const inst = await Institute.findOne({uiid:uiid});
+        if(inst){
+          const isAdmin = await adminworker.inst.isAdminOfInstitute(uiid,email);
+          if(!isAdmin){ //not in institute
+            await Admin.findOneAndUpdate({email:email},{
+              $pull:{
+                "uiid":uiid
+              }
+            });
+            return code.event(code.auth.WRONG_UIID);
+          }
+        }
+        this.createSession(response, admin._id, uiid, secret);
         return {
           event: code.auth.AUTH_SUCCESS,
-          user: share.getAdminShareData(admin),
-          target: target,
+          user: share.getAdminShareData(admin,uiid),
+          target: body.target,
           section:body.section
         };
       }
@@ -240,7 +251,8 @@ class Session {
           return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res, admin._id, admin.uiid, secret);
+        if(!admin.uiid.includes(resp.user.uiid)) return code.event(code.auth.WRONG_UIID);
+        this.createSession(res, admin._id, resp.user.uiid, secret);
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case this.teachersessionsecret: {
@@ -263,7 +275,10 @@ class Session {
       }
     }
   };
-
+  async getHashed(password){
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+  }
   signup = async (request, response, secret, pseudo = false) => {
     switch (secret) {
       case this.adminsessionsecret: {
@@ -273,16 +288,39 @@ class Session {
         if (!stringIsValid(password, validType.password))
           return code.event(code.auth.PASSWORD_INVALID);
         const admin = await Admin.findOne({ email: email });
-        if (admin) return code.event(code.auth.USER_EXIST);
-        const inst = await Admin.findOne({ uiid: uiid });
-        if (inst) return code.event(code.server.UIID_TAKEN);
-        const salt = await bcrypt.genSalt(10);
-        const epassword = await bcrypt.hash(password, salt);
+        if (admin){
+          if(request.body.isinvite){ //accepting invitation join
+            const inst = await Institute.findOne({uiid:uiid});
+            if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+            if(!inst.invite.admin.active) return code.event(code.invite.LINK_INVALID);
+            if(inst.default.admin.find((ad)=>ad.email==email)) return code.event(code.auth.USER_EXIST);
+            const ismatch =  await bcrypt.compare(password,admin.password);
+            if(!ismatch) return code.event(code.auth.WRONG_PASSWORD);
+            const joined = await adminworker.inst.joinInstituteAsAdmin(inst._id,admin);
+            if(!joined) code.event(code.NO);
+            const doc = await Admin.findOneAndUpdate({_id:ObjectId(admin._id)},{
+              $push:{'uiid':uiid}
+            });
+            if(!doc.value) code.event(code.NO);
+            this.createSession(response, admin._id, uiid, secret);
+            return {
+              event: code.auth.ACCOUNT_CREATED,
+              user: share.getAdminShareData(admin),
+            };
+          } else {
+            return code.event(code.auth.USER_EXIST);
+          }
+        }
+        if(!request.body.isinvite){
+          const inst = await Admin.findOne({ uiid:uiid });
+          if (inst) return code.event(code.server.UIID_TAKEN);
+        }
+        const epassword = await this.getHashed(password);
         const result = await adminworker.self.account.createAccount({
           username: username,
           email: email,
           password: epassword,
-          uiid: uiid,
+          uiid: [uiid],
           createdAt: time.getTheMoment(false),
           verified: false,
           prefs: {
@@ -313,8 +351,7 @@ class Session {
           let teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email);
           const pteacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,true);
           if (teacher || pteacher) return code.event(code.auth.USER_EXIST);
-          const salt = await bcrypt.genSalt(10);
-          const epassword = await bcrypt.hash(password, salt);
+          const epassword = await this.getHashed(password);
           const newteacher = {
             _id: new ObjectId(),
             username: username,
@@ -373,8 +410,7 @@ class Session {
           return await studentworker.self.account.addStudentToClass(uiid,classname,{username :pstudent.username,studentID:pstudent.studentID})
         }
         //creating new student account in institution according to pseudo
-        const salt = await bcrypt.genSalt(10);
-        const epassword = await bcrypt.hash(password, salt);
+        const epassword = await this.getHashed(password);
         const newstudent = {
           _id: new ObjectId(),
           username: username,
