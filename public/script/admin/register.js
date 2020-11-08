@@ -676,11 +676,11 @@ class Stage2 {
               preferences:inst.preferences
             }:{
               default: {
-                admin: {
+                admin: [{
                   username: sessionStorage.getItem("adname"),
                   email: sessionStorage.getItem("ademail"),
                   phone: sessionStorage.getItem("adphone"),
-                },
+                }],
                 institute: {
                   instituteName: sessionStorage.getItem("instname"),
                   email: sessionStorage.getItem("instemail"),
