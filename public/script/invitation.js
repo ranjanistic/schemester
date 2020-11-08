@@ -75,7 +75,9 @@ class Active {
       email: this.emailField.getInput().trim(),
       password: this.passField.getInput(),
       uiid: data.uiid,
-      isinvite:true
+      isinvite:true,
+      pseudo:!data.personal,
+      classname:data.classname
     }).then((response) => {
         if (response.event == code.auth.ACCOUNT_CREATED) {
           if (data.target == client.teacher) {
