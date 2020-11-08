@@ -53,6 +53,7 @@ async function sendEmail(to, subject, html) {
   }).catch(error=>{
     return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT,error);
   });
+  return doc;
 }
 
 module.exports = new Mailer();
