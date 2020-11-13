@@ -13,6 +13,8 @@ Following are the steps to begin local development.
 git clone https://github.com/ranjanistic/schemester-web.git
 ```
 
+Or, recently
+
 ```bash
 gh repo clone ranjanistic/schemester-web
 ```
@@ -22,6 +24,7 @@ gh repo clone ranjanistic/schemester-web
 - [npm](http://npmjs.com/)
 - [Node.js](https://nodejs.org/)
 - [Express.js](https://expressjs.com/)
+- [ejs](https://ejs.co/)
 - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 - [Vanilla JS](http://vanilla-js.com/)
 - [HTML](https://www.w3schools.com/html/), [CSS](https://www.w3schools.com/css/)
@@ -32,6 +35,7 @@ gh repo clone ranjanistic/schemester-web
 - [LocalStorage](https://developer.mozilla.org/en/docs/Web/API/Window/localStorage)
 - [SessionStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage)
 - [IndexedDB](https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API)
+- [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
 
 ## Local run
 
@@ -49,19 +53,19 @@ The session is only created on https (secured) protocol, therefore, before you p
 
 First, refer to & follow the [mkcert installation steps](https://github.com/FiloSottile/mkcert#installation) to enable ```mkcert``` command on your system.
 
-After that, in the project root path,
+After that,
 
 ```bash
 mkcert -install
 ```
 
-This will create local CA certificate on your system trust store. Then,
+This will create local CA certificate on your system trust store. Then in the project root path,
 
 ```bash
 mkcert localhost
 ```
 
-This will create ```localhost.pem``` &amp; ```localhost-key.pem``` files locally in project root. Now the local server will use these files to run over https.
+This will create ```localhost.pem``` &amp; ```localhost-key.pem``` files locally in project root. Now the local server will automatically use these files to run over https.
 
 ### Run server
 
@@ -75,7 +79,7 @@ Alternatively,
   nodemon server
   ```
 
-Otherwise conventionally,```npm start``` or ```node server``` would also start the server, but changes won't reload automatically.
+Otherwise conventionally, ```npm start``` or ```node server``` would also start the server, but changes won't reload automatically.
 
 Above commands must log -
 
@@ -84,14 +88,14 @@ Connected to schemesterDB
 listening on 3000 (https)
 ```
 
-Or if you're seeing -
+If you're seeing -
 
 ```bash
 Connected to schemesterDB
 listening on 3000
 ```
 
-instead of the previous log (with https), then you must haven't followed [these crucial steps](#setting-localhost-on-https).
+(without https), then you must haven't followed [these steps](#setting-localhost-on-https).
 
 After ensuring that ```listening on 3000 (https)``` is being logged on node console, you can proceed towards contribution.
 
@@ -116,7 +120,7 @@ git add .
 git cz
 ```
 
-They replace the conventional ```git commit``` command, for better commit messages.
+They replace the conventional ```git commit``` command for better commit messages.
 
 ### Push to branch-name
 
