@@ -1889,7 +1889,8 @@ const postJsonData = async (url = String, data = {}) => {
         body: JSON.stringify(data),
       });
       const content = await response.json();
-      if(content.result.event == code.auth.SESSION_INVALID){
+      if(content.result.event == code.auth.SESSION_INVALID&&
+        url!=post.admin.sessionValidate&&url!=post.teacher.sessionValidate&&url!=post.student.sessionValidate){
         return window.parent.location.reload();
       }
       return content.result;

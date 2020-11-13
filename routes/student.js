@@ -209,7 +209,6 @@ student.get(get.fragment, async (req, res) => {
       const defaults = await worker.institute.getDefaultsWithAdminPrefs(
         response.user
       );
-      clog(defaults);
       return res.render(view.student.getViewByTarget(query.fragment), {
         student,
         defaults,
