@@ -34,7 +34,7 @@ class Classrooms {
           this.addclass.loader();
           postJsonData(post.admin.users, {
             target: client.student,
-            action:"update", 
+            action:action.update, 
             specific: code.action.CREATE_NEW_CLASS,
             newclass:{
               _id:null,
@@ -123,7 +123,7 @@ class Classrooms {
               setincharge.loader();
               postJsonData(post.admin.users, {
                 target: client.student,
-                action:"update",
+                action:action.update,
                 specific: code.action.SET_INCHARGE,
                 cid: classtab.classID,
                 newinchargeID: setincharge.getInputValue(0).trim(),
@@ -144,7 +144,7 @@ class Classrooms {
                       (_) => {
                         postJsonData(post.admin.users, {
                           target: client.student,
-                          action:"update",
+                          action:action.update,
                           specific: code.action.SET_INCHARGE,
                           switchclash: true,
                           cid: classtab.classID,
@@ -232,7 +232,7 @@ class Teachers {
       pending.loader();
       postJsonData(post.admin.schedule, {
         target: client.teacher,
-        action: "receive",
+        action: action.receive,
         specific: "nonusers",
       }).then((resp) => {
         pending.loader(false);
@@ -347,7 +347,7 @@ class Teachers {
               requestDialog.loader();
               postJsonData(post.admin.pseudousers, {
                 target: client.teacher,
-                action: "reject",
+                action: action.reject,
                 teacherID: teacher.id,
               }).then((resp) => {
                 if (resp.event == code.OK) {
@@ -365,7 +365,7 @@ class Teachers {
               requestDialog.loader();
               postJsonData(post.admin.pseudousers, {
                 target: client.teacher,
-                action: "accept",
+                action: action.accept,
                 teacherID: teacher.id,
               }).then((resp) => {
                 if (resp.event == code.OK) {

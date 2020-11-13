@@ -47,7 +47,7 @@ class AdminLogin{
       postJsonData(post.admin.manage,{
         external:true,
         type:"resetpassword",
-        action:"send",
+        action:action.send,
         email:this.emailField.getInput()
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
@@ -75,7 +75,7 @@ class AdminLogin{
       this.loader();
       hide(this.forgotPassword);
       postJsonData(post.admin.auth,{
-        action:post.admin.action.login,
+        action:action.login,
         email:String(this.emailField.getInput()).trim(),
         password:this.passField.getInput(),
         uiid:String(this.uiidField.getInput()).trim(),

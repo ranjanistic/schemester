@@ -87,7 +87,7 @@ class Classroom {
             removeconfirm.loader();
             postJsonData(post.teacher.classroom,{
               target:"classroom",
-              action:"update",
+              action:action.update,
               specific:"removestudent",
               studentID:stud.studentID
             }).then((response)=>{
@@ -119,7 +119,7 @@ class Classroom {
         loadingBox("Getting requests");
         postJsonData(post.teacher.classroom, {
           target: "pseudousers",
-          action: "receive",
+          action: action.receive,
         }).then((students) => {
           if (students.event != code.NO) {
             const requestDialog = new Dialog();
@@ -156,7 +156,7 @@ class Classroom {
                 requestDialog.loader();
                 postJsonData(post.teacher.classroom, {
                   target: "pseudousers",
-                  action: "reject",
+                  action: action.reject,
                   studentID: student.studentID,
                 }).then((resp) => {
                   if (resp.event == code.OK) {
@@ -174,7 +174,7 @@ class Classroom {
                 requestDialog.loader();
                 postJsonData(post.teacher.classroom, {
                   target: "pseudousers",
-                  action: "accept",
+                  action: action.accept,
                   studentID: student.studentID,
                 }).then((resp) => {
                   if (resp.event == code.OK) {
@@ -199,7 +199,7 @@ class Classroom {
     );
     postJsonData(post.teacher.classroom, {
       target:"invite",
-      action:"create",
+      action:action.create,
     }).then((response) => {
       if (
         response.event == code.invite.LINK_EXISTS ||
@@ -272,8 +272,8 @@ class Classroom {
 
   revokeLink() {
     postJsonData(post.teacher.classroom, {
-      target: "invite",
-      action: "disable",
+      target: action.invite,
+      action: action.disable,
     })
       .then((response) => {
         if (response.event == code.invite.LINK_DISABLED) {

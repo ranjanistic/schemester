@@ -1,7 +1,8 @@
+const {key} = require("../../public/script/codes");
 class ShareData {
   constructor() {
-    this.uid = 'uid';
-    this.id = 'id';
+    this.uid = key.uid;
+    this.id = key.id;
   }
 
   /**

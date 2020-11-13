@@ -58,19 +58,16 @@ class Active {
       return;
     }
     this.load();
-    let posturl,postaction;
+    let posturl;
     if(data.target == client.teacher){
       posturl = post.teacher.auth;
-      postaction = post.teacher.action.signup;
     }else if(data.target == client.student){
       posturl = post.student.auth;
-      postaction = post.student.action.signup;
     } else if(data.target == client.admin){
       posturl = post.admin.auth;
-      postaction = post.admin.action.signup;
     }
     postJsonData(posturl, {
-      action: postaction,
+      action: action.signup,
       username: this.nameField.getInput().trim(),
       email: this.emailField.getInput().trim(),
       password: this.passField.getInput(),

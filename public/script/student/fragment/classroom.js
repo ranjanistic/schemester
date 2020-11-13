@@ -43,7 +43,7 @@ class StudentClassRoom{
                 classchoose.loader(0);
                 parent.snackbar('Withdrawing...',false,false);
                 postJsonData(post.student.classroom,{
-                  action:"request",
+                  action:action.request,
                   specific:post.student.action.withdraw,
                   classname:pClass,
                 }).then((response)=>{
@@ -91,7 +91,7 @@ class StudentClassRoom{
           if(!reqdialog.allValid()) return reqdialog.validateNow();
           reqdialog.loader();
           postJsonData(post.student.classroom,{
-            action:"request",
+            action:action.request,
             specific:post.student.action.join,
             classname:reqdialog.getInputValue(0).trim(),
           }).then((response)=>{

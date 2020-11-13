@@ -1511,7 +1511,7 @@ const finishSession = (
     case client.student:postpath = post.student.auth;break;
   }
   postJsonData(postpath,{
-    action:'logout',
+    action:action.logout,
   }).then((res) => {
     if (res.event == code.auth.LOGGED_OUT) {
       sessionStorage.clear();
@@ -1878,18 +1878,24 @@ const postData = async (url = String, data = {}) => {
  */
 const postJsonData = async (url = String, data = {}) => {
   try{
-    const response = await fetch(url, {
-      method: constant.post,
-      mode: "same-origin",
-      headers: {
-        Accept: constant.fetchJsonContent,
-        "Content-Type": constant.fetchJsonContent,
-      },
-      body: JSON.stringify(data),
-    });
-    const content = await response.json();
-    return await content.result;
+    if (window.fetch) {
+      const response = await fetch(url, {
+        method: constant.post,
+        mode: "same-origin",
+        headers: {
+          Accept: constant.fetchJsonContent,
+          "Content-Type": constant.fetchJsonContent,
+        },
+        body: JSON.stringify(data),
+      });
+      const content = await response.json();
+      if(content.result.event == code.auth.SESSION_INVALID){
+        return window.parent.location.reload();
+      }
+      return content.result;
+    }
   } catch (error){
+    clog(error);
     if(!navigator.onLine){return snackBar('Network Error','',false)}
     snackBar(error,'Report');
   }

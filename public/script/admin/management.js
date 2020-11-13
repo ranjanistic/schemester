@@ -201,7 +201,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showphonetoteacher",
               show: true,
             }).then((response) => {
@@ -211,7 +211,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showphonetoteacher",
               show: false,
             }).then((response) => {
@@ -223,7 +223,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showphonetostudent",
               show: true,
             }).then((response) => {
@@ -233,7 +233,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showphonetostudent",
               show: false,
             }).then((response) => {
@@ -245,7 +245,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showemailtoteacher",
               show: true,
             }).then((response) => {
@@ -255,7 +255,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showemailtoteacher",
               show: false,
             }).then((response) => {
@@ -267,7 +267,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showemailtostudent",
               show: true,
             }).then((response) => {
@@ -277,7 +277,7 @@ class Admin {
           (_) => {
             postJsonData(post.admin.self, {
               target: "preferences",
-              action: "set",
+              action: action.set,
               specific: "showemailtostudent",
               show: false,
             }).then((response) => {
@@ -295,7 +295,7 @@ class Admin {
       adminlink.loader();
       postJsonData(post.admin.manage, {
         type: "invitation",
-        action: "create",
+        action: action.create,
         target: client.admin,
       }).then(response=>{
         if (
@@ -483,7 +483,7 @@ class Institution {
           (_) => {
             postJsonData(post.admin.manage, {
               type: "preferences",
-              action: "set",
+              action: action.set,
               specific: "allowTeacherAddSchedule",
               allow: true,
             }).then((resp) => {
@@ -493,7 +493,7 @@ class Institution {
           (_) => {
             postJsonData(post.admin.manage, {
               type: "preferences",
-              action: "set",
+              action: action.set,
               specific: "allowTeacherAddSchedule",
               allow: false,
             }).then((resp) => {
@@ -505,7 +505,7 @@ class Institution {
           (_) => {
             postJsonData(post.admin.manage, {
               type: "preferences",
-              action: "set",
+              action: action.set,
               specific: "active",
               active: true,
             }).then((resp) => {
@@ -515,7 +515,7 @@ class Institution {
           (_) => {
             postJsonData(post.admin.manage, {
               type: "preferences",
-              action: "set",
+              action: action.set,
               specific: "active",
               active: false,
             }).then((resp) => {
@@ -762,7 +762,7 @@ class Schedule {
           this.scheduler.loader();
           postJsonData(post.admin.schedule, {
             target: client.teacher,
-            action: "update",
+            action: action.update,
             specific: code.action.ADD_PERIOD,
             newperiod: periods+1,
           }).then(resp=>{
@@ -814,7 +814,7 @@ class Schedule {
             this.scheduler.loader();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
-              action: "update",
+              action: action.update,
               specific: code.action.SWITCH_PERIODS,
               oldperiod: p,
               newperiod: Number(this.scheduler.getInputValue(0).trim())-1,
@@ -841,7 +841,7 @@ class Schedule {
           snackBar(`Deleting period ${p+1}...`);
           postJsonData(post.admin.schedule, {
             target: client.teacher,
-            action: "update",
+            action: action.update,
             specific: code.action.REMOVE_PERIOD,
             period: p,
           }).then((response) => {
@@ -936,7 +936,7 @@ class Schedule {
           this.scheduler.loader();
           postJsonData(post.admin.schedule, {
             target: client.teacher,
-            action: "update",
+            action: action.update,
             specific: code.action.ADD_DAY,
             newdayindex: constant.weekdayscasual.indexOf(
               this.scheduler.getInputValue(0).toLowerCase().trim()
@@ -992,7 +992,7 @@ class Schedule {
             this.scheduler.loader();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
-              action: "update",
+              action: action.update,
               specific: code.action.SWITCH_DAY,
               switchclash:true,
               olddayindex: daysindices[d],
@@ -1024,7 +1024,7 @@ class Schedule {
           snackBar(`Deleting ${day}...`);
           postJsonData(post.admin.schedule, {
             target: client.teacher,
-            action: "update",
+            action: action.update,
             specific: code.action.REMOVE_DAY,
             removedayindex: daysindices[d],
           }).then((response) => {

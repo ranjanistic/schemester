@@ -72,7 +72,7 @@ async function linkSender(onsuccess=_=>{}){
     snackBar(`To reset your password, a link will be sent to your email address.`,'Send Link',true,_=>{
       postJsonData(post.student.manage,{
         type:"resetpassword",
-        action:"send",
+        action:action.send,
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
           return snackBar('An error occurred','Report');

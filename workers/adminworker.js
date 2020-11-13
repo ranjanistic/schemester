@@ -8,6 +8,7 @@ const Admin = require("../config/db").getAdmin(),
     code,
     client,
     view,
+    action,
     isOK,
     stringIsValid,
     validType,
@@ -68,7 +69,7 @@ class Today {
   constructor() {}
   async handlerequest(user, body) {
     switch (body.action) {
-      case "fetch":
+      case action.fetch:
         {
           switch (body.specific) {
             default: {
@@ -107,7 +108,7 @@ class Today {
           }
         }
         break;
-      case "update": {
+      case action.update: {
       }
     }
   }
@@ -1053,7 +1054,7 @@ class Users {
   };
   handleTeacherAction = async (user, body) => {
     switch (body.action) {
-      case "remove": {
+      case action.remove: {
         if (body.teacherID) {
           return await this.teachers.removeTeacher(user, body);
         }
@@ -1063,7 +1064,7 @@ class Users {
   handleClassAction = async (user, body) => {
     const inst = await Institute.findOne({ uiid: user.uiid });
     switch (body.action) {
-      case "update":
+      case action.update:
         return await this.classes.updateClass(user, body, inst);
     }
   };
@@ -2081,13 +2082,13 @@ class Schedule {
 
   handleScheduleTeachersAction = async (user, body, inst) => {
     switch (body.action) {
-      case "upload":
+      case action.upload:
         return await this.teacher.scheduleUpload(body, inst);
-      case "receive":
+      case action.receive:
         return await this.teacher.scheduleReceive(body, inst);
-      case "update":
+      case action.update:
         return await this.teacher.scheduleUpdate(user, body, inst);
-      case "remove":
+      case action.remove:
         return await this.teacher.scheduleRemove(user, body, inst);
       default:
         return code.event(code.server.DATABASE_ERROR);
@@ -2095,11 +2096,11 @@ class Schedule {
   };
   handleScheduleClassesAction = async (user, body, inst) => {
     switch (body.action) {
-      case "receive":
+      case action.receive:
         return await this.classes.scheduleReceive(user, body);
-      case "update":
+      case action.update:
         return await this.classes.scheduleUpdate(user, body, inst);
-      case "create":
+      case action.create:
         return await this.classes.scheduleCreate(user, body);
       default:
         return code.event(code.server.DATABASE_ERROR);
@@ -2281,16 +2282,16 @@ class Invite {
   handleInvitation = async (user, inst, body) => {
     if(body.target == client.teacher){
       switch (body.action) {
-        case "create":
+        case action.create:
           return await this.teacher.inviteLinkCreation(user, inst, body);
-        case "disable":
+        case action.disable:
           return await this.teacher.inviteLinkDisable(inst, body);
       }
     } else if(body.target==client.admin){
       switch (body.action) {
-        case "create":
+        case action.create:
           return await this.admin.inviteLinkCreation(user, inst, body);
-        case "disable":
+        case action.disable:
           return await this.admin.inviteLinkDisable(inst, body);
       }
     }
@@ -2356,7 +2357,7 @@ class PseudoUsers {
   }
   async handleTeachers(user, body) {
     switch (body.action) {
-      case "receive": {
+      case action.receive: {
         if (body.pteacherID) {
           const pdoc = await Institute.findOne(
             {
@@ -2387,7 +2388,7 @@ class PseudoUsers {
           ? { pseudoteachers: pdoc.pseudousers.teachers }
           : code.event(code.NO);
       }
-      case "reject": {
+      case action.reject: {
         const rejdoc = await Institute.findOneAndUpdate(
           { uiid: user.uiid },
           {
@@ -2398,7 +2399,7 @@ class PseudoUsers {
         );
         return code.event(rejdoc.value ? code.OK : code.NO);
       }
-      case "accept":
+      case action.accept:
         {
           const pseudodoc = await Institute.findOne(
             {
@@ -2432,9 +2433,9 @@ class PseudoUsers {
   }
   async handleStudents(user, body) {
     switch (body.action) {
-      case "accept": {
+      case action.accept: {
       }
-      case "reject": {
+      case action.reject: {
       }
     }
   }
@@ -2472,7 +2473,7 @@ class Preferences {
   }
   async handlePreferences(user, body) {
     switch (body.action) {
-      case "set":
+      case action.set:
         {
           switch (body.specific) {
             case "allowTeacherAddSchedule":
@@ -2484,7 +2485,7 @@ class Preferences {
           }
         }
         break;
-      case "get":
+      case action.get:
         {
           switch (body.specific) {
             case "allowTeacherAddSchedule":

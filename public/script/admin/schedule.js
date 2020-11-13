@@ -68,7 +68,7 @@ class Teacher{
                     loadingBox(true,'Removing Teacher...');
                     postJsonData(post.admin.users,{
                         target:client.teacher,
-                        action:'remove',
+                        action:action.remove,
                         teacherID:this.data.teacherID
                     }).then(resp=>{
                         if(resp.event == code.OK){
@@ -87,7 +87,7 @@ class Teacher{
             const confirmdialog = new Dialog();
             confirmdialog.setDisplay('Delete schedule?',`Are you sure you want to delete ${this.data.pending?this.data.teacherID:this.data.teachername}'s schedule permanently?${this.data.pending?' Their invitation will no longer remain valid.':' This might affect schedule of several classes too.'}`);
             this.data.pending
-            ?confirmdialog.createActions(['Remove','Abort'],[actionType.negative,actionType.neutral])
+            ?confirmdialog.createActions([action.remove,'Abort'],[actionType.negative,actionType.neutral])
             :confirmdialog.createActions(['Check affected classes','Delete anyway','Abort'],[actionType.positive,actionType.negative,actionType.neutral]);
             confirmdialog.transparent();
             this.data.pending
@@ -96,7 +96,7 @@ class Teacher{
                 snackBar(`Deleting ${this.data.teacherID}'s schedule...`,null,false);
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
-                    action:"remove",
+                    action:action.remove,
                     teacherID:this.data.teacherID
                 }).then((resp)=>{
                     if(resp.event == code.OK){
@@ -148,7 +148,7 @@ class Teacher{
                             snackBar(`Deleting ${this.data.teachername}'s schedule (${this.data.teacherID})...`,null,false);
                             postJsonData(post.admin.schedule,{
                                 target:client.teacher,
-                                action:"remove",
+                                action:action.remove,
                                 teacherID:this.data.teacherID
                             }).then((resp)=>{
                                 if(resp.event == code.OK){
@@ -172,7 +172,7 @@ class Teacher{
                 snackBar(`Deleting ${this.data.teachername}'s schedule (${this.data.teacherID})...`,null,false);
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
-                    action:"remove",
+                    action:action.remove,
                     teacherID:this.data.teacherID
                 }).then((resp)=>{
                     if(resp.event == code.OK){
@@ -254,7 +254,7 @@ class Teacher{
         if(!this.schedule){
         postJsonData(post.admin.schedule,{
             target:client.teacher,
-            action:'receive',
+            action:action.receive,
             specific:'single',
             teacherID:this.data.teacherID,
             dayIndex:dayIndex
@@ -337,7 +337,7 @@ class Teacher{
                 this.classeditable[p].load();
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
-                    action:"update",
+                    action:action.update,
                     specific:code.action.RENAME_CLASS,
                     switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
@@ -395,7 +395,7 @@ class Teacher{
                 
                 postJsonData(post.admin.schedule,{
                     target:client.teacher,
-                    action:"update",
+                    action:action.update,
                     specific:code.action.RENAME_SUBJECT,
                     switchclash:sessionStorage.getItem('switchclash'),
                     teacherID:this.data.teacherID,
@@ -457,7 +457,7 @@ class Class{
             Also, the teachers having periods in this class in their schedule, will be set as free on those periods of their schedule.`,null,_=>{
                 postJsonData(post.admin.users,{
                     target:client.student,
-                    action:'remove',
+                    action:action.remove,
                     specific:'removeclass',
                     oldclassname:this.data.classname,
                 }).then(resp=>{
@@ -481,7 +481,7 @@ class Class{
             this.classname.load();
             postJsonData(post.admin.schedule,{
                 target:client.student,
-                action:'update',
+                action:action.update,
                 specific:code.action.RENAME_CLASS,
                 switchclash:sessionStorage.getItem('switchclash'),
                 oldclassname:this.classname.displayText(),
@@ -572,7 +572,7 @@ class Class{
         if(!this.schedule){
         postJsonData(post.admin.schedule,{
             target:client.student,
-            action:'receive',
+            action:action.receive,
             classname:this.data.classname,
             dayIndex:dayIndex
         }).then(response=>{
@@ -663,7 +663,7 @@ class Class{
                 this.subjecteditable[p].load();
                 postJsonData(post.admin.schedule,{
                     target:client.student,
-                    action:"update",
+                    action:action.update,
                     specific:code.action.RENAME_SUBJECT,
                     switchclash:sessionStorage.getItem('switchclash'),
                     dayIndex:Number(this.currentdayIndex),
@@ -714,7 +714,7 @@ class Class{
                 this.teachereditable[p].load();
                 postJsonData(post.admin.schedule,{
                     target:client.student,
-                    action:"update",
+                    action:action.update,
                     specific:"switchteacher",
                     switchclash:sessionStorage.getItem('switchclash'),
                     classname:this.data.classname,

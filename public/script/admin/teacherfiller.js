@@ -271,7 +271,7 @@ class TeacherFiller {
       period: periods,
     };
     postJsonData(post.teacher.schedule, {
-      action: "upload",
+      action: action.upload,
       teachername:this.data.teacherName,
       teacherID: sessionStorage.getItem("teacherID"),
       data: data,
@@ -313,8 +313,8 @@ class TeacherFiller {
       period: periods,
     };
     postJsonData(post.admin.schedule, {
-      action: "upload",
-      target: "teacher",
+      action: action.upload,
+      target: client.teacher,
       teacherID: sessionStorage.getItem("teacherID").trim(),
       data: data,
     })

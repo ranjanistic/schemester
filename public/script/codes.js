@@ -373,6 +373,39 @@ class Constant {
 }
 
 /**
+ * Maintains general actions for client-server communication
+ */
+class Action{
+  constructor(){
+    this.login = "login";
+    this.logout = "logout";
+    this.signup = "signup";
+    this.fetch = "fetch";
+    this.receive = "receive";
+    this.create = "create";
+    this.authenticate = "authenticate";
+    this.update = "update";
+    this.withdraw = "withdraw";
+    this.chat = "chat";
+    this.upload = "upload";
+    this.send = "send";
+    this.set = "set";
+    this.accept = "accept";
+    this.reject = "reject";
+    this.remove = "remove";
+    this.disable = "disable";
+    this.request = "request";
+    this.get = "get";
+    this.check = "check";
+    this.voicecall = "voicecall";
+    this.videocall = "videocall";
+    this.invite = "invite";
+    this.join = "join";
+    this.registerInstitute = "registerinstitute";
+  }
+}
+
+/**
  * The location paths of server endpoints are defined in this class, specially meant for the client to use,
  * along with other target parts of endpoints, for each type of client.
  */
@@ -641,6 +674,8 @@ class View {
   }
 }
 
+
+
 /**
  * The endpoint paths of GET requests to server, meant for both client (to generate request) & server (to receive request).
  */
@@ -660,31 +695,42 @@ class Gets {
   }
 }
 
+class ServerPosts{
+  constructor(){
+    this.auth = "/auth";
+    this.self = "/self";
+    this.session = "/session";
+    this.schedule = "/schedule";
+    this.receivedata = "/receivedata";
+    this.dashboard = "/dashboard";
+    this.sessionvalidate = "/session/validate";
+    this.manage = "/manage";
+    this.classroom = "/classroom";
+    this.comms = "/comms";
+    this.mail = "/mail";
+  }
+}
+
 /**
  * The endpoint paths of POST requests to server, currently meant for client to generate request.
  */
 class Posts {
   constructor() {
-    this.logout = "/logout";
+    const post = new ServerPosts()
     class Admin {
       constructor() {
-        const root = `/${client.admin}`;
-        this.login = `${root}/auth/login`;
-        this.logout = `${root}/auth/logout`;
-        this.signup = `${root}/auth/signup`;
-
-        this.auth = `${root}/auth`;
-        this.self = `${root}/self`;
+        const root = `${locate.root}${client.admin}`;
+        this.auth = `${root}${post.auth}`;
+        this.self = `${root}${post.self}`;
         this.default = `${root}/default`;
-        this.sessionValidate = `${root}/session/validate`;
-        this.manage = `${root}/manage`;
+        this.sessionValidate = `${root}${post.sessionvalidate}`;
         this.users = `${root}/users`;
-        this.email = `${root}/mail`;
-        this.register = `${root}/session/registerinstitution`;
-        this.schedule = `${root}/schedule`;
-        this.receivedata = `${root}/receivedata`;
         this.pseudousers = `${root}/pseudousers`;
-        this.dashboard = `${root}/dashboard`;
+        this.schedule = `${root}${post.schedule}`;
+        this.receivedata = `${root}${post.receivedata}`;
+        this.dashboard = `${root}${post.dashboard}`;
+        this.manage = `${root}${post.manage}`;
+        this.email = `${root}${post.mail}`;
 
         class Target {
           constructor() {
@@ -692,16 +738,6 @@ class Posts {
           }
         }
         this.target = new Target();
-        class Action {
-          constructor() {
-            this.registerInstitute = "registerinstitute";
-            this.login = "login";
-            this.logout = "logout";
-            this.signup = "signup";
-            this.fetch = "fetch";
-            this.update = "update";
-          }
-        }
         this.action = new Action();
       }
     }
@@ -709,24 +745,14 @@ class Posts {
 
     class Teacher {
       constructor() {
-        const root = `/${client.teacher}`;
-        this.auth = `${root}/auth`;
-        this.sessionValidate = `${root}/session/validate`;
-        this.schedule = `${root}/schedule`;
-        this.self = `${root}/self`;
-        this.manage = `${root}/manage`;
-        this.classroom = `${root}/classroom`;
-        this.comms = `${root}/comms`;
-        class Action {
-          constructor() {
-            this.login = "login";
-            this.logout = "logout";
-            this.signup = "signup";
-            this.fetch = "fetch";
-            this.update = "update";
-
-          }
-        }
+        const root = `${locate.root}${client.teacher}`;
+        this.auth = `${root}${post.auth}`;
+        this.sessionValidate = `${root}${post.sessionvalidate}`;
+        this.schedule = `${root}${post.schedule}`;
+        this.self = `${root}${post.self}`;
+        this.manage = `${root}${post.manage}`;
+        this.classroom = `${root}${post.classroom}`;
+        this.comms = `${root}${post.comms}`;
         this.action = new Action();
       }
     }
@@ -734,31 +760,21 @@ class Posts {
 
     class Student {
       constructor() {
-        const root = `/${client.student}`;
-        this.auth = `${root}/auth`;
-        this.sessionValidate = `${root}/session/validate`;
-        this.schedule = `${root}/schedule`;
-        this.self = `${root}/self`;
-        this.manage = `${root}/manage`;
-        this.classroom = `${root}/classroom`;
-        this.comms = `${root}/comms`;
-        class Action {
-          constructor() {
-            this.login = "login";
-            this.logout = "logout";
-            this.signup = "signup";
-            this.fetch = "fetch";
-            this.update = "update";
-            this.withdraw = "withdraw";
-            this.join = "join";
-          }
-        }
+        const root = `${locate.root}${client.student}`;
+        this.auth = `${root}${post.auth}`;
+        this.sessionValidate = `${root}${post.sessionvalidate}`;
+        this.schedule = `${root}${post.schedule}`;
+        this.self = `${root}${post.self}`;
+        this.manage = `${root}${post.manage}`;
+        this.classroom = `${root}${post.classroom}`;
+        this.comms = `${root}${post.comms}`;
         this.action = new Action();
       }
     }
     this.student = new Student();
   }
 }
+
 
 /**
  * Maintains keys for most of the locally stored values, meant for client side only.
@@ -984,6 +1000,7 @@ const click = "click",
   constant = new Constant(),
   locate = new Locations(),
   key = new Keys(),
+  action = new Action(),
   theme = new Theme(),
   post = new Posts(),
   colors = new Colors(),
@@ -1041,7 +1058,9 @@ try {
     code: new Codes(),
     client: new Client(),
     view: new View(),
+    action:new Action(),
     get: new Gets(),
+    post:new ServerPosts(),
     key: new Keys(),
     validType: new InputType(),
     stringIsValid,

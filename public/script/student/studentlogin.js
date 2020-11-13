@@ -65,7 +65,7 @@ class UIID{
     };
   }
    uiidProcedure(uiid){
-    postJsonData(post.student.auth,{action:post.student.action.login,type:key.uiid,uiid:uiid}).then(response=>{
+    postJsonData(post.student.auth,{action:action.login,type:key.uiid,uiid:uiid}).then(response=>{
       this.uiidCheck(response.event == code.inst.INSTITUTION_EXISTS?response.uiid:null);
       if(response.event == code.inst.INSTITUTION_EXISTS){
         this.uiidField.activate();
@@ -124,7 +124,7 @@ class Classname{
   }
   classnameProcedure(classname){
     postJsonData(post.student.auth,{
-      action:post.student.action.login,
+      action:action.login,
       type:'classname',
       classname:classname,
       uiid:this.getUIID()
@@ -196,7 +196,7 @@ class Email{
   }
   emailIDProcedure(emailid){
     postJsonData(post.student.auth,{
-      action:post.student.action.login,
+      action:action.login,
       type:'email',
       classname:this.getClassname(),
       email:emailid,
@@ -274,7 +274,7 @@ class Password{
   }
   passwordProcedure(password){
     postJsonData(post.student.auth,{
-      action:post.student.action.login,
+      action:action.login,
       type:'password',
       classname:this.getClassname(),
       email:this.getEmail(),
@@ -310,7 +310,7 @@ class Password{
       postJsonData(post.student.manage,{
         external:true,
         type:"resetpassword",
-        action:"send",
+        action:action.send,
         uiid:this.getUIID(),
         classname:this.getClassname(),
         email:this.getEmail()

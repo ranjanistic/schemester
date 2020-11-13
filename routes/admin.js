@@ -2,7 +2,7 @@ const express = require("express"),
   admin = express.Router(),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
-  { code, client, view, clog, get } = require("../public/script/codes"),
+  { code, client, view,action, clog, get,post } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   path = require("path"),
@@ -29,10 +29,10 @@ admin.get(get.authlogin, (req, res) => {
   return res.redirect(worker.toSession(response.user.id, data));
 });
 
-admin.post("/auth", async (req, res) => {
+admin.post(post.auth, async (req, res) => {
   const body = req.body;
   switch (body.action) {
-    case "login":
+    case action.login:
       {
         session
           .login(req, res, sessionsecret)
@@ -44,14 +44,14 @@ admin.post("/auth", async (req, res) => {
           });
       }
       break;
-    case "logout":
+    case action.logout:
       {
         session.finish(res).then((response) => {
           return res.json({ result: response });
         });
       }
       break;
-    case "signup":
+    case action.signup:
       {
         session
           .signup(req, res, sessionsecret)
@@ -206,7 +206,7 @@ admin.get(get.session, async (req, res) => {
 /**
  * For self account subdoc (Admin collection).
  */
-admin.post("/self", async (req, res) => {
+admin.post(post.self, async (req, res) => {
   const body = req.body;
   if (body.external) {
     switch (body.target) {
@@ -223,9 +223,9 @@ admin.post("/self", async (req, res) => {
   const admin = await Admin.findOne({ _id: ObjectId(response.user.id) });
   if (!admin) return code.event(code.auth.USER_NOT_EXIST);
   switch (body.target) {
-    case "receive":
+    case action.receive:
       return res.json({ result: share.getAdminShareData(admin) });
-    case "authenticate":
+    case action.authenticate:
       return res.json({
         result: await session.authenticate(req, res, body, sessionsecret),
       });
@@ -240,7 +240,7 @@ admin.post("/self", async (req, res) => {
   }
 });
 
-admin.post("/session/validate", (req, res) => {
+admin.post(post.sessionvalidate, (req, res) => {
   const { getuser } = req.body;
   if (getuser) {
     session
@@ -262,7 +262,7 @@ admin.post("/session/validate", (req, res) => {
 /**
  * For current session account related requests.
  */
-admin.post("/session", (req, res) => {
+admin.post(post.session, (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
@@ -277,10 +277,10 @@ admin.post("/default", async (req, res) => {
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   const body = req.body;
   const inst = await Institute.findOne({ uiid: response.user.uiid });
-  if (body.target != "registerinstitute" && !inst)
+  if (body.target != action.registerInstitute && !inst)
     return res.json({ result: code.event(code.inst.INSTITUTION_NOT_EXISTS) });
   switch (body.target) {
-    case "registerinstitute": {
+    case action.registerInstitute: {
       return res.json({
         result: await worker.default.handleRegistration(response.user, body),
       });
@@ -394,7 +394,7 @@ admin.post("/pseudousers", async (req, res) => {
 /**
  * For actions related to schedule subdocument.
  */
-admin.post("/schedule", async (req, res) => {
+admin.post(post.schedule, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
@@ -422,7 +422,7 @@ admin.post("/schedule", async (req, res) => {
   }
 });
 
-admin.post("/receivedata", async (req, res) => {
+admin.post(post.receivedata, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
@@ -463,7 +463,7 @@ admin.post("/receivedata", async (req, res) => {
   }
 });
 
-admin.post("/dashboard", async (req, res) => {
+admin.post(post.dashboard, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
@@ -477,7 +477,7 @@ admin.post("/dashboard", async (req, res) => {
   }
 });
 
-admin.post("/manage", async (req, res) => {
+admin.post(post.manage, async (req, res) => {
   //for settings
   const body = req.body;
   if (body.external) {
@@ -524,7 +524,7 @@ admin.post("/manage", async (req, res) => {
   }
 });
 
-admin.post("/mail", async (req, res) => {
+admin.post(post.mail, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response)) return res.json({ result: response });
   const body = req.body;

@@ -2,7 +2,7 @@ const express = require("express"),
   student = express.Router(),
   cookieParser = require("cookie-parser"),
   { ObjectId } = require("mongodb"),
-  { code, client, view, get, clog } = require("../public/script/codes"),
+  { code, client, view, action,get,post, clog } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   share = require("../workers/common/sharedata"),
@@ -33,10 +33,10 @@ student.get(get.authlogin, (req, res) => {
   return res.redirect(worker.toSession(response.user.id, req.query));
 });
 
-student.post("/auth", async (req, res) => {
+student.post(post.auth, async (req, res) => {
   const body = req.body;
   switch (body.action) {
-    case "login":
+    case action.login:
       {
         session
           .login(req, res, sessionsecret)
@@ -48,14 +48,14 @@ student.post("/auth", async (req, res) => {
           });
       }
       break;
-    case "logout":
+    case action.logout:
       {
         session.finish(res).then((response) => {
           return res.json({ result: response });
         });
       }
       break;
-    case "signup":
+    case action.signup:
       {
         session
           .signup(req, res, sessionsecret, body.pseudo)
@@ -220,7 +220,7 @@ student.get(get.fragment, async (req, res) => {
   }
 });
 
-student.post("/self", async (req, res) => {
+student.post(post.self, async (req, res) => {
   const body = req.body;
   if (body.external) {
     switch (body.target) {
@@ -235,11 +235,11 @@ student.post("/self", async (req, res) => {
 
   if (!session.valid(response)) return res.json(invalidsession);
   switch (body.target) {
-    case "receive":
+    case action.receive:
       return res.json({
         result: await worker.self.account.getAccount(response.user),
       });
-    case "authenticate":
+    case action.authenticate:
       return res.json({
         result: await session.authenticate(req, res, body, sessionsecret),
       });
@@ -254,7 +254,7 @@ student.post("/self", async (req, res) => {
   }
 });
 
-student.post("/manage", async (req, res) => {
+student.post(post.manage, async (req, res) => {
   const body = req.body;
   if (body.external) {
     switch (body.type) {
@@ -281,15 +281,14 @@ student.post("/manage", async (req, res) => {
   }
 });
 
-student.post("/session/validate", async (req, res) => {
+student.post(post.sessionvalidate, async (req, res) => {
   const response = session.verify(req, sessionsecret);
 
   return res.json({ result: response });
 });
 
-student.post("/classroom", async (req, res) => {
+student.post(post.classroom, async (req, res) => {
   const response = session.verify(req, sessionsecret);
-
   if (!session.valid(response)) return res.json({ result: response });
   const body = req.body;
   switch (body.action) {
@@ -301,6 +300,22 @@ student.post("/classroom", async (req, res) => {
       return res.json({ result: null });
   }
 });
+
+student.post(post.comms,async(req,res)=>{
+  const response = session.verify(req, sessionsecret);
+  if (!session.valid(response)) return res.json({ result: response });
+  switch (req.body.action) {
+    case action.chat:
+      worker.comms.chatroom();
+      break;
+    case action.voicecall:
+      worker.comms.voicecalling();
+      break;
+    case action.videocall:
+      worker.comms.videocalling();
+      break;
+  }
+})
 
 student.get(get.external, async (req, res) => {
   const query = req.query;

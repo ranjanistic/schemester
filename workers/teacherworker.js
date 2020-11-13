@@ -3,7 +3,7 @@ Institute = require("../config/db").getInstitute(),
   fs = require("fs"),
   path = require("path"),
   pusher = require("pusher"),
-  {code,client,view,clog} = require("../public/script/codes"),
+  {code,client,view,action,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   session = require("./common/session"),
   verify = require("./common/verification"),
@@ -359,15 +359,15 @@ class Self {
   };
   handlePreferences = async (user, body) => {
     switch (body.action) {
-      case "set":
+      case action.set:
         return await this.prefs.setPreference(user, body);
-      case "get":
+      case action.get:
         return await this.prefs.getPreference(user, body);
     }
   };
   handleVerification = async (user, body) => {
     switch (body.action) {
-      case "send": {
+      case action.send: {
         const inst = await Institute.findOne({uiid:user.uiid},{projection:{"_id":1}});
         if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const linkdata = await verify.generateLink(client.teacher, {
@@ -377,7 +377,7 @@ class Self {
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
-      case "check": {
+      case action.check: {
         const teacher = await this.account.getAccount(user);
         if (!teacher)
           return code.event(code.auth.USER_NOT_EXIST);
@@ -391,7 +391,7 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":{
+      case action.send:{
         let inst;
         if (!user) {
           inst = await Institute.findOne({uiid:body.uiid},{projection:{[this.uid]:1}});
@@ -614,13 +614,13 @@ class Classroom {
 
   async manageClassroom(user, body, teacher, classroom) {
     switch (body.action) {
-      case "create":
+      case action.create:
         return await this.createClassroom(user, body);
-      case "update":
+      case action.update:
         return await this.updateClassroom(user, teacher, body, classroom);
-      case "receive":
+      case action.receive:
         return await this.getClassroom(user,body);
-      case "manage":
+      case action.manage:
         return await this.manage.handleSettings(user, body, teacher, classroom);
     }
   }
@@ -813,13 +813,13 @@ class Classroom {
   async handleInvitation(user, body, classroom) {
     const inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
     switch (body.action) {
-      case "create":{
+      case action.create:{
         return await invite.generateLink(client.student,{
           cid:classroom._id,
           instID:inst._id
         });
       }break;
-      case "disable":{
+      case action.disable:{
         return await invite.disableInvitation(client.student,{
           cid:classroom._id,
           instID:inst._id
@@ -832,33 +832,43 @@ class Classroom {
 }
 
 class PseudoUsers {
-  constructor() {}
+  constructor() {
+    this.object = "pseudousers";
+    this.students = "students";
+    this.classes = "classes";
+    this.studentID = "studentID";
+    this.classname = "classname";
+    this.classpath =  `users.${this.classes}`;
+    this.pclasspath = `${this.object}.${this.classes}`;
+    this.studentpath = `users.${this.students}`;
+    this.pstudentpath = `${this.object}.${this.students}`;
+  }
   async managePseudousers(user, body, teacher) {
     const classdoc = await Institute.findOne({uiid: user.uiid,
-      "users.classes": {
+      [this.classpath]: {
         $elemMatch: { inchargeID: teacher.teacherID },
       }
     },{
-      projection: { "users.classes.$": 1 } 
+      projection: { [`${this.classpath}.$`]: 1 } 
     });
     if(!classdoc) return code.event(code.NO);
     switch (body.action) {
-      case "receive":
+      case action.receive:
         return await this.getPseudoUsers(user, body,classdoc.users.classes[0].classname);
-      case "accept":
+      case action.accept:
         return await this.acceptStudentRequest(user, body,classdoc.users.classes[0].classname);
-      case "reject":
+      case action.reject:
         return await this.rejectStudentRequest(user, body,classdoc.users.classes[0].classname);
     }
   }
   async getPseudoUsers(user, teacher,classname) {
     const pclassdoc = await Institute.findOne({
         uiid: user.uiid,
-        "pseudousers.classes": {
+        [this.pclasspath]: {
           $elemMatch: { classname: classname },
         },
     },
-      { projection: { "pseudousers.classes.$": 1 } }
+      { projection: { [`${this.pclasspath}.$`]: 1 } }
     );
     return pclassdoc
       ? pclassdoc.pseudousers.classes[0].students
@@ -869,43 +879,43 @@ class PseudoUsers {
     const pclassdoc = await Institute.findOne(
       {
         uiid: user.uiid,
-        "pseudousers.classes": {
+        [this.pclasspath]: {
           $elemMatch: { classname: classname },
         },
       },
-      { projection: { "pseudousers.classes.$": 1,"pseudousers.students":1 } }
+      { projection: { [`${this.pclasspath}.$`]: 1,[this.pstudentpath]:1 } }
     );
     if (!pclassdoc) return code.event(code.NO);
     let student = pclassdoc.pseudousers.classes[0].students.find((stud)=>stud.studentID == body.studentID);
     let studaccount = pclassdoc.pseudousers.students.find((acc)=>acc.studentID==body.studentID);
     const query = studaccount?{
       $push: {
-        "users.classes.$.students": student,
-        "users.students":studaccount
+        [`${this.classpath}.$.${this.students}`]: student,
+        [this.studentpath]:studaccount
       },
       $pull: {
-        "pseudousers.classes.$[outer].students": {
-          studentID: student.studentID,
+        [`${this.pclasspath}.$[outer].${this.students}`]: {
+          [this.studentID]: student.studentID,
         },
-        "pseudousers.students":{studentID:studaccount.studentID}
+        [this.pstudentpath]:{studentID:studaccount.studentID}
       },
     }:{
       $push: {
-        "users.classes.$.students": student,
+        [`${this.classpath}.$.${this.students}`]: student,
       },
       $pull: {
-        "pseudousers.classes.$[outer].students": {
-          studentID: student.studentID,
+        [`${this.pclasspath}.$[outer].${this.students}`]: {
+          [this.studentID]: student.studentID,
         },
       },
     }
     if (!student) return code.event(code.NO);
     const doc = await Institute.updateOne({
         uiid: user.uiid,
-        "users.classes": { $elemMatch: { classname: classname } },
+        [this.classpath]: { $elemMatch: { classname: classname } },
       },query,
       {
-        arrayFilters: [{ "outer.classname": classname }],
+        arrayFilters: [{ [`outer.${this.classname}`]: classname }],
       }
     );
     return code.event(doc.result.nModified ? code.OK : code.NO);
@@ -914,13 +924,13 @@ class PseudoUsers {
     const doc = await Institute.updateOne(
       {
         uiid: user.uiid,
-        "pseudousers.classes": {
+        [this.pclasspath]: {
           $elemMatch: { classname: classname },
         },
       },
       {
         $pull: {
-          "pseudousers.classes.$.students": { studentID: body.studentID },
+          [`${this.pclasspath}.$.${this.students}`]: { [this.studentID]: body.studentID },
         },
       }
     );

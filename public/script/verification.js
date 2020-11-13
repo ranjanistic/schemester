@@ -51,7 +51,7 @@ class Verification {
     }    
     postJsonData(postlink, {
       type: "verification",
-      action: "check",
+      action: action.check,
     }).then((response) => {
       if (response.event == code.verify.VERIFIED) {
         location.reload();
@@ -75,7 +75,7 @@ class Verification {
     }
     postJsonData(postlink, {
       type: "verification",
-      action: "send",
+      action: action.send,
     }).then((response) => {
       this.afterSend(response);
     }).catch((e) => {

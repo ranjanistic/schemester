@@ -450,15 +450,15 @@ class Self {
   };
   handlePreferences = async (user, body) => {
     switch (body.action) {
-      case "set":
+      case action.set:
         return await this.prefs.setPreference(user, body);
-      case "get":
+      case action.get:
         return await this.prefs.getPreference(user, body);
     }
   };
   handleVerification = async (user, body) => {
     switch (body.action) {
-      case "send": {
+      case action.send: {
         const inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
         if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const linkdata = await verify.generateLink(client.student, {
@@ -468,7 +468,7 @@ class Self {
         if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       } break;
-      case "check": {
+      case action.check: {
         const student = await this.account.getAccount(user);
         if (!student)
           return code.event(code.auth.USER_NOT_EXIST);
@@ -482,7 +482,7 @@ class Self {
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case "send":{
+      case action.send:{
         let inst;
         if (!user) {
           inst = await Institute.findOne({uiid:body.uiid},{projection:{[this.uid]:1}});
@@ -879,6 +879,16 @@ class Comms{
       arrayFilters:[{"theroom._id":ObjectId(roomID)}]
     });
     return code.event(doc.value?code.OK:code.NO);
+  }
+
+  async chatroom(){
+
+  }
+  async voicecalling(){
+
+  }
+  async videocalling(){
+
   }
 }
 

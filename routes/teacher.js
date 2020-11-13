@@ -1,19 +1,14 @@
-const { ObjectId } = require("mongodb");
-
 const express = require("express"),
   teacher = express.Router(),
   path = require("path"),
   cookieParser = require("cookie-parser"),
-  { code, client, view, get, clog } = require("../public/script/codes"),
+  { code, client, view, action,get,post, clog } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
-  mailer = require("../workers/common/mailer"),
   worker = require("../workers/teacherworker"),
-  share = require("../workers/common/sharedata"),
-  Institute = require("../config/db").getInstitute(),
-  Admin = require("../config/db").getAdmin();
+  Institute = require("../config/db").getInstitute();
 
 const sessionsecret = session.teachersessionsecret;
 teacher.use(cookieParser(sessionsecret));
@@ -36,10 +31,10 @@ teacher.get(get.authlogin, (req, res) => {
   return res.redirect(worker.toSession(response.user.id, req.query));
 });
 
-teacher.post("/auth", async (req, res) => {
+teacher.post(post.auth, async (req, res) => {
   const body = req.body;
   switch (body.action) {
-    case "login":
+    case action.login:
       {
         session
           .login(req, res, sessionsecret)
@@ -51,14 +46,14 @@ teacher.post("/auth", async (req, res) => {
           });
       }
       break;
-    case "logout":
+    case action.logout:
       {
         session.finish(res).then((response) => {
           return res.json({ result: response });
         });
       }
       break;
-    case "signup":
+    case action.signup:
       {
         session
           .signup(req, res, sessionsecret, body.pseudo)
@@ -289,7 +284,7 @@ teacher.get(get.fragment, async (req, res) => {
   }
 });
 
-teacher.post("/self", async (req, res) => {
+teacher.post(post.self, async (req, res) => {
   const body = req.body;
   if (body.external) {
     switch (body.action) {
@@ -309,11 +304,11 @@ teacher.post("/self", async (req, res) => {
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   switch (body.target) {
-    case "receive":
+    case action.receive:
       return res.json({
         result: await worker.self.account.getAccount(response.user),
       });
-    case "authenticate":
+    case action.authenticate:
       return res.json({
         result: await session.authenticate(req, res, body, sessionsecret),
       });
@@ -328,7 +323,7 @@ teacher.post("/self", async (req, res) => {
   }
 });
 
-teacher.post("/schedule", async (req, res) => {
+teacher.post(post.schedule, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   if (!session.valid(response)) return res.json(invalidsession);
   const body = req.body;
@@ -390,21 +385,12 @@ teacher.get("/download*", async (req, res) => {
   }
 });
 
-teacher.post("/classroom", async (req, res) => {
+teacher.post(post.classroom, async (req, res) => {
   const response = session.verify(req, sessionsecret);
 
   if (!session.valid(response)) return res.json(invalidsession);
   const teacher = await worker.self.account.getAccount(response.user, true);
-  const classdoc = await Institute.findOne(
-    {
-      uiid: response.user.uiid,
-      "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
-    },
-    {
-      projection: { "users.classes.$": 1 },
-    }
-  );
-  const classroom = classdoc ? classdoc.users.classes[0] : false;
+  const classroom = await worker.classroom.getClassroomByInchargeID(response.user,teacher.teacherID);
   const body = req.body;
   switch (body.target) {
     case "classroom":
@@ -424,7 +410,7 @@ teacher.post("/classroom", async (req, res) => {
           teacher
         ),
       });
-    case "invite":
+    case action.invite:
       return res.json({
         result: await worker.classroom.handleInvitation(
           response.user,
@@ -435,7 +421,7 @@ teacher.post("/classroom", async (req, res) => {
   }
 });
 
-teacher.post("/session/validate", async (req, res) => {
+teacher.post(post.sessionvalidate, async (req, res) => {
   const response = session.verify(req, sessionsecret);
   return res.json({ result: response });
 });
@@ -506,7 +492,7 @@ teacher.get(get.external, async (req, res) => {
   }
 });
 
-teacher.post("/manage", async (req, res) => {
+teacher.post(post.manage, async (req, res) => {
   const body = req.body;
   if (body.external) {
     switch (body.type) {
@@ -533,15 +519,17 @@ teacher.post("/manage", async (req, res) => {
   }
 });
 
-teacher.post("/comms", async (req, res) => {
+teacher.post(post.comms, async (req, res) => {
+  const response = session.verify(req, sessionsecret);
+  if (!session.valid(response)) return res.json({ result: response });
   switch (req.body.action) {
-    case "chat":
+    case action.chat:
       worker.comms.chatroom();
       break;
-    case "voicecall":
+    case action.voicecall:
       worker.comms.voicecalling();
       break;
-    case "videocall":
+    case action.videocall:
       worker.comms.videocalling();
       break;
   }

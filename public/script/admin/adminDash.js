@@ -20,7 +20,7 @@ class Dashboard {
         };
         postJsonData(post.admin.dashboard,{
           target:post.admin.target.today,
-          action:post.admin.action.fetch,
+          action:action.fetch,
         }).then(response=>{
           this.loader(false);
           if(response.timings.daysInWeek.includes(new Date().getDay())){
@@ -100,7 +100,7 @@ class Dashboard {
                     adialog.loader();
                     postJsonData(post.admin.dashboard,{
                       target:post.admin.target.today,
-                      action:post.admin.action.update,
+                      action:action.update,
                       arrange:arranges[p]
                     }).then(resp=>{
                       if(resp.event == code.OK){
@@ -194,7 +194,7 @@ class NoDataView {
         loadingBox(true,"Extracting classes","Finding unique classes among schedule of teachers...");
         postJsonData(post.admin.schedule, {
           target: client.teacher,
-          action: "receive",
+          action: action.receive,
           specific: "classes",
         })
           .then((response) => {
@@ -309,7 +309,7 @@ class ConfirmClasses {
               });
               postJsonData(post.admin.schedule, {
                 target: client.student,
-                action: "create",
+                action: action.create,
                 specific:code.action.CREATE_CLASSES,
                 classes:data,
               }).then((response) => {
@@ -418,7 +418,7 @@ class ConfirmClasses {
             this.classeditables[c].load();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
-              action: "update",
+              action: action.update,
               specific: code.action.RENAME_CLASS,
               oldclassname: this.classeditables[c].displayText(),
               newclassname: this.classeditables[c].getInputValue().trim(),
@@ -456,7 +456,7 @@ class ConfirmClasses {
               let finalClasses = [];
               postJsonData(post.admin.schedule, {
                 target: client.teacher,
-                action: "receive",
+                action: action.receive,
                 specific: "classes",
               })
               .then((response) => {
@@ -559,7 +559,7 @@ class BaseView {
               requestDialog.loader();
               postJsonData(post.admin.pseudousers,{
                 target:client.teacher,
-                action:"reject",
+                action:action.reject,
                 teacherID:teacher.id
               }).then(resp=>{
                 if(resp.event == code.OK){
@@ -573,7 +573,7 @@ class BaseView {
               requestDialog.loader();
               postJsonData(post.admin.pseudousers,{
                 target:client.teacher,
-                action:"accept",
+                action:action.accept,
                 teacherID:teacher.id
               }).then(resp=>{
                 if(resp.event == code.OK){

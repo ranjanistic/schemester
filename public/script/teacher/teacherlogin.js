@@ -66,7 +66,7 @@ class UIID{
   }
    uiidProcedure(uiid){
     postJsonData(post.teacher.auth,{
-      action:post.teacher.action.login,
+      action:action.login,
       type:key.uiid,
       uiid:uiid
     }).then(response=>{
@@ -129,7 +129,7 @@ class Email{
   
   emailIDProcedure(emailid){
     postJsonData(post.teacher.auth,{
-      action:post.teacher.action.login,
+      action:action.login,
       type:'email',
       email:emailid,
       uiid:this.getUIID()
@@ -206,7 +206,7 @@ class Password{
   }
   passwordProcedure(password){
     postJsonData(post.teacher.auth,{
-      action:post.teacher.action.login,
+      action:action.login,
       type:'password',
       email:this.getEmail(),
       uiid:this.getUIID(),
@@ -238,7 +238,7 @@ class Password{
       postJsonData(post.teacher.manage,{
         external:true,
         type:"resetpassword",
-        action:"send",
+        action:action.send,
         uiid:this.getUIID(),
         email:this.getEmail()
       }).then((resp)=>{

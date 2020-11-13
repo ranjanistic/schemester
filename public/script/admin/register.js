@@ -710,7 +710,7 @@ class Stage2 {
               switch (response.event) {
                 case code.auth.SESSION_INVALID: {
                   return relocate(locate.admin.auth, {
-                    action: "login",
+                    action: action.login,
                     target: locate.admin.target.register,
                   });
                 }
