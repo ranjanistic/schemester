@@ -1,4 +1,6 @@
-# Schemester Devs
+# Schemester Docs
+
+```Last update: November 23, 2020 22:05 IST.```
 
 This doc explains the objects, methods, developement &amp; testing cycle of schemester.
 
@@ -15,6 +17,14 @@ git checkout branch-name
 npm install
 npm run devserver
 ```
+
+Occassionally, run
+
+```bash
+npm update
+```
+
+to get latest version of all dependencies, if available.
 
 This should start your local server on https, and following log must be visible (if [these steps](README.md#generate-localhost-certificate) were followed for the first time).
 
@@ -378,6 +388,7 @@ setViewType(aSwitchElement,view){
 }
 ...
 ```
+
 The method _setClassNames_ is defined [here](#setclassnames).
 
 Here the parameter _view_ is a variable of [ViewType](#view-type) class, could be ViewType.neutral, or anything. The actionType object calls getSwtchStyle method of _ViewType_ class, to get the appropriate CSS class (from [main.css](#maincsspubliccssmaincss)) for given switch element, which is then used by [setClassNames](#setclassnames) method (defined in [main.js](#mainjspublicscriptmainjs)) to set it.
@@ -495,10 +506,7 @@ This class containes variables to which default ids are assigned. This class is 
 This class manages formation of dialog boxes throughout the application, with the help of [DialogID](#dialogid) class to grab the basic html for dialog box included in all view files where dialog boxes are required, which is
 
 ```html
-<div id="dialogView" class="dialog fmt-animate-opacity">
-  <div class="dialog-box container fmt-row fmt-animate-left" id="dialogBox">
-  </div>
-</div>
+<div id="dialogView"></div>
 ```
 
 This html code is to be included at the bottom of ```<body>``` in the views wherever dialog box is required, else the [Dialog](#dialog) class will throw error.
@@ -593,8 +601,6 @@ Shows a small message at bottom left of screen.
 ```js
 class Snackbar {
   id = "snackBar";
-  textId = "snackText";
-  buttonId = "snackButton";
   constructor() {
     ...
   }
@@ -604,10 +610,7 @@ class Snackbar {
 For this to work, a small html code is required at the end of ```<body>```, just like [Dialog](#dialog) class.
 
 ```html
-<div id="snackBar" class="snack-positive fmt-animate-bottom">
-  <span class="fmt-left fmt-padding" id="snackText"></span>
-  <button class="fmt-right neutral-button" id="snackButton"><button>
-</div>
+<div id="snackBar"></div>
 ```
 
 Paste this html in the view where you need the [Snackbar](#snackbar) class to work. Then in your script,
@@ -644,10 +647,12 @@ This class controlls custom text input view, and provides methods for serveral a
 class TextInput {
   constructor(
     fieldId = String(),
-    inputId = String(),
-    errorId = String(),
+    caption = String(),
+    placeholder = String(),
     type = null,
-    captionId = null
+    forgotbutton = false,
+    required = true,
+    isTextArea = false
   ) {
     ...
   }
@@ -658,171 +663,31 @@ class TextInput {
 For this to initialize and work, the following piece of html code is required to be put in view file.
 
 ```html
-<fieldset class="text-field" id="textfield">
-  <legend class="field-caption" id="textcaption">A Caption</legend>
-  <input class="text-input" type="text" id="textinput">
-  <span class="fmt-right error-caption"  id="texterror"></span>
-</fieldset>
+<fieldset id="textfield"></fieldset>
 ```
 
 This has to be put wherever an input field is required. Then every input field can be assigned to an object in script like so
 
 ```js
-  const textinput = new TextInput("textfield","textinput","texterror",validType.nonempty,"textcaption");
+  const textinput = new TextInput("textfield","A caption","An explanation",validType.nonempty);
 ```
 
-Last two parameters are optional, however, become necessary if any method requiring them is called, like
+Last four parameters are optional, however, become necessary if any method requiring them is called, like
 
 ```js
 if(!textinput.isValid())
   textinput.validateNow();  //this requires the type parameter to validate.
 textinput.setFieldCaption("A new caption"); //this requires the captionID parameter to set.
+
+textinput.forgot.onclick=_=>{...} //this forgot attribute works only if forgotbutton is set to true.
+
 ```
 
-_Note: For all the above element controller classes to work, [main.css](#maincsspubliccssmaincss) & [fmt.css](#fmtcsspubliccssfmtcss) files are neccessary (& [switch.css](#switchcsspubliccsswitchcss) for [Switch](#switch) class]. Otherwise the methods or even the initialization could/will fail and throw errors._
+_Note: For all the above element controller classes to work, [main.css](#maincsspubliccssmaincss) & [fmt.css](#fmtcsspubliccssfmtcss) files are neccessary (& [switch.css](#switchcsspubliccsswitchcss) for [Switch](#switch) class). Otherwise the methods or even the initialization could/will fail and throw errors._
 
 ##### [Methods](#mainjsmethod)
 
-###### addNumberSuffixHTML
-
-###### getElement
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
-###### addNumberSuffixHTML()
-
+###### (Documentation Incomplete)
 
 ### Spine Styles
 
@@ -1068,7 +933,7 @@ This folder contains sub-folders and files of the same structure as of [script/]
 
 The subfolders are following.
 
-##### admin/
+##### [admin/](views/admin/)
 
 The views in this folder are for admin routes.
 
@@ -1081,7 +946,7 @@ The views in this folder are for admin routes.
 - [teacherfiller.ejs](views/admin/teacherfiller.ejs) for teacher filling view of admin and teacher (decided by [client type](#client) and other conditions).
 - [users.ejs](views/admin/users.ejs) for users view.
 
-##### comms/
+##### [comms/](views/comms/)
 
 The views in this folder are rendered by communication methods of each route.
 
@@ -1089,7 +954,7 @@ The views in this folder are rendered by communication methods of each route.
 - [chatroom.ejs](views/comms/chatroom.ejs) for chatting view
 - [comms.ejs](views/comms/comms.ejs) for main communication view
 
-##### mail/
+##### [mail/](views/mail/)
 
 The views in this folder are loaded by [mailer worker](#workers). Not meant for webpage rendering by server, but to send emails.
 
@@ -1097,7 +962,7 @@ The views in this folder are loaded by [mailer worker](#workers). Not meant for 
 - [passreset.ejs](views/mail/passreset.ejs) for password reset template
 - [verification.ejs](views/mail/verification.ejs) for verification template
 
-##### student/
+##### [student/](views/student/)
 
 The views in this folder are for student route.
 
@@ -1111,7 +976,7 @@ The views in this folder are for student route.
 - [studentdash.ejs](views/student/studentdash.ejs) for dashboard view (parent of fragments)
 - [studentlogin.ejs](views/student/studentlogin.ejs) for login view.
 
-##### teacher/
+##### [teacher/](views/teacher/)
 
 The views in this folder are for teacher route.
 
@@ -1179,13 +1044,25 @@ The tasks common to all client routes are grouped under the following folder.
 
 This folder contains worker files for all clients, and handles jobs common to them.
 
-- [invitation.js](worker/common/invitation.js) Handles invitation related tasks for clients. Has methods to generate (via admin or teacher), or handle invitation link (via teacher or student).
-- [mailer.js](worker/common/mailer.js) handles emailing process. Loads specific email templates from [mail views](#mail) and sends via it's methods, as per the provided arguments.
-- [passwordreset.js](worker/common/passwordreset.js) handles password reset tasks similarly like invitation worker. Generates and handles password reset link for all clients, specifically.
-- [session.js](worker/common/session.js) maintaines and works upon session creation, deletion and has methods to handle signup, login or re-authentication of clients.
-- [sharedata.js](worker/common/sharedata.js) the methods in this file are called whenever a specified json object key values are to be filtered and retured, mostly used to filter account data, by removing passwords and other sensitive info from raw JSON and returning it.
-- [timer.js](worker/common/timer.js) handles timings of application, creates dates and requrired incrementation in it for variety of timing related tasks of other workers.
-- [verification.js](worker/common/verification.js) handles verification process, similar to password reset worker. Generates and handles verification links for all clients, specifically.
+- [invitation.js](workers/common/invitation.js) Handles invitation related tasks for clients. Has methods to generate (via admin or teacher), or handle invitation link (via teacher or student).
+- [mailer.js](workers/common/mailer.js) handles emailing process. Loads specific email templates from [mail views](#mail) and sends via it's methods, as per the provided arguments.
+- [passwordreset.js](workers/common/passwordreset.js) handles password reset tasks similarly like invitation worker. Generates and handles password reset link for all clients, specifically.
+- [session.js](workers/common/session.js) maintaines and works upon session creation, deletion and has methods to handle signup, login or re-authentication of clients.
+- [sharedata.js](workers/common/sharedata.js) the methods in this file are called whenever a specified json object key values are to be filtered and retured, mostly used to filter account data, by removing passwords and other sensitive info from raw JSON and returning it.
+- [timer.js](workers/common/timer.js) handles timings of application, creates dates and requrired incrementation in it for variety of timing related tasks of other workers.
+- [verification.js](workers/common/verification.js) handles verification process, similar to password reset worker. Generates and handles verification links for all clients, specifically.
+
+##### [adminworker.js](workers/adminworker.js)
+
+This module does heavy tasks for [administrator router](#routes).
+
+##### [teacherworker.js](workers/teacherworker.js)
+
+This module does heavy tasks for [teacher router](#routes).
+
+##### [studentworker.js](workers/studentworker.js)
+
+This module does heavy tasks for [student router](#routes).
 
 #### [server.js](server.js)
 

@@ -2,20 +2,20 @@ class Active {
   constructor(data) {
     this.nameField = new TextInput(
       "usernamefield",
-      "username",
-      "usernameerror",
-      validType.nonempty
+      false,
+      "",
+      validType.name
     );
     this.emailField = new TextInput(
       "usermailfield",
-      "usermail",
-      "usermailerror",
+      false,
+      "",
       validType.email
     );
     this.passField = new TextInput(
       "userpassfield",
-      "userpass",
-      "userpasserror",
+      false,
+      "",
       validType.password
     );
     

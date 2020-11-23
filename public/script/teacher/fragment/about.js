@@ -37,8 +37,8 @@ class TeacherAbout {
       "teachernameeditor",
       new TextInput(
         "teachernamefield",
-        "teachernameinput",
-        "teachernameerror",
+        false,
+        "",
         validType.name
       ),
       "editteachername",

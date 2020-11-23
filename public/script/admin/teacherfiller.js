@@ -25,12 +25,12 @@ class TeacherFiller {
       <center>If you have already a backup file (.json) of schedule, then you can upload it here to directly create schedule from it.</center>
       <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_NNNNNNNNNNNNNNNNN.json</div>
         <fieldset class="text-field" id="fileuploadfield">
-          <legend class="field-caption">Select the file from your device</legend>
-          <input class="text-input" required type="file" id="fileupload" name="schedulefileupload">
-          <span class="error-caption" id="fileuploaderror"></span>
+          <legend class="fileuploadfieldcaption">Select the file from your device</legend>
+          <input class="text-input" required type="file" id="fileuploadfieldinput" name="schedulefileupload">
+          <span class="error-caption" id="fileuploadfielderror"></span>
         </fieldset>
       `);
-      const fileinput = new TextInput("fileuploadfield","fileupload","fileuploaderror");
+      const fileinput = new TextInput("fileuploadfield",false);
       this.updial.createActions(['Create Schedule','Cancel'],[actionType.positive,actionType.neutral]);
       fileinput.input.addEventListener('change',(event)=>{
         var files = event.target.files;
@@ -71,11 +71,11 @@ class TeacherFiller {
     if (this.data.isAdmin) {
       this.teacherIDField = new TextInput(
         "teacherEmailField",
-        "teacherEmail",
-        "teacherEmailError",
+        "Email address of teacher",
+        "teacher@example.com",
         validType.email
       );
-      this.teacherID = getElement("teacherEmailView");
+      this.teacherIDField.setInput(getElement("giventeacherID").innerHTML);
     }
 
     this.dayCaption = getElement("teacherDayCaption");
@@ -90,14 +90,14 @@ class TeacherFiller {
     for (let i = 0; i < this.data.totalPeriods; i++) {
       this.teacherClass[i] = new TextInput(
         `teacherClassField${i}`,
-        `teacherClass${i}`,
-        `teacherClassError${i}`,
+        `Class assigned`,
+        `Classname (Keep same pattern)`,
         validType.nonempty
       );
       this.teacherSubject[i] = new TextInput(
         `teacherSubjectField${i}`,
-        `teacherSubject${i}`,
-        `teacherSubjectError${i}`,
+        `Subject to be taken`,
+        `Subject name`,
         validType.nonempty
       );
       this.teacherfreeswitch[i] = new Switch(

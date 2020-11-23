@@ -28,7 +28,7 @@ class UIID{
     this.proceed.innerHTML = "Proceed";
     this.logInLoader = getElement("loginLoader");
     getElement("subtext").innerHTML = `Please provide the unique ID of your institution to proceed.`;
-    this.uiidField = new TextInput("uiidfield","uiid","uiidError",validType.nonempty);
+    this.uiidField = new TextInput("uiidfield","UIID","Your institution's unique ID",validType.nonempty);
     this.uiidField.show();
     this.uiidField.enableInput();
     this.rememberuiid = new Switch('rememberuiidcheck');
@@ -101,7 +101,7 @@ class Classname{
     this.proceed.innerHTML = "Proceed";
     this.logInLoader = getElement("loginLoader");
     getElement("subtext").innerHTML = `Now, provide your class name which you've enrolled with ${this.getUIID()} institute.`;
-    this.classField = new TextInput("userclassfield","userclass","classerror",validType.nonempty);
+    this.classField = new TextInput("userclassfield","Classname","Your base class",validType.nonempty);
     this.classField.validate();
     this.classCheck(null);
     this.classField.enableInput();
@@ -170,7 +170,7 @@ class Email{
     this.proceed.innerHTML = "Proceed";
     this.logInLoader = getElement("loginLoader");
     getElement("subtext").innerHTML = `Now, provide your email address which you've registered with ${this.getUIID()} institute.`;
-    this.emailField = new TextInput("useremailfield","useremail","useremailerror",validType.email);
+    this.emailField = new TextInput("useremailfield","Email address","youremail@example.domain",validType.email);
     this.emailField.validate();
     this.emailCheck(null);
     this.emailField.enableInput();
@@ -249,15 +249,14 @@ class Password{
     this.subtext.innerHTML = `Provide your account password to continue with your schedule.`;
     this.target = String(getElement('target').innerHTML);
     this.target = stringIsValid(this.target,validType.nonempty)?this.target:locate.student.target.today
-    this.passField = new TextInput("userpasswordfield","userpassword","userpassworderror",validType.nonempty,"userpasswordcaption");
+    this.passField = new TextInput("userpasswordfield","Password","Your account password",validType.nonempty,true);
     this.passField.show();
     this.passField.enableInput();
-    this.forgotPassword = getElement("forgotpasswordButton");
-    hide(this.forgotPassword);
-    this.passField.validate(_=>{hide(this.forgotPassword)});
+    hide(this.passField.forgot);
+    this.passField.validate(_=>{hide(this.passField.forgot)});
 
-    resumeElementRestriction(this.forgotPassword,key.student.forgotpassword,_=>{
-      this.forgotPassword.onclick = (_) => {this.linkSender()};
+    resumeElementRestriction(this.passField.forgot,key.student.forgotpassword,_=>{
+      this.passField.forgot.onclick = (_) => {this.linkSender()};
     });
 
     this.previous.onclick = _=>{
@@ -267,7 +266,7 @@ class Password{
     this.proceed.onclick =_=>{
       this.passField.validateNow();
       if(!this.passField.isValid())return;
-      hide(this.forgotPassword);
+      hide(this.passField.forgot);
       this.loader();
       this.passwordProcedure(this.passField.getInput());
     };
@@ -305,7 +304,7 @@ class Password{
   linkSender(){
     if(!stringIsValid(this.getEmail(),validType.email)){ this.previous.click(); return snackBar('Provide your valid email address');}
     snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
-      this.forgotPassword.onclick = (_) => {};
+      this.passField.forgot.onclick = (_) => {};
       snackBar(`Sending link to ${this.getEmail()}`);
       postJsonData(post.student.manage,{
         external:true,
@@ -316,14 +315,14 @@ class Password{
         email:this.getEmail()
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
+          this.passField.forgot.onclick = (_) => {this.linkSender()};
           return snackBar('An error occurred','Report');
         }
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
-        restrictElement(this.forgotPassword,120,key.student.forgotpassword,_=>{
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        restrictElement(this.passField.forgot,120,key.student.forgotpassword,_=>{
+          this.passField.forgot.onclick = (_) => {this.linkSender()};
         });
       })
     })
@@ -341,7 +340,7 @@ class Password{
     switch (result.event) {
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
-        show(this.forgotPassword);
+        show(this.passField.forgot);
         return this.proceed.innerHTML = "Retry";
       }
       case code.inst.INSTITUTION_NOT_EXISTS:{
@@ -366,7 +365,7 @@ class Password{
       }
       default: {
         this.proceed.textContent = "Retry";
-        show(this.forgotPassword);
+        show(this.passField.forgot);
         return snackBar(result.event+':'+result.msg, "Report");
       }
     }

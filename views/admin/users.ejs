@@ -59,7 +59,7 @@
                     </div>
                     <% } %>
                     <div class="negative" id="logoutAdminButton" onclick="finishSession()">
-                        ❌ Logout
+                        Logout
                     </div>
                 </div>
             </span >
@@ -142,15 +142,8 @@
         <span hidden>
             <span id="client"><%= client %></span>
         </span>
-
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
         <noscript id="noscript" class="dialog fmt-red" style="display:block">
             <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
                 <div class="heading">Javascript required</div><br/>

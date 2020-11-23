@@ -39,43 +39,19 @@
             <div class="fmt-col fmt-half container" id="workbox">
                 <span class="heading fmt-hide-small">Administrator</span>
                 <span class="heading fmt-hide-medium fmt-hide-large">Admin</span>
-                
-                <fieldset class="text-field" id="email_fieldset">
-                    <legend class="field-caption" >Email Address</legend>
-                    <input class="text-input" required placeholder="youremail@example.domain" type="email" inputmode="email" id="adminemail" name="email" value="<%= autofill.email %>">
-                    <span class="fmt-right error-caption" id="emailError"></span>
-                </fieldset>
-                
-                <fieldset class="text-field" id="password_fieldset">
-                    <legend class="field-caption">Password</legend>
-                    <input class="text-input" required="true" placeholder="Your account password." type="password" id="adminpassword" name="password">
-                    <span class="fmt-right error-caption" id="passError"></span>
-                    <button class="active-button fmt-right" id="forgotpasswordButton">Forgot?</button>
-                </fieldset>
-                
-                <fieldset class="text-field" id="uiid_fieldset">
-                    <legend class="field-caption">UIID</legend>
-                    <input class="text-input" spellcheck="false" placeholder="Your institution's identifier." type="text" id="uiid" name="uiid" value="<%= autofill.uiid %>">
-                    <span class="fmt-right error-caption" id="uiidError"></span>
-                </fieldset>
-                
+                <fieldset id="email_fieldset"></fieldset>
+                <fieldset id="password_fieldset"></fieldset>
+                <fieldset id="uiid_fieldset"></fieldset>
                 <div class="fmt-row">
-                <button class="positive-button fmt-right" style="display:block" id="loginAdminButton">Proceed</button>
-                <img class="fmt-spin-fast fmt-right" style="display:none" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
+                    <button class="positive-button fmt-right" id="loginAdminButton">Proceed</button>
+                    <img class="fmt-spin-fast fmt-right" style="display:none" width="50" src="/graphic/blueLoader.svg" id="loginLoader" hidden/>
                 </div>
             </div>
             <div class="fmt-col fmt-padding  fmt-quarter">
             </div>
         </div>
-
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
         <span hidden id="target"><%= autofill.target %></span>
         <span hidden id="section"><%= autofill.section %></span>
     </body>

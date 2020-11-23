@@ -114,8 +114,8 @@ class Admin {
       "adminnameeditor",
       new TextInput(
         "adminnamefield",
-        "adminnameinput",
-        "adminnameerror",
+        "Your Name",
+        "Visible to everyone",
         validType.name
       ),
       "editadminname",
@@ -131,8 +131,8 @@ class Admin {
       "adminphoneeditor",
       new TextInput(
         "adminphonefield",
-        "adminphoneinput",
-        "adminphoneerror",
+        "Your phone",
+        "Selectively visible",
         validType.phone
       ),
       "editadminphone",
@@ -364,8 +364,8 @@ class Institution {
       "institutenameeditor",
       new TextInput(
         "institutenamefield",
-        "institutenameinput",
-        "institutenameerror",
+        "Institute Name",
+        "Visible to people of your institution",
         validType.name
       ),
       "editinstitutename",
@@ -401,8 +401,8 @@ class Institution {
       "institutephoneeditor",
       new TextInput(
         "institutephonefield",
-        "institutephoneinput",
-        "institutephoneerror",
+        "Insitute Phone",
+        "Institute's phone number",
         validType.phone
       ),
       "editinstitutephone",
@@ -438,8 +438,8 @@ class Institution {
       "institutemaileditor",
       new TextInput(
         "institutemailfield",
-        "institutemailinput",
-        "institutemailerror",
+        "Institute Email",
+        "Visible to all",
         validType.email
       ),
       "editinstitutemail",
@@ -535,9 +535,9 @@ class Schedule {
       "starteditor",
       new TextInput(
         "startfield",
-        "startinput",
-        "starterror",
-        validType.nonempty
+        "Start Time",
+        "",
+        validType.time
       ),
       "editstart",
       "startView",
@@ -549,8 +549,8 @@ class Schedule {
       "breakstarteditor",
       new TextInput(
         "breakstartfield",
-        "breakstartinput",
-        "breakstarterror",
+        "Break Start Time",
+        "",
         validType.nonempty
       ),
       "editbreakstart",
@@ -563,8 +563,8 @@ class Schedule {
       "perioddurationeditor",
       new TextInput(
         "perioddurationfield",
-        "perioddurationinput",
-        "perioddurationerror",
+        "Period Minutes",
+        "",
         validType.nonempty
       ),
       "editperiodduration",
@@ -577,8 +577,8 @@ class Schedule {
       "breakdurationeditor",
       new TextInput(
         "breakdurationfield",
-        "breakdurationinput",
-        "breakdurationerror",
+        "Break Minutes",
+        "",
         validType.nonempty
       ),
       "editbreakduration",
@@ -1158,16 +1158,13 @@ class Security {
               </label>
       </div>
       <fieldset class="text-field" id="deluiidfield" style="display:none">
-          <legend class="field-caption" >UIID</legend>
-          <input class="text-input" required placeholder="Type the UIID of your institution" type="email" inputmode="email" id="deluiidinput" name="email"">
-          <span class="fmt-right error-caption" id="deluiiderror"></span>
       </fieldset>
       </div>`
             );
             const deluiid = new TextInput(
               "deluiidfield",
-              "deluiidinput",
-              "deluiiderror",
+              "UIID",
+              "Type the UIID of your institution",
               validType.nonempty
             );
             const deletinstituteswitch = new Switch("deleteinstituteswitch");
@@ -1247,12 +1244,12 @@ class Security {
           <div class="fmt-center">
             <div class="questrial group-text negative">This action is permanent, and kk will be completely removed.</div>
             <div class="questrial group-text">Type the uiid of your institution to delete it.</div>
-            ${getInputField('deluiidfield','deluiidcap','deluiid','deluiiderror')}<br/>
+            ${getInputField('deluiidfield')}<br/>
             <button class="fmt-row positive-button questrial" id="downloadinst">Download Institute Backup</button><br/>
             <div class="fmt-row active caption">It is recommended to download a backup of your institution, which includes all schedule, settings, and user accounts, as a precautionary measure.</div>
           </div>`
         );
-        const deluiid = new TextInput('deluiidfield','deluiid','deluiiderror',validType.nonempty,'deluiidcap');
+        const deluiid = new TextInput('deluiidfield','UIID','Type the UIID of your institution',validType.nonempty);
         deluiid.setFieldCaption('UIID');
         deluiid.setInputAttrs(`Type your institute's unique ID`);
         const downloadinst = getElement("downloadinst");

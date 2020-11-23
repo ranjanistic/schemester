@@ -43,18 +43,31 @@ class Button{
 class TextInput {
   constructor(
     fieldId = String(),
-    inputId = String(),
-    errorId = String(),
+    caption = String(),
+    placeholder = String(),
     type = null,
-    captionId = null
+    forgotbutton = false,
+    required = true,
+    isTextArea = false
   ) {
     this.fieldset = getElement(fieldId);
-    this.caption = captionId ? getElement(captionId) : null;
-    this.input = getElement(inputId);
-    this.error =
-      errorId != constant.nothing && errorId != null
-        ? getElement(errorId)
-        : null;
+    clog(type);
+    clog(validType.getHTMLInputType(type));
+    if(caption!== false){
+    this.fieldset.innerHTML = 
+    `<legend class="field-caption" id="${fieldId}caption">${caption}</legend>
+      <${isTextArea?'textarea':"input"} class="text-input" ${required?'required':''} id="${fieldId}input" placeholder="${placeholder}" type="${validType.getHTMLInputType(type)}">${isTextArea?'</textarea>':''}
+      ${getLoader(`${fieldId}loader`,25)}
+      <span class="fmt-right error-caption" id="${fieldId}error"></span>
+      ${forgotbutton?`<button class="active-button fmt-right" id="${fieldId}forgot">Forgot?</button>`:''}`
+      ;
+    }
+
+    this.caption = getElement(`${fieldId}caption`);
+    this.input = getElement(`${fieldId}input`);
+    this.loader = getElement(`${fieldId}loader`);
+    this.error = getElement(`${fieldId}error`);
+    this.forgot = forgotbutton?getElement(`${fieldId}forgot`):null;
     this.type = type;
     this.normalize();
   }
@@ -64,6 +77,10 @@ class TextInput {
   hide() {
     hide(this.fieldset);
   }
+  load(load = true){
+    visibilityOf(this.loader,load);
+    visibilityOf(this.error,!load);
+  }
   visible(isvisible = true) {
     visibilityOf(this.fieldset, isvisible);
   }
@@ -72,6 +89,7 @@ class TextInput {
   }
   normalize(isNormal = true, errormsg = null) {
     setFieldSetof(this.fieldset, isNormal, this.error, errormsg);
+    this.load(false);
   }
   setFieldCaption(caption) {
     this.caption.textContent = caption;
@@ -330,12 +348,13 @@ class Menu{
 
 class Snackbar {
   id = "snackBar";
-  textId = "snackText";
-  buttonId = "snackButton";
   constructor() {
     this.bar = getElement(this.id);
-    this.text = getElement(this.textId);
-    this.button = getElement(this.buttonId);
+    this.bar.innerHTML = `<span id="snackText"></span>
+    <button id="snackButton"></button>`;
+    appendClass(this.bar,'fmt-animate-bottom');
+    this.text = getElement("snackText");
+    this.button = getElement("snackButton");
     this.button.innerHTML = null;
     hide(this.button);
     this.text.innerHTML = null;
@@ -468,6 +487,7 @@ const min=(numbers = [])=>{
  */
 class DialogID {
   viewId = "dialogView";
+  innerview = `<div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox"></div>`
   boxId = "dialogBox";
   imagedivId = "dialogImagediv";
   imageId = "dialogImage";
@@ -542,8 +562,11 @@ class Dialog extends DialogID {
   constructor() {
     super(DialogID);
     this.view = getElement(this.viewId);
+    this.view.innerHTML = this.innerview;
     setDefaultBackground(this.view);
     this.box = getElement(this.boxId);
+    appendClass(this.view,'dialog');
+    appendClass(this.view,'fmt-animate-opacity');
     opacityOf(this.box, 1);
     this.setBoxHTML(this.basicDialogContent); //sets default dialog html (left image, right heading, subheading, inputs, actions)
     this.image = getElement(this.imageId);
@@ -575,23 +598,15 @@ class Dialog extends DialogID {
     let total = captions.length;
     let fieldSet = String();
     for (var i = 0; i < total; i++) {
-      fieldSet += getInputField(
-        this.dialogInputFieldID(i),
-        this.dialogFieldCaptionID(i),
-        this.dialogInputID(i),
-        this.dialogInputErrorID(i)
-      );
+      fieldSet += getInputField(this.dialogInputFieldID(i));
     }
     this.inputFields.innerHTML = fieldSet;
     visibilityOf(this.inputFields, total > 0);
     this.inputField = Array(total);
     for (var k = 0; k < total; k++) {
       this.inputField[k] = new TextInput(
-        this.dialogInputFieldID(k),
-        this.dialogInputID(k),
-        this.dialogInputErrorID(k),
-        validateTypes ? validateTypes[k] : null,
-        this.dialogFieldCaptionID(k)
+        this.dialogInputFieldID(k),'','',
+        validateTypes ? validateTypes[k] : null,false
       );
     }
 
@@ -720,8 +735,7 @@ class Dialog extends DialogID {
       this.textFieldId,
       this.textInputAreaId,
       this.textInputErrorId,
-      validType.nonempty,
-      this.textFieldCaptionId
+      validType.nonempty,false,true,true
     );
     this.largeTextField.normalize();
     this.largeTextField.setInputAttrs(hint);
@@ -2032,15 +2046,14 @@ const getSwitch = (labelID,label,checkID,switchcontainerID,switchviewID)=>
     </label>
   </span>`;
 
-const getInputField = (fieldID, captionID, inputID, errorID) =>
-  `<fieldset class="fmt-row text-field" id="${fieldID}"> 
-  <legend class="field-caption" id="${captionID}"></legend> 
-  <input class="text-input" id="${inputID}">
-  <span class="fmt-right error-caption" id="${errorID}"></span></fieldset>`;
+const getInputField = (fieldID) =>
+  `<fieldset class="fmt-row text-field" id="${fieldID}"></fieldset>`;
 const getDialogButton = (buttonClass, buttonID, label) =>
   `<button class="${buttonClass} fmt-right" id="${buttonID}">${label}</button>`;
 const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
+
+const getLoader=(id,size = 30,blue = true) =>`<img class="fmt-spin-fast" width="${size}" src="/graphic/${blue?'blueLoader':'onethreeload'}.svg" id="${id}"/>`;
 
 const editIcon=(size)=>`<img width="${size}" src="/graphic/elements/editicon.svg"/>`
 const appicon=(size=256)=>`/graphic/icons/schemester${size}.png`

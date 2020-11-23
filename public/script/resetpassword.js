@@ -5,7 +5,7 @@ class ResetPassword{
         if(this.data.expired){
             return new Expired();
         }
-        this.passField = new TextInput("passfield","passinput","passerror",validType.password);
+        this.passField = new TextInput("passfield","New password","Create a strong password",validType.password);
         this.passField.validate();
         this.view = getElement("workbox");
         this.savepass = getElement("savepassword");

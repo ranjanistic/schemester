@@ -1,95 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Login · Teacher</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="robots" content="noindex, nofollow">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
-        <meta name="theme-color" content="#216bf3" id='themecolor'>
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
-        <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
-        <link rel = "stylesheet" href="/css/fmt.css">
-        <link rel = "stylesheet" href="/css/main.css">
-        <link rel = "stylesheet" href="/css/switch.css">
-        <link href="/font/Jost.css" rel="stylesheet">
-        <link href="/font/Questrial.css" rel="stylesheet">
-        <script src="/script/codes.js"></script>
-        <script src="/script/main.js"></script>
-        <script src="/script/teacher/teacherlogin.js"></script>
-        <script src="/script/teacher/teacher.js"></script>
-    </head>
-    <body class="b-positive" style="background-image: url('/graphic/illustrations/teacherview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
-        <div id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
-            <span>Teacher Login</span>
-            <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
-            <span class="fmt-right fmt-padding-small">
-                <label class="switch-container">
-                    <input type="checkbox" id="darkmode">
-                    <span class="switch-positive"></span>
-                </label>
-            </span>
-        </div>
-        <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
-            <div class="fmt-col fmt-padding  fmt-quarter">
-            </div>
-            <div class="fmt-col container fmt-half" id="workbox">
-                <div class="heading fmt-center">Teacher</div>
-                <div class="questrial">Hello, respected teacher.</div>
+  <head>
+    <title>Login · Teacher</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
+    <meta name="theme-color" content="#216bf3" id='themecolor'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
+    <link rel="icon" href="/graphic/icons/schemester128.png" type="image/png" sizes="128x128">
+    <link rel = "stylesheet" href="/css/fmt.css">
+    <link rel = "stylesheet" href="/css/main.css">
+    <link rel = "stylesheet" href="/css/switch.css">
+    <link href="/font/Jost.css" rel="stylesheet">
+    <link href="/font/Questrial.css" rel="stylesheet">
+    <script src="/script/codes.js"></script>
+    <script src="/script/main.js"></script>
+    <script src="/script/teacher/teacherlogin.js"></script>
+    <script src="/script/teacher/teacher.js"></script>
+  </head>
+  <body class="b-positive" style="background-image: url('/graphic/illustrations/teacherview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
+    <div id="topBar">
+      <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
+      <span>Teacher Login</span>
+      <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
+      <span class="fmt-right fmt-padding-small">
+        <label class="switch-container">
+          <input type="checkbox" id="darkmode">
+          <span class="switch-positive"></span>
+        </label>
+      </span>
+    </div>
+    <div class="fmt-row fmt-padding" style="margin-top: 72px;">
+      <div class="fmt-col fmt-padding fmt-quarter">
+      </div>
+      <div class="fmt-col container fmt-half" id="workbox">
+        <div class="heading fmt-center">Teacher</div>
+        <div class="questrial">Hello, respected teacher.</div>
 
-                <div class="questrial" id="subtext">Please provide the unique ID of your institution to proceed.</div>
-                <fieldset class="text-field" id="uiidfield">
-                    <legend class="field-caption">UIID</legend>
-                    <input class="text-input" spellcheck="false" placeholder="Your institution's unique ID." type="text" id="uiid" name="uiid" value="<%= autofill.uiid %>">
-                    <span class="fmt-right error-caption" id="uiidError"></span>
-                </fieldset>
-                <label class="switch-container" id="rememberuiidcontainer">
-                    <input type="checkbox" id="rememberuiidcheck">
-                    <span class="switch-positive"></span>
-                </label>
-                <span class="fmt-padding-small fmt-right caption questrial">Remember UIID</span>
-                <br/>
-                <fieldset class="text-field" id="useremailfield">
-                    <legend class="field-caption" >Email Address</legend>
-                    <input class="text-input" required placeholder="youremail@example.domain" type="email" inputmode="email" id="useremail" name="email" value="<%= autofill.email %>">
-                    <span class="fmt-right error-caption" id="useremailerror"></span>
-                </fieldset>
-                
-                <fieldset class="text-field" id="userpasswordfield">
-                    <legend class="field-caption" id="userpasswordcaption">Account Password</legend>
-                    <input class="text-input" required="true" placeholder="Your account password." type="password" id="userpassword" name="password">
-                    <span class="fmt-right error-caption" id="userpassworderror"></span>
-                    <button class="active-button fmt-right" id="forgotpasswordButton">Forgot?</button>
-                </fieldset>
-                <br/>
-                <div class="fmt-row">
-                    <button class="neutral-button fmt-left" id="previous">Previous</button>
-                    <button class="positive-button fmt-right" id="proceed">Proceed</button>
-                    <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
-                </div>
-            </div>
-            <div class="fmt-col fmt-padding fmt-quarter"></div>
+        <div class="questrial" id="subtext">Please provide the unique ID of your institution to proceed.</div>
+        <fieldset id="uiidfield"></fieldset>
+        <label class="switch-container" id="rememberuiidcontainer">
+          <input type="checkbox" id="rememberuiidcheck">
+          <span class="switch-positive"></span>
+        </label>
+        <span class="fmt-padding-small fmt-right caption questrial">Remember UIID</span>
+        <br/>
+        <fieldset id="useremailfield"></fieldset>
+        <fieldset id="userpasswordfield"></fieldset>
+        <br/>
+        <div class="fmt-row">
+          <button class="neutral-button fmt-left" id="previous">Previous</button>
+          <button class="positive-button fmt-right" id="proceed">Proceed</button>
+          <img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="loginLoader"/>
         </div>
-
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
-        <span hidden id="target"><%= autofill.target %></span>
-    </body>
-    <noscript id="noscript" class="dialog fmt-red" style="display:block">
-        <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
-            <div class="heading">Javascript required</div><br/>
-            <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
-                <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
-            </div>
-        </div>
-    </noscript>
+      </div>
+      <div class="fmt-col fmt-padding fmt-quarter"></div>
+    </div>
+    <div id="dialogView"></div>
+    <div id="snackBar"></div>
+    <span hidden id="target"><%= autofill.target %></span>
+  </body>
+  <noscript id="noscript" class="dialog fmt-red" style="display:block">
+    <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+      <div class="heading">Javascript required</div><br/>
+      <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+        <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
+      </div>
+    </div>
+  </noscript>
 </html>

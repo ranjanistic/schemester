@@ -64,25 +64,25 @@
                 <div id="inputview">
                     <div class="caption fmt-center questrial positive">Provide your details before accepting.</div>
                     <fieldset class="text-field fmt-row" id="usernamefield">
-                        <legend class="field-caption" >Your name</legend>
-                        <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at <%= invite.instname %>" type="text" id="username" name="username">
-                        <span class="fmt-right error-caption" id="usernameerror"></span>
+                        <legend class="field-caption" id="usernamefieldcaption">Your name</legend>
+                        <input class="text-input" required spellcheck="false" autocomplete="name" placeholder="Visible to people at <%= invite.instname %>" type="text" id="usernamefieldinput" name="username">
+                        <span class="fmt-right error-caption" id="usernamefielderror"></span>
                     </fieldset>
                     <fieldset class="text-field fmt-row" id="usermailfield">
-                        <legend class="field-caption" >Your email address</legend>
-                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermail" name="useremail" <% if(invite.personal){%>value="<%= invite.email %>" disabled<%}%>>
-                        <span class="fmt-right error-caption" id="usermailerror"></span>
+                        <legend class="field-caption" id="usermailfieldcaption">Your email address</legend>
+                        <input class="text-input" required spellcheck="false" autocomplete="email" placeholder="youremail@example.domain" type="email" id="usermailfieldinput" name="useremail" <% if(invite.personal){%>value="<%= invite.email %>" disabled<%}%>>
+                        <span class="fmt-right error-caption" id="usermailfielderror"></span>
                     </fieldset>
                     <fieldset class="text-field fmt-row" id="userpassfield">
-                        <legend class="field-caption">Type your password</legend>
+                        <legend class="field-caption" id="userpassfieldcaption">Type your password</legend>
                         <input class="text-input" required autocomplete="new-password"
                         <% if(invite.target != 'teacher') { %>
                             placeholder="Type existing or create a new password"
                         <% } else { %>
                             placeholder="A strong password"
                         <% } %>
-                            type="password" id="userpass" name="userpassword">
-                        <span class="fmt-right error-caption" id="userpasserror"></span>
+                            type="password" id="userpassfieldinput" name="userpassword">
+                        <span class="fmt-right error-caption" id="userpassfielderror"></span>
                     </fieldset>
                     <br/>
                     <div class="fmt-row">
@@ -130,14 +130,8 @@
             <span id="exp"><%= invite.expireAt %></span>
             <span id="instname"><%= invite.instname %></span>
         </span>
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
     </body>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">

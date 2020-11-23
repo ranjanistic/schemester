@@ -867,6 +867,7 @@ class InputType {
     this.email = "email";
     this.password = "password";
     this.nonempty = "nonempty";
+    this.time = "time";
     this.match = "matching";
     this.username = "username";
     this.phone = "phone";
@@ -874,6 +875,21 @@ class InputType {
     this.naturalnumber = "greaterthanzero";
     this.wholenumber = "nonnegative";
     this.weekday = "weekday";
+  }
+  
+  /**
+   * Returns default html input tag type attribute for custom text types.
+   */
+  getHTMLInputType(validtype = this.nonempty){
+    switch(validtype){
+      case this.email:return this.email;
+      case this.password:return this.password;
+      case this.time:return this.time;
+      case this.phone:return this.number;
+      case this.wholenumber:return this.number;
+      case this.naturalnumber:return this.number;
+      default: return "text";
+    }
   }
 }
 

@@ -25,7 +25,7 @@
         <div id="topBar">
             <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root,{client:client.admin})">
             <span id="greeting"></span>
-            <% if(inst){ %> | Updating Defaults<%}%>
+            <% if(inst){ %> · Updating Defaults<%}%>
             <span class="fmt-dropdown-hover fmt-right">
                 <span  class="menu fmt-right">
                     <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
@@ -37,7 +37,7 @@
                             </label>
                         </span>
                         <div class="negative" id="logoutAdminButton" onclick="finishSession()">
-                            ❌ Logout
+                            Logout
                         </div>
                     </div>
                 </span >
@@ -57,7 +57,7 @@
                         <fieldset class="text-field-active" id="adminNameField">
                             <legend class="field-caption">Name visible to people of your institution</legend>
                             <span style="font-size: 24px;" id="adminNameView"><%= adata.username %></span>
-                            <span class="fmt-right error-caption"  id="adminNameError"></span>
+                            <span class="fmt-right error-caption"  id="adminNameFielderror"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -71,8 +71,8 @@
                     <div class="fmt-row">
                         <fieldset class="text-field fmt-right" id="adminPhoneField">
                             <legend class="field-caption">Your contact number</legend>
-                            <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhone" name="adminDetails"  value="<%= inst?inst.default?inst.default.admin.phone:null:null %>">
-                            <span class="fmt-right error-caption"  id="adminPhoneError"></span>
+                            <input class="text-input" required autocomplete="tel" placeholder="XXXXXXXXXX" type="tel" id="adminPhoneFieldinput" name="adminDetails"  value="<%= inst?inst.default?inst.default.admin.phone:null:null %>">
+                            <span class="fmt-right error-caption"  id="adminPhoneFielderror"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -84,16 +84,15 @@
                     <div class="fmt-col fmt-half">
                         <div class="fmt-row">
                             <fieldset class="text-field" id="instNameField">
-                                <legend class="field-caption">Proper name of Institution</legend>
-                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instName" name="instDetails" value="<%= inst?inst.default?inst.default.institute.instituteName:null:null %>">
-                                <span class="fmt-right error-caption"  id="instNameError"></span>
+                                <legend class="field-caption" id="instNameFieldcaption">Proper name of Institution</legend>
+                                <input class="text-input" required spellcheck="false" autocomplete="organization" placeholder="Don't include address with name" type="text" id="instNameFieldinput" name="instDetails" value="<%= inst?inst.default?inst.default.institute.instituteName:null:null %>">
+                                <span class="fmt-right error-caption"  id="instNameFielderror"></span>
                             </fieldset>
                         </div>
                         <div class="fmt-row">
                             <fieldset class="text-field-active" id="uiidField">
                                 <legend class="field-caption">UIID Permanent</legend>
                                 <span style="font-size: 24px;" id="uiidView"><%= uiid %></span>
-                                <!-- <input class="text-input" required spellcheck="false"  placeholder="Unique institution ID" type="text" id="uiid" name="instDetails" > -->
                                 <span class="fmt-right error-caption"  id="uiidError"></span>
                             </fieldset>
                         </div>
@@ -102,9 +101,9 @@
                         <div class="fmt-row">
                             <div class="fmt-col fmt-twothird " >
                                 <fieldset class="text-field" id="instEmailField">
-                                    <legend class="field-caption">Institution Email address</legend>
-                                    <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmail" name="instDetails" value="<%= inst?inst.default?inst.default.institute.email:null:null %>">
-                                    <span class="fmt-right error-caption"  id="instEmailError"></span>
+                                    <legend class="field-caption" id="instEmailFieldcaption">Institution Email address</legend>
+                                    <input class="text-input" required placeholder="institute@example.domain" type="email" id="instEmailFieldinput" name="instDetails" value="<%= inst?inst.default?inst.default.institute.email:null:null %>">
+                                    <span class="fmt-right error-caption"  id="instEmailFielderror"></span>
                                 </fieldset>
                             </div>
                             <div class="fmt-col fmt-third group-text" style="padding:22px 12px;">
@@ -118,9 +117,9 @@
                         <div class="fmt-row">
                             <div class="fmt-col fmt-twothird" >
                             <fieldset class="text-field fmt-right" id="instPhoneField">
-                                <legend class="field-caption">Telephone Number</legend>
-                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhone" name="instDetails" value="<%= inst?inst.default?inst.default.institute.phone:null:null %>">    
-                                <span class="fmt-right error-caption"  id="instPhoneError"></span>
+                                <legend class="field-caption" id="instPhoneFieldcaption">Telephone Number</legend>
+                                <input class="text-input" required autocomplete="tel-extension" placeholder="XXXXXXX" type="tel" id="instPhoneFieldinput" name="instDetails" value="<%= inst?inst.default?inst.default.institute.phone:null:null %>">    
+                                <span class="fmt-right error-caption"  id="instPhoneFielderror"></span>
                             </fieldset>
                         </div>
                             <div class="fmt-col fmt-third group-text" style="padding:22px 12px;">
@@ -147,15 +146,15 @@
                     <div class="group-heading" id="timeHead">Timings</div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="startTimeField">
-                            <legend class="field-caption">Schedule starts at</legend>
-                            <input class="text-input" required type="time" id="startTime" name="timeDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.startTime:null:null:null %>">
-                            <span class="fmt-right error-caption"  id="startTimeError"></span>
+                            <legend class="field-caption" id="startTimeFieldcaption">Schedule starts at</legend>
+                            <input class="text-input" required type="time" id="startTimeFieldinput" name="timeDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.startTime:null:null:null %>">
+                            <span class="fmt-right error-caption"  id="startTimeFielderror"></span>
                         </fieldset>
                         <div class="fmt-col fmt-half">
                             <fieldset class="text-field" id="breakStartField">
-                                <legend class="field-caption">Break starts at</legend>
-                                <input class="text-input" required type="time" id="breakStart" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakStartTime:null:null:null %>">
-                                <span class="fmt-right error-caption"  id="breakStartError"></span>
+                                <legend class="field-caption" id="breakStartFieldcaption">Break starts at</legend>
+                                <input class="text-input" required type="time" id="breakStartFieldinput" name="timeDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakStartTime:null:null:null %>">
+                                <span class="fmt-right error-caption"  id="breakStartFielderror"></span>
                             </fieldset>
                         </div>
                         <div class="fmt-col fmt-quarter group-text" style="padding-top:22px;">
@@ -171,7 +170,7 @@
                             <legend class="field-caption">Select working days</legend>
                             <div id="dayselector">
                             </div>
-                            <span class="fmt-right error-caption" id="workingdayserror"></span>
+                            <span class="fmt-right error-caption" id="workingdaysfielderror"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -179,22 +178,21 @@
                     <div class="group-heading" id="durationHead">Durations</div>
                     <div class="fmt-half fmt-row">
                         <fieldset class="text-field" id="totalPeriodsField">
-                            <legend class="field-caption">Total Periods in a day</legend>
-                            <input class="text-input" required placeholder="A number" min="1" max="1440" type="number" id="totalPeriods" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodsInDay:null:null:null %>">
-                            <span class="fmt-right error-caption"  id="totalPeriodsError"></span>
+                            <legend class="field-caption" id="totalPeriodsFieldcaption">Total Periods in a day</legend>
+                            <input class="text-input" required placeholder="A number" min="1" max="1440" type="number" id="totalPeriodsFieldinput" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodsInDay:null:null:null %>">
+                            <span class="fmt-right error-caption"  id="totalPeriodsFielderror"></span>
                         </fieldset>
                     </div>
                     <div class="fmt-half">
                         <fieldset class="text-field" id="eachDurationField">
                             <legend class="field-caption">Duration of each period</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="eachDuration" name="durationDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodMinutes:null:null:null %>">
-                            <span class="fmt-right error-caption"  id="eachDurationError"></span>
+                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="eachDurationFieldinput" name="durationDetail"  value="<%= inst?inst.default?inst.default.timings?inst.default.timings.periodMinutes:null:null:null %>">
+                            <span class="fmt-right error-caption"  id="eachDurationFielderror"></span>
                         </fieldset>
                         <fieldset class="text-field" id="breakDurationField">
                             <legend class="field-caption">Break Duration</legend>
-                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="breakDuration" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakMinutes:null:null:null %>">
-                             
-                            <span class="fmt-right error-caption"  id="breakDurationError"></span>
+                            <input class="text-input" required placeholder="In minutes" min="1" max="1440" type="number" id="breakDurationFieldinput" name="durationDetail" value="<%= inst?inst.default?inst.default.timings?inst.default.timings.breakMinutes:null:null:null %>">
+                            <span class="fmt-right error-caption"  id="breakDurationFielderror"></span>
                         </fieldset>
                     </div>
                 </div>
@@ -212,13 +210,9 @@
                 <li>Providing erronous details could get you in organizational trouble. <a target="_blank" rel="noreferrer" href="">Get help on registration</a></li>
             </ul>
         </div>
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
+        <div id="dialogView">
         </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
+        <div id="snackBar">
         </div>
     </body>
     <span hidden>

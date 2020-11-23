@@ -28,8 +28,8 @@ class StudentAbout {
         "studentnameeditor",
         new TextInput(
           "studentnamefield",
-          "studentnameinput",
-          "studentnameerror",
+          false,
+          "",
           validType.name
         ),
         "editstudentname",
@@ -155,5 +155,5 @@ class StudentAbout {
       })
     }
 }
-  window.onload = (_) => new StudentAbout();
-  
+
+window.onload = (_) => new StudentAbout();

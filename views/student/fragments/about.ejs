@@ -32,15 +32,15 @@
                         <div class="caption">Logged in as</div>
                         <div class="fmt-col fmt-half">
                             
-                            <div class="fmt-row" id="studentnameview">
+                            <div class="fmt-row" id="studentnameview">  
                                 <span class=" positive questrial" id="studentname"><%= student.username %></span>
                                 <span class="caption" style="font-size:12px" id="editstudentname"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                             </div>
                             <div id="studentnameeditor">
                             <fieldset class="text-field questrial" style="margin:0" id="studentnamefield">
-                                <legend class="field-caption questrial">Change your name</legend>
-                                <input class="text-input questrial" style="font-size:16px" required value="<%= student.username %>" placeholder="Visible in <%=  %>" type="text" id="studentnameinput" name="studentname" >
-                                <span class="fmt-right error-caption"  id="studentnameerror"></span>
+                                <legend class="field-caption questrial" id="studentnamefieldcaption">Change your name</legend>
+                                <input class="text-input questrial" style="font-size:16px" required value="<%= student.username %>" placeholder="Visible in <%=  %>" type="text" id="studentnamefieldinput" name="studentname" >
+                                <span class="fmt-right error-caption"  id="studentnamefielderror"></span>
                             </fieldset>
                             <button class="positive-button caption" id="savestudentname">Save</button>
                             <button class="neutral-button caption" id="cancelstudentname">Cancel</button>
@@ -132,14 +132,8 @@
             <% } %>
         </div>
 
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-top">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
 
         <span hidden>
             <span id="studentUID"><%= student.uid %></span>

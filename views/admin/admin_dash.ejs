@@ -270,15 +270,8 @@
         <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
             id="todayDateTime" style="width:fit-content;right:0;">
         </span>
-        
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
-            </div>
-        </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
         <span hidden>
             <span id="hasTeacherSchedule"><%= !isEmptyObject(inst.users.teachers) %></span>
             <span id="hasTeachers"><%= !isEmptyObject(inst.schedule.teachers) %></span>
@@ -296,12 +289,12 @@
         });
     }
     </script>
-        <noscript id="noscript" class="dialog fmt-red" style="display:block">
-            <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
-                <div class="heading">Javascript required</div><br/>
-                <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
-                    <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
-                </div>
+    <noscript id="noscript" class="dialog fmt-red" style="display:block">
+        <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
+            <div class="heading">Javascript required</div><br/>
+            <div class="group-text fmt-center">Please enable javascript in your browser, or allow this site to use, if denied.
+                <br/>If your browser doesn't support javascript, try a <a target="_blank" rel="noreferrer" href="https://google.com/search?q=modern+browsers">modern browser</a>.
             </div>
-        </noscript>
+        </div>
+    </noscript>
 </html>

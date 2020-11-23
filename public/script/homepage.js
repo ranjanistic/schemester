@@ -8,7 +8,7 @@ class Homepage{
           style="margin-bottom: 22px"
           id="adminLogin"
         >
-          <div class="fmt-ambe" style="border-radius: 8px">
+          <div  style="border-radius: 8px">
             <img
               src="/graphic/illustrations/adminloginview.svg"
               width="100%"
@@ -33,7 +33,7 @@ class Homepage{
           style="margin-bottom: 22px"
           id="teacherLogin"
         >
-          <div class="fmt-ambe" style="border-radius: 8px">
+          <div style="border-radius: 8px">
             <img
               src="/graphic/illustrations/teacherloginview.svg"
               width="100%"
@@ -55,7 +55,7 @@ class Homepage{
           style="margin-bottom: 22px"
           id="studentLogin"
         >
-          <div class="fmt-ambe" style="border-radius: 8px">
+          <div  style="border-radius: 8px">
             <img
               src="/graphic/illustrations/studentloginview.svg"
               width="100%"
@@ -86,9 +86,9 @@ class Homepage{
         this.adminLogin = getElement('adminLogin');
         this.teacherLogin = getElement('teacherLogin');
         this.studentLogin = getElement('studentLogin');
-        this.adminLogin.onclick=_=>{localStorage.setItem(key.homelogintab,this.tabs.indexOf(adminlogintab)); refer(locate.admin.login)};
-        this.teacherLogin.onclick=_=>{localStorage.setItem(key.homelogintab,this.tabs.indexOf(teacherlogintab));refer(locate.teacher.login)};
-        this.studentLogin.onclick=_=>{localStorage.setItem(key.homelogintab,this.tabs.indexOf(studentlogintab));refer(locate.student.login)};
+        this.adminLogin.onclick=_=>{showLoader();localStorage.setItem(key.homelogintab,this.tabs.indexOf(adminlogintab)); refer(locate.admin.login)};
+        this.teacherLogin.onclick=_=>{showLoader();localStorage.setItem(key.homelogintab,this.tabs.indexOf(teacherlogintab));refer(locate.teacher.login)};
+        this.studentLogin.onclick=_=>{showLoader();localStorage.setItem(key.homelogintab,this.tabs.indexOf(studentlogintab));refer(locate.student.login)};
         this.adminSignup = getElement('registerInstitution');
         this.teacherSignup = getElement('registerTeacher');
         this.studentSignup = getElement('registerStudent');

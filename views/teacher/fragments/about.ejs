@@ -34,9 +34,9 @@
                             </div>
                             <div id="teachernameeditor">
                                 <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
-                                    <legend class="field-caption questrial">Change your name</legend>
-                                    <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
-                                    <span class="fmt-right error-caption"  id="teachernameerror"></span>
+                                    <legend class="field-caption questrial" id="teachernamefieldcaption">Change your name</legend>
+                                    <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernamefieldinput" name="teachername" >
+                                    <span class="fmt-right error-caption"  id="teachernamefielderror"></span>
                                 </fieldset>
                                 <button class="positive-button caption" id="saveteachername">Save</button>
                                 <button class="neutral-button caption" id="cancelteachername">Cancel</button>
@@ -136,14 +136,8 @@
             <% } %>
         </div>
 
-        <div id="dialogView" class="dialog fmt-animate-top">
-            <div class="dialog-box container fmt-row fmt-animate-top" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
-        <div id="snackBar" class="snack-positive fmt-animate-bottom">
-            <span class="fmt-left fmt-padding" id="snackText"></span>
-            <button class="fmt-right neutral-button" id="snackButton"></button>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
 
         <span hidden>
             <span id="teacherUID"><%= teacher.uid %></span>

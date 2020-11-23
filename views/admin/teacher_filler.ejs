@@ -2,10 +2,10 @@
 <html>
     <title>
         <% if (user.isAdmin) { %>
-            Teacher Filler · Schemester
+            Teacher
         <% } else { %>
-            Schedule Filler · Schemester
-        <% } %>
+            Schedule 
+        <% } %> Filler · Schemester
     </title>
     <head>
         <meta charset="utf-8">
@@ -93,9 +93,9 @@
                                     value="<%= data.teacherID %>"
                                 <% } %>
                                 >
-                                <span id="teacherEmailView" style="font-size:24px"></span>
-                                <span class="fmt-right error-caption"  id="teacherEmailError"></span>
+                                <span class="fmt-right error-caption" id="teacherEmailError"></span>
                             </fieldset>
+                            <span id="giventeacherID" hidden><%= data.teacherID %></span>
                         <% } else if(user.isTeacher) { %>
                             <div class="fmt-left">
                             <div class="fmt-left positive group-heading"><%= user.username %></div>
@@ -149,16 +149,10 @@
                             </div>
                             <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherClassField<%= index %>">
-                                    <legend class="field-caption">Class assigned</legend>
-                                    <input class="text-input group-text" required placeholder="Classname (Keep same pattern)"  type="text" id="teacherClass<%= index %>" name="teacherScheduleDetail">
-                                    <span class="fmt-right error-caption"  id="teacherClassError<%= index %>"></span>
                                 </fieldset>
                             </div>
                             <div class="fmt-col fmt-quarter" >
                                 <fieldset class="text-field" id="teacherSubjectField<%= index %>">
-                                    <legend class="field-caption">Subject to be taken</legend>
-                                    <input class="text-input group-text" placeholder="Subject name"  type="text" id="teacherSubject<%= index %>" name="teacherScheduleDetail">
-                                    <span class="fmt-right error-caption"  id="teacherSubjectError<%= index %>"></span>
                                 </fieldset>
                             </div>
                             <div class="fmt-col fmt-quarter group-text" style="padding:18px;">
@@ -198,14 +192,8 @@
 
             </div>
         </div>
-        <div id="snackBar" class="fmt-animate-bottom">
-            <span id="snackText"></span>
-            <button id="snackButton"></button>
-        </div>
-        <div id="dialogView" class="dialog fmt-animate-opacity">
-            <div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">            
-            </div>
-        </div>
+        <div id="dialogView"></div>
+        <div id="snackBar"></div>
         <span hidden>
             <span id="isAdmin"><%= user.isAdmin %></span>
             <span id="uiid"><%= inst.uiid %></span>

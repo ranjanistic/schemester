@@ -27,16 +27,15 @@ class Register {
       <center>If you have already a backup file (.json) of your institution, then you can upload it here to directly create schedule from it.</center>
       <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_AA_NNNNNNNNNNNNNNNNN.json</div>
         <fieldset class="text-field" id="fileuploadfield">
-          <legend class="field-caption">Select the file from your device</legend>
-          <input class="text-input" required type="file" id="fileupload" name="schedulefileupload">
-          <span class="error-caption" id="fileuploaderror"></span>
+          <legend class="fileuploadfieldcaption">Select the file from your device</legend>
+          <input class="text-input" required type="file" id="fileuploadfieldinput" name="schedulefileupload">
+          <span class="error-caption" id="fileuploadfielderror"></span>
         </fieldset>
       `
     );
     const fileinput = new TextInput(
       "fileuploadfield",
-      "fileupload",
-      "fileuploaderror"
+      false
     );
     this.updial.createActions(
       ["Create Institute", "Cancel"],
@@ -170,33 +169,32 @@ class Register {
 class Stage1 {
   constructor() {
     this.view = getElement("stage1");
-    //this.nameField = new TextInput("adminNameField","adminName","adminNameError",null,validType.name);
     this.namedisplay = getElement("adminNameView");
     this.emaildisplay = getElement("adminEmailView");
     this.phoneField = new TextInput(
       "adminPhoneField",
-      "adminPhone",
-      "adminPhoneError",
+      false,
+      "",
       validType.phone
     );
     this.instNameField = new TextInput(
       "instNameField",
-      "instName",
-      "instNameError",
+      false,
+      "",
       validType.name
     );
     //this.instIdField = new TextInput("uiidField","uiid","uiidError",null,validType.username);
     this.uiidVIew = getElement("uiidView");
     this.instEmailField = new TextInput(
       "instEmailField",
-      "instEmail",
-      "instEmailError",
+      false,
+      "",
       validType.email
     );
     this.instPhoneField = new TextInput(
       "instPhoneField",
-      "instPhone",
-      "instPhoneError",
+      false,
+      "",
       validType.phone
     );
 
@@ -301,21 +299,21 @@ class Stage2 {
     this.updating = getElement("updatinginst").innerHTML == 'true';
     this.startTimeField = new TextInput(
       "startTimeField",
-      "startTime",
-      "startTimeError",
-      validType.nonempty
+      false,
+      "",
+      validType.time
     );
 
     this.breakStartField = new TextInput(
       "breakStartField",
-      "breakStart",
-      "breakStartError",
-      validType.nonempty
+      false,
+      "",
+      validType.time
     );
     this.breakDurationField = new TextInput(
       "breakDurationField",
-      "breakDuration",
-      "breakDurationError",
+      false,
+      "",
       validType.naturalnumber
     );
     this.nobreak = new Switch('nobreakcheck','nobreaklabel');
@@ -393,15 +391,15 @@ class Stage2 {
     }
     this.eachDurationField = new TextInput(
       "eachDurationField",
-      "eachDuration",
-      "eachDurationError",
+      false,
+      "",
       validType.naturalnumber
     );
 
     this.totalPeriodsField = new TextInput(
       "totalPeriodsField",
-      "totalPeriods",
-      "totalPeriodsError",
+      false,
+      "",
       validType.naturalnumber
     );
 
@@ -478,8 +476,8 @@ class Stage2 {
     this.save = getElement("saveStage2");
     this.workingdaysField = new TextInput(
       "workingdaysfield",
-      null,
-      "workingdayserror"
+      false,
+      ""
     );
   }
   durationValid() {

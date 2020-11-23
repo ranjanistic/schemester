@@ -17,7 +17,7 @@ mongo.connectToDB(( err )=>{
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
-
+  
   server.get(get.root, (req, res) => {
     res.render(view.loader, { data:{ client: req.query.client }});
   });
@@ -50,6 +50,7 @@ mongo.connectToDB(( err )=>{
       },
     });
   });
+  
   server.use((err, _, res) => {
     res.status(err.status || 500);
     res.render(view.servererror, { error: err });

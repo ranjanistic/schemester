@@ -4,16 +4,15 @@ class AdminLogin{
     value.backbluecovered = true;
     this.view = getElement("workbox");
     new ThemeSwitch('darkmode');
-    
-    this.emailField = new TextInput("email_fieldset","adminemail","emailError",validType.email);
-    this.passField = new TextInput("password_fieldset","adminpassword","passError",validType.nonempty);
-    this.uiidField = new TextInput("uiid_fieldset","uiid","uiidError",validType.nonempty);
+    this.emailField = new TextInput("email_fieldset","Email Address","youremail@example.domain",validType.email);
+    this.passField = new TextInput("password_fieldset","Password","Your account password",validType.nonempty,true);
+    this.uiidField = new TextInput("uiid_fieldset","UIID","Your institution's identifier",validType.nonempty);
 
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
     this.back = getElement("backFromLogin");
-    this.forgotPassword = getElement("forgotpasswordButton");
-    hide(this.forgotPassword);
+
+    hide(this.passField.forgot);
 
     this.target = String(getElement('target').innerHTML);
     if(!stringIsValid(this.target,validType.nonempty)){
@@ -30,10 +29,10 @@ class AdminLogin{
 
     this.passField.onTextInput(_=>{
       this.passField.normalize();
-      hide(this.forgotPassword);
+      hide(this.passField.forgot);
     });
-    resumeElementRestriction(this.forgotPassword,key.admin.forgotpassword,_=>{
-      this.forgotPassword.onclick = (_) => {this.linkSender()};
+    resumeElementRestriction(this.passField.forgot,key.admin.forgotpassword,_=>{
+      this.passField.forgot.onclick = (_) => {this.linkSender()};
     });
     this.logInButton.onclick=_=>{this.loginAdmin()};
     
@@ -41,8 +40,8 @@ class AdminLogin{
   linkSender(){
     if(!this.emailField.isValid()) return this.emailField.showError('Please provide your valid email address to help us reset your password.');
     snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
-      this.forgotPassword.onclick = (_) => {};
-      this.forgotPassword.innerHTML = 'Sending...';
+      this.passField.forgot.onclick = (_) => {};
+      this.passField.forgot.innerHTML = 'Sending...';
       snackBar(`Sending link to ${this.emailField.getInput()}...`);
       postJsonData(post.admin.manage,{
         external:true,
@@ -51,12 +50,12 @@ class AdminLogin{
         email:this.emailField.getInput()
       }).then((resp)=>{
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
+          this.passField.forgot.onclick = (_) => {this.linkSender()};
           return snackBar('An error occurred','Report');
         }
         snackBar("If your email address was correct, you'll receive an email from us in a few moments.",'Hide');
-        restrictElement(this.forgotPassword,120,key.admin.forgotpassword,_=>{
-          this.forgotPassword.onclick = (_) => {this.linkSender()};
+        restrictElement(this.passField.forgot,120,key.admin.forgotpassword,_=>{
+          this.passField.forgot.onclick = (_) => {this.linkSender()};
         });
       })
     })
@@ -73,7 +72,7 @@ class AdminLogin{
       this.uiidField.validateNow();
     } else{
       this.loader();
-      hide(this.forgotPassword);
+      hide(this.passField.forgot);
       postJsonData(post.admin.auth,{
         action:action.login,
         email:String(this.emailField.getInput()).trim(),
@@ -104,7 +103,7 @@ class AdminLogin{
     switch (result.event) {
       case code.auth.WRONG_PASSWORD:{
         this.passField.showError(constant.nothing);
-        show(this.forgotPassword);
+        show(this.passField.forgot);
         return this.logInButton.innerHTML = "Retry";
       }
       case code.auth.WRONG_UIID:{
@@ -132,7 +131,7 @@ class AdminLogin{
       }
       default: {
         this.logInButton.textContent = "Retry";
-        show(this.forgotPassword);
+        show(this.passField.forgot);
         return snackBar(result.event+':'+result.msg, "Help", false, _=> {feedBackBox(true,result.event,true)});
       }
     }
