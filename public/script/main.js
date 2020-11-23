@@ -51,12 +51,10 @@ class TextInput {
     isTextArea = false
   ) {
     this.fieldset = getElement(fieldId);
-    clog(type);
-    clog(validType.getHTMLInputType(type));
     if(caption!== false){
     this.fieldset.innerHTML = 
     `<legend class="field-caption" id="${fieldId}caption">${caption}</legend>
-      <${isTextArea?'textarea':"input"} class="text-input" ${required?'required':''} id="${fieldId}input" placeholder="${placeholder}" type="${validType.getHTMLInputType(type)}">${isTextArea?'</textarea>':''}
+      <${isTextArea?'textarea':"input"} class="text-input" ${required?'required':''} id="${fieldId}input" placeholder="${placeholder}" type="${caption.toLowerCase().includes(validType.password)?validType.password:validType.getHTMLInputType(type)}">${isTextArea?'</textarea>':''}
       ${getLoader(`${fieldId}loader`,25)}
       <span class="fmt-right error-caption" id="${fieldId}error"></span>
       ${forgotbutton?`<button class="active-button fmt-right" id="${fieldId}forgot">Forgot?</button>`:''}`
@@ -69,6 +67,7 @@ class TextInput {
     this.error = getElement(`${fieldId}error`);
     this.forgot = forgotbutton?getElement(`${fieldId}forgot`):null;
     this.type = type;
+    this.forgot?hide(this.forgot):_=>{};
     this.normalize();
   }
   show() {
@@ -1535,13 +1534,13 @@ const finishSession = (
     snackBar("Failed to logout", "Try again", false, (_) => {
       finishSession(clientType,_=>{afterfinish()});
     });
-    location.reload();
+    parent.location.reload();
   }).catch(e=>{
     clog(e);
     snackBar("Failed to logout", "Try again", false, (_) => {
       finishSession(clientType,_=>{afterfinish()});
     });
-    location.reload();
+    parent.location.reload();
   });
 };
 

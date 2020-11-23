@@ -22,8 +22,8 @@
         <script src="/script/admin/admin.js"></script>
     </head>
     <body class="b-positive" style="background-image: url('/graphic/illustrations/adminview.svg');background-repeat: no-repeat;background-size: cover;background-position-y: 0%;">
-        <div class="fmt-top fmt-shadow" id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
+        <div class=" fmt-animate-top " id="topBar">
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin" onclick="showLoader();window.parent.history.back()">
             <span>Admin Login</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
             <span class="fmt-right fmt-padding-small">
@@ -36,7 +36,7 @@
         <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
             <div class="fmt-col fmt-padding  fmt-quarter">
             </div>
-            <div class="fmt-col fmt-half container" id="workbox">
+            <div class="fmt-col fmt-half container fmt-animate-top " id="workbox">
                 <span class="heading fmt-hide-small">Administrator</span>
                 <span class="heading fmt-hide-medium fmt-hide-large">Admin</span>
                 <fieldset id="email_fieldset"></fieldset>

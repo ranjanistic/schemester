@@ -414,6 +414,7 @@ class Locations {
     this.homepage = "/home";
     this.offline = "/offline";
     this.root = "/";
+    this.tour = "/tour";
     this.planspage = "/plans";
     class Admin {
       constructor() {

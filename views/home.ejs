@@ -91,10 +91,11 @@
       background-size: cover;
     "
   >
-    <div class="fmt-top fmt-shadow" id="topBar">
+    <div class="fmt-top fmt-shadow fmt-animate-top" id="topBar">
       <img
         src="/graphic/icons/schemester512.svg"
         width="40"
+        class="fmt-animate-left"
         alt="Schemester icon"
         onclick="refer(locate.root)"
       />
@@ -130,11 +131,11 @@
       "
     >
       <div class="fmt-center">
-        <span class="positive questrial" style="padding: 22px; font-size: 24px"
+        <span class="positive questrial fmt-animate-top" style="padding: 22px; font-size: 24px"
           >Get to know what we do.</span
         ><br />
         <a href="#tourView"
-          ><button class="display-button">Take a tour</button></a
+          ><button class="display-button fmt-animate-opacity">Take a tour</button></a
         >
       </div>
     </div>
@@ -154,11 +155,11 @@
           <br />
           <div class="fmt-row">
             <button
-              class="sub-display-button"
+              class="sub-display-button questrial"
               onclick="showLoader()"
               id="getStarted"
             >
-              Learn More
+              Learn more
             </button>
           </div>
         </div>
@@ -194,73 +195,31 @@
     <div class="fmt-row">
       <div class="fmt-col fmt-center fmt-padding">
         <div class="heading questrial">Start here.</div>
-        <div class="fmt-col fmt-half fmt-padding-small">
-          <button
-            class="image-text-button"
-            style="margin-bottom: 22px"
-            id="registerInstitution"
-          >
-            <div class="fmt-row" style="border-radius: 8px">
-              <img
-                src="/graphic/illustrations/adminview.svg"
-                alt="Admin Illustration"
-                width="100%"
-              />
-            </div>
-            <div class="fmt-padding-large fmt-col">
-              <span class="group-heading fmt-row"
-                >Register as Administrator</span
-              >
-              <span class="group-text fmt-row">
-                Create your institution on Schemester
-              </span>
-            </div>
-          </button>
-        </div>
-        <div class="fmt-col fmt-third fmt-padding-small">
-          <button
-            class="image-text-button"
-            style="margin-bottom: 22px"
-            id="registerTeacher"
-          >
-            <div class="fmt-row fmt-blu" style="border-radius: 8px">
-              <img
-                src="/graphic/illustrations/teacherview.svg"
-                alt="Teacher Illustration"
-                width="100%"
-              />
-            </div>
-            <div class="fmt-padding-large fmt-col">
-              <span class="group-heading fmt-row">Register as Teacher</span>
-
-              <span class="group-text fmt-row">
-                Join as a teacher in your institute.
-              </span>
-            </div>
-          </button>
-        </div>
-        <div class="fmt-col fmt-quarter fmt-padding-small">
-          <button
-            class="image-text-button"
-            style="margin-bottom: 22px"
-            id="registerStudent"
-          >
-            <div class="fmt-blu" style="border-radius: 8px">
-              <img
-                src="/graphic/illustrations/studentview.svg"
-                alt="Teacher Illustration"
-                width="100%"
-              />
-            </div>
-            <div class="fmt-padding-large fmt-col">
-              <span class="group-heading fmt-row">Register as Student</span>
-
-              <span class="group-text fmt-row">
-                Join as a student in your classroom.
-              </span>
-            </div>
-          </button>
-        </div>
+        <% [{name:'admin',label:'Administrator',tagline:'Create your institution on Schemester'},{name:'teacher',label:'Teacher',tagline:'Join as a teacher in your institute'},{name:'student',label:'Student',tagline:'Join as a student in your classroom'}].forEach(client => { %>
+          <div class="fmt-col fmt-third fmt-padding-small fmt-animate-top">
+            <button
+              class="image-text-button"
+              style="margin-bottom: 22px"
+              id="register<%=client.name%>"
+            >
+              <div class="fmt-row  fmt-animate-right" style="border-radius: 8px">
+                <img
+                  src="/graphic/illustrations/<%=client.name%>view.svg"
+                  alt="<%=client.label%> Illustration"
+                  width="100%"
+                />
+              </div>
+              <div class="fmt-padding-small fmt-col  fmt-animate-left">
+                <span class="group-heading fmt-row"
+                  >Register as <%=client.label %></span
+                >
+                <span class="group-text fmt-row">
+                  <%=client.tagline %>
+                </span>
+              </div>
+            </button>
+          </div>
+        <% }) %>
       </div>
     </div>
 
@@ -306,8 +265,7 @@
   <script>
     if ("serviceWorker" in window.navigator) {
       window.addEventListener("load", (_) => {
-        navigator.serviceWorker
-          .register("/sw.js")
+        navigator.serviceWorker.register("/sw.js")
           .then((reg) => {
             console.log("SW:1:", reg.scope);
             reg.onupdatefound = () => {

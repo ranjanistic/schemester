@@ -10,9 +10,6 @@ class AdminLogin{
 
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
-    this.back = getElement("backFromLogin");
-
-    hide(this.passField.forgot);
 
     this.target = String(getElement('target').innerHTML);
     if(!stringIsValid(this.target,validType.nonempty)){
@@ -22,7 +19,6 @@ class AdminLogin{
     if(!stringIsValid(this.section,validType.nonempty)){
       this.section = locate.admin.section.account;
     }
-    this.back.onclick=_=> {showLoader();relocate(locate.homepage)};
     this.emailField.validate(_=>{this.passField.inputFocus()});
     this.passField.validate(_=>{this.uiidField.inputFocus()});
     this.uiidField.validate();

@@ -1,8 +1,6 @@
 class StudentLogin{
   constructor(){
     value.backbluecovered = true;
-    this.back = getElement("backFromLogin");
-    this.back.addEventListener(click,_=> {showLoader();relocate(locate.homepage)});
     hide(getElement("previous"));
     hide(getElement("userclassfield"))
     hide(getElement("useremailfield"));

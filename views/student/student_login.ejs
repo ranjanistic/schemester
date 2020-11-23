@@ -22,8 +22,8 @@
         <script src="/script/student/student.js"></script>
     </head>
     <body class="b-positive" style="background-image: url('/graphic/illustrations/studentview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
-        <div id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin">
+        <div class=" fmt-animate-top " id="topBar">
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin" onclick="showLoader();window.parent.history.back()">
             <span>Student Login</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
             <span class="fmt-right fmt-padding-small">
@@ -36,7 +36,7 @@
         <div class="fmt-row fmt-padding"  style="margin-top: 72px;">
             <div class="fmt-col fmt-padding  fmt-quarter">
             </div>
-            <div class="fmt-col container fmt-half" id="workbox">
+            <div class="fmt-col container fmt-half  fmt-animate-top " id="workbox">
                 <div class="heading fmt-center">Student</div>
                 <div class="questrial">Hello, worthy student.</div>
                 <div class="questrial" id="subtext"></div>

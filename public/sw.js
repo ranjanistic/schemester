@@ -1,4 +1,4 @@
-const CACHE_NAME = 'schemester-cache-v1';
+const CACHE_NAME = 'schemester-cache-v2';
 
 const urlsToCache = [
   //routes
@@ -90,7 +90,7 @@ self.addEventListener('message', (message) => {
   if (message.data === 'skipWaiting') {
     caches.keys().then((cacheNames)=> {
       Promise.all(
-        cacheNames.filter((cacheName)=>{}).map((cacheName)=> {
+        cacheNames.map((cacheName)=> {
           caches.delete(cacheName);
         })
       );

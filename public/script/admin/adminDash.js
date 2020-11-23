@@ -499,14 +499,8 @@ class BaseView {
     this.settings = getElement("settingsAdminButton");
     this.logOut.onclick =  (_) => {
       showLoader();
-      const email = localStorage.getItem(constant.sessionID);
-      const uiid = localStorage.getItem("uiid");
       finishSession(client.admin, (_) => {
-        relocate(locate.admin.login, {
-          email: email,
-          uiid: uiid,
-          target: locate.admin.target.dashboard,
-        });
+        parent.location.reload();
       });
     };
     this.settings.onclick = (_) => {
