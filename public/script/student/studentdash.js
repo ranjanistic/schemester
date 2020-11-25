@@ -22,6 +22,7 @@ function clickTab(index){
 class StudentDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;
+        this.frameparent = getElement("frameparent");
         this.frame = getElement("frame");
         this.viewload = getElement('viewload');
         tabs = new Tabs();
@@ -32,17 +33,20 @@ class StudentDash{
 
         this.tabs.forEach((tab,t)=>{
             tab.onclick=_=>{
-                this.showLoader(tab);
-                sessionStorage.setItem('fragment',this.fragpath[t]);
-                this.selectTab(tab);
-                this.frame.src = locate.student.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
-                this.frame.onload=_=>{
-                    this.hideLoader(tab)
-                }
+              appendClass(this.frameparent,"blur");
+              this.showLoader(tab);
+              sessionStorage.setItem('fragment',this.fragpath[t]);
+              this.selectTab(tab);
+              this.frame.src = locate.student.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
+              this.frame.onload=_=>{
+                  this.hideLoader(tab);
+                  this.frameparent.classList.remove("blur");
+              }
             }
         });
         this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem('fragment'))?this.fragpath.indexOf(sessionStorage.getItem('fragment')):0].click();
         this.clearAllLoaders();
+        this.frameparent.classList.remove("blur");
     }
     selectTab(tab){
         this.tabs.forEach((Tab)=>{
@@ -60,6 +64,7 @@ class StudentDash{
         });
     }
     hideLoader(tab){
+        
         this.tabloaders[this.tabs.indexOf(tab)].src = this.tabicons[this.tabs.indexOf(tab)];
         this.tabloaders[this.tabs.indexOf(tab)].classList.remove('fmt-spin-fast');
     }

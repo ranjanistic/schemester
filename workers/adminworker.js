@@ -1,26 +1,19 @@
-const Admin = require("../config/db").getAdmin(),
-  Institute = require("../config/db").getInstitute(),
+const cpass = require("../config/config.json").db.cpass,
+  Admin = require("../config/db").getAdmin(cpass),
+  Institute = require("../config/db").getInstitute(cpass),
   bcrypt = require("bcryptjs"),
   path = require("path"),
   fs = require("fs"),
   timer = require("./common/timer"),
-  {
-    code,
-    client,
-    view,
-    action,
-    isOK,
-    stringIsValid,
-    validType,
-    clog,
-  } = require("../public/script/codes"),
+  inspect = require("./common/inspector"),
+  {code, client, view, action, stringIsValid, validType, clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
-  { ObjectId } = require("mongodb"),
-  session = require("./common/session");
+  { ObjectId } = require("mongodb");
+
 
 class AdminWorker {
   constructor() {
@@ -181,8 +174,9 @@ class Self {
       /**
        *Change email address everywhere
        */
-      changeEmailID = async (user, admin, body) => {
-        if (admin.email == body.newemail)
+      changeEmailID = async (user, body) => {
+        const admin = await this.getAccount(user);
+        if (admin.id == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
         const someadmin = await Admin.findOne({ email: body.newemail });
         if (someadmin) return code.event(code.auth.USER_EXIST);
@@ -301,14 +295,14 @@ class Self {
     this.prefs = new Preferences();
   }
 
-  handleAccount = async (user, body, admin) => {
+  handleAccount = async (user, body) => {
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
       case code.action.CHANGE_PASSWORD:
         return await this.account.changePassword(user, body);
       case code.action.CHANGE_ID:
-        return await this.account.changeEmailID(user, admin, body);
+        return await this.account.changeEmailID(user, body);
       case code.action.CHANGE_PHONE:
         return await this.account.changePhone(user, body);
       case code.action.ACCOUNT_DELETE:
@@ -317,22 +311,22 @@ class Self {
   };
   handlePreferences = async (user, body) => {
     switch (body.action) {
-      case "set":
+      case action.set:
         return await this.prefs.setPreference(user, body);
-      case "get":
+      case action.get:
         return await this.prefs.getPreference(user, body);
     }
   };
   handleVerification = async (user, body) => {
     switch (body.action) {
-      case "send": {
+      case action.send: {
         const linkdata = await verify.generateLink(client.admin, {
           uid: user.id,
         });
         if (!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
-      case "check": {
+      case action.check: {
         const admin = await Admin.findOne({ _id: ObjectId(user.id) });
         if (!admin) return code.event(code.auth.USER_NOT_EXIST);
         return code.event(
@@ -341,9 +335,14 @@ class Self {
       }
     }
   };
-  handlePassReset = async (user, body) => {
+  async handlePassReset(user, body){
     switch (body.action) {
-      case "send": {
+      case action.send: {
+        if(!user){
+          const admin = await Admin.findOne({ email: body.email });
+          if (!admin) return code.event(code.OK); //don't tell if user not exists, while sending reset email.
+          return await this.handlePassReset({id:share.getAdminShareData(admin).uid},body)
+        }
         const linkdata = await reset.generateLink(client.admin, {
           uid: user.id,
         });
@@ -2114,6 +2113,10 @@ class Institution{
     this.uid = "_id";
     this.default = "default";
   }
+  async getInsituteByUIID(user){
+    if(!inspect.tokenValid(user)) return false;
+    return await Institute.findOne({ uiid: user.uiid });
+  }
   async joinInstituteAsAdmin(instID,admin){
     const doc = await Institute.findOneAndUpdate({[this.uid]:ObjectId(instID)},{
       $push:{
@@ -2424,7 +2427,7 @@ class PseudoUsers {
           );
           if (!tdoc) return code.event(code.NO);
           return await this.handleTeachers(user, {
-            action: "reject",
+            action: action.reject,
             teacherID: body.teacherID,
           });
         }

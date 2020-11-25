@@ -1,9 +1,10 @@
 const { code, client, clog } = require("../../public/script/codes"),
+cpass = require("../../config/config.json").db.cpass
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),
-  Institute = require("../../config/db").getInstitute(),
-  Admin = require("../../config/db").getAdmin();
+  Institute = require("../../config/db").getInstitute(cpass),
+  Admin = require("../../config/db").getAdmin(cpass);
 
 class PasswordReset {
   constructor() {

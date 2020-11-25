@@ -1,35 +1,30 @@
 const express = require("express"),
   student = express.Router(),
-  cookieParser = require("cookie-parser"),
-  { ObjectId } = require("mongodb"),
-  { code, client, view, action,get,post, clog } = require("../public/script/codes"),
+  { code, client, view, action,get,post, clog,key } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
-  share = require("../workers/common/sharedata"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
-  worker = require("../workers/studentworker"),
-  Institute = require("../config/db").getInstitute(),
-  Admin = require("../config/db").getAdmin();
+  worker = require("../workers/studentworker");
 
-const sessionsecret = session.studentsessionsecret;
-student.use(cookieParser(sessionsecret));
+session.use(student,client.student);
+
 const invalidsession = { result: code.event(code.auth.SESSION_INVALID) },
   authreqfailed = (error) => {
     return { result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error) };
-  };
+};
 
-student.get(get.root, (req, res) => {
+student.get(get.root, (_, res) => {
   res.redirect(worker.toLogin());
+  // return res.render(view.student.landing)
 });
 
 student.get(get.authlogin, (req, res) => {
-  const response = session.verify(req, sessionsecret);
-
-  if (!session.valid(response))
+  const response = session.verify(req, client.student);
+  if (!session.valid(response,client.student))
     return res.render(view.student.login, { autofill: req.query });
   let data = req.query;
-  delete data["u"];
+  delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, req.query));
 });
 
@@ -39,7 +34,7 @@ student.post(post.auth, async (req, res) => {
     case action.login:
       {
         session
-          .login(req, res, sessionsecret)
+          .login(req, res, client.student)
           .then((response) => {
             return res.json({ result: response });
           })
@@ -58,7 +53,7 @@ student.post(post.auth, async (req, res) => {
     case action.signup:
       {
         session
-          .signup(req, res, sessionsecret, body.pseudo)
+          .signup(req, res, client.student, body.pseudo)
           .then((response) => {
             return res.json({ result: response });
           })
@@ -76,9 +71,9 @@ student.post(post.auth, async (req, res) => {
 
 student.get(get.session, async (req, res) => {
   let query = req.query;
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.student);
 
-  if (!session.valid(response)) return res.redirect(worker.toLogin(query));
+  if (!session.valid(response,client.student)) return res.redirect(worker.toLogin(query));
   if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
   let student = await worker.self.account.getAccount(response.user);
   if (!student)
@@ -137,9 +132,9 @@ student.get(get.session, async (req, res) => {
 
 student.get(get.fragment, async (req, res) => {
   //for student session fragments.
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.student);
   const query = req.query;
-  if(!session.valid(response)) return worker.toLogin(query);
+  if(!session.valid(response,client.student)) return worker.toLogin(query);
   switch (query.fragment) {
     case view.student.target.fragment.today: {
       const scheduleresponse = await worker.schedule.getSchedule(
@@ -230,9 +225,9 @@ student.post(post.self, async (req, res) => {
     }
     return;
   }
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.student);
 
-  if (!session.valid(response)) return res.json(invalidsession);
+  if (!session.valid(response,client.student)) return res.json(invalidsession);
   switch (body.target) {
     case action.receive:
       return res.json({
@@ -240,7 +235,7 @@ student.post(post.self, async (req, res) => {
       });
     case action.authenticate:
       return res.json({
-        result: await session.authenticate(req, res, body, sessionsecret),
+        result: await session.authenticate(req, res, body, client.student),
       });
     case "account":
       return res.json({
@@ -263,9 +258,8 @@ student.post(post.manage, async (req, res) => {
         });
     }
   }
-  const response = session.verify(req, sessionsecret);
-
-  if (!session.valid(response)) return res.json({ result: response });
+  const response = session.verify(req, client.student);
+  if (!session.valid(response,client.student)) return res.json({ result: response });
   switch (body.type) {
     case verify.type:
       return res.json({
@@ -281,14 +275,13 @@ student.post(post.manage, async (req, res) => {
 });
 
 student.post(post.sessionvalidate, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
-
+  const response = session.verify(req, client.student);
   return res.json({ result: response });
 });
 
 student.post(post.classroom, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
-  if (!session.valid(response)) return res.json({ result: response });
+  const response = session.verify(req, client.student);
+  if (!session.valid(response,client.student)) return res.json({ result: response });
   const body = req.body;
   switch (body.action) {
     case "request":
@@ -301,8 +294,8 @@ student.post(post.classroom, async (req, res) => {
 });
 
 student.post(post.comms,async(req,res)=>{
-  const response = session.verify(req, sessionsecret);
-  if (!session.valid(response)) return res.json({ result: response });
+  const response = session.verify(req, client.student);
+  if (!session.valid(response,client.student)) return res.json({ result: response });
   switch (req.body.action) {
     case action.chat:
       worker.comms.chatroom();

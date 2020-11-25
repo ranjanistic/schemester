@@ -1,19 +1,22 @@
+
 const express = require("express"),
   bodyParser = require("body-parser"),
   {client,view,clog,get} = require("./public/script/codes"),
   server = express(),
+  dpass = require("./config/config.json").db.dpass,
   mongo = require('./config/db'),
   https = require('https'),
-  fs = require('fs');
+  fs = require('fs'),
+  { emitWarning } = require("process");
 
 server.set("view engine", "ejs");
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
-mongo.connectToDB(( err )=>{
-  if (err) return clog(err);
-  clog(`Connected to ${mongo.getDb().databaseName}`);
+mongo.connectToDB(dpass,( err,dbname )=>{
+  if (err) return console.error(err);
+  clog(`Connected to ${dbname}`);
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
@@ -21,16 +24,19 @@ mongo.connectToDB(( err )=>{
   server.get(get.root, (req, res) => {
     res.render(view.loader, { data:{ client: req.query.client }});
   });
-  server.get(get.home, async (_, res) => {
+  server.get(get.home, (_, res) => {
     res.render(view.homepage);
   });
   server.get(get.offline,(_,res)=>{
     res.render(view.offline)
   });
+  server.get(get.tour,(req,res)=>{
+    res.render(view.tour);
+  })
   server.get(get.notfound, (__, _, next) => {
     next();
   });
-  server.get(get.forbidder, (__, _, next) => {
+  server.get(get.forbidden, (__, _, next) => {
     next();
   });
   server.get(get.servererror, (__, _, next) => {
@@ -39,13 +45,13 @@ mongo.connectToDB(( err )=>{
   server.use((req, res, _) => {
     res.status(404);
     res.format({
-      html: function () {
+      html: ()=> {
         res.render(view.notfound, { url: req.url });
       },
-      json: function () {
+      json: ()=> {
         res.json({ error: "Not found" });
       },
-      default: function () {
+      default: ()=>{
         res.type("txt").send("Not found");
       },
     });
@@ -65,7 +71,7 @@ mongo.connectToDB(( err )=>{
   }catch(e){ //for cloud server
     server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`);
       if(server_port == 3000 && e.errno == -4058)
-        clog("WARNING: Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
+        emitWarning("Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
     })
   }
 });

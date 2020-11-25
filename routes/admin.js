@@ -1,31 +1,26 @@
 const express = require("express"),
   admin = express.Router(),
-  cookieParser = require("cookie-parser"),
-  { ObjectId } = require("mongodb"),
-  { code, client, view,action, clog, get,post } = require("../public/script/codes"),
+  { code, client, view,action, clog, get,post,key } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   path = require("path"),
   verify = require("../workers/common/verification"),
-  share = require("../workers/common/sharedata"),
   reset = require("../workers/common/passwordreset"),
-  worker = require("../workers/adminworker"),
-  Admin = require("../config/db").getAdmin(),
-  Institute = require("../config/db").getInstitute(),
-  sessionsecret = session.adminsessionsecret;
+  worker = require("../workers/adminworker");
 
-admin.use(cookieParser(sessionsecret));
+session.use(admin,client.admin);
 
 admin.get(get.root, (_, res) => {
   res.redirect(worker.toLogin());
+  // return res.render(view.admin.landing)
 });
 
 admin.get(get.authlogin, (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.render(view.admin.login, { autofill: req.query });
   let data = req.query;
-  delete data["u"];
+  delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, data));
 });
 
@@ -35,12 +30,12 @@ admin.post(post.auth, async (req, res) => {
     case action.login:
       {
         session
-          .login(req, res, sessionsecret)
+          .login(req, res, client.admin)
           .then((response) => {
             return res.json({ result: response });
           })
           .catch((error) => {
-            return res.json(authreqfailed(error));
+            return res.json({error:error});
           });
       }
       break;
@@ -54,7 +49,7 @@ admin.post(post.auth, async (req, res) => {
     case action.signup:
       {
         session
-          .signup(req, res, sessionsecret)
+          .signup(req, res, client.admin)
           .then((response) => {
             return res.json({ result: response });
           })
@@ -72,7 +67,7 @@ admin.post(post.auth, async (req, res) => {
 
 admin.get(get.session, async (req, res) => {
   let query = req.query;
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response)) return res.redirect(worker.toLogin(query));
   try {
     if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
@@ -82,7 +77,7 @@ admin.get(get.session, async (req, res) => {
         if (response) res.redirect(worker.toLogin(query));
       });
     if (!admin.verified) return res.render(view.verification, { user: admin });
-    let inst = await Institute.findOne({ uiid: response.user.uiid });
+    let inst = await worker.inst.getInsituteByUIID(response.user);
     if (
       !inst ||
       !inst.default ||
@@ -199,6 +194,7 @@ admin.get(get.session, async (req, res) => {
       return res.redirect(worker.toLogin(query));
     }
   } catch (e) {
+    clog(e)
     return res.render(view.servererror, { error: e });
   }
 });
@@ -217,21 +213,22 @@ admin.post(post.self, async (req, res) => {
     }
     return;
   }
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
-  const admin = await Admin.findOne({ _id: ObjectId(response.user.id) });
+    
+  const admin = await worker.self.account.getAccount(response.user);
   if (!admin) return code.event(code.auth.USER_NOT_EXIST);
   switch (body.target) {
     case action.receive:
-      return res.json({ result: share.getAdminShareData(admin) });
+      return res.json({ result: admin });
     case action.authenticate:
       return res.json({
-        result: await session.authenticate(req, res, body, sessionsecret),
+        result: await session.authenticate(req, res, body, client.admin),
       });
     case "account":
       return res.json({
-        result: await worker.self.handleAccount(response.user, body, admin),
+        result: await worker.self.handleAccount(response.user, body),
       });
     case "preferences":
       return res.json({
@@ -244,7 +241,7 @@ admin.post(post.sessionvalidate, (req, res) => {
   const { getuser } = req.body;
   if (getuser) {
     session
-      .userdata(req, sessionsecret)
+      .userdata(req, client.admin)
       .then((response) => {
         return res.json({ result: response });
       })
@@ -254,7 +251,7 @@ admin.post(post.sessionvalidate, (req, res) => {
         });
       });
   } else {
-    const response = session.verify(req, sessionsecret);
+    const response = session.verify(req, client.admin);
     return res.json({ result: response });
   }
 });
@@ -263,7 +260,7 @@ admin.post(post.sessionvalidate, (req, res) => {
  * For current session account related requests.
  */
 admin.post(post.session, (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
 });
@@ -272,11 +269,11 @@ admin.post(post.session, (req, res) => {
  * For post requests in default subdoc.
  */
 admin.post("/default", async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   const body = req.body;
-  const inst = await Institute.findOne({ uiid: response.user.uiid });
+  const inst = await worker.inst.getInsituteByUIID(response.user);
   if (body.target != action.registerInstitute && !inst)
     return res.json({ result: code.event(code.inst.INSTITUTION_NOT_EXISTS) });
   switch (body.target) {
@@ -317,7 +314,7 @@ admin.post("/default", async (req, res) => {
 });
 
 admin.get(get.download, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response)) return res.render(view.forbidden);
   const query = req.query;
   if (!(query.type && query.res)) return res.render(view.notfound);
@@ -355,10 +352,10 @@ admin.get(get.download, async (req, res) => {
  * For actions related to users subdocument.
  */
 admin.post("/users", async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
-  const inst = await Institute.findOne({ uiid: response.user.uiid });
+  const inst = await worker.inst.getInsituteByUIID(response.user);
   if (!inst)
     return res.json({ result: code.event(code.inst.INSTITUTION_NOT_EXISTS) });
   const body = req.body;
@@ -375,7 +372,7 @@ admin.post("/users", async (req, res) => {
 });
 
 admin.post("/pseudousers", async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   const body = req.body;
@@ -395,10 +392,10 @@ admin.post("/pseudousers", async (req, res) => {
  * For actions related to schedule subdocument.
  */
 admin.post(post.schedule, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
-  const inst = await Institute.findOne({ uiid: response.user.uiid });
+  const inst = await worker.inst.getInsituteByUIID(response.user);
   if (!inst)
     return res.json({ result: code.event(code.inst.INSTITUTION_NOT_EXISTS) });
   const body = req.body;
@@ -423,7 +420,7 @@ admin.post(post.schedule, async (req, res) => {
 });
 
 admin.post(post.receivedata, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   const body = req.body;
@@ -464,7 +461,7 @@ admin.post(post.receivedata, async (req, res) => {
 });
 
 admin.post(post.dashboard, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
   const body = req.body;
@@ -483,17 +480,15 @@ admin.post(post.manage, async (req, res) => {
   if (body.external) {
     switch (body.type) {
       case reset.type: {
-        const user = await Admin.findOne({ email: body.email });
-        if (!user) return { result: code.event(code.OK) }; //don't tell if user not exists, while sending reset email.
         return res.json({
-          result: await worker.self.handlePassReset({ id: user._id }, body),
+          result: await worker.self.handlePassReset(null, body),
         });
       }
     }
   }
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response)) return res.json({ result: response });
-  const inst = await Institute.findOne({ uiid: response.user.uiid });
+  const inst = await worker.inst.getInsituteByUIID(response.user);
   if (!inst && body.type != verify.type)
     return res.json({
       result: code.event(code.inst.INSTITUTION_NOT_EXISTS),
@@ -525,7 +520,7 @@ admin.post(post.manage, async (req, res) => {
 });
 
 admin.post(post.mail, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.admin);
   if (!session.valid(response)) return res.json({ result: response });
   const body = req.body;
   switch (body.type) {

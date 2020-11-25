@@ -34,8 +34,8 @@
     }
      %> 
     <body>
-        <div class="fmt-col fmt-padding fmt-animate-left">
-            <div class="fmt-row">
+        <div class="fmt-col fmt-padding ">
+            <div class="fmt-row fmt-animate-left">
                 <div class="fmt-col three-fifth">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Today</div>
                     <div class="questrial caption" style="margin-top: 0;padding-top: 0;" id="simpledate"></div>
@@ -48,7 +48,7 @@
             </div>
             <br/>
             <% if (today) { %>
-                <div class="fmt-row">
+                <div class="fmt-row fmt-animate-top">
                 <% today.forEach((period,i) => { %>
                     <div class="fmt-row tab-container b-neutral" id="periodview<%= i %>" style="color:var(--secondary-text)">
                         <div class="fmt-col three-fourth " style="font-size:24px">
@@ -69,7 +69,7 @@
                 <% }) %>
                 </div>
                 <% } else { %>
-                <div class="fmt-row">
+                <div class="fmt-row  fmt-animate-top">
                     <div class="fmt-col fmt-quarter fmt-padding">
                     </div>
                     <div class="fmt-col fmt-half fmt-center container">

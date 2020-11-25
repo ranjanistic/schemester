@@ -522,6 +522,7 @@ class View {
     this.loader = "loader.ejs";
     this.plans = "plans.ejs";
     this.notfound = "404.ejs";
+    this.tour = "tour.ejs";
     this.servererror = "500.ejs";
     this.forbidden = "403.ejs";
     this.offline = "offline.ejs";
@@ -544,6 +545,7 @@ class View {
      */
     class AdminView {
       constructor() {
+        this.landing = `${client.admin}/${client.admin}.ejs`
         this.login = `${client.admin}/${client.admin}_login.ejs`;
         this.dash = `${client.admin}/${client.admin}_dash.ejs`;
         this.settings = `${client.admin}/management.ejs`;
@@ -584,6 +586,7 @@ class View {
         this.login = `${client.teacher}/${client.teacher}_login.ejs`;
         this.dash = `${client.teacher}/${client.teacher}_dash.ejs`;
         this.addschedule = `${client.admin}/${client.teacher}_filler.ejs`;
+        this.landing = `${client.teacher}/${client.teacher}.ejs`
         class FragmentView {
           constructor() {
             this.fullschedule = `${client.teacher}/fragments/fullweek.ejs`;
@@ -631,6 +634,7 @@ class View {
      */
     class StudentView {
       constructor() {
+        this.landing = `${client.student}/${client.student}.ejs`
         this.login = `${client.student}/${client.student}_login.ejs`;
         this.dash = `${client.student}/${client.student}_dash.ejs`;
         class FragmentView {
@@ -673,6 +677,14 @@ class View {
     this.teacher = new TeacherView();
     this.student = new StudentView();
   }
+  getLoginViewByClient(clientType){
+    switch(clientType){
+      case client.admin: return this.admin.login;
+      case client.teacher: return this.teacher.login;
+      case client.student: return this.student.login;
+      default: return this.notfound;
+    }
+  }
 }
 
 
@@ -685,6 +697,8 @@ class Gets {
     this.root = locate.root;
     this.home = locate.homepage;
     this.offline = locate.offline;
+    this.tour = "/tour";
+
     this.authlogin = "/auth/login*";
     this.session = "/session*";
     this.external = "/external*";
@@ -692,7 +706,7 @@ class Gets {
     this.fragment = "/fragment*";
     this.notfound = "/404";
     this.servererror = "/500";
-    this.forbidder = "/403";
+    this.forbidden = "/403";
   }
 }
 

@@ -1,45 +1,41 @@
 const { ObjectId } = require("mongodb"),
-  {
-    code,
-    clog,
-    validType,
-    stringIsValid,
-  } = require("../../public/script/codes"),
-  {session,ssh} = require("../../config/config.json"),
+  cookieParser = require("cookie-parser"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
-  Institute = require("../../config/db").getInstitute(),
-  Admin = require("../../config/db").getAdmin(),
+  inspect = require("./inspector"),
   time = require("./timer"),
+  share = require("./sharedata"),
+  {code,clog,client} = require("../../public/script/codes"),
+  {session,ssh,db} = require("../../config/config.json"),
+  Institute = require("../../config/db").getInstitute(db.cpass),
+  Admin = require("../../config/db").getAdmin(db.cpass),
   adminworker = require("../adminworker"),
   teacherworker = require("../teacherworker"),
-  studentworker = require("../studentworker"),
-  share = require("./sharedata");
+  studentworker = require("../studentworker");
 
 class Session {
   constructor() {
-    this.adminsessionsecret = jwt.verify(session.adminkey,ssh);
-    this.teachersessionsecret = jwt.verify(session.teacherkey,ssh);
-    this.studentsessionsecret = jwt.verify(session.studentkey,ssh);
     this.sessionKey = "bailment"; //bailment ~ amaanat
     this.expiresIn = 365 * 86400; //days*seconds/day
   }
-  verify (request, secret){
+
+  verify (request, clientType){
     const token = request.signedCookies[this.sessionKey];
     try {
       if (!token) return code.event(code.auth.SESSION_INVALID);
-      return jwt.verify(token, secret);
+      return jwt.verify(token, getSecretByClient(clientType));
     } catch (e) {
       return code.eventmsg(code.auth.SESSION_INVALID, e);
     }
   };
-  createSession(response, userID, userUIID, secret, studentclass = null) {
-    const payload = studentclass
+
+  createSession(response, userID, userUIID, secret, classname = null) {
+    const payload = classname
       ? {
           user: {
             id: userID,
             uiid: userUIID,
-            classname: studentclass,
+            classname: classname,
           },
         }
       : {
@@ -55,15 +51,20 @@ class Session {
       clog(e)
     }
   }
-  finish = async (response) => {
+
+  async finish (response){
     await response.clearCookie(this.sessionKey);
     return code.event(code.auth.LOGGED_OUT);
   };
 
-  login = async (request, response, secret) => {
+  use(route,clientType){
+    route.use(cookieParser(getSecretByClient(clientType)));
+  }
+
+  async login (request, response, clientType){
     const body = request.body;
-    switch (secret) {
-      case this.adminsessionsecret: {
+    switch (clientType) {
+      case client.admin: {
         //admin login
         const { email, password, uiid } = body;
         const admin = await Admin.findOne({ email: email });
@@ -83,7 +84,7 @@ class Session {
             return code.event(code.auth.WRONG_UIID);
           }
         }
-        this.createSession(response, admin._id, uiid, secret);
+        this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
         return {
           event: code.auth.AUTH_SUCCESS,
           user: share.getAdminShareData(admin,uiid),
@@ -91,7 +92,7 @@ class Session {
           section:body.section
         };
       }
-      case this.teachersessionsecret:
+      case client.teacher:
         {
           //teacher login
           const inst = await Institute.findOne({ uiid: body.uiid });
@@ -122,7 +123,7 @@ class Session {
                     teacher.password
                   );
                   if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-                  this.createSession(response, teacher._id, uiid, secret);
+                  this.createSession(response, teacher._id, uiid, getSecretByClient(clientType));
                   return {
                     event: code.auth.AUTH_SUCCESS,
                     user: pteacher
@@ -138,7 +139,7 @@ class Session {
           }
         }
         break;
-      case this.studentsessionsecret:
+      case client.student:
         {
           const inst = await Institute.findOne({ uiid: body.uiid });
           switch (body.type) {
@@ -217,7 +218,7 @@ class Session {
                     response,
                     student._id,
                     uiid,
-                    secret,
+                    getSecretByClient(clientType),
                     classname
                   );
                   return {
@@ -240,11 +241,11 @@ class Session {
     }
   };
 
-  authenticate = async (req, res, body, secret) => {
-    const resp = await this.verify(req, secret);
+  async authenticate(req, res, body, clientType){
+    const resp = this.verify(req, clientType);
     if (!this.valid(resp)) return code.event(code.auth.SESSION_INVALID);
-    switch (secret) {
-      case this.adminsessionsecret: {
+    switch (clientType) {
+      case client.admin: {
         const admin = await Admin.findOne({ _id: ObjectId(resp.user.id) });
         if (!admin) return code.event(code.auth.USER_NOT_EXIST);
         if (body.email != admin.email)
@@ -252,25 +253,25 @@ class Session {
         const isMatch = await bcrypt.compare(body.password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
         if(!admin.uiid.includes(resp.user.uiid)) return code.event(code.auth.WRONG_UIID);
-        this.createSession(res, admin._id, resp.user.uiid, secret);
+        this.createSession(res, admin._id, resp.user.uiid, getSecretByClient(clientType));
         return code.event(code.auth.AUTH_SUCCESS);
       }
-      case this.teachersessionsecret: {
+      case client.teacher: {
         const teacher = await teacherworker.self.account.getAccount(resp.user,true);
         if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
         if (body.email != teacher.teacherID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, teacher.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res, teacher._id, resp.user.uiid, secret);
+        this.createSession(res, teacher._id, resp.user.uiid, getSecretByClient(clientType));
         return code.event(code.auth.AUTH_SUCCESS);
       }
-      case this.studentsessionsecret: {
+      case client.student: {
         const student = await studentworker.self.account.getAccount(resp.user,true);
         if (!student) return code.event(code.auth.USER_NOT_EXIST);
         if (body.email != student.studentID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, student.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res, student._id, resp.user.uiid, secret,resp.user.classname);
+        this.createSession(res, student._id, resp.user.uiid, getSecretByClient(clientType),resp.user.classname);
         return code.event(code.auth.AUTH_SUCCESS);
       }
     }
@@ -279,13 +280,13 @@ class Session {
     const salt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, salt);
   }
-  signup = async (request, response, secret, pseudo = false) => {
-    switch (secret) {
-      case this.adminsessionsecret: {
+  async signup (request, response, clientType, pseudo = false){
+    switch (clientType) {
+      case client.admin: {
         const { username, email, password, uiid } = request.body;
-        if (!stringIsValid(email, validType.email))
+        if(!inspect.emailValid(email))
           return code.event(code.auth.EMAIL_INVALID);
-        if (!stringIsValid(password, validType.password))
+        if (!inspect.passValid(password))
           return code.event(code.auth.PASSWORD_INVALID);
         const admin = await Admin.findOne({ email: email });
         if (admin){
@@ -302,7 +303,7 @@ class Session {
               $push:{'uiid':uiid}
             });
             if(!doc.value) code.event(code.NO);
-            this.createSession(response, admin._id, uiid, secret);
+            this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
             return {
               event: code.auth.ACCOUNT_CREATED,
               user: share.getAdminShareData(admin),
@@ -333,18 +334,18 @@ class Session {
         if (result.event == code.NO)
           return code.event(code.auth.ACCOUNT_CREATION_FAILED);
         //account created
-        this.createSession(response, result._id, result.uiid, secret);
+        this.createSession(response, result._id, result.uiid, getSecretByClient(clientType));
         return {
           event: code.auth.ACCOUNT_CREATED,
           user: share.getAdminShareData(result),
         };
       }
-      case this.teachersessionsecret:
+      case client.teacher:
         {
           const { username, email, password, uiid } = request.body;
-          if (!stringIsValid(email, validType.email))
+          if(!inspect.emailValid(email))
             return code.event(code.auth.EMAIL_INVALID);
-          if (!stringIsValid(password, validType.password))
+          if (!inspect.passValid(password))
             return code.event(code.auth.PASSWORD_INVALID);
           const inst = await Institute.findOne({ uiid: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
@@ -374,7 +375,7 @@ class Session {
             return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,pseudo)
           if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
-          this.createSession(response, teacher._id, uiid, secret);
+          this.createSession(response, teacher._id, uiid, getSecretByClient(clientType));
           return {
             event: code.auth.ACCOUNT_CREATED,
             user: pseudo
@@ -383,11 +384,11 @@ class Session {
           };
         }
         break;
-      case this.studentsessionsecret: {
+      case client.student: {
         const { username, email, password, uiid, classname } = request.body;
-        if (!stringIsValid(email, validType.email))
+        if(!inspect.emailValid(email))
           return code.event(code.auth.EMAIL_INVALID);
-        if (!stringIsValid(password, validType.password))
+        if (!inspect.passValid(password))
           return code.event(code.auth.PASSWORD_INVALID);
         const inst = await Institute.findOne({ uiid: uiid });
         if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
@@ -427,7 +428,7 @@ class Session {
         //adding student to classroom
         result = await studentworker.self.account.addStudentToClass(uiid,classname,{username :newstudent.username,studentID:newstudent.studentID},pseudo)
         if(result.event == code.NO) return code.event(code.inst.CLASS_JOIN_FAILED);
-        this.createSession(response, newstudent._id, uiid, secret, classname);
+        this.createSession(response, newstudent._id, uiid, getSecretByClient(clientType), classname);
         return {
           event: code.auth.ACCOUNT_CREATED,
           user: pseudo?share.getPseudoStudentShareData(newstudent):share.getStudentShareData(newstudent),
@@ -438,26 +439,34 @@ class Session {
     }
   };
 
-  userdata = async (request, secret) => {
-    this.verify(request, secret)
+  userdata = async (request, clientType) => {
+    this.verify(request, clientType)
       .catch((e) => {
         return code.event(code.auth.AUTH_REQ_FAILED);
       })
       .then(async (response) => {
         if (!this.valid(response)) return code.event(code.auth.SESSION_INVALID);
-        switch (secret) {
-          case this.adminsessionsecret:
+        switch (clientType) {
+          case client.admin:
             return await adminworker.self.account.getAccount(response.user);
-          case this.teachersessionsecret:
+          case client.teacher:
             return await teacherworker.self.account.getAccount(response.user);
-          case this.studentsessionsecret: 
+          case client.student:
             return await studentworker.self.account.getAccount(response.user);
           default:
             return code.event(code.auth.AUTH_REQ_FAILED);
         }
       });
   };
-  valid = (response) => response.event != code.auth.SESSION_INVALID;
+  valid = (response,clientType) => response.event != code.auth.SESSION_INVALID && inspect.tokenValid(response.user,clientType);
+}
+
+const getSecretByClient=(clientType)=>{
+  switch(clientType){
+    case client.admin:return jwt.verify(session.adminkey,ssh);
+    case client.teacher:return jwt.verify(session.teacherkey,ssh);
+    case client.student:return jwt.verify(session.studentkey,ssh);
+  }
 }
 
 module.exports = new Session();

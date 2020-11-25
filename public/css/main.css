@@ -22,17 +22,17 @@
 }
 
 [data-theme="dark"] {
-    --positive: #739dec;
+    --positive: #5e83ce;
     --negative: #da5f5f;
     --warning: #fcbf49;
     --active: #00cc88;
-    --base: #232323;
+    --base: #1a1f26;
     --base-text: #ffffff;
-    --secondary:#101010;
+    --secondary:#0b0f14;
     --secondary-text:#dedede;
     --tertiary-text:#ffffff6c;
     --dead-text:#dedede;
-    --light-base:#222222ee;
+    --light-base:#1b1e24;
 }
 
 html{
@@ -666,6 +666,7 @@ img{vertical-align:middle}
     background-color: var(--secondary);
     color:var(--positive);
     margin: 4px;
+    font-family: 'Questrial';
     border-width: 0;
     border-radius: 4px;
     box-shadow: 1px 5px 10px #00000022;
@@ -1127,6 +1128,12 @@ img{vertical-align:middle}
 .menubox div:active{
     background-color: var(--light-base);
     opacity:50%;
+}
+
+.blur{
+    filter: blur(38px);
+    -webkit-filter: blur(38px);
+    transition:0.5s;
 }
 
 .chatrow{

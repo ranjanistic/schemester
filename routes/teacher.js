@@ -1,17 +1,17 @@
+const { env } = require("process");
+
 const express = require("express"),
   teacher = express.Router(),
   path = require("path"),
-  cookieParser = require("cookie-parser"),
-  { code, client, view, action,get,post, clog } = require("../public/script/codes"),
+  { code, client, view, action,get,post, clog,key } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
-  worker = require("../workers/teacherworker"),
-  Institute = require("../config/db").getInstitute();
+  worker = require("../workers/teacherworker");
 
-const sessionsecret = session.teachersessionsecret;
-teacher.use(cookieParser(sessionsecret));
+session.use(teacher,client.teacher);
+
 const invalidsession = { result: code.event(code.auth.SESSION_INVALID) },
   authreqfailed = (error) => {
     return { result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error) };
@@ -19,15 +19,15 @@ const invalidsession = { result: code.event(code.auth.SESSION_INVALID) },
 
 teacher.get(get.root, (req, res) => {
   res.redirect(worker.toLogin());
+  // return res.render(view.teacher.landing)
 });
 
 teacher.get(get.authlogin, (req, res) => {
-  const response = session.verify(req, sessionsecret);
-
+  const response = session.verify(req, client.teacher);
   if (!session.valid(response))
     return res.render(view.teacher.login, { autofill: req.query });
   let data = req.query;
-  delete data["u"];
+  delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, req.query));
 });
 
@@ -37,7 +37,7 @@ teacher.post(post.auth, async (req, res) => {
     case action.login:
       {
         session
-          .login(req, res, sessionsecret)
+          .login(req, res, client.teacher)
           .then((response) => {
             return res.json({ result: response });
           })
@@ -56,7 +56,7 @@ teacher.post(post.auth, async (req, res) => {
     case action.signup:
       {
         session
-          .signup(req, res, sessionsecret, body.pseudo)
+          .signup(req, res, client.teacher, body.pseudo)
           .then((response) => {
             return res.json({ result: response });
           })
@@ -74,7 +74,7 @@ teacher.post(post.auth, async (req, res) => {
 
 teacher.get(get.session, async (req, res) => {
   let query = req.query;
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
 
   if (!session.valid(response)) return res.redirect(worker.toLogin(query));
   if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
@@ -83,28 +83,20 @@ teacher.get(get.session, async (req, res) => {
     session.finish(res).then((response) => {
       if (response) res.redirect(worker.toLogin(query));
     });
-  const inst = await Institute.findOne(
-    { uiid: response.user.uiid },
-    {
-      projection: {
-        _id: 1,
-        uiid: 1,
-        default: 1,
-        schedule: 1,
-        preferences: 1,
-      },
-    }
-  );
+
   if (!teacher.verified)
     return res.render(view.verification, { user: teacher });
 
+    
   if (teacher.pseudo)
     //if membership requested (pseudo user)
     return res.render(view.teacher.getViewByTarget(view.teacher.target.dash), {
       teacher,
       target: { fragment: null },
     });
+
   //user teacher exists
+  const inst = await worker.institute.getInstituteByUIID(response.user);
 
   let scheddoc = await worker.schedule.getSchedule(response.user);
   let schedule = scheddoc.schedule;
@@ -118,16 +110,10 @@ teacher.get(get.session, async (req, res) => {
     } else {
       query.target = view.teacher.target.dash;
     }
-  } else {
-    //schedule exists;
+  } else { //schedule exists;
     if (Object.keys(schedule).length != scheddoc.timings.daysInWeek.length) {
       //incomplete schedule
-      Institute.findOneAndUpdate(
-        { uiid: response.user.uiid },
-        {
-          $pull: { "schedule.teachers": { teacherID: teacher.id } },
-        }
-      );
+      await worker.schedule.removeScheduleByTeacherID(response.user,teacher.id);
     } else {
       if (
         query.target == view.teacher.target.addschedule ||
@@ -177,7 +163,7 @@ teacher.get(get.session, async (req, res) => {
 
 //for teacher session fragments.
 teacher.get(get.fragment, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
   const query = req.query;
   if (!session.valid(response)) return worker.toLogin(query);
   try {
@@ -299,7 +285,7 @@ teacher.post(post.self, async (req, res) => {
     }
     return;
   }
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
 
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
@@ -310,7 +296,7 @@ teacher.post(post.self, async (req, res) => {
       });
     case action.authenticate:
       return res.json({
-        result: await session.authenticate(req, res, body, sessionsecret),
+        result: await session.authenticate(req, res, body, client.teacher),
       });
     case "account":
       return res.json({
@@ -324,7 +310,7 @@ teacher.post(post.self, async (req, res) => {
 });
 
 teacher.post(post.schedule, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
   if (!session.valid(response)) return res.json(invalidsession);
   const body = req.body;
   switch (body.action) {
@@ -362,7 +348,7 @@ teacher.post(post.schedule, async (req, res) => {
 });
 
 teacher.get("/download*", async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
 
   if (!session.valid(response)) return res.render(view.forbidden);
   const query = req.query;
@@ -386,7 +372,7 @@ teacher.get("/download*", async (req, res) => {
 });
 
 teacher.post(post.classroom, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
 
   if (!session.valid(response)) return res.json(invalidsession);
   const teacher = await worker.self.account.getAccount(response.user, true);
@@ -422,7 +408,7 @@ teacher.post(post.classroom, async (req, res) => {
 });
 
 teacher.post(post.sessionvalidate, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
   return res.json({ result: response });
 });
 
@@ -502,7 +488,7 @@ teacher.post(post.manage, async (req, res) => {
         });
     }
   }
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
 
   if (!session.valid(response)) return res.json({ result: response });
   switch (body.type) {
@@ -520,7 +506,7 @@ teacher.post(post.manage, async (req, res) => {
 });
 
 teacher.post(post.comms, async (req, res) => {
-  const response = session.verify(req, sessionsecret);
+  const response = session.verify(req, client.teacher);
   if (!session.valid(response)) return res.json({ result: response });
   switch (req.body.action) {
     case action.chat:
@@ -536,11 +522,9 @@ teacher.post(post.comms, async (req, res) => {
 });
 
 teacher.post("/find", async (req, res) => {
-  const { email, uiid } = req.body;
-  const inst = await Institute.findOne({
-    uiid: uiid,
-    "users.teachers": { $elemMatch: { teacherID: email } },
-  });
+  const response = session.verify(req, client.teacher);
+  if(!session.valid(response)) return res.json(invalidsession);
+  const inst = await worker.institute.findTeacherByTeacherID(response.user,email);
   result = inst
     ? code.event(code.auth.USER_EXIST)
     : code.event(code.auth.USER_NOT_EXIST);

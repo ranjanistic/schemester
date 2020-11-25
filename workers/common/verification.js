@@ -1,9 +1,10 @@
 const {code,client,clog} = require("../../public/script/codes"),
   time = require("./timer"),
   share = require("./sharedata"),
+  cpass = require("../../config/config.json").db.cpass,
   { ObjectId } = require("mongodb"),
-  Institute = require("../../config/db").getInstitute(),
-  Admin = require("../../config/db").getAdmin();
+  Institute = require("../../config/db").getInstitute(cpass),
+  Admin = require("../../config/db").getAdmin(cpass);
 
 /**
  * For user account verification purposes, including and limited to:

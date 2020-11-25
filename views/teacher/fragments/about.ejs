@@ -11,8 +11,8 @@
         <script src="/script/teacher/teacher.js"></script>
     </head>
     <body>
-        <div class="fmt-col fmt-padding fmt-animate-right">
-            <div class="fmt-row">
+        <div class="fmt-col fmt-padding">
+            <div class="fmt-row  fmt-animate-right">
                 <div class="fmt-col" style="width: 60%;">
                     <div class="sub-heading positive" style="margin-bottom: 0;padding-bottom: 0;">Details</div>
                     <div class="questrial caption" style="margin-top: 0;padding-top: 0;"><%= defaults.institute.instituteName %></div>
@@ -24,7 +24,7 @@
             <% if (teacher) { %>
                 <div  class="fmt-col">
                     <div class="fmt-half fmt-padding-small">
-                    <div class="fmt-row  tab-container b-neutral">
+                    <div class="fmt-row  tab-container b-neutral  fmt-animate-top">
                         <div class="fmt-row group-heading questrial">Account</div>
                         <div class="caption">Logged in as</div>
                         <div class="fmt-col fmt-threequarter">
@@ -50,7 +50,7 @@
                         </div>
                     </div>
 
-                    <div class="fmt-row tab-container b-neutral" id="themetab">
+                    <div class="fmt-row tab-container b-neutral  fmt-animate-top" id="themetab">
                         <span class="group-text positive">Dark Mode</span>
                         <span class="fmt-right">
                             <label class="switch-container">
@@ -59,7 +59,7 @@
                             </label>
                         </span>
                     </div>
-                    <div class="fmt-row tab-container b-neutral" id="hideclassroom">
+                    <div class="fmt-row tab-container b-neutral  fmt-animate-top" id="hideclassroom">
                         <span class="group-text positive">Hide classroom</span>
                         <span class="fmt-right">
                             <label class="switch-container">
@@ -69,10 +69,10 @@
                         </span>
                     </div>
                     <button class="tab-container positive-button" id="downloadschedule">Download Schedule Backup</button>
-                    <div class="fmt-row tab-container b-neutral pointer" id="resetemail">
+                    <div class="fmt-row tab-container b-neutral pointer  fmt-animate-top" id="resetemail">
                         Change email address <span class="fmt-right"><img width="20" src="/graphic/elements/editicon.svg"/></span>
                     </div>
-                    <div class="fmt-row fmt-center tab-container b-neutral">
+                    <div class="fmt-row fmt-center tab-container b-neutral  fmt-animate-top">
                         <div class="fmt-col half ">
                             <button class="tab-container neutral-button" id="resetpass">Change password</button>
                         </div>
@@ -80,11 +80,11 @@
                             <button class=" tab-container warning-button" id="forgotpass">Forgot password</button>
                         </div>
                     </div>
-                    <div class="fmt-row tab-container b-neutral">
+                    <div class="fmt-row tab-container b-neutral  fmt-animate-top">
                         <button class="fmt-row fmt-right negative-button questrial" id="deleteaccount">DELETE ACCOUNT</button>
                     </div>
                     </div>
-                    <div class="fmt-half fmt-padding-small">
+                    <div class="fmt-half fmt-padding-small  fmt-animate-top">
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="fmt-row group-heading questrial">Information</div>
                         <div class="caption">Institution</div>

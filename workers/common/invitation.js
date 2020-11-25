@@ -1,6 +1,7 @@
 const {code,client,clog} = require("../../public/script/codes"),
-  Admin = require("../../config/db").getAdmin(),
-  Institute = require("../../config/db").getInstitute(),
+  cpass = require("../../config/config.json").db.cpass,
+  Admin = require("../../config/db").getAdmin(cpass),
+  Institute = require("../../config/db").getInstitute(cpass),
   share = require("./sharedata"),
   time = require("./timer"),
   { ObjectId } = require("mongodb");

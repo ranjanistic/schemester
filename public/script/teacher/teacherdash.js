@@ -46,6 +46,7 @@ function clickTab(index){
 class TeacherDash{
     constructor(){
         this.frag = getElement("frag").innerHTML;
+        this.frameparent = getElement("frameparent");
         this.frame = getElement("frame");
         this.viewload = getElement('viewload');
         
@@ -56,12 +57,14 @@ class TeacherDash{
         this.fragpath = [locate.teacher.target.fragment.today,locate.teacher.target.fragment.fullweek,locate.teacher.target.fragment.classroom,locate.teacher.target.fragment.settings];
         this.tabs.forEach((tab,t)=>{
           tab.onclick=_=>{
+            appendClass(this.frameparent,"blur");
             this.showLoader(tab);
             sessionStorage.setItem('fragment',this.fragpath[t]);
             this.selectTab(tab);
             this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
             this.frame.onload=_=>{
                 this.hideLoader(tab)
+                this.frameparent.classList.remove("blur");
             }
           }
         });
@@ -71,6 +74,7 @@ class TeacherDash{
 
         this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem('fragment'))?this.fragpath.indexOf(sessionStorage.getItem('fragment')):0].click();
         this.clearAllLoaders();
+        this.frameparent.classList.remove("blur");
     }
     selectTab(tab){
         this.tabs.forEach((Tab)=>{

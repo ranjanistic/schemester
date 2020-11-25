@@ -1,11 +1,12 @@
-const Admin = require("../config/db").getAdmin(),
-Institute = require("../config/db").getInstitute(),
+const cpass = require("../config/config.json").db.cpass,
+  Admin = require("../config/db").getAdmin(cpass),
+  Institute = require("../config/db").getInstitute(cpass),
   fs = require("fs"),
   path = require("path"),
   pusher = require("pusher"),
   {code,client,view,action,clog} = require("../public/script/codes"),
   invite = require("./common/invitation"),
-  session = require("./common/session"),
+  inspect = require("./common/inspector"),
   verify = require("./common/verification"),
   mailer = require("./common/mailer"),
   timer = require("./common/timer"),
@@ -13,6 +14,8 @@ Institute = require("../config/db").getInstitute(),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
   { ObjectId } = require("mongodb");
+
+
 class TeacherWorker {
   constructor() {
     this.self = new Self();
@@ -435,6 +438,28 @@ class Institution{
     );
     return inst.default;
   }
+  async getInstituteByUIID(user){
+    if(!inspect.tokenValid(user)) return false;
+    return await Institute.findOne(
+      { uiid: user.uiid },
+      {
+        projection: {
+          _id: 1,
+          uiid: 1,
+          default: 1,
+          schedule: 1,
+          preferences: 1,
+        },
+      }
+    );
+  }
+  async findTeacherByTeacherID(user,teacherID){
+    if(!inspect.tokenValid(user)) return false;
+    return await Institute.findOne({
+      uiid: uiid,
+      "users.teachers": { $elemMatch: { teacherID: teacherID } },
+    });
+  }
 }
 
 class Schedule {
@@ -475,7 +500,7 @@ class Schedule {
 
     if (incomplete) { //remove teacher schedule
       await Institute.findOneAndUpdate({ uiid: user.uiid },{
-        $pull: { "schedule.teachers": { teacherID: body.teacherID } },
+        $pull: { [this.schedulepath]: { teacherID: body.teacherID } },
       });
       found = false; //add as a new teacher schedule
     }
@@ -516,7 +541,7 @@ class Schedule {
       //existing teacher schedule, incomplete
       let doc = await Institute.updateOne({uiid:user.uiid},{
         $set:{
-          "schedule.teachers.$[outer].days.$[outer1].period":body.data.period  //overwrite existing day
+          [`${this.schedulepath}.$[outer].days.$[outer1].period`]:body.data.period  //overwrite existing day
         }
       },{
         arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.data.dayIndex}]
@@ -525,11 +550,11 @@ class Schedule {
       if(doc.result.nModified) return code.event(code.schedule.SCHEDULE_CREATED);
       doc = await Institute.findOneAndUpdate({
         uiid: user.uiid,
-        "schedule.teachers": {
+        [this.schedulepath]: {
           $elemMatch: { teacherID: body.teacherID },
         }, //existing schedule teacherID
       },{
-        $push: { "schedule.teachers.$[outer].days": body.data }, //new day push
+        $push: { [`${this.schedulepath}.$[outer].days`]: body.data }, //new day push
       },{
         arrayFilters:[{"outer.teacherID":body.teacherID}]
       });
@@ -538,7 +563,7 @@ class Schedule {
       //no existing schedule teacherID
       const doc = await Institute.findOneAndUpdate({ uiid: user.uiid }, {
         $push: {
-          "schedule.teachers": {
+          [this.schedulepath]: {
             teachername:body.teachername,
             teacherID: body.teacherID,
             days: [body.data],
@@ -555,8 +580,8 @@ class Schedule {
   async createScheduleBackup(user,sendPromptCallback=(filename,err)=>{}){
     const teacher = await getTeacherById(user.uiid,user.id);
     if(!teacher) return false;
-    const scheduledoc = await Institute.findOne({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},{
-      projection:{"schedule.teachers.$":1}
+    const scheduledoc = await Institute.findOne({uiid:user.uiid,[this.schedulepath]:{$elemMatch:{"teacherID":teacher.teacherID}}},{
+      projection:{[this.getschedulepath]:1}
     });
     if(!scheduledoc) return false;
     const schedule = scheduledoc.schedule.teachers[0];
@@ -568,6 +593,17 @@ class Schedule {
       });
     });
   }
+
+  async removeScheduleByTeacherID(user,teacherID){
+    if(!inspect.tokenValid(user)) return false;
+    return await Institute.findOneAndUpdate(
+      { uiid: user.uiid },
+      {
+        $pull: { [this.schedulepath]: { teacherID: teacherID } },
+      }
+    );
+  }
+
   async getSchedule(user, body = {}){
     let teacher = await this.account.getAccount(user);
     if(!teacher) return false;

@@ -1,6 +1,7 @@
-const Admin = require("../config/db").getAdmin(),
-Institute = require("../config/db").getInstitute(),
-  {code,client,view,clog} = require("../public/script/codes"),
+const cpass = require("../config/config.json").db.cpass
+ Admin = require("../config/db").getAdmin(cpass),
+Institute = require("../config/db").getInstitute(cpass),
+  {code,client,view,clog,action} = require("../public/script/codes"),
   verify = require("./common/verification"),
   bcrypt = require("bcryptjs"),
   reset = require("./common/passwordreset"),
