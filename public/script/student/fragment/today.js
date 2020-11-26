@@ -1,5 +1,5 @@
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem('fragment')!=locate.student.target.fragment.today){
+if(sessionStorage.getItem(key.fragment)!=locate.student.target.fragment.today){
     parent.clickTab(0);
 }
 class StudentToday{

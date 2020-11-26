@@ -48,13 +48,11 @@
                         <img src="/graphic/elements/bellicon.svg" width="25" />
                         Pending requests
                     </div>
-                    <div class="" id="users">
-                        <img src="/graphic/elements/classicon.svg" width="25" />
+                    <div id="users" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
                         Classrooms
                     </div>
                     <% } else { %>
-                    <div class="" id="users">
-                        <img src="/graphic/elements/settings.svg" width="25" />
+                    <div id="users" onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})">
                         Teachers
                     </div>
                     <% } %>
@@ -66,13 +64,12 @@
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" style="margin-top: 72px;">
-            <div class="fmt-row fmt-padding-small">
-                <div class="sub-heading fmt-col half positive">
+            <div class="fmt-row fmt-padding">
+                <div class="sub-container group-text fmt-col half questrial">
                     <span id="totalusers"><%= users.length %></span> 
                     <%= client == 'teacher'?'teachers':'classrooms'%>
-                    <% if(client == 'student') {%>
-                        ·
-                        <span id="totalstudents" class="group-heading positive">
+                    <% if(client == 'student') {%>·
+                        <span id="totalstudents" class="positive">
                         <% var totalstuds = 0 %>
                         <% users.forEach((Class)=> { %>
                             <% totalstuds+=Class.students.length %>
@@ -83,7 +80,7 @@
                 </div>
                 <div class="fmt-col half">
                     <button class="fmt-right positive-button" id="adduser">
-                        <%= client == 'teacher'?'Add teacher':'Create classroom'%>
+                        <%= client == 'teacher'?'Add teacher':'Create'%>
                     </button>
                     <% if(client == 'teacher') {%>
                         <button class="fmt-right active-button" id="inviteteacher">
@@ -110,7 +107,7 @@
                             <% if(client == 'teacher') {%>
                                 <span id="teacherid<%= c %>" class="group-text break"><%= user.teacherID %></span>
                             <% } else { %>
-                                <%= user.students.length %> students
+                                <%= user.students.length %> <%= user.students.length==1?'student':'students' %>
                             <% } %>
                         </div>
                         <div class="fmt-row questrial caption break" style="text-align:left">

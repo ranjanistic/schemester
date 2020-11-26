@@ -45,36 +45,33 @@ function clickTab(index){
 }
 class TeacherDash{
     constructor(){
-        this.frag = getElement("frag").innerHTML;
-        this.frameparent = getElement("frameparent");
-        this.frame = getElement("frame");
-        this.viewload = getElement('viewload');
-        
-        tabs = new Tabs();
-        this.tabs = [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings];
-        this.tabloaders = [tabs.todayload,tabs.weekload,tabs.classload,tabs.settingload];
-        this.tabicons = ['/graphic/elements/todayicon.svg','/graphic/elements/weekicon.svg','/graphic/elements/classicon.svg','/graphic/elements/settingicon.svg'];
-        this.fragpath = [locate.teacher.target.fragment.today,locate.teacher.target.fragment.fullweek,locate.teacher.target.fragment.classroom,locate.teacher.target.fragment.settings];
-        this.tabs.forEach((tab,t)=>{
-          tab.onclick=_=>{
-            appendClass(this.frameparent,"blur");
-            this.showLoader(tab);
-            sessionStorage.setItem('fragment',this.fragpath[t]);
-            this.selectTab(tab);
-            this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
-            this.frame.onload=_=>{
-                this.hideLoader(tab)
-                this.frameparent.classList.remove("blur");
-            }
-          }
-        });
-        
-        visibilityOf(tabs.classroom,localStorage.getItem('hideclassroom'))
-        localStorage.getItem('hideclassroom')?hideClassroom():showClassroom();
-
-        this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem('fragment'))?this.fragpath.indexOf(sessionStorage.getItem('fragment')):0].click();
-        this.clearAllLoaders();
+      this.frag = getElement("frag").innerHTML;
+      this.frameparent = getElement("frameparent");
+      this.frame = getElement("frame");
+      this.viewload = getElement('viewload');
+      
+      tabs = new Tabs();
+      this.tabs = [tabs.today,tabs.fullweek,tabs.classroom,tabs.settings];
+      this.tabloaders = [tabs.todayload,tabs.weekload,tabs.classload,tabs.settingload];
+      this.tabicons = ['/graphic/elements/todayicon.svg','/graphic/elements/weekicon.svg','/graphic/elements/classicon.svg','/graphic/elements/settingicon.svg'];
+      this.fragpath = [locate.teacher.target.fragment.today,locate.teacher.target.fragment.fullweek,locate.teacher.target.fragment.classroom,locate.teacher.target.fragment.settings];
+      this.tabs.forEach((tab,t)=>{
+        tab.onclick=_=>{
+          appendClass(this.frameparent,"blur");
+          this.showLoader(tab);
+          sessionStorage.setItem(key.fragment,this.fragpath[t]);
+          this.selectTab(tab);
+          this.frame.src = locate.teacher.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
+        }
+      });
+      visibilityOf(tabs.classroom,localStorage.getItem('hideclassroom'))
+      localStorage.getItem('hideclassroom')?hideClassroom():showClassroom();
+      this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem(key.fragment))?this.fragpath.indexOf(sessionStorage.getItem(key.fragment)):0].click();
+      this.clearAllLoaders();
+      this.frame.onload=_=>{
+        this.hideLoader()
         this.frameparent.classList.remove("blur");
+      }
     }
     selectTab(tab){
         this.tabs.forEach((Tab)=>{
@@ -87,13 +84,15 @@ class TeacherDash{
         });
     }
     clearAllLoaders(){
-        this.tabs.forEach((tab)=>{
-            this.hideLoader(tab);
-        });
+      this.tabs.forEach((tab)=>{
+          this.hideLoader(tab);
+      });
     }
-    hideLoader(tab){
-        this.tabloaders[this.tabs.indexOf(tab)].src = this.tabicons[this.tabs.indexOf(tab)];
-        this.tabloaders[this.tabs.indexOf(tab)].classList.remove('fmt-spin-fast');
+    hideLoader(){
+      this.tabloaders.forEach((tl,l)=>{
+        tl.src = this.tabicons[l]
+        tl.classList.remove('fmt-spin-fast');
+      })
     }
     showLoader(tab){
         this.tabloaders[this.tabs.indexOf(tab)].src = '/graphic/blueLoader.svg';
@@ -133,9 +132,7 @@ function snackbar(
 }
 class Pseudoteacher{
     constructor(){
-        this.darkmode = new Switch('darkmode');
-        this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        new ThemeSwitch("darkmode");
         this.deleteRequest = getElement("deleterequest");
         this.deleteRequest.onclick=_=>{
             snackBar('Deleting the request will also remove your account on Schemester.','Delete Request',false,_=>{
@@ -152,10 +149,7 @@ class Pseudoteacher{
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
             finishSession(client.teacher,(_) => {
-              const email  = localStorage.getItem(key.id);
-                relocateParent(locate.teacher.login, {
-                  email: email,
-                });
+              parent.location.reload();
             });
         };
         this.name = new Editable(
@@ -163,8 +157,8 @@ class Pseudoteacher{
             "teachernameeditor",
             new TextInput(
               "teachernamefield",
-              "teachernameinput",
-              "teachernameerror",
+              false,
+              "",
               validType.name
             ),
             "editteachername",

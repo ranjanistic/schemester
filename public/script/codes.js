@@ -847,11 +847,11 @@ class Theme {
   switch() {
     this.isLight() ? this.setDark() : this.setLight();
   }
-  setDark() {
-    this.setTheme(this.dark);
+  setDark(base = false) {
+    this.setTheme(this.dark,base);
   }
-  setLight() {
-    this.setTheme(this.light);
+  setLight(base = false) {
+    this.setTheme(this.light,base);
   }
   isLight() {
     return this.getTheme() == this.light;
@@ -863,11 +863,11 @@ class Theme {
   getTheme() {
     return localStorage.getItem(this.key);
   }
-  setTheme(theme = this.light) {
+  setTheme(theme = this.light,base = false) {
     localStorage.setItem(this.key, theme);
     window.parent.document
       .getElementById("themecolor")
-      .setAttribute("content", theme == this.dark ? "#739dec" : "#216bf3");
+      .setAttribute("content",base?colors.raw[theme].base:colors.raw[theme].positive);
     document.documentElement.setAttribute("data-theme", theme);
     window.parent.document.documentElement.setAttribute("data-theme", theme);
   }
@@ -999,6 +999,34 @@ class Colors {
     this.black = "#000000";
     this.transparent = "#00000056";
     this.base = this.positive;
+    this.raw = {
+      light:{
+        positive: "#216bf3",
+        negative: "#c02e2e",
+        warning: "#f77f00",
+        active: "#18b960",
+        base: "#efefef",
+        basetext: "#000000",
+        secondary:"#ffffff",
+        secondarytext:"#121212",
+        tertiarytext:"#00000093",
+        deadtext:"#343434",
+        lightbase:"#eeeeeeee",
+      },
+      dark:{
+        positive: "#5e83ce",
+        negative: "#da5f5f",
+        warning: "#fcbf49",
+        active: "#00cc88",
+        base: "#1a1f26",
+        basetext: "#ffffff",
+        secondary:"#0b0f14",
+        secondarytext:"#dedede",
+        tertiarytext:"#ffffff6c",
+        deadtext:"#dedede",
+        lightbase:"#1b1e24",
+      }
+    }
   }
   getColorByType(type) {
     switch (type) {

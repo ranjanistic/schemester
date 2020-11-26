@@ -46,9 +46,9 @@
             <button class="display-button questrial" style="font-size:32px;" id="returnFrom500">Return home</button>
         </div >
         <script type="text/javascript">
+            window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
             document.getElementById('returnFrom500').onclick=()=>{
                 relocateParent(locate.root);
-                // window.parent.location.replace('/');
             };
         </script>
     </body>

@@ -5,11 +5,9 @@
 
 :root {
     --positive: #216bf3;
-    /* --negative: #c40c0c; */
     --negative: #c02e2e;
     --warning: #f77f00;
-    /* --active: #00893E; */
-    --active: #117255;
+    --active: #18b960;
     --base: #efefef;
     --base-text: #000000;
     --secondary:#ffffff;

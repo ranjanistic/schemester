@@ -20,5 +20,6 @@
 </head>
 <body class="fmt-center">
     <button class="positive-button" onclick="relocate(locate.root)">Return</button>
+    <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
 </body>
 </html>

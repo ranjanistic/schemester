@@ -107,5 +107,6 @@
             <span id="uiid"><%= user.uiid %></span>
             <span id="username"><%= user.username %></span>
         </span>
+        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
 </html>

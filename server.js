@@ -1,22 +1,20 @@
 
 const express = require("express"),
   bodyParser = require("body-parser"),
-  {client,view,clog,get} = require("./public/script/codes"),
+  {client,view,get} = require("./public/script/codes"),
   server = express(),
-  dpass = require("./config/config.json").db.dpass,
   mongo = require('./config/db'),
   https = require('https'),
-  fs = require('fs'),
-  { emitWarning } = require("process");
+  fs = require('fs');
 
 server.set("view engine", "ejs");
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
-mongo.connectToDB(dpass,( err,dbname )=>{
+mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   if (err) return console.error(err);
-  clog(`Connected to ${dbname}`);
+  console.log(`Connected to ${dbname}`);
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
@@ -32,7 +30,7 @@ mongo.connectToDB(dpass,( err,dbname )=>{
   });
   server.get(get.tour,(req,res)=>{
     res.render(view.tour);
-  })
+  });
   server.get(get.notfound, (__, _, next) => {
     next();
   });
@@ -67,11 +65,11 @@ mongo.connectToDB(dpass,( err,dbname )=>{
   try{  //for local https dev server
     const key = fs.readFileSync('./localhost-key.pem');
     const cert = fs.readFileSync('./localhost.pem');
-    https.createServer({key: key, cert: cert }, server).listen(server_port, server_host, ()=>{ clog(`listening on ${server_port} (https)`)})
+    https.createServer({key: key, cert: cert }, server).listen(server_port, server_host, ()=>{ console.log(`listening on ${server_port} (https)`)})
   }catch(e){ //for cloud server
-    server.listen(server_port, server_host, ()=>{ clog(`listening on ${server_port}`);
+    server.listen(server_port, server_host, ()=>{ console.log(`listening on ${server_port}`);
       if(server_port == 3000 && e.errno == -4058)
-        emitWarning("Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
+        console.warn("Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
     })
   }
 });

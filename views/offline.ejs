@@ -46,6 +46,7 @@
             <button class="display-button questrial" style="font-size:32px;" id="returnFromOffline">Return to base</button>
         </div >
         <script type="text/javascript">
+        window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
             document.getElementById('returnFromOffline').onclick=()=>{
                 parent.window.location.replace('/');
             };

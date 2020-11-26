@@ -117,9 +117,9 @@
                         </div>
                         <div id="teachernameeditor">
                             <fieldset class="text-field questrial" style="margin:0" id="teachernamefield">
-                                <legend class="field-caption questrial">Change your name</legend>
-                                <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernameinput" name="teachername" >
-                                <span class="fmt-right error-caption"  id="teachernameerror"></span>
+                                <legend class="field-caption questrial" id="teachernamefieldcaption">Change your name</legend>
+                                <input class="text-input questrial" style="font-size:16px" required value="<%= teacher.username %>" placeholder="Visible in <%=  %>" type="text" id="teachernamefieldinput" name="teachername" >
+                                <span class="fmt-right error-caption"  id="teachernamefielderror"></span>
                             </fieldset>
                             <button class="positive-button caption" id="saveteachername">Save</button>
                             <button class="neutral-button caption" id="cancelteachername">Cancel</button>
@@ -170,6 +170,7 @@
         </span>
     </body>
     <script>
+        window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
         if ('serviceWorker' in window.navigator) {
         window.addEventListener('load', _=> {
             navigator.serviceWorker.register('/sw.js')

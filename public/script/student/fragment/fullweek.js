@@ -1,5 +1,5 @@
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem('fragment')!=locate.student.target.fragment.fullweek){
+if(sessionStorage.getItem(key.fragment)!=locate.student.target.fragment.fullweek){
     parent.clickTab(1);
   }
 class FullSchedule{

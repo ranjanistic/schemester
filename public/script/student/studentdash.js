@@ -35,18 +35,17 @@ class StudentDash{
             tab.onclick=_=>{
               appendClass(this.frameparent,"blur");
               this.showLoader(tab);
-              sessionStorage.setItem('fragment',this.fragpath[t]);
+              sessionStorage.setItem(key.fragment,this.fragpath[t]);
               this.selectTab(tab);
               this.frame.src = locate.student.fragment + getRequestBody({fragment:this.fragpath[t],day:new Date().getDay()});
-              this.frame.onload=_=>{
-                  this.hideLoader(tab);
-                  this.frameparent.classList.remove("blur");
-              }
             }
         });
-        this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem('fragment'))?this.fragpath.indexOf(sessionStorage.getItem('fragment')):0].click();
+        this.tabs[this.fragpath.includes(this.frag)?this.fragpath.indexOf(this.frag):this.fragpath.includes(sessionStorage.getItem(key.fragment))?this.fragpath.indexOf(sessionStorage.getItem(key.fragment)):0].click();
         this.clearAllLoaders();
-        this.frameparent.classList.remove("blur");
+        this.frame.onload=_=>{
+          this.hideLoader();
+          this.frameparent.classList.remove("blur");
+        }
     }
     selectTab(tab){
         this.tabs.forEach((Tab)=>{
@@ -63,10 +62,11 @@ class StudentDash{
             this.hideLoader(tab);
         });
     }
-    hideLoader(tab){
-        
-        this.tabloaders[this.tabs.indexOf(tab)].src = this.tabicons[this.tabs.indexOf(tab)];
-        this.tabloaders[this.tabs.indexOf(tab)].classList.remove('fmt-spin-fast');
+    hideLoader(){
+      this.tabloaders.forEach((tl,l)=>{
+        tl.src = this.tabicons[l]
+        tl.classList.remove('fmt-spin-fast');
+      })
     }
     showLoader(tab){
         this.tabloaders[this.tabs.indexOf(tab)].src = '/graphic/blueLoader.svg';
@@ -108,9 +108,7 @@ function snackbar(
 }
 class Pseudostudent{
     constructor(){
-        this.darkmode = new Switch('darkmode');
-        this.darkmode.turn(theme.isDark());
-        this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+        new ThemeSwitch("darkmode");
         this.deleteRequest = getElement("deleterequest");
         this.deleteRequest.onclick=_=>{
             snackBar('Deleting the request will also remove your account on Schemester.','Delete Request',false,_=>{
@@ -127,10 +125,7 @@ class Pseudostudent{
         this.logout = getElement("logout");
         this.logout.onclick = (_) => {
           finishSession(client.student,(_) => {
-            const email  = localStorage.getItem(key.id)
-            relocateParent(locate.teacher.login, {
-              email: email,
-            });
+            parent.location.reload();
           });
         };
         this.name = new Editable(
@@ -138,8 +133,8 @@ class Pseudostudent{
             "studentnameeditor",
             new TextInput(
               "studentnamefield",
-              "studentnameinput",
-              "studentnameerror",
+              false,
+              "",
               validType.name
             ),
             "editstudentname",

@@ -158,5 +158,6 @@
             <span id="daysinweek"><%= inst.default.timings.daysInWeek %></span>
             <span id="periodcount"><%= inst.default.timings.periodsInDay %></span>
         </span>
+        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
 </html>

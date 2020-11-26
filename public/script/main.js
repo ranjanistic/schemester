@@ -7,12 +7,8 @@
  */
 
 //Sets theme of whole application
-if (localStorage.getItem(theme.key)) {
-  document.documentElement.setAttribute(
-    "data-theme",
-    localStorage.getItem(theme.key)
-  );
-}
+localStorage.getItem(theme.key)?document.documentElement.setAttribute("data-theme",localStorage.getItem(theme.key)):localStorage.setItem(theme.key,theme.light);
+
 
 class Button{
   constructor(buttonid){
@@ -314,10 +310,10 @@ class Switch{
 }
 
 class ThemeSwitch{
-  constructor(switchID){
+  constructor(switchID,base = false){
     this.darkmode = new Switch(switchID);
     this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(_=>{theme.setDark()},_=>{theme.setLight()});
+    this.darkmode.onTurnChange(_=>{theme.setDark(base)},_=>{theme.setLight(base)});
   }
 }
 
@@ -1071,9 +1067,8 @@ const getSessionUserData = async(clientType) => {
   let data = {
     [constant.sessionID]: localStorage.getItem(constant.sessionID),
     [constant.sessionUID]: localStorage.getItem(constant.sessionUID),
-    username: localStorage.getItem("username"),
-    uiid: localStorage.getItem("uiid")=='null'?false:localStorage.getItem("uiid"),
-    createdAt: localStorage.getItem("createdAt"),
+    username: localStorage.getItem(key.username),
+    uiid: localStorage.getItem(key.uiid)=='null'?false:localStorage.getItem(key.uiid),
   };
   if(hasAnyKeyNull(data)){
     let postpath;
@@ -1083,7 +1078,7 @@ const getSessionUserData = async(clientType) => {
       case client.student:postpath = post.student.self;break;
     }
     let result = await postJsonData(postpath, {
-      target:'receive',
+      target:action.receive,
     });
     if(result.event == code.auth.SESSION_INVALID){
       return false;
@@ -1114,10 +1109,10 @@ const feedBackBox = (
   feedback.createInputs(
     ["Your email address"],
     ["To help or thank you directly ;)"],
-    ["email"],
+    [validType.email],
     [validType.email],
     null,
-    ["email"]
+    [validType.email]
   );
   feedback.largeTextArea(
     "Describe everything",
@@ -1320,9 +1315,9 @@ const checkSessionValidation = (
           .catch((error) => {
             clog(error);
             snackBar(
-              'Network error?',
-              "Homepage",false,_=>{relocate(locate.homepage);}
+              'Network error',
             );
+            relocate(locate.homepage);
           });
       }
       break;
@@ -1346,9 +1341,9 @@ const checkSessionValidation = (
           .catch((error) => {
             clog(error);
             snackBar(
-              'Network error?',
-              "Homepage",false,_=>{relocate(locate.homepage);}
+              'Network error',
             );
+            relocate(locate.homepage);
           });
       }
       break;
@@ -1371,9 +1366,9 @@ const checkSessionValidation = (
           .catch((error) => {
             clog(error);
             snackBar(
-              'Network error?',
-              "Homepage",false,_=>{relocate(locate.homepage);}
+              'Network error',
             );
+            relocate(locate.homepage);
           });
     }break;
     default: {
@@ -1416,16 +1411,12 @@ const validateTextField = (
 ) => {
   let error, matcher = constant.nothing;
   switch (type) {
-    case validType.name:
-      {
-        error = "There has to be a name.";
-      }
-      break;
-    case validType.email:
-      {
-        error = "Invalid email address.";
-      }
-      break;
+    case validType.name:{
+      error = "There has to be a name.";
+    }break;
+    case validType.email:{
+      error = "Invalid email address.";
+    }break;
     case validType.phone:{
       error = "Not a valid number"
     }break;
@@ -1441,16 +1432,13 @@ const validateTextField = (
     case validType.password:{
       error = "Weak password, try something else."
     }break;
-    case validType.match:
-      {
-        error = "This one is different.";
-        matcher = ifmatchField.getInput();
-      }
-      break;
+    case validType.match:{
+      error = "This one is different.";
+      matcher = ifmatchField.getInput();
+    }break;
     case validType.weekday:{
       error = "Invalid weekday"
     }break;
-
     default: {
       error = "This can't be empty";
     }
@@ -1902,8 +1890,7 @@ const postJsonData = async (url = String, data = {}) => {
         body: JSON.stringify(data),
       });
       const content = await response.json();
-      if(content.result.event == code.auth.SESSION_INVALID&&
-        url!=post.admin.sessionValidate&&url!=post.teacher.sessionValidate&&url!=post.student.sessionValidate){
+      if(content.result.event == code.auth.SESSION_INVALID&&![post.admin.sessionValidate,post.teacher.sessionValidate,post.student.sessionValidate].includes(url)){
         return window.parent.location.reload();
       }
       return content.result;
@@ -1925,7 +1912,7 @@ const getRequestBody = (data = {}, isPost = false) => {
   if(!data) return constant.nothing;
   let i = 0;
   let body = constant.nothing;
-  for (var key in data) {
+  for (let key in data) {
     if (data.hasOwnProperty(key)) {
       if (isPost) {
         body =

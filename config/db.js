@@ -12,7 +12,7 @@ module.exports = {
     }
     MongoClient.connect(
       true
-      ?`mongodb+srv://${db.username}:${jwt.decode(db.pass,ssh)}@realmcluster.njdl8.mongodb.net/${db.name}?retryWrites=true&w=majority`
+      ?`mongodb+srv://${jwt.decode(db.username,ssh)}:${jwt.decode(db.pass,ssh)}@realmcluster.njdl8.mongodb.net/${db.name}?retryWrites=true&w=majority`
       :`mongodb://localhost:27017/${db.name}`,
       { useNewUrlParser: true , useUnifiedTopology: true}, ( err, client )=> {
       _db = client.db(db.name);

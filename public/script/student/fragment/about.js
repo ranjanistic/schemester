@@ -1,23 +1,10 @@
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem('fragment')!=locate.student.target.fragment.settings){
+if(sessionStorage.getItem(key.fragment)!=locate.student.target.fragment.settings){
   parent.clickTab(3);
 }
 class StudentAbout {
     constructor() {
-      this.darkmode = new Switch("darkmode");
-      this.darkmode.turn(theme.isDark());
-      this.darkmode.onTurnChange(
-        (_) => {
-          theme.setDark();
-        },
-        (_) => {
-          theme.setLight();
-        }
-      );
-      getElement("themetab").onclick = (_) => {
-        theme.switch();
-        this.darkmode.change();
-      };
+      new ThemeSwitch("darkmode",true);
   
       this.logout = getElement("logout");
       this.logout.onclick = (_) => {

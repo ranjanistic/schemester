@@ -133,6 +133,7 @@
         <div id="dialogView"></div>
         <div id="snackBar"></div>
     </body>
+    <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
             <div class="heading">Javascript required</div><br/>

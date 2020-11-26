@@ -1,25 +1,10 @@
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem('fragment')!=locate.teacher.target.fragment.about){
+if(sessionStorage.getItem(key.fragment)!=locate.teacher.target.fragment.about){
   parent.clickTab(3);
 }
 class TeacherAbout {
   constructor() {
-    this.darkmode = new Switch("darkmode");
-    this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(
-      (_) => {
-        theme.setDark();
-      },
-      (_) => {
-        theme.setLight();
-      }
-    );
-    getElement("themetab").onclick = (_) => {
-      theme.switch();
-      this.darkmode.change();
-    };
-    
-      
+    new ThemeSwitch("darkmode",true);
     this.hideclassswitch = new Switch("hideclass");
     this.hideclassswitch.turn(localStorage.getItem('hideclassroom')?true:false);
     getElement("hideclassroom").onclick=_=>{
@@ -29,7 +14,6 @@ class TeacherAbout {
 
     this.logout = getElement("logout");
     this.logout.onclick = (_) => {
-      const email = localStorage.getItem(key.id);
       finishSession(client.teacher,(_) => {parent.location.reload()});
     };
     this.name = new Editable(

@@ -57,6 +57,7 @@
         <div id="snackBar"></div>
         <span hidden id="target"><%= autofill.target %></span>
         <span hidden id="section"><%= autofill.section %></span>
+        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
