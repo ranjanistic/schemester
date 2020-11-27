@@ -1,4 +1,6 @@
-require("dotenv/config");
+if(process.env.NODE_ENV == 'development')
+ require("dotenv").config({ silent: process.env.NODE_ENV === 'production' });
+
 const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),jwt = require("jsonwebtoken");
 
 /**
