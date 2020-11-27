@@ -1084,7 +1084,7 @@ const stringIsValid = (
     case validType.name:
       return stringIsValid(String(value).trim());
     case validType.email:
-      return constant.emailRegex.test(String(value).toLowerCase());
+      return String(value).length<=320&&constant.emailRegex.test(String(value).toLowerCase());
     case validType.phone:
       return !isNaN(value) && stringIsValid(String(value).trim());
     case validType.number:
@@ -1100,7 +1100,7 @@ const stringIsValid = (
         Number(value) >= 0
       );
     // case validType.password:
-    //   return constant.passRegex.test(String(value)) || true;
+    //   return String(value).length<=1000||constant.passRegex.test(String(value));
     case validType.username:
       return stringIsValid(String(value).trim());
     case validType.match:

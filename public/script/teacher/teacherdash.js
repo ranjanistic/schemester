@@ -99,8 +99,9 @@ class TeacherDash{
         this.tabloaders[this.tabs.indexOf(tab)].classList.add('fmt-spin-fast');
     }
 }
-async function linkSender(){
+async function linkSender(onsuccess=()=>{},onsendclick=_=>{}){
     snackBar(`To reset your password, a link will be sent to your email address.`,'Send Link',true,_=>{
+      onsendclick();
       postJsonData(post.teacher.manage,{
         type:"resetpassword",
         action:action.send,
@@ -109,6 +110,7 @@ async function linkSender(){
           snackBar('An error occurred','Report');
           return false;
         }
+        onsuccess();
         snackBar("A link for password reset has been sent to your email address.",'OK');
         return true;
       })

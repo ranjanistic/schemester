@@ -637,7 +637,7 @@ class Classroom{
    * @param {String} uiid The uiid of institution
    * @param {String} studentID The student ID (email address) of student to be searched in classrooms.
    * @param {Boolean} classnameonly If true, will only return array of classnames, else array of classes with details. Defaults to false.
-   * @returns {JSON} JSON object of JSONArrays classes & pseudoclasses.
+   * @returns {Promise} JSON object of JSONArrays classes & pseudoclasses.
    */
   async getClassesByStudentID(uiid,studentID,classnameonly = false){
     const cdoc = await Institute.findOne({

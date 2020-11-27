@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb"),
   time = require("./timer"),
   share = require("./sharedata"),
   {code,clog,client} = require("../../public/script/codes"),
-  {session,ssh,db} = require("../../config/config.json"),
+  {session,db} = require("../../config/config.json"),
   Institute = require("../../config/db").getInstitute(db.cpass),
   Admin = require("../../config/db").getAdmin(db.cpass),
   adminworker = require("../adminworker"),
@@ -15,8 +15,14 @@ const { ObjectId } = require("mongodb"),
 
 class Session {
   constructor() {
-    this.sessionKey = "bailment"; //bailment ~ amaanat
-    this.expiresIn = 365 * 86400; //days*seconds/day
+    this.uiid = "uiid";
+    this.email = "email";
+    this.password = "password";
+    this.classname = " classname";
+    this.classpath = "users.classes";
+    this.pclasspath = "pseudousers.classes";
+    this.sessionKey = session.publickey;
+    this.expiresIn = 365 * 24 * 60 * 60;
   }
 
   verify (request, clientType){
@@ -72,13 +78,13 @@ class Session {
         const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
         if (!admin.uiid.includes(uiid)) return code.event(code.auth.WRONG_UIID);
-        const inst = await Institute.findOne({uiid:uiid});
+        const inst = await Institute.findOne({[this.uiid]:uiid});
         if(inst){
           const isAdmin = await adminworker.inst.isAdminOfInstitute(uiid,email);
           if(!isAdmin){ //not in institute
             await Admin.findOneAndUpdate({email:email},{
               $pull:{
-                "uiid":uiid
+                [this.uiid]:uiid
               }
             });
             return code.event(code.auth.WRONG_UIID);
@@ -95,9 +101,9 @@ class Session {
       case client.teacher:
         {
           //teacher login
-          const inst = await Institute.findOne({ uiid: body.uiid });
+          const inst = await Institute.findOne({ [this.uiid]: body.uiid });
           switch (body.type) {
-            case "uiid": {
+            case this.uiid: {
               return inst
                 ? code.event(code.inst.INSTITUTION_EXISTS)
                 : code.event(code.inst.INSTITUTION_NOT_EXISTS);
@@ -107,11 +113,11 @@ class Session {
               let teacher = await teacherworker.self.account.getTeacherByEmail(body.uiid,body.email);
               const pteacher = await teacherworker.self.account.getTeacherByEmail(body.uiid,body.email,true);
               switch (body.type) {
-                case "email":
+                case this.email:
                   return teacher || pteacher
                     ? code.event(code.auth.USER_EXIST)
                     : code.event(code.auth.USER_NOT_EXIST);
-                case "password": {
+                case this.password: {
                   const { password, uiid, target } = body;
                   if (!teacher && !pteacher)
                     return code.event(code.auth.USER_NOT_EXIST);
@@ -141,9 +147,9 @@ class Session {
         break;
       case client.student:
         {
-          const inst = await Institute.findOne({ uiid: body.uiid });
+          const inst = await Institute.findOne({ [this.uiid]: body.uiid });
           switch (body.type) {
-            case "uiid":
+            case this.uiid:
               return code.event(
                 inst
                   ? code.inst.INSTITUTION_EXISTS
@@ -153,30 +159,30 @@ class Session {
               if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
               const classdoc = await Institute.findOne(
                 {
-                  uiid: body.uiid,
-                  "users.classes": {
+                  [this.uiid]: body.uiid,
+                  [this.classpath]: {
                     $elemMatch: { classname: body.classname },
                   },
                 },
-                { projection: { _id: 0, "users.classes.$": 1 } }
+                { projection: { _id: 0, [`${this.classpath}.$`]: 1 } }
               );
               const pseudoclassdoc = await Institute.findOne(
                 {
-                  uiid: body.uiid,
-                  "pseudousers.classes": {
+                  [this.uiid]: body.uiid,
+                  [this.pclasspath]: {
                     $elemMatch: { classname: body.classname },
                   },
                 },
-                { projection: { _id: 0, "pseudousers.classes.$": 1 } }
+                { projection: { _id: 0, [`${this.pclasspath}.$`]: 1 } }
               );
               switch (body.type) {
-                case "classname":
+                case this.classname:
                   return code.event(
                     classdoc || pseudoclassdoc
                       ? code.auth.CLASS_EXISTS
                       : code.auth.CLASS_NOT_EXIST
                   );
-                case "email": {
+                case this.email: {
                   if (!classdoc && !pseudoclassdoc)
                     return code.event(code.auth.CLASS_NOT_EXIST);
                   const pseudo = pseudoclassdoc.pseudousers.classes[0].students.find((stud)=>stud.studentID == body.email)?true:false;
@@ -203,7 +209,7 @@ class Session {
                       : code.auth.USER_NOT_EXIST
                   );
                 }
-                case "password": {
+                case this.password: {
                   const { email, password, uiid, classname, target } = body;
                   if (!classdoc && !pseudoclassdoc)
                     return code.event(code.auth.CLASS_NOT_EXIST);
@@ -291,7 +297,7 @@ class Session {
         const admin = await Admin.findOne({ email: email });
         if (admin){
           if(request.body.isinvite){ //accepting invitation join
-            const inst = await Institute.findOne({uiid:uiid});
+            const inst = await Institute.findOne({[this.uiid]:uiid});
             if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
             if(!inst.invite.admin.active) return code.event(code.invite.LINK_INVALID);
             if(inst.default.admin.find((ad)=>ad.email==email)) return code.event(code.auth.USER_EXIST);
@@ -300,7 +306,7 @@ class Session {
             const joined = await adminworker.inst.joinInstituteAsAdmin(inst._id,admin);
             if(!joined) code.event(code.NO);
             const doc = await Admin.findOneAndUpdate({_id:ObjectId(admin._id)},{
-              $push:{'uiid':uiid}
+              $push:{[this.uiid]:uiid}
             });
             if(!doc.value) code.event(code.NO);
             this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
@@ -313,7 +319,7 @@ class Session {
           }
         }
         if(!request.body.isinvite){
-          const inst = await Admin.findOne({ uiid:uiid });
+          const inst = await Admin.findOne({ [this.uiid]:uiid });
           if (inst) return code.event(code.server.UIID_TAKEN);
         }
         const epassword = await this.getHashed(password);
@@ -347,7 +353,7 @@ class Session {
             return code.event(code.auth.EMAIL_INVALID);
           if (!inspect.passValid(password))
             return code.event(code.auth.PASSWORD_INVALID);
-          const inst = await Institute.findOne({ uiid: uiid });
+          const inst = await Institute.findOne({ [this.uiid]: uiid });
           if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
           let teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email);
           const pteacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,true);
@@ -390,7 +396,7 @@ class Session {
           return code.event(code.auth.EMAIL_INVALID);
         if (!inspect.passValid(password))
           return code.event(code.auth.PASSWORD_INVALID);
-        const inst = await Institute.findOne({ uiid: uiid });
+        const inst = await Institute.findOne({ [this.uiid]: uiid });
         if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const classroom = await studentworker.classes.getClassByClassname(uiid,classname);
         if (!classroom) return code.event(code.auth.CLASS_NOT_EXIST);  //if classroom not in users
@@ -458,14 +464,14 @@ class Session {
         }
       });
   };
-  valid = (response,clientType) => response.event != code.auth.SESSION_INVALID && inspect.tokenValid(response.user,clientType);
+  valid = (response,clientType) => response.event != code.auth.SESSION_INVALID && inspect.sessionTokenValid(response.user,clientType);
 }
 
 const getSecretByClient=(clientType)=>{
   switch(clientType){
-    case client.admin:return jwt.verify(session.adminkey,ssh);
-    case client.teacher:return jwt.verify(session.teacherkey,ssh);
-    case client.student:return jwt.verify(session.studentkey,ssh);
+    case client.admin:return inspect.token.verify(session.adminkey);
+    case client.teacher:return inspect.token.verify(session.teacherkey);
+    case client.student:return inspect.token.verify(session.studentkey);
   }
 }
 

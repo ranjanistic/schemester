@@ -51,6 +51,7 @@ class AdminLogin{
         }
         snackBar("If your email address was correct, you'll receive an email from us in a few moments.",'Hide');
         restrictElement(this.passField.forgot,120,key.admin.forgotpassword,_=>{
+          this.passField.forgot.innerHTML = 'Forgot?';
           this.passField.forgot.onclick = (_) => {this.linkSender()};
         });
       })

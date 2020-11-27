@@ -17,9 +17,8 @@
     "commit": "git status && git add . && git status && git cz",
     "sendmail": "node tests/sendmail.js",
     "gentoken": "node tests/keygen.js",
-    "updateconfig": "node tests/updateconfigkeys.js",
-    "updatekeys": "node tests/updatekeys.js",
-    "postinstall": "echo 'done'"
+    "decode": "node tests/decode.js",
+    "updatekeys": "node tests/updatekeys.js"
   },
   "author": "Priyanshu Ranjan",
   "license": "ISC",
@@ -38,6 +37,7 @@
   "devDependencies": {
     "commitizen": "^4.2.2",
     "cz-conventional-changelog": "^3.3.0",
+    "dotenv": "^8.2.0",
     "es6-promisify": "^6.1.1",
     "mocha": "^8.2.1",
     "nodemon": "^2.0.6"

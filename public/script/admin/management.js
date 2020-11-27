@@ -1311,19 +1311,23 @@ class Security {
   }
 
   linkSender() {
-    this.sendpasslink.onclick=_=>{};
-    postJsonData(post.admin.manage, {
-      type: "resetpassword",
-      action: "send",
-    }).then((response) => {
-      if (response.event == code.mail.MAIL_SENT) {
-        snackBar("A link for password reset has been sent to your email address.");
-        restrictElement(this.sendpasslink,120,"sendpasslink",_=>{
-          this.sendpasslink.onclick=_=>{
-            this.linkSender();
-          }
-        });
-      }
+    snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
+      this.sendpasslink.onclick=_=>{};
+      this.sendpasslink.innerHTML = 'Sending...';
+      postJsonData(post.admin.manage, {
+        type: "resetpassword",
+        action: "send",
+      }).then((response) => {
+        if (response.event == code.mail.MAIL_SENT) {
+          snackBar("A link for password reset has been sent to your email address.");
+          restrictElement(this.sendpasslink,120,"sendpasslink",_=>{
+            this.sendpasslink.innerHTML = 'Get password link';
+            this.sendpasslink.onclick=_=>{
+              this.linkSender();
+            }
+          });
+        }
+      });
     });
   }
 

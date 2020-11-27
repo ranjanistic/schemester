@@ -2114,7 +2114,7 @@ class Institution{
     this.default = "default";
   }
   async getInsituteByUIID(user){
-    if(!inspect.tokenValid(user)) return false;
+    if(!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOne({ uiid: user.uiid });
   }
   async joinInstituteAsAdmin(instID,admin){

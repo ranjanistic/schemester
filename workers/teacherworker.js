@@ -439,7 +439,7 @@ class Institution{
     return inst.default;
   }
   async getInstituteByUIID(user){
-    if(!inspect.tokenValid(user)) return false;
+    if(!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOne(
       { uiid: user.uiid },
       {
@@ -454,7 +454,7 @@ class Institution{
     );
   }
   async findTeacherByTeacherID(user,teacherID){
-    if(!inspect.tokenValid(user)) return false;
+    if(!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOne({
       uiid: uiid,
       "users.teachers": { $elemMatch: { teacherID: teacherID } },
@@ -595,7 +595,7 @@ class Schedule {
   }
 
   async removeScheduleByTeacherID(user,teacherID){
-    if(!inspect.tokenValid(user)) return false;
+    if(!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOneAndUpdate(
       { uiid: user.uiid },
       {

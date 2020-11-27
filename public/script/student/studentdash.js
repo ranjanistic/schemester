@@ -73,8 +73,9 @@ class StudentDash{
         this.tabloaders[this.tabs.indexOf(tab)].classList.add('fmt-spin-fast');
     }
 }
-async function linkSender(onsuccess=_=>{}){
+async function linkSender(onsuccess=_=>{},onsendclick=_=>{}){
     snackBar(`To reset your password, a link will be sent to your email address.`,'Send Link',true,_=>{
+      onsendclick();
       postJsonData(post.student.manage,{
         type:"resetpassword",
         action:action.send,
@@ -82,10 +83,10 @@ async function linkSender(onsuccess=_=>{}){
         if(resp.event== code.mail.ERROR_MAIL_NOTSENT){
           return snackBar('An error occurred','Report');
         }
+        onsuccess();
         snackBar(
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
-        onsuccess();
         return true;
       })
     })

@@ -232,6 +232,7 @@ class Password{
     snackBar(`To reset your password, a link will be sent to your provided ${this.getEmail()} address.`,'Send Link',true,_=>{
       this.passField.forgot.onclick = (_) => {};
       snackBar(`Sending link to ${this.getEmail()}...`);
+      this.passField.forgot.innerHTML = 'Sending...';
       postJsonData(post.teacher.manage,{
         external:true,
         type:"resetpassword",
@@ -247,6 +248,7 @@ class Password{
           "If your email address was correct, you'll receive an email from us in a few moments.",'Hide'
         );
         restrictElement(this.passField.forgot,120,key.teacher.forgotpassword,_=>{
+          this.passField.forgot.innerHTML = 'Forgot?';
           this.passField.forgot.onclick = (_) => {this.linkSender()};
         });
       })

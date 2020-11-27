@@ -58,7 +58,7 @@ class StudentAbout {
           });
         });
       };
-      resumeElementRestriction(this.forgotpass,"studentforgot",_=>{
+      resumeElementRestriction(this.forgotpass,key.student.forgotpassword,_=>{
         this.forgotpass.onclick = (_) => {
           this.sendForgotLink()
         };
@@ -75,11 +75,11 @@ class StudentAbout {
       };
     }
     sendForgotLink(){
-      this.forgotpass.onclick=_=>{};
-      parent.linkSender().then(done=>{
-        restrictElement(this.forgotpass,120,'studentforgot',_=>{
-          this.forgotpass.onclick = (_) => {this.sendForgotLink()};
-        });
+      parent.linkSender(()=>restrictElement(this.forgotpass,120,key.student.forgotpassword,_=>{
+        this.forgotpass.innerHTML = 'Forgot password';
+        this.forgotpass.onclick = (_) => {this.sendForgotLink()};
+      }),()=>{this.forgotpass.onclick=_=>{};
+        this.forgotpass.innerHTML = 'Sending...';
       })
     }
     accountdeletion() {

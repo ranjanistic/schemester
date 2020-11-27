@@ -1,30 +1,40 @@
 const {MongoClient} = require('mongodb'),
-  {db,ssh} = require('./config.json'),
-  jwt = require("jsonwebtoken");
+  {db} = require('./config.json'),
+  {token} = require("./../workers/common/inspector");
 
-var _db;
+var dbobj;
 module.exports = {
   connectToDB: (key, callback )=>{
     try{
-      if(!jwt.verify(key,ssh)) throw e;
+      if(!token.verify(key)) throw 403;
+      MongoClient.connect(
+        true
+        ?`mongodb+srv://${token.verify(db.username)}:${token.verify(db.pass)}@realmcluster.njdl8.mongodb.net/${db.name}?retryWrites=true&w=majority`
+        :`mongodb://localhost:27017/${db.name}`,
+        { useNewUrlParser: true , useUnifiedTopology: true}, ( err, client )=> {
+        if(!err) dbobj = client.db(db.name);
+        return callback( err,db.name );
+      });
     } catch(e){
-      return callback("ACCESS DENIED:DATABASE MIGRATED")
+      return callback("ACCESS DENIED:DB KEY FAILURE")
     }
-    MongoClient.connect(
-      true
-      ?`mongodb+srv://${jwt.decode(db.username,ssh)}:${jwt.decode(db.pass,ssh)}@realmcluster.njdl8.mongodb.net/${db.name}?retryWrites=true&w=majority`
-      :`mongodb://localhost:27017/${db.name}`,
-      { useNewUrlParser: true , useUnifiedTopology: true}, ( err, client )=> {
-      _db = client.db(db.name);
-      return callback( err,db.name );
-    });
   },
   getAdmin:(key)=>{
-    if(!jwt.verify(key,ssh)) return null;
-    return _db.collection(db.admin_collection)
+    try{
+      if(token.verify(key)) return dbobj.collection(db.admin_collection);
+      throw 403
+    } catch(e){
+      console.log("ACESSS DENIED:COLLECTION 0 KEY FAILURE");
+    }
+    return null;
   },
   getInstitute:(key)=>{
-    if(!jwt.verify(key,ssh)) return null;
-    return _db.collection(db.institute_collection)
+    try{
+      if(token.verify(key)) return dbobj.collection(db.institute_collection);
+      throw 403
+    } catch(e){
+      console.log("ACESSS DENIED:COLLECTION 1 KEY FAILURE");
+    }
+    return null;
   }
 };

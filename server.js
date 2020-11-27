@@ -13,7 +13,7 @@ server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
 mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
-  if (err) return console.error(err);
+  if (err) return console.error(err.code == 8000?'DB CREDS MISMATCH':err);
   console.log(`Connected to ${dbname}`);
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));

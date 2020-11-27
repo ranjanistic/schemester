@@ -1,8 +1,8 @@
-const Pusher = require("pusher"),{pusher,ssh} = require("./config.json"), jwt = require("jsonwebtoken");
+const Pusher = require("pusher"),{pusher} = require("./config.json"), {token} = require("./../workers/common/inspector");
 module.exports = new Pusher({
     appId:pusher.appId,
-    key: pusher.key,
-    secret: jwt.verify(pusher.secret,ssh),
+    key: token.verify(pusher.secret),
+    secret: token.verify(pusher.secret),
     cluster: pusher.cluster,
     useTLS: pusher.useTLS
 });
