@@ -283,7 +283,7 @@ class Constant {
     this.fetchContentType = "application/x-www-form-urlencoded; charset=UTF-8";
     this.fetchJsonContent = "application/json";
     this.emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    this.passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#()])[A-Za-z\d@$!%*?&#()]{8,}$/;
+    this.passRegex = /^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/;
     this.sessionID = "id";
     this.sessionUID = "uid";
     this.millisInSecond = 1000;
@@ -1099,8 +1099,10 @@ const stringIsValid = (
         stringIsValid(String(value).trim(), validType.number) &&
         Number(value) >= 0
       );
-    // case validType.password:
-    //   return String(value).length<=1000||constant.passRegex.test(String(value));
+    case validType.password:
+      return String(value).length<=1000
+      // &&constant.passRegex.test(String(value))
+      &&String(value).length>8;
     case validType.username:
       return stringIsValid(String(value).trim());
     case validType.match:

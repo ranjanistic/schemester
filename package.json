@@ -14,11 +14,11 @@
     "test": "mocha",
     "start": "node server.js",
     "devserver": "nodemon server.js",
-    "commit": "git status && git add . && git status && git cz",
-    "sendmail": "node tests/sendmail.js",
-    "gentoken": "node tests/keygen.js",
-    "decode": "node tests/decode.js",
-    "updatekeys": "node tests/updatekeys.js"
+    "commit": "npm test && git status && git add . && git status && git cz",
+    "sendmail": "node methods/sendmail.js",
+    "gentoken": "node methods/keygen.js",
+    "decode": "node methods/decode.js",
+    "updatekeys": "node methods/updatekeys.js"
   },
   "author": "Priyanshu Ranjan",
   "license": "ISC",
