@@ -16,6 +16,7 @@ class Inspector{
           return jwt.verify(token,process.env.SSH)
         },
       }
+      this.isDev = process.env.NODE_ENV != 'prod';
     }
     /**
      * Checks auth token validity

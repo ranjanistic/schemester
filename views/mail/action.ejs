@@ -1,0 +1,153 @@
+<table style="width: 100%; border-spacing: 0">
+  <tr style="border-width: 0">
+    <td style="padding: 12px">
+      <img
+        src="<%= mail.website %>/graphic/icons/schemester128.png"
+        style="display: block"
+        width="50"
+      />
+    </td>
+    <td
+      style="
+        background-color: #216bf3;
+        text-align: center;
+        font-size: 34px;
+        padding: 26px;
+        color: #fff;
+        border-radius: 8px;
+      "
+    >
+      <%= mail.heading %>
+    </td>
+  </tr>
+</table>
+<br /><br /><br />
+<table
+  style="font-size: 18px; color: #31352dbb; line-height: 30px"
+  width="100%"
+>
+  <tr>
+    <td style="padding-left: 12px; padding-right: 12px; padding-top: 22px">
+      <%= mail.greeting %>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding-left: 12px; padding-right: 12px">
+      <%= mail.starttext %>
+    </td>
+  </tr>
+
+  <tr style="align-content: center; color: #31352dbb">
+    <td style="text-align: center; padding: 12px">
+      <br />
+      <% mail.actions.forEach(action => { %>
+      <a target="_blank" rel="noreferrer" href="<%= action.link %>">
+        <button
+          style="
+            background-color: #18b960;
+            color: white;
+            margin: 4px;
+            padding-top: 12px;
+            padding-bottom: 12px;
+            padding-left: 22px;
+            padding-right: 22px;
+            font-size: 20px;
+            border-width: 0;
+            border-radius: 4px;
+            box-shadow: 1px 5px 10px #00000022;
+            cursor: pointer;
+          "
+        >
+          <%= action.text %>
+        </button></a
+      >
+      <% }); %>
+      <br />
+    </td>
+  </tr>
+</table>
+
+<table
+  style="font-size: 18px; line-height: 30px; color: #31352dbb"
+  width="100%"
+>
+  <tr>
+    <td style="padding: 12px">
+      If the above button didn't work, then you can
+      <a
+        target="_blank"
+        style="text-decoration: none; color: #216bf3"
+        rel="noreferrer"
+        href="<%= mail.actions[0].link %>"
+        >click here</a
+      >
+      to proceed for the same.
+    </td>
+  </tr>
+  <tr>
+    <% if(mail.rednote){%>
+    <td style="padding: 12px; color: #c02e2e"><%} else { %></td>
+
+    <td style="padding: 12px; color: #31352dbb">
+      <%}%> <%= mail.rednote||mail.note %>
+    </td>
+  </tr>
+</table>
+<table
+  style="font-size: 18px; line-height: 30px; color: #31352dbb"
+  width="100%"
+>
+  <tr>
+    <td style="padding: 12px"><%= mail.endtext %></td>
+  </tr>
+  <br />
+  <tr>
+    <td style="padding: 12px; text-align: left; font-size: 18px">
+      This email was intended for
+      <a
+        style="text-decoration: underline; color: #31352dbb"
+        href="mailto:<%= mail.for %>"
+        ><%= mail.for %></a
+      >.
+    </td>
+  </tr>
+</table>
+<br />
+<table style="width: 100%">
+  <tr>
+    <td style="background-color: #216bf3; padding: 26px; border-radius: 8px">
+      <a
+        style="font-size: 20px; text-decoration: none; color: #fff"
+        href="<%= mail.website %>"
+      >
+        Regards<br />
+        Schemester.
+      </a>
+    </td>
+    <td
+      style="
+        align-self: flex-start;
+        align-content: flex-start;
+        align-items: flex-start;
+        padding-left: 32px;
+        font-size: 16px;
+        line-height: 30px;
+      "
+    >
+      <b
+        ><a
+          style="text-decoration: underline; color: #31352dbb"
+          href="mailto:<%= mail.replyto %>"
+          >Contact us.</a
+        ><br
+      /></b>
+      <b
+        ><a
+          style="text-decoration: underline; color: #31352dbb"
+          href="<%= mail.website %>"
+          >Learn more.</a
+        ></b
+      >
+    </td>
+  </tr>
+</table>

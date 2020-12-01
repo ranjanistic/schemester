@@ -82,7 +82,7 @@ class Self {
        * Returns the student account associated with current user session.
        * @param {JSON} user The session user object.
        * @param {Boolean} raw If true, will return exact account data (including password, encrypted), else will return through sharedata methods. Defaults to false.
-       * @returns {JSON} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
+       * @returns {Promise} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
        */
       async getAccount(user,raw = false){
         let student = await this.getStudentById(user.uiid,user.id);
@@ -256,6 +256,13 @@ class Self {
             [rlinkpath]: null,
           },
         }); //updating in student account
+        if(accdoc.value){
+          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+            to:student.studentID,
+            username:student.username,
+            client:client.student,
+          });
+        }
         return code.event(accdoc.value ? code.OK : code.NO);
       };
 
@@ -320,6 +327,14 @@ class Self {
             })
           })
         );
+        if(accdoc.value)
+          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+            to:student.studentID,
+            newmail:body.newemail,
+            username:student.username,
+            client:client.student,
+          });
+
         return code.event(code.OK);
       };
 
@@ -410,6 +425,13 @@ class Self {
               })
             })
           )
+        if(delacc.value){
+          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+            to:student.studentID,
+            username:student.username,
+            client:client.student,
+          });
+        }
         return code.event(code.OK);
       };
     }

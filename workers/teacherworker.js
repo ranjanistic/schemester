@@ -212,6 +212,13 @@ class Self {
             },
           }
         );
+        if(newteacher.value){
+          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+            to:teacher.teacherID,
+            username:teacher.username,
+            client:client.teacher,
+          });
+        }
         return code.event(newteacher.value ? code.OK : code.NO);
       };
 
@@ -249,6 +256,14 @@ class Self {
             "users.classes.$.inchargeID":body.newemail
           }
         });
+        if(newteacher.value){
+          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+            to:teacher.teacherID,
+            newmail:body.newemail,
+            username:teacher.username,
+            client:client.teacher,
+          });
+        }
         return code.event(code.OK);
       };
 
@@ -271,6 +286,13 @@ class Self {
             },
           }
         );
+        if(deluser.value){
+          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+            to:teacher.teacherID,
+            username:teacher.username,
+            client:client.teacher,
+          });
+        }
         return code.event(deluser.value ? code.OK : code.NO);
       };
     }

@@ -21,12 +21,12 @@ describe("Timer", () => {
   describe("SGT", () => {
     it("Increments moment", () => {
       assert.strictEqual(
-        timer.getMoment({ day: 2 }),
-        timer.getMoment({ minute: 60 * 48 })
+        0-(timer.getMoment({ minute: 60 * 48 })-timer.getMoment({ day: 2 }))<3
+        ,true
       );
     });
     it("Current moment", () => {
-      assert.strictEqual(timer.getTheMoment(), timer.getTheMomentMinute());
+      assert.strictEqual(0-(timer.getTheMoment()-timer.getTheMomentMinute())<3,true);
     });
     it("Length check", () => {
       assert.strictEqual(timer.getMoment(null, true).length, 17);

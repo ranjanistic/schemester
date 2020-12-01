@@ -3,7 +3,6 @@ const { ObjectId } = require("mongodb");
 const {client} = require("../public/script/codes");
 describe("Inspector", () => {
   const inspect = require("../workers/common/inspector");
-
   describe("Email validity", () => {
     it("Valid string", () => {
       assert.strictEqual(inspect.emailValid("abc@def.com"), true);

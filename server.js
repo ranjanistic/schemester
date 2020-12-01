@@ -3,6 +3,7 @@ const express = require("express"),
   bodyParser = require("body-parser"),
   {client,view,get} = require("./public/script/codes"),
   server = express(),
+  shared = require("./workers/common/sharedata"),
   mongo = require('./config/db'),
   https = require('https'),
   fs = require('fs');
@@ -13,7 +14,7 @@ server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
 mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
-  if (err) return console.error(err.code == 8000?'DB CREDS MISMATCH':err);
+  if (err) return console.error(err.code == 8000?'DB CREDS MISMATCH':err+`\nIf you don't have local mongodb server running at port 27017, then set up that first.`);
   console.log(`Connected to ${dbname}`);
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
