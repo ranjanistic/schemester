@@ -1102,7 +1102,7 @@ const stringIsValid = (
     case validType.password:
       return String(value).length<=1000
       // &&constant.passRegex.test(String(value))
-      &&String(value).length>8;
+      &&String(value).length>=8;
     case validType.username:
       return stringIsValid(String(value).trim());
     case validType.match:

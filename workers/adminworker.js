@@ -154,7 +154,7 @@ class Self {
       /**
        * Change account password, revoke pass reset link
        */
-      changePassword = async (user, body) => {
+      async changePassword (user, body){
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
         const newpassadmin = await Admin.findOneAndUpdate(
@@ -168,7 +168,14 @@ class Self {
             },
           }
         );
-        return code.event(newpassadmin ? code.OK : code.NO);
+        if(newpassadmin.ok){
+          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+            to:newpassadmin.value.email,
+            username:newpassadmin.value.username,
+            client:client.admin,
+          })
+        }
+        return code.event(newpassadmin.value ? code.OK : code.NO);
       };
 
       /**
@@ -189,7 +196,15 @@ class Self {
             },
           }
         );
-        return newadmin
+        if(newadmin.ok){
+          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+            to:admin.id,
+            newmail:body.newemail,
+            username:admin.username,
+            client:client.admin,
+          })
+        }
+        return newadmin.value
           ? code.event(
               (await this.defaults.admin.setEmail(user, body))
                 ? code.OK
@@ -210,12 +225,19 @@ class Self {
       /**
        * Delete admin account
        */
-      deleteAccount = async (user, uiid = null) => {
+      async deleteAccount(user, uiid = null){
         if (uiid) {
           const admin = await Admin.findOne({ _id: ObjectId(user.id) });
-          if (admin.uiid != uiid) return code.event(code.auth.WRONG_UIID);
+          if (!admin.uiid.includes(uiid)) return code.event(code.auth.WRONG_UIID);
         }
         const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
+        if(del.value){
+          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+            to:del.value.email,
+            username:del.value.username,
+            client:client.admin,
+          })
+        }
         if (!uiid) return code.event(del.value ? code.OK : code.NO);
         if (!del.value) return code.event(code.NO);
         if (uiid != del.value.uiid) return code.event(code.auth.WRONG_UIID);

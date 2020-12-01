@@ -1,6 +1,6 @@
 const {MongoClient} = require('mongodb'),
   {db} = require('./config.json'),
-  {token} = require("./../workers/common/inspector");
+  {token,isDev} = require("./../workers/common/inspector");
 
 var dbobj;
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
     try{
       if(!token.verify(key)) throw 403;
       MongoClient.connect(
-        true
+        !isDev
         ?`mongodb+srv://${token.verify(db.username)}:${token.verify(db.pass)}@realmcluster.njdl8.mongodb.net/${db.name}?retryWrites=true&w=majority`
         :`mongodb://localhost:27017/${db.name}`,
         { useNewUrlParser: true , useUnifiedTopology: true}, ( err, client )=> {

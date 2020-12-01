@@ -846,7 +846,7 @@ const authenticateDialog = (
       ["Email address", "Password"],
       ["youremail@example.com", "Your password"],
       ["email", "password"],
-      [validType.email, validType.password]
+      [validType.email, validType.nonempty]
     );
     loginDialog.createActions(
       ["Continue", "Cancel"],

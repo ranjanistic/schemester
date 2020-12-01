@@ -3,88 +3,52 @@ const nodemailer = require("nodemailer"),
   path = require("path"),
   { email, mail } = require("../../config/config.json"),
   {token,emailValid} = require("./inspector"),
-  { code, client } = require("../../public/script/codes");
+  shared = require("./sharedata"),
+  { code } = require("../../public/script/codes");
 
 class Mailer {
-  constructor() {}
-  async sendVerificationEmail(body) {
-    const data = await ejs.renderFile(
-      path.join(__dirname + "/../../views/mail/verification.ejs"),
-      { username: body.username, email: body.to, link: body.link }
-    );
+  constructor() {
+    this.type = {
+      alert:"alert",
+      action:"action"
+    }
+  }
+
+  async sendMail(type,mail){
+    const data = await ejs.renderFile(path.join(__dirname + `/../../views/mail/${type}.ejs`),{mail:mail});
     return await Promise.resolve(
-      sendEmail(body.to, "Schemester Account Verification", data)
+      sendEmail(mail.for, mail.title, data)
     );
+  }
+
+  async sendAlertMail(alert,body){
+    return await this.sendMail(this.type.alert,shared.getAlertMailData(alert,{
+      receiver:body.to,
+      client:body.client,
+      greet: shared.getGreet(action,body.username),
+      text:shared.getStartTextByMailType(alert,body)
+    }))
+  }
+
+  async sendActionMail(action,body){
+    return await this.sendMail(this.type.action,shared.getActionMailData(action,{
+      receiver:body.to,
+      title:shared.getTitleByMailType(action,body),
+      actions:shared.getActionByMailType(action,body.link),
+      greet: shared.getGreet(action,body.username),
+      starttext:shared.getStartTextByMailType(action,body)
+    }));
+  }
+
+  async sendVerificationEmail(body) {
+    return await this.sendAlertMail(code.mail.ACCOUNT_VERIFICATION,body);
   }
   async sendPasswordResetEmail(body) {
-    const data = await ejs.renderFile(
-      path.join(__dirname + "/../../views/mail/passreset.ejs"),
-      { username: body.username, email: body.to, link: body.link }
-    );
-    return await Promise.resolve(
-      sendEmail(body.to, "Schemester Password Reset", data)
-    );
+    return await this.sendActionMail(code.mail.RESET_PASSWORD,body);
   }
   async sendInvitationEmail(invitee, body) {
-    switch (invitee) {
-      case client.teacher: {
-        const data = await ejs.renderFile(
-          path.join(__dirname + "/../../views/mail/invitation.ejs"),
-          {
-            institute: body.institute,
-            invitor: body.invitor,
-            email: body.to,
-            link: body.link,
-            usertype: invitee,
-          }
-        );
-        return await Promise.resolve(
-          sendEmail(
-            body.to,
-            `${body.institute} Teacher Invitation · Schemester`,
-            data
-          )
-        );
-      }
-      case client.student: {
-        const data = await ejs.renderFile(
-          path.join(__dirname + "/../../views/mail/invitation.ejs"),
-          {
-            institute: body.institute,
-            invitor: body.invitor,
-            email: body.to,
-            link: body.link,
-            usertype: invitee,
-          }
-        );
-        return await Promise.resolve(
-          sendEmail(
-            body.to,
-            `${body.institute} Student Invitation · Schemester`,
-            data
-          )
-        );
-      }
-      case client.admin: {
-        const data = await ejs.renderFile(
-          path.join(__dirname + "/../../views/mail/invitation.ejs"),
-          {
-            institute: body.institute,
-            invitor: body.invitor,
-            email: body.to,
-            link: body.link,
-            usertype: invitee,
-          }
-        );
-        return await Promise.resolve(
-          sendEmail(
-            body.to,
-            `${body.institute} Admin Invitation · Schemester`,
-            data
-          )
-        );
-      }
-    }
+    body['invitee'] = invitee;
+    return await this.sendActionMail(code.mail.INSTITUTION_INVITATION,body);
   }
 }
 
