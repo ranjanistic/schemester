@@ -41,7 +41,7 @@ class Mailer {
   }
 
   async sendVerificationEmail(body) {
-    return await this.sendAlertMail(code.mail.ACCOUNT_VERIFICATION,body);
+    return await this.sendActionMail(code.mail.ACCOUNT_VERIFICATION,body);
   }
   async sendPasswordResetEmail(body) {
     return await this.sendActionMail(code.mail.RESET_PASSWORD,body);
