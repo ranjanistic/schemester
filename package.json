@@ -32,7 +32,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
     "nodemailer": "^6.4.16",
-    "pusher": "^4.0.1"
+    "pusher": "^4.0.2"
   },
   "devDependencies": {
     "commitizen": "^4.2.2",
