@@ -116,12 +116,11 @@
       </span>
     </div>
     <div class="fmt-row">
-      <div class="fmt-col fmt-center fmt-padding" style="margin-top: 62px">
+      <div class="fmt-col fmt-center " style="margin-top: 62px;padding: 14px 18px;">
         <div class="fmt-row" id="logintabs">
         </div>
       </div>
     </div>
-
     <div
       class="fmt-row b-neutral"
       style="
@@ -139,7 +138,8 @@
         >
       </div>
     </div>
-    <div class="fmt-row b-positive" style="padding: 82px 0 0 0" id="tourView">
+    <div class="fmt-row b-positive" style="padding: 82px 0 0 0;background-image: url('/graphic/illustrations/homebg.svg');background-repeat: no-repeat;
+    background-size: cover;" id="tourView">
       <div class="fmt-row" style="padding: 44px">
         <div class="fmt-col fmt-half">
           <div class="heading fmt-row neutral">
@@ -195,7 +195,7 @@
     <div class="fmt-row">
       <div class="fmt-col fmt-center fmt-padding">
         <div class="heading questrial">Start here.</div>
-        <% [{name:'admin',label:'Administrator',tagline:'Create your institution on Schemester'},{name:'teacher',label:'Teacher',tagline:'Join as a teacher in your institute'},{name:'student',label:'Student',tagline:'Join as a student in your classroom'}].forEach(client => { %>
+        <% [{name:'admin',label:'Admin',tagline:'Create your institute on Schemester.'},{name:'teacher',label:'Teacher',tagline:'Join as a teacher in your institution.'},{name:'student',label:'Student',tagline:'Join as a student in your classroom.'}].forEach(client => { %>
           <div class="fmt-col fmt-third fmt-padding-small fmt-animate-top">
             <button
               class="image-text-button"
@@ -209,7 +209,7 @@
                   width="100%"
                 />
               </div>
-              <div class="fmt-padding-small fmt-col  fmt-animate-left">
+              <div class="fmt-padding fmt-col  fmt-animate-left">
                 <span class="group-heading fmt-row"
                   >Register as <%=client.label %></span
                 >
@@ -261,38 +261,13 @@
     </footer>
     <div id="dialogView"></div>
     <div id="snackBar"></div>
+    <span hidden>
+      <span id="acsrf"><%= acsrf %></span>
+    </span>
   </body>
   <script>
     window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);
-    if ("serviceWorker" in window.navigator) {
-      window.addEventListener("load", (_) => {
-        navigator.serviceWorker.register("/sw.js")
-          .then((reg) => {
-            console.log("SW:1:", reg.scope);
-            reg.onupdatefound = () => {
-              var newServiceWorker = reg.installing;
-              newServiceWorker.onstatechange = ()=> {
-                if (newServiceWorker.state === "installed") {
-                  if (
-                    confirm("Updates are available, would you like to reload to update?")
-                  ) {
-                    newServiceWorker.postMessage("skipWaiting");
-                  }
-                }
-              };
-            };
-            navigator.serviceWorker.addEventListener(
-              "controllerchange",
-              ()=> {
-                window.location.reload();
-              }
-            );
-          })
-          .catch((err) => {
-            console.log("SW:0:", err);
-          });
-      });
-    }
+    
   </script>
   <noscript id="noscript" class="dialog fmt-red" style="display: block">
     <div

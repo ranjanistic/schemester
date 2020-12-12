@@ -81,21 +81,22 @@
     <style>
       body{
         overflow: hidden;
-        background-color: var(--positive);padding:44px; cursor: wait;
+        background-color: var(--base);padding:44px; cursor: wait;
         display: flex;justify-content:center;align-items:center;
         float:center;align-items: center;align-content: center;vertical-align: middle;
       }
     </style>
   </head>
   <body>
-      <div class="fmt-hide-small fmt-hide-medium fmt-row" style="width:100%;padding:0 300px">
-        <img class="fmt-col fmt-spin-fast"  src="/graphic/onethreeload.svg"/>
+      <div class="fmt-hide-small fmt-hide-medium fmt-row" style="width:90%;padding:0 260px">
+        <img class="fmt-col fmt-spin-fast "  src="/graphic/blueLoader.svg"/>
       </div>
-      <div class="fmt-hide-large fmt-center" style="padding-top:150px;">
-          <img class="fmt-spin-fast" src="/graphic/onethreeload.svg"/>
+      <div class="fmt-hide-large fmt-center" style="padding-top:130px;">
+          <img class="fmt-spin-fast" src="/graphic/blueLoader.svg"/>
       </div>
       <div id="snackBar"></div>
       <span hidden>
+        <span id="acsrf"><%= acsrf %></span>
         <span id="client"><%= data.client %></span>
       </span>
   </body>

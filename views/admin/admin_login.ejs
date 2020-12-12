@@ -21,7 +21,7 @@
         <script src="/script/admin/adminlogin.js"></script>
         <script src="/script/admin/admin.js"></script>
     </head>
-    <body class="b-positive" style="background-image: url('/graphic/illustrations/adminview.svg');background-repeat: no-repeat;background-size: cover;background-position-y: 0%;">
+    <body class="b-base" style="background-image: url('/graphic/illustrations/adminview.svg');background-repeat: no-repeat;background-size: cover;background-position-y: 0%;">
         <div class=" fmt-animate-top " id="topBar">
             <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin" onclick="showLoader();window.parent.history.back()">
             <span>Admin Login</span>
@@ -55,8 +55,11 @@
         </div>
         <div id="dialogView"></div>
         <div id="snackBar"></div>
-        <span hidden id="target"><%= autofill.target %></span>
-        <span hidden id="section"><%= autofill.section %></span>
+        <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
+            <span id="target"><%= autofill.target %></span>
+            <span id="section"><%= autofill.section %></span>
+        </span>
         <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">

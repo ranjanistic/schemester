@@ -1853,31 +1853,15 @@ const referParent = (href, data = null) => window.parent.location.href = href+ge
 const referParentTab = (href, data = null) => window.parent.open(href+getRequestBody(data));
 
 /**
- * @deprecated As of September 27, 2020 02:41 hours. See the new [postJsonData] method.
- * 
- * Sends post request using browser fetch API, with x-www-form-urlencoded type body, and receives response in JSON format.
- * @param {String} url The endpoint location of post request. (same-origin)
- * @param {JSON} data The data to be sent along with request, key value type.
- * @returns {Promise} response object as a promise.
- */ 
-const postData = async (url = String, data = {}) => {
-  const response = await fetch(url, {
-    method: constant.post,
-    mode: "same-origin",
-    headers: { "Content-type": constant.fetchContentType },
-    body: getRequestBody(data, true),
-  });
-  const res = await response.json();
-  return await res.result;
-};
-
-/**
  * Sends post request using browser fetch API, with json type body, and receives response in JSON format.
  * @param {String} url The endpoint location of post request. (same-origin)
  * @param {JSON} data The data to be sent along with request, key value type.
  * @returns {Promise} response object as a promise.
  */
 const postJsonData = async (url = String, data = {}) => {
+  try{
+    data['acsrf'] = getElement("acsrf").innerHTML;
+  }catch{};
   try{
     if (window.fetch) {
       const response = await fetch(url, {

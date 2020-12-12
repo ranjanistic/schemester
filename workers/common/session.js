@@ -28,6 +28,11 @@ class Session {
   verify (request, clientType){
     const token = request.signedCookies[this.sessionKey];
     try {
+      if(request._body){
+        if(!inspect.token.verify(request.body.acsrf)){
+          throw code.client.INVALID_ACSRF
+        }
+      }
       if (!token) return code.event(code.auth.SESSION_INVALID);
       return jwt.verify(token, getSecretByClient(clientType));
     } catch (e) {

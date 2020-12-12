@@ -2,6 +2,7 @@ if(!process.env.NODE_ENV || process.env.NODE_ENV != 'prod')
  require("dotenv").config({ silent: process.env.NODE_ENV === 'prod' });
 
 const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),jwt = require("jsonwebtoken");
+const timer = require("./timer");
 
 /**
  * For inspection of data received by client.
@@ -18,6 +19,12 @@ class Inspector{
       }
       this.isDev = process.env.NODE_ENV != 'prod';
     }
+
+    render(response,view,data = {}){
+      data['acsrf'] = jwt.sign(timer.getMoment(),process.env.SSH);
+      return response.render(view,data);
+    }
+
     /**
      * Checks auth token validity
      * @param {JSON} token The masked session token

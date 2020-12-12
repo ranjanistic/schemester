@@ -85,6 +85,7 @@
             <% } %>
         </div>
         <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
             <span id="clienttype"><%= client.isTeacher?'teacher':client.isStudent?'student':'' %></span>
             <span id="totalrooms"><%= rooms?rooms.length:0 %></span>
             <span id="totalcalls"><%= calls?calls.length:0 %></span>

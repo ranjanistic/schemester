@@ -93,6 +93,7 @@
         <div id="dialogView"></div>
         <div id="snackBar"></div>
         <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
             <% if(user.isAdmin) { %>
             <span id="client">admin</span>
             <% } else if(user.isTeacher){ %>

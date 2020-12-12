@@ -21,7 +21,7 @@
         <script src="/script/student/studentlogin.js"></script>
         <script src="/script/student/student.js"></script>
     </head>
-    <body class="b-positive" style="background-image: url('/graphic/illustrations/studentview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
+    <body class="b-base" style="background-image: url('/graphic/illustrations/studentview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
         <div class=" fmt-animate-top " id="topBar">
             <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin" onclick="showLoader();window.parent.history.back()">
             <span>Student Login</span>
@@ -64,7 +64,10 @@
         </div>
         <div id="dialogView"></div>
         <div id="snackBar"></div>
-        <span hidden id="target"><%= autofill.target %></span>
+        <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
+            <span id="target"><%= autofill.target %></span>
+        </span>
         <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <noscript id="noscript" class="dialog fmt-red">

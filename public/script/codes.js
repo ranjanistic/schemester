@@ -28,6 +28,7 @@ class Codes {
     class Clientcodes {
       constructor() {
         this.NETWORK_FAILURE = "client/network-error";
+        this.INVALID_ACSRF = "client/invalid-acsrf-token";
         this.NOT_SIGNED_IN = "client/not-signed-in";
       }
     }

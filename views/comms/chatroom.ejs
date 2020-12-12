@@ -71,6 +71,7 @@
         <% } %>
         </div>
         <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
             <span id="clientType"><%= client.isTeacher?'teacher':client.isStudent?'student':'' %></span>
             <span id="isroom"><%= room?true:false %></span>
         </span>
