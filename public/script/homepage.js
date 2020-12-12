@@ -7,7 +7,7 @@ class Homepage{
         this.loginlocates = [locate.admin.login,locate.teacher.login,locate.student.login];
         [{
           client:client.admin,
-          name:"Administrator",
+          name:"Admin",
           tagline:"Sign in here to access your institution."
         },{
           client:client.teacher,
@@ -16,7 +16,7 @@ class Homepage{
         },{
           client:client.student,
           name:"Student",
-          tagline:"See what's on your day today"
+          tagline:"Sign in to see what's on your day today"
         }].forEach((user)=>{
           this.tabshtml.push(`
           <div class="fmt-col fmt-third fmt-padding-small fmt-animate-top">
@@ -86,5 +86,33 @@ class Homepage{
 
 window.onload = _=> {
     window.app = new Homepage();
-    idbSupported();
+    return;
+    if ("serviceWorker" in window.navigator) {
+        navigator.serviceWorker.register("/sw.js")
+          .then((reg) => {
+            console.log("SW:1:", reg.scope);
+            reg.onupdatefound = () => {
+              var newServiceWorker = reg.installing;
+              console.log(newServiceWorker.state);
+              newServiceWorker.onstatechange = ()=> {
+                if (newServiceWorker.state === "installed") {
+                  if (
+                    confirm("Updates are available, would you like to reload to update?")
+                  ) {
+                    newServiceWorker.postMessage("skipWaiting");
+                  }
+                }
+              };
+            };
+            navigator.serviceWorker.addEventListener(
+              "controllerchange",
+              ()=> {
+                window.location.reload();
+              }
+            );
+          })
+          .catch((err) => {
+            console.log("SW:0:", err);
+          });
+    }
 };

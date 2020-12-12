@@ -14,7 +14,7 @@
     --secondary-text:#121212;
     --tertiary-text:#00000093;
     --dead-text:#343434;
-    --light-base:#eeeeeeee;
+    --light-base:#eeeeeeff;
     --base-radius:12px;
     --trans-delay:0.3s ease;
 }
@@ -30,7 +30,7 @@
     --secondary-text:#dedede;
     --tertiary-text:#ffffff6c;
     --dead-text:#dedede;
-    --light-base:#1b1e24;
+    --light-base:#1b1e24ff;
 }
 
 html{
@@ -275,6 +275,10 @@ img{vertical-align:middle}
 }
 .b-neutral{
     background-color:var(--secondary);
+}
+
+.b-base{
+    background-color:var(--base);
 }
 .b-active{
     color:var(--secondary);
@@ -879,7 +883,7 @@ img{vertical-align:middle}
     color:var(--base-text);
     border-width: 0;
     font-size: 22px;
-    box-shadow: 1px 5px 10px #00000044;
+    box-shadow: 10px 5px 10px 5px #00000022;
     background-color: var(--secondary);
     padding:0;
     width: 100%;
@@ -891,13 +895,12 @@ img{vertical-align:middle}
 }
 .image-text-button:hover{
     background-color: var(--light-base);
-    box-shadow: 1px 5px 20px #00000079;
+    box-shadow: 10px 5px 30px 20px #00000011;
 }
 .image-text-button:focus{
-    outline:none;
-
-    background-color: var(--base);
-    box-shadow: 2px 2px 2px 2px #00000011;
+    outline:blue;
+    background-color: transparent;
+    box-shadow: 0px 0px #00000000;
 }
 
 /* Create custom radio button*/

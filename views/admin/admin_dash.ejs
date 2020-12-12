@@ -273,6 +273,7 @@
         <div id="dialogView"></div>
         <div id="snackBar"></div>
         <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
             <span id="hasTeacherSchedule"><%= !isEmptyObject(inst.users.teachers) %></span>
             <span id="hasTeachers"><%= !isEmptyObject(inst.schedule.teachers) %></span>
         </span>

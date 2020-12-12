@@ -1,14 +1,16 @@
 
 const express = require("express"),
+  helmet = require("helmet"),
   bodyParser = require("body-parser"),
   {client,view,get} = require("./public/script/codes"),
   server = express(),
-  shared = require("./workers/common/sharedata"),
+  {render} = require("./workers/common/inspector"),
   mongo = require('./config/db'),
   https = require('https'),
   fs = require('fs');
 
 server.set("view engine", "ejs");
+server.use(helmet());
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
@@ -21,16 +23,16 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
   
   server.get(get.root, (req, res) => {
-    res.render(view.loader, { data:{ client: req.query.client }});
+    render(res,view.loader, { data:{ client: req.query.client }});
   });
   server.get(get.home, (_, res) => {
-    res.render(view.homepage);
+    render(res,view.homepage);
   });
   server.get(get.offline,(_,res)=>{
-    res.render(view.offline)
+    render(res,view.offline);
   });
   server.get(get.tour,(req,res)=>{
-    res.render(view.tour);
+    render(res,view.tour);
   });
   server.get(get.notfound, (__, _, next) => {
     next();
@@ -45,7 +47,7 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
     res.status(404);
     res.format({
       html: ()=> {
-        res.render(view.notfound, { url: req.url });
+        render(res,view.notfound, { url: req.url });
       },
       json: ()=> {
         res.json({ error: "Not found" });
@@ -58,7 +60,7 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   
   server.use((err, _, res) => {
     res.status(err.status || 500);
-    res.render(view.servererror, { error: err });
+    render(res,view.servererror, { error: err });
   });
   const server_port = process.env.PORT|| 3000 || 80;
   const server_host = '0.0.0.0' || 'localhost';

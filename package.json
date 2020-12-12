@@ -29,9 +29,10 @@
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
+    "helmet": "^4.2.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
-    "nodemailer": "^6.4.16",
+    "nodemailer": "^6.4.17",
     "pusher": "^4.0.2"
   },
   "devDependencies": {

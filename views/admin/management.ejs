@@ -422,6 +422,7 @@
         <div id="dialogView"></div>
         <div id="snackBar"></div>
         <span hidden>
+            <span id="acsrf"><%= acsrf %></span>
             <span id="section"><%= section %></span>
         </span>
         <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>

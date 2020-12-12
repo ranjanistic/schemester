@@ -3,6 +3,7 @@ const express = require("express"),
   { code, client, view,action, clog, get,post,key } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
+  {render} = require("../workers/common/inspector"),
   path = require("path"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
@@ -12,13 +13,13 @@ session.use(admin,client.admin);
 
 admin.get(get.root, (_, res) => {
   res.redirect(worker.toLogin());
-  // return res.render(view.admin.landing)
+  // return render(res,view.admin.landing)
 });
 
 admin.get(get.authlogin, (req, res) => {
   const response = session.verify(req, client.admin);
   if (!session.valid(response))
-    return res.render(view.admin.login, { autofill: req.query });
+    return render(res,view.admin.login, { autofill: req.query });
   let data = req.query;
   delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, data));
@@ -76,7 +77,7 @@ admin.get(get.session, async (req, res) => {
       return session.finish(res).then((response) => {
         if (response) res.redirect(worker.toLogin(query));
       });
-    if (!admin.verified) return res.render(view.verification, { user: admin });
+    if (!admin.verified) return render(res,view.verification, { user: admin });
     let inst = await worker.inst.getInsituteByUIID(response.user);
     if (
       !inst ||
@@ -85,7 +86,7 @@ admin.get(get.session, async (req, res) => {
       !inst.default.timings.periodsInDay
     ) {
       query.target = view.admin.target.register;
-      return res.render(view.admin.getViewByTarget(query.target), {
+      return render(res,view.admin.getViewByTarget(query.target), {
         adata: admin,
         inst: inst ? inst : false,
         uiid: response.user.uiid,
@@ -103,28 +104,28 @@ admin.get(get.session, async (req, res) => {
     try {
       switch (query.target) {
         case view.admin.target.addteacher: {
-          return res.render(view.admin.getViewByTarget(query.target), {
+          return render(res,view.admin.getViewByTarget(query.target), {
             user: admin,
             data: query,
             inst,
           });
         }
         case view.admin.target.manage: {
-          return res.render(view.admin.getViewByTarget(query.target), {
+          return render(res,view.admin.getViewByTarget(query.target), {
             adata: admin,
             inst,
             section: query.section,
           });
         }
         case view.admin.target.classes: {
-          return res.render(view.admin.getViewByTarget(query.target), {
+          return render(res,view.admin.getViewByTarget(query.target), {
             client: client.student,
             users: inst.users.classes,
             defaults: inst.default,
           });
         }
         case view.admin.target.teachers: {
-          return res.render(view.admin.getViewByTarget(query.target), {
+          return render(res,view.admin.getViewByTarget(query.target), {
             client: client.teacher,
             users: inst.users.teachers,
             classes: inst.users.classes,
@@ -133,7 +134,7 @@ admin.get(get.session, async (req, res) => {
         }
         case view.admin.target.viewschedule: {
           if (query.type == client.teacher) {
-            if (!(query.t || query.teacherID)) return res.render(view.notfound);
+            if (!(query.t || query.teacherID)) return render(res,view.notfound);
             let teacher = query.t
               ? await worker.users.teachers.getTeacherByID(
                   response.user,
@@ -144,13 +145,13 @@ admin.get(get.session, async (req, res) => {
                   query.teacherID
                 );
             //if query.t (_id) is provided, means required teacher account considered exists.
-            if (!teacher && query.t) return res.render(view.notfound);
+            if (!teacher && query.t) return render(res,view.notfound);
             let tschedule = await worker.schedule.getScheduleByTeacherID(
               response.user,
               teacher ? teacher.teacherID : query.teacherID
             );
-            if (!tschedule && query.teacherID) return res.render(view.notfound);
-            return res.render(view.admin.scheduleview, {
+            if (!tschedule && query.teacherID) return render(res,view.notfound);
+            return render(res,view.admin.scheduleview, {
               group: { teacher: true, pending: teacher ? false : true },
               teacher: teacher ? teacher : { teacherID: query.teacherID },
               schedule: tschedule ? tschedule : false,
@@ -158,7 +159,7 @@ admin.get(get.session, async (req, res) => {
             });
           } else if (query.type == client.student) {
             //class schedule
-            if (!(query.c || query.classname)) return res.render(view.notfound);
+            if (!(query.c || query.classname)) return render(res,view.notfound);
             const classroom = query.c
               ? await worker.classroom.getClassByClassID(response.user, query.c)
               : await worker.classroom.getClassByClassname(
@@ -166,12 +167,12 @@ admin.get(get.session, async (req, res) => {
                   query.classname
                 );
 
-            if (!classroom) return res.render(view.notfound); //no class
+            if (!classroom) return render(res,view.notfound); //no class
             const schedule = await worker.schedule.classes.getScheduleByClassname(
               response.user,
               classroom
             );
-            return res.render(view.admin.scheduleview, {
+            return render(res,view.admin.scheduleview, {
               //both account and schedule
               group: { Class: true },
               Class: classroom,
@@ -181,10 +182,10 @@ admin.get(get.session, async (req, res) => {
               inst,
             });
           }
-          return res.render(view.notfound);
+          return render(res,view.notfound);
         }
         default:
-          return res.render(view.admin.getViewByTarget(query.target), {
+          return render(res,view.admin.getViewByTarget(query.target), {
             adata: admin,
             inst,
           });
@@ -195,7 +196,7 @@ admin.get(get.session, async (req, res) => {
     }
   } catch (e) {
     clog(e)
-    return res.render(view.servererror, { error: e });
+    return render(res,view.servererror, { error: e });
   }
 });
 
@@ -315,9 +316,9 @@ admin.post("/default", async (req, res) => {
 
 admin.get(get.download, async (req, res) => {
   const response = session.verify(req, client.admin);
-  if (!session.valid(response)) return res.render(view.forbidden);
+  if (!session.valid(response)) return render(res,view.forbidden);
   const query = req.query;
-  if (!(query.type && query.res)) return res.render(view.notfound);
+  if (!(query.type && query.res)) return render(res,view.notfound);
   switch (query.type) {
     case code.inst.BACKUP_INSTITUTION: {
       try {
@@ -335,14 +336,14 @@ admin.get(get.download, async (req, res) => {
               __dirname + `/../backups/${response.user.uiid}/${query.res}`
             ),
             (err) => {
-              if (err) res.render(view.notfound);
+              if (err) render(res,view.notfound);
             }
           );
         } else {
-          res.render(view.notfound);
+          render(res,view.notfound);
         }
       } catch {
-        res.render(view.notfound);
+        render(res,view.notfound);
       }
     }
   }
@@ -551,11 +552,11 @@ admin.get(get.external, async (req, res) => {
         verify
           .handleVerification(query, client.admin)
           .then(async (resp) => {
-            if (!resp) return res.render(view.notfound);
-            return res.render(view.verification, { user: resp.user });
+            if (!resp) return render(res,view.notfound);
+            return render(res,view.verification, { user: resp.user });
           })
           .catch((e) => {
-            return res.render(view.servererror, { error: e });
+            return render(res,view.servererror, { error: e });
           });
       }
       break;
@@ -564,11 +565,11 @@ admin.get(get.external, async (req, res) => {
         reset
           .handlePasswordResetLink(query, client.admin)
           .then(async (resp) => {
-            if (!resp) return res.render(view.notfound);
-            return res.render(view.passwordreset, { user: resp.user });
+            if (!resp) return render(res,view.notfound);
+            return render(res,view.passwordreset, { user: resp.user });
           })
           .catch((e) => {
-            return res.render(view.servererror, { error: e });
+            return render(res,view.servererror, { error: e });
           });
       }
       break;
@@ -578,16 +579,16 @@ admin.get(get.external, async (req, res) => {
           .handleInvitation(query, client.admin)
           .then((resp) => {
             return resp
-              ? res.render(view.userinvitaion, { invite: resp.invite })
-              : res.render(view.notfound);
+              ? render(res,view.userinvitaion, { invite: resp.invite })
+              : render(res,view.notfound);
           })
           .catch((e) => {
-            return res.render(view.notfound);
+            return render(res,view.notfound);
           });
       }
       break;
     default:
-      res.render(view.notfound);
+      render(res,view.notfound);
   }
 });
 
