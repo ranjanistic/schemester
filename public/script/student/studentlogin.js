@@ -1,6 +1,7 @@
 class StudentLogin{
   constructor(){
-    value.backbluecovered = true;
+    backHistory();
+    backRoot();
     hide(getElement("previous"));
     hide(getElement("userclassfield"))
     hide(getElement("useremailfield"));
@@ -372,5 +373,9 @@ class Password{
   }
 }
 
-window.onload =_=> new StudentLogin();
+window.onload =_=>{
+  theme.setNav();
+
+   new StudentLogin();
+  }
 

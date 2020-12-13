@@ -23,7 +23,7 @@
     </head>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" onclick="refer(locate.root,{client:client.admin})">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="backroot">
             <span id="greeting"></span>
             <% if(inst){ %> · Updating Defaults<%}%>
             <span class="fmt-dropdown-hover fmt-right">
@@ -36,7 +36,7 @@
                                 <span class="switch-positive"></span>
                             </label>
                         </span>
-                        <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                        <div class="negative" id="logoutAdminButton">
                             Logout
                         </div>
                     </div>
@@ -214,7 +214,6 @@
         </div>
         <div id="snackBar">
         </div>
-        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <span hidden>
         <span id="acsrf"><%= acsrf %></span>

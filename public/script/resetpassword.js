@@ -1,5 +1,6 @@
 class ResetPassword{
     constructor(){
+        backRoot();
         this.data = new ReceiveData();
         new ThemeSwitch('darkmode');
         if(this.data.expired){
@@ -112,4 +113,7 @@ class Expired {
       localStorage.setItem("uiid", this.uiid);
     }
   }
-  window.onload = (_) => (window.app = new ResetPassword());
+  window.onload = (_) =>{
+    theme.setNav();
+    window.app = new ResetPassword();
+  }

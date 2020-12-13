@@ -50,8 +50,8 @@
                             <span class="switch-positive"></span>
                         </label>
                     </span>
-                    <div class="negative" id="logoutAdminButton" onclick="finishSession()">
-                        ❌ Logout
+                    <div class="negative" id="logout">
+                        Logout
                     </div>
                 </div>
             </span >
@@ -120,7 +120,7 @@
                     <% if(group.Class && group.pending) {%>
                         <div class="questrial">Scheduling hasn't started yet.</div>
                         <br/>
-                        <button class="positive-button" onclick="relocate(locate.root,{client:client.admin})">Dashboard</button>
+                        <button class="positive-button" id="backroot">Dashboard</button>
                     <% } else { %>
                         <div class="questrial">No schedule present for <%= teacher.username %>.</div>
                         <br/>
@@ -159,6 +159,5 @@
             <span id="daysinweek"><%= inst.default.timings.daysInWeek %></span>
             <span id="periodcount"><%= inst.default.timings.periodsInDay %></span>
         </span>
-        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
 </html>

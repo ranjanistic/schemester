@@ -1430,6 +1430,9 @@ class Users {
       constructor() {
         this.listview = getElement("classList");
         this.search = getElement("classSearch");
+        getElement("classrooms").onclick=_=>{
+          refer(locate.admin.session,{target:locate.admin.target.classes});
+        }
         this.load(false);
         this.search.oninput = (_) => {
           if (
@@ -1522,4 +1525,7 @@ class ReceiveData{
   }
 }
 
-window.onload = (_) => (window.app = new Management());
+window.onload = (_) => {
+  theme.setNav();
+  window.app = new Management();
+}

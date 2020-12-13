@@ -379,7 +379,7 @@
                             <% if(countObjects(inst.users.classes)>0) {%>
                                 <div class="fmt-col fmt-half fmt-padding-small">
                                     <span class="sub-heading">Classes</span>
-                                    <button class="fmt-right neutral-button" id="allclasses" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})"><img src="/graphic/elements/classicon.svg" width="25" /></button>
+                                    <button class="fmt-right neutral-button" id="classrooms"><img src="/graphic/elements/classicon.svg" width="25" /></button>
                                     <input type="text" class="dropdown-input fmt-padding-small" placeholder="Search among <%= countObjects(inst.users.classes)%> classes" id="classSearch" style="width:100%"/>
                                     <br/>
                                     <br/>
@@ -425,7 +425,6 @@
             <span id="acsrf"><%= acsrf %></span>
             <span id="section"><%= section %></span>
         </span>
-        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">

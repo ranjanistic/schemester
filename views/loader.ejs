@@ -77,6 +77,7 @@
     <meta name="msapplication-TileImage" content="/graphic/schemester.png" />
     <script src="/script/codes.js"></script>
     <script src="/script/main.js"></script>
+    <script src="/script/loader.js"></script>
     <script async defer src="/script/pwacompat.js"></script>
     <style>
       body{
@@ -100,10 +101,6 @@
         <span id="client"><%= data.client %></span>
       </span>
   </body>
-  <script type="text/javascript">
-    window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);
-    checkSessionValidation(String(getElement("client").innerHTML));
-  </script>
   <noscript id="noscript" class="dialog fmt-red" style="display:block">
     <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
       <div class="heading">Javascript required</div><br/>

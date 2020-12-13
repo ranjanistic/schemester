@@ -97,7 +97,7 @@
         width="40"
         class="fmt-animate-left"
         alt="Schemester icon"
-        onclick="refer(locate.root)"
+        id="backroot"
       />
       <span id="navtext">Schemester</span>
       <img
@@ -156,7 +156,6 @@
           <div class="fmt-row">
             <button
               class="sub-display-button questrial"
-              onclick="showLoader()"
               id="getStarted"
             >
               Learn more
@@ -265,10 +264,6 @@
       <span id="acsrf"><%= acsrf %></span>
     </span>
   </body>
-  <script>
-    window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);
-    
-  </script>
   <noscript id="noscript" class="dialog fmt-red" style="display: block">
     <div
       class="dialog-box container fmt-center fmt-row fmt-animate-opacity"

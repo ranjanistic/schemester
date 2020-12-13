@@ -1,6 +1,7 @@
 let inst;
 class Register {
   constructor() {
+    backRoot();
     this.greeting = getElement("greeting");
     this.greeting.innerHTML = "Registration";
     this.search = getElement("search");
@@ -824,5 +825,6 @@ window.onbeforeunload = () => {
 };
 
 window.onload = (_) => {
+  theme.setNav();
   setClasses();
 };

@@ -4,6 +4,7 @@
  */
 class Schedule{
     constructor(){
+        backRoot("backroot",{client:client.admin})
         this.data = new ReceiveData();
         new ThemeSwitch('darkmode');
         sessionStorage.removeItem('switchclash');
@@ -30,6 +31,9 @@ class Schedule{
             this.editmodeview.innerHTML=`Clash Edit`;
             snackBar('Changes will not be applied if conflicted');
         })
+        getElement("logout").onclick=_=>{
+            finishSession(client.admin);
+        }
         try{
             window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
         }catch{
@@ -828,4 +832,7 @@ class ReceiveData{
     }
 }
 
-window.onload =_=> new Schedule()
+window.onload =_=>{
+    theme.setNav();
+     new Schedule()
+    }

@@ -3,6 +3,7 @@
  */
 class Comms{
     constructor(){
+        backHistory();
         this.data = new ReceiveData();
         this.sessionpath;
         this.chatroompath;
@@ -110,4 +111,7 @@ class ReceiveData{
     }
 }
 
-window.onload=_=>new Comms();
+window.onload=_=>{
+    theme.setNav();
+    new Comms();
+}

@@ -23,7 +23,7 @@
     </head>
     <body class="b-base" style="background-image: url('/graphic/illustrations/studentview.svg');background-repeat: no-repeat;background-size: cover;height:100%;">
         <div class=" fmt-animate-top " id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backFromLogin" onclick="showLoader();window.parent.history.back()">
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="40" alt="Go back" id="backhistory">
             <span>Student Login</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
             <span class="fmt-right fmt-padding-small">
@@ -60,7 +60,7 @@
             <div class="fmt-col fmt-padding fmt-quarter"></div>
         </div>
         <div class="fmt-row fmt-center fmt-bottom fmt-padding fmt-animate-bottom">
-            <button class="neutral-button fmt-padding" onclick="relocate(locate.root)">Home</button>
+            <button class="neutral-button fmt-padding" id="backroot">Home</button>
         </div>
         <div id="dialogView"></div>
         <div id="snackBar"></div>
@@ -68,7 +68,6 @@
             <span id="acsrf"><%= acsrf %></span>
             <span id="target"><%= autofill.target %></span>
         </span>
-        <script>window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);</script>
     </body>
     <noscript id="noscript" class="dialog fmt-red">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;">

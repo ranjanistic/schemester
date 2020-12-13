@@ -7,6 +7,9 @@ class Dashboard {
   constructor() {
     this.data = new ReceiveData()
     const todayview = getElement("todayview");
+    getElement("classrooms").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.classes})
+    }
     class Today{
       constructor(){
         this.view = todayview;
@@ -182,6 +185,21 @@ class NoDataView {
     sessionStorage.clear();
     this.addTeacher = getElement("addteacher");
     this.inviteTeacher = getElement("inviteteacher");
+    getElement("teachers1").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.teachers});
+    }
+    getElement("teachers2").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.teachers});
+    }
+    getElement("institutesetup").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})
+    }
+    getElement("institutesetup1").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})
+    }
+    getElement("institutesetup2").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})
+    }
     this.addTeacher.onclick= (_) => {
       relocate(locate.admin.session, { target: locate.admin.target.addteacher });
     };
@@ -482,10 +500,10 @@ class ConfirmClasses {
 class BaseView {
   constructor() {
     this.data = new ReceiveData();
-    this.navicon = getElement("navicon");
-    this.navicon.onclick = (_) => {
-      relocate(locate.root, { client: client.admin });
-    };
+    backRoot("navicon",{ client: client.admin });
+    getElement("teachers").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.teachers});
+    }
     this.reload = getElement("refresh");
     this.reload.onclick = (_) => {
       location.reload();
@@ -624,10 +642,21 @@ class ReceiveData {
 }
 
 window.onload = (_) => {
+  theme.setNav();
   window.fragment = new BaseView();
   try {
     window.app = new NoDataView();
   } catch {
     window.app = new Dashboard();
+  }
+  if ('serviceWorker' in window.navigator) {
+    window.addEventListener('load', _=> {
+        navigator.serviceWorker.register('/sw.js')
+            .then((registration)=> {
+                console.log('SW:1:', registration.scope);
+            }).catch((err)=> {
+                console.log('SW:0:', err);
+            });
+    });
   }
 };

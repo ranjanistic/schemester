@@ -22,7 +22,7 @@
     </head>
     <body class="">
         <div id="topBar">
-            <img src="/graphic/leftArrow.svg" class="circle-button" width="30" alt="Go back" id="exitchat" onclick="history.back()">
+            <img src="/graphic/leftArrow.svg" class="circle-button" width="30" alt="Go back" id="backhistory">
             <span id="roomname"><%= room?room.roomname?room.roomname:room.people.length==2?room.people.find((person)=>person.id!=client.id).username:'':'' %></span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="30" src="/graphic/onethreeload.svg" id="navLoader"/>
             <img class="positive-button-togg fmt-right" width="40" src="/graphic/menudotsvertical.svg" id="roominfo"/>

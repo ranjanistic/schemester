@@ -1,5 +1,7 @@
 class Active {
   constructor(data) {
+    backRoot();
+    backRoot("backroot1");
     this.nameField = new TextInput(
       "usernamefield",
       false,
@@ -212,4 +214,7 @@ class Invitation {
   }
 }
 
-window.onload = (_) => new Invitation();
+window.onload = (_) =>{
+  theme.setNav();
+   new Invitation();
+  }

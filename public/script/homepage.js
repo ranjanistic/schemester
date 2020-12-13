@@ -1,5 +1,6 @@
 class Homepage{
     constructor(){
+        backRoot();
         new ThemeSwitch('darkmode');
         this.logintabs = getElement('logintabs');
         this.tabshtml = [];
@@ -80,11 +81,12 @@ class Homepage{
         this.teacherSignup.onclick=_=>{showTeacherRegistration()};
         this.studentSignup.onclick=_=>{showStudentRegistration()};
         
-        this.getstarted.onclick=_=> refer(locate.tour);
+        this.getstarted.onclick=_=> {showLoader();refer(locate.tour);}
     }
 }
 
 window.onload = _=> {
+    theme.setNav();
     window.app = new Homepage();
     return;
     if ("serviceWorker" in window.navigator) {

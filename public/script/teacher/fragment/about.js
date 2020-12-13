@@ -4,6 +4,7 @@ if(sessionStorage.getItem(key.fragment)!=locate.teacher.target.fragment.about){
 }
 class TeacherAbout {
   constructor() {
+    backRoot("backroot",{client:client.teacher})
     new ThemeSwitch("darkmode",true);
     this.hideclassswitch = new Switch("hideclass");
     this.hideclassswitch.turn(localStorage.getItem('hideclassroom')?true:false);
@@ -168,4 +169,6 @@ class TeacherAbout {
     });
   }
 }
-window.onload = (_) => new TeacherAbout();
+window.onload = (_) =>{
+   new TeacherAbout();
+}

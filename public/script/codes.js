@@ -807,6 +807,7 @@ class Keys {
     this.uid = constant.sessionUID;
     this.username = "username";
     this.theme = "theme";
+    this.client = "client";
     this.classroom = "classroom";
     class Admin {
       constructor() {
@@ -845,6 +846,13 @@ class Theme {
     this.light = key.light;
     this.key = key.theme;
   }
+
+  setNav(positive = true){
+    positive
+      ?window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive)
+      :window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
+  }
+
   switch() {
     this.isLight() ? this.setDark() : this.setLight();
   }
