@@ -86,7 +86,7 @@
     <body>
         <% if(teacher.pseudo) { %>
             <div id="topBar">
-                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon" onclick="relocate(locate.root,{client:client.teacher})">
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="backroot">
                 <span>Dashboard</span>
                 <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
                 <span class="fmt-right">
@@ -170,17 +170,4 @@
             <span id="frag"><%= target.fragment %></span>
         </span>
     </body>
-    <script>
-        window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
-        if ('serviceWorker' in window.navigator) {
-        window.addEventListener('load', _=> {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration)=> {
-                    console.log('SW:1:', registration.scope);
-                }).catch((err)=> {
-                    console.log('SW:0:', err);
-                });
-        });
-    }
-    </script>
 </html>

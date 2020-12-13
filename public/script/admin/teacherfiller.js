@@ -524,4 +524,6 @@ window.onbeforeunload = () => {
   return "";
 };
 
-window.onload = () => (window.app = new TeacherFiller());
+window.onload = () => {
+  theme.setNav();
+  window.app = new TeacherFiller();}

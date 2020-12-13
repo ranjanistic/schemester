@@ -27,7 +27,7 @@
     
     <body>
         <div id="topBar">
-            <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back" onclick="window.history.back()">
+            <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="backhistory">
             <span id="greeting">
                 <%= client == 'teacher'?'Teachers':'Classes'%> 
             </span>
@@ -48,15 +48,15 @@
                         <img src="/graphic/elements/bellicon.svg" width="25" />
                         Pending requests
                     </div>
-                    <div id="users" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
+                    <div id="classrooms">
                         Classrooms
                     </div>
                     <% } else { %>
-                    <div id="users" onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})">
+                    <div id="teachers">
                         Teachers
                     </div>
                     <% } %>
-                    <div class="negative" id="logoutAdminButton" onclick="finishSession()">
+                    <div class="negative" id="logout">
                         Logout
                     </div>
                 </div>

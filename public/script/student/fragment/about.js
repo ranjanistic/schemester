@@ -4,6 +4,7 @@ if(sessionStorage.getItem(key.fragment)!=locate.student.target.fragment.settings
 }
 class StudentAbout {
     constructor() {
+      backRoot("backroot",{client:client.student});
       new ThemeSwitch("darkmode",true);
   
       this.logout = getElement("logout");

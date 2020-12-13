@@ -1,6 +1,7 @@
 class TeacherLogin{
   constructor(){
-    value.backbluecovered = true;
+    backHistory();
+    backRoot();
     hide(getElement("previous"));
     hide(getElement("useremailfield"));
     hide(getElement("userpasswordfield"));
@@ -299,5 +300,8 @@ class Password{
   }
 }
 
-window.onload =_=> new TeacherLogin();
+window.onload =_=>{
+  theme.setNav();
+   new TeacherLogin();
+  }
 

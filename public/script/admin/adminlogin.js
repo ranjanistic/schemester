@@ -1,7 +1,8 @@
 
 class AdminLogin{
   constructor(){
-    value.backbluecovered = true;
+    backHistory();
+    backRoot();
     this.view = getElement("workbox");
     new ThemeSwitch('darkmode');
     this.emailField = new TextInput("email_fieldset","Email Address","youremail@example.domain",validType.email);
@@ -135,5 +136,9 @@ class AdminLogin{
   }
 }
 
-window.onload =_=> new AdminLogin();
+window.onload =_=>{
+  theme.setNav();
+  new AdminLogin();
+
+}
 

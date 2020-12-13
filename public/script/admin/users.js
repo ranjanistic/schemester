@@ -2,6 +2,9 @@ class Classrooms {
   constructor() {
     this.totalclasses = Number(getElement("totalusers").innerHTML);
     this.createclass = getElement("adduser");
+    getElement("teachers").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.teachers})
+    }
     this.createclass.onclick = (_) => {
       this.addclass = new Dialog();
       this.addclass.setDisplay(
@@ -219,7 +222,9 @@ class Teachers {
     this.totalteachers = Number(getElement("totalusers").innerHTML);
     this.pendinginvites = getElement("invites");
     this.pendingrequests = getElement("requests");
-
+    getElement("classrooms").onclick=_=>{
+      refer(locate.admin.session,{target:locate.admin.target.classes})
+    }
     this.pendinginvites.onclick = (_) => {
       const pending = new Dialog();
       pending.createActions(["Hide"], [actionType.neutral]);
@@ -539,18 +544,12 @@ class Teacher {
 
 window.onload = (_) => {
   const settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-  const darkmode = new Switch("darkmode");
-
-  darkmode.turn(theme.isDark());
-  darkmode.onTurnChange(
-    (_) => {
-      theme.setDark();
-    },
-    (_) => {
-      theme.setLight();
-    }
-  );
-  getElement("client").innerHTML == client.teacher
+  new ThemeSwitch("darkmode");
+  theme.setNav();
+  getElement("logout").oncilck=_=>{
+    finishSession(client.admin);
+  }
+  getElement(key.client).innerHTML == client.teacher
     ? new Teachers()
     : new Classrooms();
 };

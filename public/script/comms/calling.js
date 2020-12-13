@@ -90,4 +90,6 @@ class Calling{
     }
 }
 
-window.onload=_=>new Calling();
+window.onload=_=>{
+    theme.setNav();
+    new Calling();}

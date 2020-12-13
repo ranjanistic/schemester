@@ -1974,6 +1974,19 @@ const addNumberSuffixHTML = (number = Number,html = true) => {
   }
 };
 
+const backHistory=(elementID = "backhistory")=>{
+  getElement(elementID).onclick=_=>{
+    try{showLoader();}catch{};
+    window.parent.history.back()
+  }
+}
+
+const backRoot=(elementID = "backroot",data = {})=>{
+  getElement(elementID).onclick=_=>{
+    elementID.includes("parent")?relocateParent(locate.root,data):relocate(locate.root,data);
+  }
+}
+
 /**
  * @deprecated This method is deprecated as of October 3, 2020 23:53 (IST). See the new addNumberSuffixHTML(Number, Boolean) method, on which this method relies too now.
  * 

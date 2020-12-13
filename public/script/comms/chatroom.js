@@ -3,6 +3,7 @@
  */
 class Chatroom{
     constructor(){
+        backHistory();
         this.data = new ReceiveData();
         if(!this.data.isroom) return;
         this.window = getElement("chatwindow");
@@ -43,4 +44,7 @@ class Chat{
     }
 }
 
-window.onload=_=>new Chatroom();
+window.onload=_=>{
+    theme.setNav();
+    new Chatroom();
+}

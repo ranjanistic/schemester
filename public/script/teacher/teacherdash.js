@@ -219,12 +219,23 @@ class Pseudoteacher{
 }
 
 window.onload=_=>{
-     try{
-        new TeacherDash();
-    }catch{
-        new Pseudoteacher()
-    }
-
+  theme.setNav(false);
+  try{
+      new TeacherDash();
+  }catch{
+    backRoot('backroot',{
+      client:client.teacher
+    })
+      new Pseudoteacher()
+  }
+  if ('serviceWorker' in window.navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration)=> {
+        console.log('SW:1:', registration.scope);
+      }).catch((err)=> {
+        console.log('SW:0:', err);
+      });
+  }
 }
 function getelement(id){
     return getElement(id);

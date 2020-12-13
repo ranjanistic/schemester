@@ -104,11 +104,11 @@
                         <%= adata.username %>
                         <%= adata.id %>
                     </section>
-                    <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})">
+                    <div class="" id="teachers">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Teachers
                     </div>
                     <% if (inst.users.classes.length) { %>
-                    <div class="" id="classrooms" onclick="refer(locate.admin.session,{target:locate.admin.target.classes})">
+                    <div class="" id="classrooms">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Classrooms
                     </div>
                     <% } %> 
@@ -211,7 +211,7 @@
                             <br/>
                             <span class="heading">Ready?</span>
                             <br/>
-                            <div class="questrial">So far, <a onclick="refer(locate.admin.session,{target:locate.admin.target.settings,section:locate.admin.section.users});"><%= countObjects(inst.users.teachers) %> teachers</a> have joined your institution on Schemester.
+                            <div class="questrial">So far, <a id="teachers1"><%= countObjects(inst.users.teachers) %> teachers</a> have joined your institution on Schemester.
                                 <br/>Would you like to start scheduling now?
                             </div>
                             <br/>
@@ -228,11 +228,11 @@
                         <span class="heading">Add</span>
                         <% if (!isEmptyObject(inst.schedule.teachers)) { %>
                             <br/>
-                            <div class="questrial">Schedule of <a onclick="refer(locate.admin.session,{target:locate.admin.target.teachers})"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
+                            <div class="questrial">Schedule of <a id="teachers2"><%= countObjects(inst.schedule.teachers) %> teachers</a> is available.
                             You can add another teacher's schedule.</div> 
                         <% } else { %>
                             <br/>
-                            <div class="questrial">Add a teacher of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
+                            <div class="questrial">Add a teacher of <a id="institutesetup"><%= inst.default.institute.instituteName %></a>, by filling their schedule by yourself.</div>
                         <% } %>
                         <br/>
                         <button class="positive-button" id="addteacher">Add Teachers</button>
@@ -240,7 +240,7 @@
                         <% if (isEmptyObject(inst.users.teachers)) { %>
                             <span class="heading">Otherwise</span>
                             <br/>
-                            <div class="questrial">Generate an invitation link to share with teachers of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, and let them 
+                            <div class="questrial">Generate an invitation link to share with teachers of <a id="institutesetup1"><%= inst.default.institute.instituteName %></a>, and let them 
                                 add their own schedule.
                             </div>
                             <br/>
@@ -257,7 +257,7 @@
                         <br/>
                         <span class="heading">Otherwise</span>
                         <br/>
-                        <div class="questrial">Generate an invitation link to share with teachers of <a onclick="refer(locate.admin.session,{target:locate.admin.target.manage,section:locate.admin.section.institute})"><%= inst.default.institute.instituteName %></a>, and let them 
+                        <div class="questrial">Generate an invitation link to share with teachers of <a id="institutesetup2"><%= inst.default.institute.instituteName %></a>, and let them 
                             add their own schedule.
                         </div>
                         <br/>
@@ -278,19 +278,6 @@
             <span id="hasTeachers"><%= !isEmptyObject(inst.schedule.teachers) %></span>
         </span>
     </body>
-    <script>
-        window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].positive);
-        if ('serviceWorker' in window.navigator) {
-        window.addEventListener('load', _=> {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration)=> {
-                    console.log('SW:1:', registration.scope);
-                }).catch((err)=> {
-                    console.log('SW:0:', err);
-                });
-        });
-        }
-    </script>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">
         <div class="dialog-box container fmt-center fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox">
             <div class="heading">Javascript required</div><br/>

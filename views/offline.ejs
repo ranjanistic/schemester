@@ -5,6 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
         <script src="/script/codes.js"></script>
         <script src="/script/main.js" type="text/javascript"></script>
+        <script src="/script/errors.js" type="text/javascript"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
         <meta name="description" content="This world used to be a big place to roam freely, but internet changed everything. And because of that, everything today is just a tap away.">
@@ -43,13 +44,7 @@
         </div>
         <br/><br/>
         <div class="fmt-row fmt-center" >
-            <button class="display-button questrial" style="font-size:32px;" id="returnFromOffline">Return to base</button>
-        </div >
-        <script type="text/javascript">
-        window.parent.document.getElementById("themecolor").setAttribute("content",colors.raw[localStorage.getItem(theme.key)].base);
-            document.getElementById('returnFromOffline').onclick=()=>{
-                parent.window.location.replace('/');
-            };
-        </script>
+            <button class="display-button questrial" style="font-size:32px;" id="returnbase">Return to base</button>
+        </div>
     </body>
 </html>

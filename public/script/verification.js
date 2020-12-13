@@ -1,5 +1,6 @@
 class Verification {
   constructor() {
+    backRoot();
     new ThemeSwitch('darkmode');
     this.view = getElement("workbox");
     value.backbluecovered = true;
@@ -170,4 +171,7 @@ class ReceiveData {
     localStorage.setItem("uiid", this.uiid);
   }
 }
-window.onload = (_) => new Verification();
+window.onload = (_) =>{
+  theme.setNav();
+  new Verification();
+}

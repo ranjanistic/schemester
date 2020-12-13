@@ -185,10 +185,19 @@ class Pseudostudent{
 }
 
 window.onload=_=>{
-     try{
-        new StudentDash();
-    }catch{
-        new Pseudostudent()
-    }
-
+  theme.setNav(false);
+  try{
+      new StudentDash();
+  }catch{
+    backRoot('backroot',{client:client.student});
+    new Pseudostudent()
+  }
+  if ('serviceWorker' in window.navigator) {
+    navigator.serviceWorker.register('/sw.js')
+        .then((registration)=> {
+            console.log('SW:1:', registration.scope);
+        }).catch((err)=> {
+            console.log('SW:0:', err);
+      });
+}
 }
