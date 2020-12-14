@@ -4,7 +4,7 @@ if(sessionStorage.getItem(key.fragment)!=locate.teacher.target.fragment.about){
 }
 class TeacherAbout {
   constructor() {
-    backRoot("backroot",{client:client.teacher})
+    backRoot("backrootparent",{client:client.teacher})
     new ThemeSwitch("darkmode",true);
     this.hideclassswitch = new Switch("hideclass");
     this.hideclassswitch.turn(localStorage.getItem('hideclassroom')?true:false);
