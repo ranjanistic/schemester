@@ -1,7 +1,7 @@
 class Active {
   constructor(data) {
     backRoot();
-    backRoot("backroot1");
+    
     this.nameField = new TextInput(
       "usernamefield",
       false,
@@ -171,6 +171,7 @@ class Active {
 
 class Expired {
   constructor(data) {
+    backRoot("backroot1");
     this.view = getElement("userinvitationexpired");
     this.register = getElement("registerbutton");
     this.register.onclick = (_) => {
