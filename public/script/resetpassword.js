@@ -86,10 +86,8 @@ class ResetPassword{
 
 class Expired {
     constructor(data) {
-      this.returnback = getElement("returnhome");
-      this.returnback.onclick = (_) => {
-        relocate(locate.root);
-      };
+      backRoot("backroot1");
+      new ThemeSwitch('darkmode')
     }
   }
   
