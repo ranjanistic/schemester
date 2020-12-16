@@ -23,6 +23,7 @@ class Session {
     this.pclasspath = "pseudousers.classes";
     this.sessionKey = session.publickey;
     this.expiresIn = 365 * 24 * 60 * 60;
+    this.expiresInTemp = 25 * 60;
   }
 
   verify (request, clientType){
@@ -39,6 +40,22 @@ class Session {
       return code.eventmsg(code.auth.SESSION_INVALID, e);
     }
   };
+
+  createTempSession(response,userID,userUIID,secret){
+    const payload = {
+      user:{
+        id:userID,
+        uiid:userUIID,
+        temp:true
+      }
+    }
+    const token = jwt.sign(payload,secret,{expiresIn:this.expiresInTemp})
+    try{
+      return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresInTemp*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
+    }catch(e){
+      clog(e)
+    }
+  }
 
   createSession(response, userID, userUIID, secret, classname = null) {
     const payload = classname
@@ -72,7 +89,19 @@ class Session {
     route.use(cookieParser(getSecretByClient(clientType)));
   }
 
-  async login (request, response, clientType){
+  async verify2fa(response,code2fa,user, clientType){
+    switch (clientType) {
+      case client.admin: {
+        const admin = await Admin.findOne({_id:ObjectId(user.id)});
+        if(admin.twofactorcode !== code2fa) return code.event(code.NO);
+        await Admin.findOneAndUpdate({_id:ObjectId(user.id)},{$set:{twofactorcode:0}});
+        this.createSession(response,user.id,user.uiid,getSecretByClient(clientType))
+        return code.event(code.OK);
+      }
+    }    
+  }
+
+  async login (request, response, clientType,with2fa = true){
     const body = request.body;
     switch (clientType) {
       case client.admin: {
@@ -95,7 +124,9 @@ class Session {
             return code.event(code.auth.WRONG_UIID);
           }
         }
-        this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
+        admin.twofactor&&with2fa
+          ?this.createTempSession(response, admin._id, uiid, getSecretByClient(clientType))
+          :this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
         return {
           event: code.auth.AUTH_SUCCESS,
           user: share.getAdminShareData(admin,uiid),

@@ -397,6 +397,17 @@
                                 <button class="positive-button" id="sendpasswordlink">Get password link</button>
                                 <button class="negative-button" id="resetMailButton">Reset email address</button>
                                 <button class="neutral-button" id="resetPasswordButton">Change password</button><br/>
+                                <div class="fmt-right container">
+                                <span class="switch-text fmt-padding">Two factor auth</span>
+                                    <label class="switch-container">
+                                      <input type="checkbox" id="twofactor"
+                                      <% if(adata.twofactor){%>
+                                        checked
+                                        <% } %>
+                                      >
+                                      <span class="switch-active" id="2faview"></span>
+                                    </label>
+                                </div>
                                 <span class="caption">Data management</span><br/>
                                 <button class="positive-button" id="instbackup">Download Institute Backup</button><br/>
                                 <span class="caption">Service management</span><br/>

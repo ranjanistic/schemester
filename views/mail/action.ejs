@@ -71,6 +71,7 @@
   style="font-size: 18px; line-height: 30px; color: #31352dbb"
   width="100%"
 >
+  <% if(mail.actions[0].link) {%> 
   <tr>
     <td style="padding: 12px">
       If the above button didn't work, then you can
@@ -84,6 +85,7 @@
       to proceed for the same.
     </td>
   </tr>
+  <% } %>
   <tr>
     <% if(mail.rednote){%>
     <td style="padding: 12px; color: #c02e2e"><%} else { %></td>

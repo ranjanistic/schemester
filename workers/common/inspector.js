@@ -44,6 +44,17 @@ class Inspector{
     instDocValid(doc){  //validate institute registration doc.
       return true;
     }
+
+    randomCode(length = 6){
+      let result = '';
+      let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let charactersLength = characters.length;
+      for ( let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+    }
+
     emailValid=(emailstring)=>stringIsValid(emailstring,validType.email)
     passValid =(passstring)=>stringIsValid(passstring,validType.password)
 

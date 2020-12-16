@@ -1123,7 +1123,24 @@ class Security {
     });
     this.deleteAccount = getElement("deleteAdminAccount");
     this.deleteInstitute = getElement("deleteInstitute");
-
+    this.twofa = new Switch("twofactor");
+    this.twofa.onTurnChange(_=>{
+      postJsonData(post.admin.self,{
+        target: "account",
+        action:code.action.CHANGE_2FA,
+        enable:true
+      }).then(resp=>{
+        this.twofa.turn(resp.event == code.OK);
+      })
+    },_=>{
+      postJsonData(post.admin.self,{
+        target: "account",
+        action:code.action.CHANGE_2FA,
+        enable:false
+      }).then(resp=>{
+        this.twofa.turn(resp.event != code.OK);
+      })
+    })
     this.resetPass.onclick = (_) => {
       authenticateDialog(client.admin, (_) => {
         resetPasswordDialog(client.admin, true);

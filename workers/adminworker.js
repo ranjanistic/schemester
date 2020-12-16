@@ -119,6 +119,7 @@ class Self {
         this.uiid = "uiid";
         this.createdAt = "createdAt";
         this.verified = "verified";
+        this.twofactor = "twofactor";
         this.vlinkexp = "vlinkexp";
         this.rlinkexp = "rlinkexp";
       }
@@ -221,7 +222,16 @@ class Self {
           (await this.defaults.admin.setPhone(user, body)) ? code.OK : code.NO
         );
       };
-
+      async change2FA(user,body){
+        const done = await Admin.findOneAndUpdate({
+          _id:ObjectId(user.id)
+        },{
+          $set:{
+            [this.twofactor]:body.enable
+          }
+        });
+        return code.event(done.value?code.OK:code.NO);
+      }
       /**
        * Delete admin account
        */
@@ -245,6 +255,8 @@ class Self {
         return code.event(delinst.value ? code.OK : code.NO);
       };
     }
+
+
     class Preferences {
       constructor() {
         this.object = `prefs`;
@@ -317,7 +329,17 @@ class Self {
     this.prefs = new Preferences();
   }
 
-  handleAccount = async (user, body) => {
+  async send2fa(user){
+    const admin = await this.account.getAccount(user);
+    const thecode = inspect.randomCode().toUpperCase();
+    const done = await Admin.findOneAndUpdate({_id:ObjectId(user.id)},{$set:{twofactorcode:thecode}});
+    if(!done.value) return code.event(code.mail.ERROR_MAIL_NOTSENT)
+    return await mailer.sendActionMail(code.mail.TWO_FACTOR_AUTH,{
+      to:admin.id,
+      code:thecode
+    })
+  }
+  async handleAccount(user, body){
     switch (body.action) {
       case code.action.CHANGE_NAME:
         return await this.account.changeName(user, body);
@@ -327,6 +349,8 @@ class Self {
         return await this.account.changeEmailID(user, body);
       case code.action.CHANGE_PHONE:
         return await this.account.changePhone(user, body);
+      case code.action.CHANGE_2FA:
+        return await this.account.change2FA(user, body);
       case code.action.ACCOUNT_DELETE:
         return await this.account.deleteAccount(user, body.uiid);
     }
@@ -2524,7 +2548,9 @@ class Preferences {
         break;
     }
   }
-  async setAllPreferences(user, body) {}
+  async setAllPreferences(user, body) {
+
+  }
   async allPreferences(user) {
     const doc = await Institute.findOne({ uiid: user.uiid });
     return code.event(doc ? doc.preferences : code.NO);

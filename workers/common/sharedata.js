@@ -23,6 +23,7 @@ class ShareData {
       uiid: uiid?uiid:data.uiid,
       createdAt: data.createdAt,
       verified: data.verified,
+      twofactor:data.twofactor,
       vlinkexp: data.vlinkexp,
       prefs:data.prefs
     }:null;
@@ -90,6 +91,7 @@ class ShareData {
     switch(type){
       case code.mail.ACCOUNT_VERIFICATION: return "Verification";
       case code.mail.RESET_PASSWORD: return "Password";
+      case code.mail.TWO_FACTOR_AUTH: return "2FA";
       case code.mail.INSTITUTION_INVITATION: return "Invitation";
       case code.mail.EMAIL_CHANGED:;
       case code.mail.ACCOUNT_DELETED:;
@@ -104,6 +106,7 @@ class ShareData {
       case code.mail.RESET_PASSWORD: return `${appname} ${this.getHeadingByMailtype(type)} Reset`;
       case code.mail.INSTITUTION_INVITATION: return `${data.institute} ${data.invitee} ${this.getHeadingByMailtype(type)} · ${appname}`;
       case code.mail.EMAIL_CHANGED: return `${appname} Email Alert`;
+      case code.mail.TWO_FACTOR_AUTH: return `${appname} 2FA Code`;
       case code.mail.PASSWORD_CHANGED:return `${appname} Password Alert`;
       case code.mail.ACCOUNT_DELETED:return `${appname} Account Alert`;
       default: return this.getHeadingByMailtype();
@@ -118,6 +121,7 @@ class ShareData {
     switch(type){
       case code.mail.ACCOUNT_VERIFICATION: return `If you expected this email, then click the following button to verify your account (${data.to}) on ${appname}, and after that you'll be able to continue further.`;
       case code.mail.RESET_PASSWORD: return `If you expected this email, then click the following button to reset your password of ${data.to} account on ${appname}.`;
+      case code.mail.TWO_FACTOR_AUTH: return `If you expected this email, then following is the 2FA code of your ${data.to} account on ${appname}.`;
       case code.mail.INSTITUTION_INVITATION: return `You have been invited to join ${data.institute} on ${appname}, as ${data.invitee}. You can get further details by clicking the button below.`;
       case code.mail.EMAIL_CHANGED: return `This is to inform you that your ${appname} ${data.client} account email address has been moved to ${data.newmail}. If you do not recognise this act, then login using the new email address and change it back.`;
       case code.mail.PASSWORD_CHANGED: return `This is to inform you that your ${appname} ${data.client} account password has been changed. If you do not recognise this act, then do reset your password again.`;
@@ -127,8 +131,8 @@ class ShareData {
 
   getActionByMailType(type,data){
     return [{
-      text:this.getActionTextByMailType(type),
-      link:data
+      text:this.getActionTextByMailType(type,data),
+      link:data.link
     }];
   }
 
@@ -137,6 +141,7 @@ class ShareData {
       case code.mail.ACCOUNT_VERIFICATION: return `Verify Account`;
       case code.mail.RESET_PASSWORD: return `Reset Password`;
       case code.mail.INSTITUTION_INVITATION: return `See invitation`;
+      case code.mail.TWO_FACTOR_AUTH:return data.code;
       default: return "Proceed";
     }
   }
@@ -148,6 +153,7 @@ class ShareData {
       case code.mail.INSTITUTION_INVITATION: return `This link can expire anytime.`;
       case code.mail.EMAIL_CHANGED: return `Ignore if you already know this.`;
       case code.mail.PASSWORD_CHANGED: return `Ignore if you already know this.`;
+      case code.mail.TWO_FACTOR_AUTH: return `Do not share this code with anyone, even if they say they're from ${appname}.`;
       case code.mail.ACCOUNT_DELETED: return `Good Bye.`;
     }
   }
@@ -156,6 +162,7 @@ class ShareData {
     switch(type){
       case code.mail.ACCOUNT_VERIFICATION: return `If you do not recognize this email, then do not click any of the above links, as someone else must be trying to use your email address to gain access to ${appname}.`;
       case code.mail.RESET_PASSWORD: return `If you do not recognize this email, then you don't need to bother about this, as someone else must be trying to gain access to your ${appname} account.`;
+      case code.mail.TWO_FACTOR_AUTH: return `If you do not recognize this email, then your password has been compromised. However, your account is still safe. Please immediately change your password, as someone else is trying to gain access to your ${appname} account.`;
       case code.mail.INSTITUTION_INVITATION: return `You can ignore this email if this doesn't seem to be familiar.`;
     }
   }
