@@ -120,6 +120,7 @@ class Codes {
         this.PASSWORD_CHANGED = "mail/password-changed";
         this.EMAIL_CHANGED = "mail/email-address-changed";
         this.ACCOUNT_DELETED = "mail/account-deleted";
+        this.TWO_FACTOR_AUTH = "mail/2fa-code";
         this.INSTITUTION_INVITATION = "mail/invite-to-institution";
         this.ERROR_MAIL_NOTSENT = "mail/email-not-sent";
         this.MAIL_SENT = "mail/email-sent-success";
@@ -132,6 +133,7 @@ class Codes {
         this.CHANGE_PASSWORD = "action/change-password";
         this.CHANGE_ID = "action/change-id-email";
         this.CHANGE_PHONE = "action/change-phone-number";
+        this.CHANGE_2FA = "action/change-two-factor-auth";
         this.CHANGE_NAME = "action/change-name";
         this.SEND_INVITE = "action/send-invitation";
         this.ACCOUNT_VERIFY = "action/verify-account";
@@ -381,6 +383,7 @@ class Action{
     this.login = "login";
     this.logout = "logout";
     this.signup = "signup";
+    this.verify = "verify";
     this.fetch = "fetch";
     this.receive = "receive";
     this.create = "create";
@@ -422,6 +425,7 @@ class Locations {
         const root = `/${client.admin}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
+        this.twofactor = `${root}/auth/twofactor`;
         class Target {
           constructor() {
             this.settings = "manage";
@@ -456,6 +460,7 @@ class Locations {
         const root = `/${client.teacher}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
+        this.twofactor = `${root}/auth/twofactor`;
         this.fragment = `${root}/fragment`;
         class Target {
           constructor() {
@@ -487,6 +492,7 @@ class Locations {
         const root = `/${client.student}`;
         this.session = `${root}/session`;
         this.login = `${root}/auth/login`;
+        this.twofactor = `${root}/auth/twofactor`;
         this.fragment = `${root}/fragment`;
         class Target {
           constructor() {
@@ -531,6 +537,7 @@ class View {
     this.userinvitaion = "invitation.ejs";
     this.verification = "verification.ejs";
     this.passwordreset = "resetpassword.ejs";
+    this.twofactor = "2FA.ejs";
 
     class Comms{
       constructor(){
@@ -724,6 +731,7 @@ class ServerPosts{
     this.classroom = "/classroom";
     this.comms = "/comms";
     this.mail = "/mail";
+    this.twofactor = "/2FA"
   }
 }
 
@@ -733,6 +741,7 @@ class ServerPosts{
 class Posts {
   constructor() {
     const post = new ServerPosts()
+
     class Admin {
       constructor() {
         const root = `${locate.root}${client.admin}`;
@@ -747,7 +756,6 @@ class Posts {
         this.dashboard = `${root}${post.dashboard}`;
         this.manage = `${root}${post.manage}`;
         this.email = `${root}${post.mail}`;
-
         class Target {
           constructor() {
             this.today = "today";
@@ -757,6 +765,7 @@ class Posts {
         this.action = new Action();
       }
     }
+    
     this.admin = new Admin();
 
     class Teacher {
@@ -769,6 +778,7 @@ class Posts {
         this.manage = `${root}${post.manage}`;
         this.classroom = `${root}${post.classroom}`;
         this.comms = `${root}${post.comms}`;
+        this.twofactor = `${root}${post.twofactor}`
         this.action = new Action();
       }
     }
@@ -784,10 +794,18 @@ class Posts {
         this.manage = `${root}${post.manage}`;
         this.classroom = `${root}${post.classroom}`;
         this.comms = `${root}${post.comms}`;
+        this.twofactor = `${root}${post.twofactor}`
         this.action = new Action();
       }
     }
     this.student = new Student();
+  }
+  getAuthByClient(clientType){
+    switch(clientType){
+      case client.admin: return this.admin.auth;
+      case client.teacher: return this.teacher.auth;
+      case client.student: return this.student.auth;
+    }
   }
 }
 

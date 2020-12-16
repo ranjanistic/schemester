@@ -28,8 +28,7 @@ admin.get(get.authlogin, (req, res) => {
 admin.post(post.auth, async (req, res) => {
   const body = req.body;
   switch (body.action) {
-    case action.login:
-      {
+    case action.login:{
         session
           .login(req, res, client.admin)
           .then((response) => {
@@ -40,15 +39,12 @@ admin.post(post.auth, async (req, res) => {
           });
       }
       break;
-    case action.logout:
-      {
+    case action.logout:{
         session.finish(res).then((response) => {
           return res.json({ result: response });
         });
-      }
-      break;
-    case action.signup:
-      {
+    }break;
+    case action.signup:{
         session
           .signup(req, res, client.admin)
           .then((response) => {
@@ -59,8 +55,19 @@ admin.post(post.auth, async (req, res) => {
               result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
             });
           });
-      }
-      break;
+    }break;
+    case action.verify:{  //2fa
+      const response = session.verify(req,client.admin);
+      if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
+      session
+        .verify2fa(res,req.body.code, response.user, client.admin)
+        .then((response) => {
+          return res.json({ result: response });
+        })
+        .catch((error) => {
+          return res.json({error:error});
+        });
+    }break;
     default:
       res.sendStatus(500);
   }
@@ -78,6 +85,10 @@ admin.get(get.session, async (req, res) => {
         if (response) res.redirect(worker.toLogin(query));
       });
     if (!admin.verified) return render(res,view.verification, { user: admin });
+    if (response.user.temp) {
+      return render(res,view.twofactor,{user:admin});
+    }
+
     let inst = await worker.inst.getInsituteByUIID(response.user);
     if (
       !inst ||
@@ -507,6 +518,9 @@ admin.post(post.manage, async (req, res) => {
       return res.json({
         result: await worker.self.handlePassReset(response.user, body),
       });
+    case "twofactor":{
+      return res.json({ result: await worker.self.send2fa(response.user)})
+    }
     case "search":
       return res.json({
         result: await worker.users.handleUserSearch(inst, body),

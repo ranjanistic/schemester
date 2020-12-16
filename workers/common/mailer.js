@@ -34,7 +34,7 @@ class Mailer {
     return await this.sendMail(this.type.action,shared.getActionMailData(action,{
       receiver:body.to,
       title:shared.getTitleByMailType(action,body),
-      actions:shared.getActionByMailType(action,body.link),
+      actions:shared.getActionByMailType(action,body),
       greet: shared.getGreet(action,body.username),
       starttext:shared.getStartTextByMailType(action,body)
     }));

@@ -96,6 +96,9 @@ class TextInput {
     opacityOf(this.fieldset?this.fieldset:this.input,0.5);
     this.input.disabled = true;
   }
+  toggleInput(enable = true){
+    enable?this.enableInput():this.disableInput();
+  }
   enableInput() {
     opacityOf(this.fieldset?this.fieldset:this.input,1);
     this.input.disabled = false;
