@@ -73,7 +73,7 @@ _In case the server fails to run, go through all the steps carefully, specially 
 ### Switch branch
 
 ```bash
-git branch -b <YOUR_BRANCH_NAME>
+git checkout -b <YOUR_BRANCH_NAME>
 ```
 
 Keep the branch name descriptive to the changes you're about to make.
