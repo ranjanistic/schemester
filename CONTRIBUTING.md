@@ -10,7 +10,9 @@ Following are the steps which should get you started.
 
 - Localhost CA certificate
 
-- .env file
+- .env file, see [.sample.env](/.sample.env)
+
+- custom [config/config.json](/config/config.json) - all config keys signed with a custom ssh key from custom .env file.
 
 ### Optionally
 
