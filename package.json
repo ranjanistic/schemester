@@ -1,5 +1,5 @@
 {
-  "name": "schemester",
+  "name": "Schemester",
   "version": "1.0.0",
   "description": "An autonomous schedule management system primarily target on educational niche.",
   "main": "server.js",
@@ -7,7 +7,7 @@
   "maintainers": [
     "ranjanistic"
   ],
-  "homepage": "https://schemester.herokuapp.com",
+  "homepage": "https://schemester.herokuapp.com/",
   "readme": "README.md",
   "private": true,
   "scripts": {
@@ -15,6 +15,7 @@
     "start": "node server.js",
     "devserver": "nodemon server.js",
     "commit": "npm test && git status && git add . && git status && git cz",
+    "newconfig": "node config/config.js",
     "sendmail": "node methods/sendmail.js",
     "gentoken": "node methods/keygen.js",
     "decode": "node methods/decode.js",
