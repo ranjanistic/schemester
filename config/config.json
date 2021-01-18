@@ -1,7 +1,7 @@
 {
-  "appname":"Schemester",
+  "appname": "Schemester",
   "email": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3RlckBvdXRsb29rLmlu.fQIGcuNZj_eokdHFji-4Q60pPqxTCKspLOYohC5xHuo",
-  "site":"https://schemester.herokuapp.com/",
+  "site": "https://schemester.herokuapp.com/",
   "db": {
     "username": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3Rlci13ZWI.MkCeef4L-YxlMx-UvmKkUn_zTrjI-Qb2tPcUN4gRCv4",
     "pass": "eyJhbGciOiJIUzI1NiJ9.VTdkSHVycGM0OTloZHdqcw.LJBV6Dc3vqJfETtqo-inZbdw9XIuDn0iV-3wiQOc5-A",
@@ -32,7 +32,7 @@
     }
   },
   "session": {
-    "publickey":"bailment",
+    "publickey": "bailment",
     "adminkey": "eyJhbGciOiJIUzI1NiJ9.YWRtaW5rZXlAc2Vzc2lvbiEkc2NoZW1lc3Rlci13ZWIkIQ.deC7TvStPnwaYPObYCM4uJi9Sfznq0uFEEd3K0ZNNqo",
     "teacherkey": "eyJhbGciOiJIUzI1NiJ9.dGVhY2hlcmtleUBzZXNzaW9uISRzY2hlbWVzdGVyLXdlYiQh.-YsTKKrcN1BuANzaPHxzEsr9eTmJ7HArBsS_aAj0jgE",
     "studentkey": "eyJhbGciOiJIUzI1NiJ9.c3R1ZGVudGtleUBzZXNzaW9uISRzY2hlbWVzdGVyLXdlYiQh.5UmHW59sNhhYuzUrQvdJhvnP1CHB-rYjz-V6GsdJXd8"

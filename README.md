@@ -3,7 +3,11 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 This repo hosts the source code for [schemester](https://schemester.herokuapp.com).
-Jump to [documentation](DOCUMENTATION.md).
+Jump to
+
+- [Contribution guide](CONTRIBUTING.md).
+
+- [Documentation](DOCUMENTATION.md).
 
 Following are the steps to begin local development.
 
@@ -45,11 +49,11 @@ gh repo clone ranjanistic/schemester-web
   npm install
   ```
 
-### Generate localhost certificate
+### Generate localhost certificate*
 
 The session is only created on https (secured) protocol, therefore, before you proceed to steps to run server (for first time setup only), go through the following steps.
 
-#### Setting localhost on https
+#### Setting localhost on https*
 
 First, refer to & follow the [mkcert installation steps](https://github.com/FiloSottile/mkcert#installation) to enable ```mkcert``` command on your system.
 
@@ -66,6 +70,26 @@ mkcert localhost
 ```
 
 This will create ```localhost.pem``` &amp; ```localhost-key.pem``` files locally in project root. Now the local server will automatically use these files to run over https.
+
+### Environment Variables*
+
+Create a .env file at root of the project. Use [.sample.env](/.sample.env) for environment variable keys.
+
+### Setup configuration keys*
+
+A config.json with keys is required for the application to run, and the following command will help you set that up automatically.
+
+```bash
+npm run newconfig
+```
+
+The CLI interface will ask you for your raw keys (unmasked), and will mask them in config/config.json using the SSH key provided by you in .env file as an environment variable ([set that up](#environmentvariables*) in previous step first before doing this).
+
+You can run this command anytime to update any of your configuration keys.
+
+### Local MongoDB database
+
+See [contribution guidelines](/CONTRIBUTING.MD#fulfilingrequirements).
 
 ### Run server
 
@@ -84,14 +108,16 @@ Otherwise conventionally, ```npm start``` or ```node server``` would also start 
 Above commands must log -
 
 ```bash
-Connected to schemesterDB
+Connected to <YOUR_DATABASE_NAME>
 listening on 3000 (https)
 ```
+
+here <YOUR_DATABASE_NAME> should be the database name you've set in configuration setup.
 
 If you're seeing -
 
 ```bash
-Connected to schemesterDB
+Connected to <YOUR_DATABASE_NAME>
 listening on 3000
 ```
 
@@ -99,9 +125,7 @@ listening on 3000
 
 After ensuring that ```listening on 3000 (https)``` is being logged on node console, you can proceed towards contribution.
 
-## Contributing
-
-See detailed contribution guide [here](CONTRIBUTING.md).
+**See detailed contribution guide [here](CONTRIBUTING.md).**
 
 ### Switch branches
 
@@ -129,6 +153,8 @@ git push -u origin branch-name
 ```
 
 ## Footnotes
+
+- (*) _Steps with asterisk are the steps to be followed only for first time development setup._
 
 - _See [contribution guidelines](CONTRIBUTING.md) for detailed explanation including local DB, link, and server environment setup._
 

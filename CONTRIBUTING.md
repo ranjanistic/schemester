@@ -30,6 +30,8 @@ Following are the steps which should get you started.
 
 - .env file provides environment variables for local server. This can be created manually following the pattern in [.sample.env](.sample.env) and obtaining values from repository secret, or by asking the owner to provide it to you.
 
+- config/config.json can be generated using ```npm run newconfig```. See [README](/README.md#setupconfigurationkeys) for more details on this.
+
 ## In repository
 
 ### Clone
@@ -62,7 +64,7 @@ npm run devserver
 Console must log
 
 ```bash
-Connected to schemesterDB
+Connected to <YOUR_DATABASE_NAME>
 listening on 3000 (https)
 ```
 
