@@ -83,13 +83,13 @@ A config.json with keys is required for the application to run, and the followin
 npm run newconfig
 ```
 
-The CLI interface will ask you for your raw keys (unmasked), and will mask them in config/config.json using the SSH key provided by you in .env file as an environment variable ([set that up](#environmentvariables*) in previous step first before doing this).
+The CLI interface will ask you for your raw keys (unmasked), and will mask them in config/config.json using the SSH key provided by you in .env file as an environment variable ([set that up](#environment-variables) in previous step first before doing this).
 
 You can run this command anytime to update any of your configuration keys.
 
 ### Local MongoDB database
 
-See [contribution guidelines](/CONTRIBUTING.MD#fulfilingrequirements).
+See [contribution guidelines](/CONTRIBUTING.md#fulfiling-requirements).
 
 ### Run server
 

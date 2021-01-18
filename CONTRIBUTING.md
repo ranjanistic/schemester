@@ -30,7 +30,7 @@ Following are the steps which should get you started.
 
 - .env file provides environment variables for local server. This can be created manually following the pattern in [.sample.env](.sample.env) and obtaining values from repository secret, or by asking the owner to provide it to you.
 
-- config/config.json can be generated using ```npm run newconfig```. See [README](/README.md#setupconfigurationkeys) for more details on this.
+- config/config.json can be generated using ```npm run newconfig```. See [README](/README.md#setup-configuration-keys) for more details on this.
 
 ## In repository
 
