@@ -36,7 +36,7 @@
     "pusher": "^4.0.2"
   },
   "devDependencies": {
-    "commitizen": "^4.2.2",
+    "commitizen": "^4.2.3",
     "cz-conventional-changelog": "^3.3.0",
     "dotenv": "^8.2.0",
     "es6-promisify": "^6.1.1",
