@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <title>Schemester</title>
+  <title><%= appname %></title>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,7 +19,7 @@
       name="description"
       content="An autonomous online schedule management workflow system with additional features primarily meant for educational institutions."
     />
-    <link rel="canonical" href="https://schemester.herokuapp.com/" />
+    <link rel="canonical" href="<%= site %>" />
     <link href="/font/Jost.css" rel="stylesheet" />
     <link href="/font/Questrial.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/fmt.css" />
@@ -27,10 +27,10 @@
     <link rel="stylesheet" href="/css/switch.css" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="application-name" content="Schemester" />
-    <meta property="og:title" content="Schemester · Get Scheduled" />
+    <meta name="application-name" content="<%= appname %>" />
+    <meta property="og:title" content="<%= appname %> · Get Scheduled" />
     <meta property="og:type" content="tools" />
-    <meta property="og:url" content="https://schemester.herokuapp.com/" />
+    <meta property="og:url" content="<%= site %>" />
     <meta property="og:locale" content="en-US" />
     <meta
       property="og:description"
@@ -38,14 +38,14 @@
     />
     <meta
       property="og:image"
-      content="https://schemester.herokuapp.com/graphic/icons/schemester512.png"
+      content="<%= site %>/graphic/icons/schemester512.png"
     />
-    <meta property="og:site_name" content="Schemester · Get Scheduled" />
+    <meta property="og:site_name" content="<%= appname %> · Get Scheduled" />
     <meta
       name="favicon"
-      content="https://schemester.herokuapp.com/graphic/icons/schemester512.png"
+      content="<%= site %>/graphic/icons/schemester512.png"
     />
-    <meta name="twitter:title" content="Schemester · Get Scheduled" />
+    <meta name="twitter:title" content="<%= appname %> · Get Scheduled" />
     <meta
       name="twitter:description"
       content="An autonomous online schedule management workflow system with additional features primarily meant for educational institutions. Get 
@@ -53,15 +53,15 @@
     />
     <meta
       name="twitter:image"
-      content="https://schemester.herokuapp.com/graphic/icons/schemester512.png"
+      content="<%= site %>/graphic/icons/schemester512.png"
     />
     <meta name="twitter:site" content="@schemesterTweet" />
     <meta name="twitter:creator" content="@ranjanistic" />
-    <meta name="twitter:url" content="https://schemester.web.app/" />
+    <meta name="twitter:url" content="<%= site %>" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="linkedin:card"
-      content="https://schemester.web.app/graphic/icons/schemester512.png"
+      content="<%= site %>/graphic/icons/schemester512.png"
     />
     <link
       rel="icon"
@@ -72,7 +72,7 @@
     <link rel="apple-touch-icon" href="/graphic/icons/schemester128.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3" />
-    <meta name="apple-mobile-web-app-title" content="Schemester" />
+    <meta name="apple-mobile-web-app-title" content="<%= appname %>" />
     <meta name="msapplication-TileColor" content="#216bf3" />
     <meta name="msapplication-TileImage" content="/graphic/schemester.png" />
     <script src="/script/codes.js"></script>
@@ -90,7 +90,7 @@
   </head>
   <body>
       <div class="fmt-hide-small fmt-hide-medium fmt-row" style="width:90%;padding:0 260px">
-        <img class="fmt-col fmt-spin-fast "  src="/graphic/blueLoader.svg"/>
+        <img class="fmt-col fmt-spin-fast"  src="/graphic/blueLoader.svg"/>
       </div>
       <div class="fmt-hide-large fmt-center" style="padding-top:130px;">
           <img class="fmt-spin-fast" src="/graphic/blueLoader.svg"/>

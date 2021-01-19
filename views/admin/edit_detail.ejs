@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <title>Registration · Schemester</title>
+    <title>Registration · <%= appname %></title>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" id="viewportTag">
@@ -23,7 +23,7 @@
     </head>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="backroot">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="backroot">
             <span id="greeting"></span>
             <% if(inst){ %> · Updating Defaults<%}%>
             <span class="fmt-dropdown-hover fmt-right">

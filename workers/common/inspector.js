@@ -1,8 +1,8 @@
 if(!process.env.NODE_ENV || process.env.NODE_ENV != 'prod')
  require("dotenv").config({ silent: process.env.NODE_ENV === 'prod' });
 
-const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),jwt = require("jsonwebtoken");
-const timer = require("./timer");
+const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),
+  jwt = require("jsonwebtoken"), timer = require("./timer"),{appname,site,email} = require("./../../config/config.json");
 
 /**
  * For inspection of data received by client.
@@ -22,6 +22,9 @@ class Inspector{
 
     render(response,view,data = {}){
       data['acsrf'] = jwt.sign(timer.getMoment(),process.env.SSH);
+      data['appname'] = appname;
+      data['site'] = site;
+      data['mailto'] = jwt.verify(email,process.env.SSH);
       return response.render(view,data);
     }
 

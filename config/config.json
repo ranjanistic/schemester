@@ -1,7 +1,7 @@
 {
   "appname": "Schemester",
   "email": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3RlckBvdXRsb29rLmlu.fQIGcuNZj_eokdHFji-4Q60pPqxTCKspLOYohC5xHuo",
-  "site": "https://schemester.herokuapp.com/",
+  "site": "https://schemester.herokuapp.com",
   "db": {
     "username": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3Rlci13ZWI.MkCeef4L-YxlMx-UvmKkUn_zTrjI-Qb2tPcUN4gRCv4",
     "pass": "eyJhbGciOiJIUzI1NiJ9.VTdkSHVycGM0OTloZHdqcw.LJBV6Dc3vqJfETtqo-inZbdw9XIuDn0iV-3wiQOc5-A",

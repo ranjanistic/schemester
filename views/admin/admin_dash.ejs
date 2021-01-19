@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Dashboard · Schemester</title>
+        <title>Dashboard · <%= appname %></title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE" />
         <meta name="theme-color" content="#216bf3" id="themecolor" />
@@ -16,45 +16,45 @@
         />
         <meta
           name="description"
-          content="Welcome to the administrator dashboard of Schemester. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
+          content="Welcome to the administrator dashboard of <%= appname %>. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
         />
         <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://schemester.herokuapp.com/" />
+        <link rel="canonical" href="<%= site %>" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Schemester" />
-        <meta property="og:title" content="Schemester · Get Scheduled" />
+        <meta name="application-name" content="<%= appname %>" />
+        <meta property="og:title" content="<%= appname %> · Get Scheduled" />
         <meta property="og:type" content="tools" />
-        <meta property="og:url" content="https://schemester.web.app/" />
+        <meta property="og:url" content="<%= site %>" />
         <meta property="og:locale" content="en-US" />
         <meta
           property="og:description"
-          content="Welcome to the administrator dashboard of Schemester. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
+          content="Welcome to the administrator dashboard of <%= appname %>. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
           />
         <meta
         property="og:image"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
-        <meta property="og:site_name" content="Dahsboard · Admin · Schemester" />
+        <meta property="og:site_name" content="Dahsboard · Admin · <%= appname %>" />
         <meta
           name="favicon"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
-        <meta name="twitter:title" content="Dashboard · Admin · Schemester" />
+        <meta name="twitter:title" content="Dashboard · Admin · <%= appname %>" />
         <meta
           name="twitter:description"
-          content="Welcome to the administrator dashboard of Schemester. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
+          content="Welcome to the administrator dashboard of <%= appname %>. Checkout what you've got on your institution's schedule, and take actions on other users' schedule."
         />
         <meta
           name="twitter:image"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
         <meta name="twitter:site" content="@schemesterTweet" />
         <meta name="twitter:creator" content="@ranjanistic" />
-        <meta name="twitter:url" content="https://schemester.web.app/" />
+        <meta name="twitter:url" content="<%= site %>" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
         name="linkedin:card"
-        content="https://schemester.web.app/graphic/icons/schemester512.png"
+        content="<%= site %>/graphic/icons/schemester512.png"
         />
         <link
         rel="icon"
@@ -65,7 +65,7 @@
         <link rel="apple-touch-icon" href="/graphic/icons/schemester128.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3" />
-        <meta name="apple-mobile-web-app-title" content="Schemester" />
+        <meta name="apple-mobile-web-app-title" content="<%= appname %>" />
         <meta name="msapplication-TileColor" content="#216bf3" />
         <meta name="msapplication-TileImage" content="/graphic/schemester.png" />
         <link rel="manifest" href="/manifest.json" />
@@ -95,7 +95,7 @@
     }%>
     <body>
         <div id="topBar">
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="navicon">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="navicon">
             <span id="instname" class="pointer"><%= inst.default.institute.instituteName %></span>
             <span  class="menu fmt-right">
                 <button  class="positive-button-togg"  id="settingsmenubutton"><img src="/graphic/menudotsvertical.svg" width="25"></button>
@@ -211,7 +211,7 @@
                             <br/>
                             <span class="heading">Ready?</span>
                             <br/>
-                            <div class="questrial">So far, <a id="teachers1"><%= countObjects(inst.users.teachers) %> teachers</a> have joined your institution on Schemester.
+                            <div class="questrial">So far, <a id="teachers1"><%= countObjects(inst.users.teachers) %> teachers</a> have joined your institution on <%= appname %>.
                                 <br/>Would you like to start scheduling now?
                             </div>
                             <br/>

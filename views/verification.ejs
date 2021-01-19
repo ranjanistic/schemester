@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Verification · Schemester</title>
+        <title>Verification · <%= appname %></title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
@@ -25,12 +25,12 @@
     </head>
     <%if(user.expired) {%>
     <body class="b-negative">
-        <div id="topBar" style="background-color: #c40c0c;">
+        <div id="topBar" style="background-color: var(--negative);">
     <% } else { %>
     <body class="b-positive">
         <div id="topBar">
     <% } %>
-            <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="backroot">
+            <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="backroot">
             <span>Account Verification</span>
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
             <span class="fmt-right fmt-padding-small">
@@ -60,7 +60,7 @@
                     <div class="fmt-row heading fmt-center">Verification</div><br/>
                     <div class="fmt-row questrial">
                         Dear <%= user.username %>,<br/><br/>
-                        Before you explore and enjoy the benefits of Schemester,
+                        Before you explore and enjoy the benefits of <%= appname %>,
                         your account (<span class="positive break"><%= user.id %></span>) needs to be verified to justify your authenticity.
                         <br/><br/>If you click the blue button, a link will be sent to your provided email address, and you should visit that link before it expires.</br>
                         This small step will get you verified, and would be a giant leap for us, as we'll fully trust you after that.
@@ -80,11 +80,11 @@
                         Hello <%= user.username %>!<br/><br/>
                         Cheers! You have successfully verified your account (<%= user.id %>).
                         As <% if(user.isAdmin) { %>an administrator<% } else if(user.isTeacher){ %>a teacher<% } else if(user.isStudent) { %>a student<% } %>,
-                        you may now continue your journey with <a href="/tour">Schemester</a>.
+                        you may now continue your journey with <a href="/tour"><%= appname %></a>.
                     </div><br/><br/>
                     <div class="fmt-row">
                         <button class="fmt-right positive-button" id="continueSession">Continue</button>
-                        <button class="fmt-right neutral-button" id="explore">Explore Schemester</button>
+                        <button class="fmt-right neutral-button" id="explore">Explore <%= appname %></button>
                     </div>
                 <% } %>
             <% } %>
