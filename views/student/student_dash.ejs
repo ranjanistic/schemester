@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>
-            <% if(student.pseudo) { %>Pending<% } else { %>Dashboard<% } %> · Schemester
+            <% if(student.pseudo) { %>Pending<% } else { %>Dashboard<% } %> · <%= appname %>
         </title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE" />
@@ -18,44 +18,44 @@
         />
         <meta
           name="description"
-          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+          content="Welcome to the student dashboard of <%= appname %>. Checkout what you've got on your schedule today."
         />
-        <link rel="canonical" href="https://schemester.herokuapp.com/" />
+        <link rel="canonical" href="<%= site %>" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="application-name" content="Schemester" />
-        <meta property="og:title" content="Schemester · Get Scheduled" />
+        <meta name="application-name" content="<%= appname %>" />
+        <meta property="og:title" content="<%= appname %> · Get Scheduled" />
         <meta property="og:type" content="tools" />
-        <meta property="og:url" content="https://schemester.web.app/" />
+        <meta property="og:url" content="<%= site %>" />
         <meta property="og:locale" content="en-US" />
         <meta
           property="og:description"
-          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+          content="Welcome to the student dashboard of <%= appname %>. Checkout what you've got on your schedule today."
           />
         <meta
         property="og:image"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
-        <meta property="og:site_name" content="Dahsboard · Student · Schemester" />
+        <meta property="og:site_name" content="Dahsboard · Student · <%= appname %>" />
         <meta
           name="favicon"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
-        <meta name="twitter:title" content="Dashboard · Student · Schemester" />
+        <meta name="twitter:title" content="Dashboard · Student · <%= appname %>" />
         <meta
           name="twitter:description"
-          content="Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today."
+          content="Welcome to the student dashboard of <%= appname %>. Checkout what you've got on your schedule today."
         />
         <meta
           name="twitter:image"
-          content="https://schemester.web.app/graphic/icons/schemester512.png"
+          content="<%= site %>/graphic/icons/schemester512.png"
         />
         <meta name="twitter:site" content="@schemesterTweet" />
         <meta name="twitter:creator" content="@ranjanistic" />
-        <meta name="twitter:url" content="https://schemester.web.app/" />
+        <meta name="twitter:url" content="<%= site %>" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
         name="linkedin:card"
-        content="https://schemester.web.app/graphic/icons/schemester512.png"
+        content="<%= site %>/graphic/icons/schemester512.png"
         />
         <link
         rel="icon"
@@ -66,7 +66,7 @@
         <link rel="apple-touch-icon" href="/graphic/icons/schemester128.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="#216bf3" />
-        <meta name="apple-mobile-web-app-title" content="Schemester" />
+        <meta name="apple-mobile-web-app-title" content="<%= appname %>" />
         <meta name="msapplication-TileColor" content="#216bf3" />
         <meta name="msapplication-TileImage" content="/graphic/schemester.png" />
         <link href="/font/Jost.css" rel="stylesheet" />
@@ -86,7 +86,7 @@
     <body>
         <% if(student.pseudo) { %>
             <div id="topBar">
-                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="backroot">
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="backroot">
                 <span>Dashboard</span>
                 <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader"/>
                 <span class="fmt-right">

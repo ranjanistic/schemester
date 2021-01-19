@@ -5,7 +5,7 @@
             Teacher
         <% } else { %>
             Schedule 
-        <% } %> Filler · Schemester
+        <% } %> Filler · <%= appname %>
     </title>
     <head>
         <meta charset="utf-8">
@@ -55,7 +55,7 @@
                 <img class="circle-button"  src="/graphic/leftArrow.svg" width="40" id="back">
                 <span id="greeting">Add Teacher</span>
             <% } else { %>
-                <img src="/graphic/icons/schemester512.svg" width="40" alt="Schemester icon" id="back">
+                <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="back">
                 <span id="greeting">Create schedule</span>
             <% } %>
             <span  class="menu fmt-right">

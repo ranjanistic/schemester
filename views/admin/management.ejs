@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <title>Management · Admin · Schemester</title>
+    <title>Management · Admin · <%= appname %></title>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -74,7 +74,7 @@
                             Security Settings</div>
                         <div class="leftTabButton" id="aboutTab">
                             <img class="fmt-left fmt-padding-small" src="/graphic/icons/schemester128.png" width="40"/>
-                            Schemester</div>
+                            <%= appname %></div>
                     </div>
                     <!--Chips on small screens-->
                     <div class="fmt-hide-large fmt-hide-medium" id="mtabGroup">
@@ -103,7 +103,7 @@
                             <span class="checkmark"></span>
                         </label>
                         <label class="radio-container">
-                            Schemester<input type="radio" name="settingSelection" id="maboutTab">
+                            <%= appname %><input type="radio" name="settingSelection" id="maboutTab">
                             <span class="checkmark"></span>
                         </label>
                         <div class="fmt-padding-small"></div>
@@ -420,7 +420,7 @@
                             <span class="sub-heading">About</span>
                             <br/>
                             <div>Aimed at simplifying the way schedule management works in school systems.</div>
-                            <div>Tell us your experience with Schemester by clicking the button below.</div>
+                            <div>Tell us your experience with <%= appname %> by clicking the button below.</div>
                             <br/>
                             <button class="positive-button" id="contactDevelopers">Contact Devs.</button>
                             <img class="fmt-right fmt-spin-slow" src="/graphic/icons/schemester256.png"/>

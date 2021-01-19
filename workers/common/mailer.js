@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer"),
   ejs = require("ejs"),
   path = require("path"),
-  { email, mail } = require("../../config/config.json"),
+  { appname, email, mail } = require("../../config/config.json"),
   {token,emailValid} = require("./inspector"),
   shared = require("./sharedata"),
   { code } = require("../../public/script/codes");
@@ -15,6 +15,7 @@ class Mailer {
   }
 
   async sendMail(type,mail){
+    mail['appname'] = appname;
     const data = await ejs.renderFile(path.join(__dirname + `/../../views/mail/${type}.ejs`),{mail:mail});
     return await Promise.resolve(
       sendEmail(mail.for, mail.title, data)
@@ -26,7 +27,7 @@ class Mailer {
       receiver:body.to,
       client:body.client,
       greet: shared.getGreet(action,body.username),
-      text:shared.getStartTextByMailType(alert,body)
+      text:shared.getStartTextByMailType(alert,body),
     }))
   }
 

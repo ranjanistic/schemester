@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <title>Server Lost · Schemester</title>
+    <title>Server Lost · <%= appname %></title>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE">
         <script src="/script/codes.js"></script>
@@ -10,13 +10,13 @@
         <meta name="robots" content="noindex, nofollow">
         <meta name="description" content="An apology is what you deserve right now, from us, as most likely this page is shown to you while you were doing your usual stuff.">
         <meta name="theme-color" content="#efefef" id='themecolor'>
-        <meta property="og:title" content="Schemester · Get Scheduled">
+        <meta property="og:title" content="<%= appname %> · Get Scheduled">
         <meta property="og:type" content="tools">
-        <meta property="og:url" content="https://schemester.herokuapp.com/">
+        <meta property="og:url" content="<%= site %>">
         <meta property="og:locale" content="en-US">
         <meta property="og:description" content="An autonomous schedule management workflow with additional features primarily meant for educational institutions.">
-        <meta property="og:image" content="https://schemester.herokuapp.com/graphic/icons/schemester512.png">
-        <meta property="og:site_name" content="Schemester · Get Scheduled" />
+        <meta property="og:image" content="<%= site %>/graphic/icons/schemester512.png">
+        <meta property="og:site_name" content="<%= appname %> · Get Scheduled" />
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <link rel="apple-touch-startup-image" href="/graphic/icons/schemester128.png">
@@ -36,7 +36,7 @@
             </div>
             <p class="group-text fmt-padding" style="font-size: 24px;" >
                 An apology is what you deserve right now, from us, as most likely this page is shown to you while you were doing your usual stuff.
-                So, because of some mistake at our side, Schemester ran into a problem, and regardless of whatever the time is right now, we are currently working to make it work again.
+                So, because of some mistake at our side, <%= appname %> ran into a problem, and regardless of whatever the time is right now, we are currently working to make it work again.
                 <br/><br/>
                 If you did expect this page, and you feel this is not a mistake from our side, then we have provided a way to go back to our home, and most probably,
                 that should be working unlike this, because, when the world is lost for you, your home is what you find.
