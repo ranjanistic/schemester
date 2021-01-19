@@ -28,11 +28,11 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   server.get(get.home, (_, res) => {
     render(res,view.homepage);
   });
-  server.get(get.offline,(_,res)=>{
-    render(res,view.offline);
-  });
   server.get(get.tour,(req,res)=>{
     render(res,view.tour);
+  });
+  server.get(get.offline,(_,res)=>{
+    render(res,view.offline);
   });
   server.get(get.notfound, (__, _, next) => {
     next();
@@ -62,6 +62,7 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
     res.status(err.status || 500);
     render(res,view.servererror, { error: err });
   });
+
   const server_port = process.env.PORT|| 3000 || 80;
   const server_host = '0.0.0.0' || 'localhost';
 
@@ -71,8 +72,12 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
     https.createServer({key: key, cert: cert }, server).listen(server_port, server_host, ()=>{ console.log(`listening on ${server_port} (https)`)})
   }catch(e){ //for cloud server
     server.listen(server_port, server_host, ()=>{ console.log(`listening on ${server_port}`);
-      if(server_port == 3000 && e.errno == -4058)
-        console.warn("Server hosted via non-https protocol. Session will fail.\n See https://github.com/ranjanistic/schemester-web#generate-localhost-certificate to supress this warning.")
+      if(server_port == 3000 && e.errno == -4058){
+        console.log("\x1b[33m","Warning:Server hosted via non-https protocol.")
+        console.log("\x1b[31m","Session will fail.")
+        console.log("\x1b[47m","See https://github.com/ranjanistic/schemester-web/README.md#generate-localhost-certificate to supress this warning.")
+        console.log("\x1b[0m")
+      }
     })
   }
 });

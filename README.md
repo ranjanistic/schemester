@@ -119,6 +119,8 @@ If you're seeing -
 ```bash
 Connected to <YOUR_DATABASE_NAME>
 listening on 3000
+Warning:Server hosted via non-https protocol.
+ Session will fail.
 ```
 
 (without https), then you must haven't followed [these steps](#setting-localhost-on-https).
