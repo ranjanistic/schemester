@@ -24,12 +24,12 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: create env file
+    - name: Create environment
       run: |
         touch .env
         echo SSH = ${{ secrets.SSH }} >> .env
         echo NODE_ENV = ${{ secrets.NODE_ENV }} >> .env
-    - name: create env file
+    - name: CI & Unit Tests
       run: |
         npm ci
         npm test
