@@ -31,9 +31,9 @@ template:
 route:
   - any: ["server.js", "routes/*"]
 
-@worker/client:
+worker-client:
   - any: ["workers/*.js"]
     all: ["!workers/common/*"]
 
-@worker/common:
+worker-common:
   - workers/common/*
