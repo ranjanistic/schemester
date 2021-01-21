@@ -9,5 +9,5 @@ jobs:
     - uses: actions/first-interaction@v1
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: 'Hey there 👋! Before you create an issue, make sure you've gone through the Contribution guidelines and the project documentation. Also, use issue templates for better categorisation.'
-        pr-message: '👋 Hey! So you've contributed something 🎉. Make sure your changes pass all local tests, and explain the changes your pull request brings. Assigning relevant tags is recommended.'
+        issue-message: "Hey there 👋! Before you create an issue, make sure you've gone through the Contribution guidelines and the project documentation. Also, use issue templates for better categorisation."
+        pr-message: "👋 Hey! So you've contributed something 🎉. Make sure your changes pass all local tests, and explain the changes your pull request brings. Assigning relevant tags is recommended."
