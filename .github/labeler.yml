@@ -1,0 +1,39 @@
+testing:
+  - test/*
+
+workflow:
+  - ["./**/*.yml", "./**/*.yaml"]
+
+markdown:
+  - ./**/*.md
+
+json-root:
+  - ./*json
+
+configuration:
+  - config/*
+
+frontend:
+  - public/**/*
+
+style:
+  - public/**/*.css
+
+graphic:
+  - public/graphic/**/*
+
+client-logic:
+  - public/script/**/*.js
+
+template:
+  - views/**/*.ejs
+
+route:
+  - any: ["server.js", "routes/*"]
+
+worker-client:
+  - any: ["workers/*.js"]
+    all: ["!workers/common/*"]
+
+worker-common:
+  - workers/common/*
