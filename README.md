@@ -1,5 +1,6 @@
 # Schemester
 
+![Node.js CI](https://github.com/ranjanistic/schemester-web/workflows/Node.js%20CI/badge.svg?branch=master)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 This repo hosts the source code for [schemester](https://schemester.herokuapp.com).
