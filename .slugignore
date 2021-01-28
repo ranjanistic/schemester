@@ -1,0 +1,4 @@
+*.md
+LICENSE
+.sample.env
+.github/

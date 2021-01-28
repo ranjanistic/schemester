@@ -1,5 +1,4 @@
-if(!process.env.NODE_ENV || process.env.NODE_ENV != 'prod')
- require("dotenv").config({ silent: process.env.NODE_ENV === 'prod' });
+require("dotenv").config({ silent: process.env.NODE_ENV == 'production' });
 
 const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),
   jwt = require("jsonwebtoken"), timer = require("./timer"),{appname,site,email} = require("./../../config/config.json");
@@ -17,7 +16,7 @@ class Inspector{
           return jwt.verify(token,process.env.SSH)
         },
       }
-      this.isDev = process.env.NODE_ENV != 'prod';
+      this.isDev = process.env.NODE_ENV != 'production';
     }
 
     render(response,view,data = {}){
