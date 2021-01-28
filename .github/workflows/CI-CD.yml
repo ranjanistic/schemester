@@ -1,0 +1,38 @@
+name: CI & CD
+
+on:
+  push:
+    branches: [ master ]
+    paths-ignore:
+      - "test/**"
+      - "README.md"
+      - "SECURITY.md"
+      - "LICENSE"
+      - "HISTORY.md"
+      - "DOCUMENTATION.md"
+      - "CONTRIBUTING.md"
+      - "sample.env"
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+    - uses: akhileshns/heroku-deploy@v3.3.6
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+        heroku_email: ${{secrets.HEROKU_EMAIL_ID}}
