@@ -16,11 +16,12 @@
   },
   "scripts": {
     "test": "mocha",
+    "config":"node config/config.js",
     "heroku-prebuild": "npm install pm2 -g",
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "devserver": "nodemon server.js",
     "commit": "npm test && git status && git add . && git status && git cz",
-    "newconfig": "node config/config.js",
+    "newconfig": "node config/newconfig.js",
     "sendmail": "node methods/sendmail.js",
     "gentoken": "node methods/keygen.js",
     "decode": "node methods/decode.js",
