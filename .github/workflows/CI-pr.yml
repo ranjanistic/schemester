@@ -14,7 +14,7 @@ on:
       - "sample.env"
 
 jobs:
-  test_build:
+  test:
 
     runs-on: ubuntu-latest
 
