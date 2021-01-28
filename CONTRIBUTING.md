@@ -44,8 +44,9 @@ git clone <GIT_REPOSITORY_LINK>
 
 ```bash
 npm install
-npm update
 ```
+
+Follow config keys generation steps from [README.md](README.md#generate-localhost-certificate).
 
 ### Test run
 

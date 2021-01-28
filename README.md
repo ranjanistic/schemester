@@ -90,7 +90,11 @@ The CLI interface will ask you for your raw keys (unmasked), and will mask them 
 
 You can run this command anytime to update any of your configuration keys.
 
+**IMPORTANT: After config.json is generated, follow [.sample.env](.sample.env) to create environment variables by copying them from the config.json, for the project, for production environment, or wherever you'll need them. Then, use ```npm run config``` to autogenerate config.json from your environment variables, effectively in production environment. This command won't work in other environments.**
+
 ### Local MongoDB database
+
+Make sure you've MongoDB server running at localhost:27017.
 
 See [contribution guidelines](/CONTRIBUTING.md#fulfiling-requirements).
 
@@ -106,7 +110,7 @@ Alternatively,
   nodemon server
   ```
 
-Otherwise conventionally, ```npm start``` or ```node server``` would also start the server, but changes won't reload automatically.
+Otherwise conventionally, ```node server``` would also start the server, but changes won't reload automatically.
 
 Above commands must log -
 
@@ -127,6 +131,18 @@ Warning:Server hosted via non-https protocol.
 ```
 
 (without https), then you must haven't followed [these steps](#setting-localhost-on-https).
+
+If some other error has occurred, follow the checklist to make sure every prerequisite is set up.
+
+- Create .env at root of project, with SSH = <YOUR_PROJECT_SUPER_SECRET> in it.
+
+- Run ```npm run newconfig``` to enable CLI to generate a config file at [config/config.json](config/config.json).
+
+- Copy keys from [config.json](config/config.json) to your [.env](.env) file, and set them according to [.sample.env](.sample.env).
+
+- Start MongoDB community server at localhost:27107.
+
+If error still persists even after following the above steps, create an issue in the repository with error logs and details.
 
 After ensuring that ```listening on 3000 (https)``` is being logged on node console, you can proceed towards contribution.
 
