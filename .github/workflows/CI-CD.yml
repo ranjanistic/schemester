@@ -11,7 +11,7 @@ on:
       - "HISTORY.md"
       - "DOCUMENTATION.md"
       - "CONTRIBUTING.md"
-      - "sample.env"
+      - ".sample.env"
 
 jobs:
   deploy:
@@ -57,6 +57,7 @@ jobs:
         echo SESSADMIN = ${{ secrets.SESSADMIN }} >> .env
         echo SESSTEACH = ${{ secrets.SESSTEACH }} >> .env
         echo SESSSTUD = ${{ secrets.SESSSTUD }} >> .env
+        
     - name : Generate Config Keys
       run: npm run config
     - name: Install & Test

@@ -11,7 +11,7 @@ on:
       - "HISTORY.md"
       - "DOCUMENTATION.md"
       - "CONTRIBUTING.md"
-      - "sample.env"
+      - ".sample.env"
 
 jobs:
   test:
