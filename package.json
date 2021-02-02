@@ -23,7 +23,7 @@
     "commit": "npm test && git status && git add . && git status && git cz",
     "newconfig": "node config/newconfig.js",
     "sendmail": "node methods/sendmail.js",
-    "gentoken": "node methods/keygen.js",
+    "gentoken": "node methods/gentoken.js",
     "decode": "node methods/decode.js",
     "updatekeys": "node methods/updatekeys.js"
   },
