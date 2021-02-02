@@ -100,10 +100,8 @@ class Management {
   };
   undoAndReturn = (_) => {
     showLoader();
-    relocate(locate.admin.session, {
-      u: localStorage.getItem(constant.sessionUID),
-      target: locate.admin.target.dashboard,
-    });
+    backHistory(this.back.id);
+    this.back.click();
   };
 }
 

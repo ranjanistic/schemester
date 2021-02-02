@@ -1640,6 +1640,8 @@ const hideElement = (elements = [], index = null, showRest = true) => {
   }
 };
 
+const hideElementById=(id)=>hide(getElement(id));
+
 const elementFadeVisibility = (element, isVisible) => {
   replaceClass(
     element,
@@ -1979,8 +1981,15 @@ const addNumberSuffixHTML = (number = Number,html = true) => {
 
 const backHistory=(elementID = "backhistory")=>{
   getElement(elementID).onclick=_=>{
-    try{showLoader();}catch{};
-    window.parent.history.back()
+    tryCalling(()=>{
+      showLoader();
+    });
+    if(window.parent.history.length>1){
+      window.parent.history.back()
+    } else {
+      backRoot(elementID);
+      getElement(elementID).click();
+    }
   }
 }
 
@@ -2008,6 +2017,8 @@ const getProperDate = (dateTillMillis) => {
   dateTillMillis = String(dateTillMillis);
   return `${getMonthName(dateTillMillis.substring(4, 6) - 1)} ${dateTillMillis.substring(6, 8)}, ${dateTillMillis.substring(0, 4)} at ${dateTillMillis.substring(8, 10)}:${dateTillMillis.substring(10, 12)} hours ${dateTillMillis.substring(12, 14)} seconds`;
 };
+
+const tryCalling=(method=_=>{},catchMethod=_=>{})=>{try{method()}catch(e){catchMethod();return e;}};
 
 /**
  * Returns HH:MM/HH:MM:ss as HHMM/HHMMss

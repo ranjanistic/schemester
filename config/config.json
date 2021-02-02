@@ -1,0 +1,40 @@
+{
+  "appname": "Schemester (β)",
+  "email": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3RlckBvdXRsb29rLmlu.fQIGcuNZj_eokdHFji-4Q60pPqxTCKspLOYohC5xHuo",
+  "site": "https://schemester.herokuapp.com",
+  "db": {
+    "username": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3Rlci13ZWI.MkCeef4L-YxlMx-UvmKkUn_zTrjI-Qb2tPcUN4gRCv4",
+    "pass": "eyJhbGciOiJIUzI1NiJ9.VTdkSHVycGM0OTloZHdqcw.LJBV6Dc3vqJfETtqo-inZbdw9XIuDn0iV-3wiQOc5-A",
+    "name": "schemesterDB",
+    "admin_collection": "0administrators",
+    "institute_collection": "1institutions",
+    "session_collection": "2sessions",
+    "dpass": "eyJhbGciOiJIUzI1NiJ9.JGRicGFzc0Akc2NoZW1lc3Rlci13ZWJfY29ubmVjdGlvbiRAIQ.1a30VGjoOR1Zbwi1NJvUgdEK2bK6on8nlv_5YW3_EXI",
+    "cpass": "eyJhbGciOiJIUzI1NiJ9.JGNvbGxlY3Rpb25wYXNzQCRzY2hlbWVzdGVyLXdlYl9zY2hlbWVzdGVyREJAY29sbGVjdGlvbnMkQCE.CcagPR66E2qzsnCKYbZgaDuF_Qhi2YmDrLm_Hob87dI"
+  },
+  "pusher": {
+    "appId": "1096680",
+    "key": "eyJhbGciOiJIUzI1NiJ9.ZDFkYjY3YWJjYzMyNDAxODcxMmY.KwUO0gqTJ08vf0RXIhjnZL5OErmI_wzg4_i03RrabOE",
+    "secret": "eyJhbGciOiJIUzI1NiJ9.YTI4ZDA0N2M1NjIwZmEyOTlhNjI.B4Ywm0-RtipB9SyT0Bhh-bI8g5WgKU45_gAAZvIT3HI",
+    "cluster": "ap2",
+    "useTLS": true
+  },
+  "mail": {
+    "host": "eyJhbGciOiJIUzI1NiJ9.c210cC5vZmZpY2UzNjUuY29t.X3B93b4s4RkPYeFOW8Aeh_M4nqnlQrMm1SU7WwA-9d4",
+    "secureConnection": false,
+    "port": 587,
+    "auth": {
+      "user": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3RlckBvdXRsb29rLmlu.fQIGcuNZj_eokdHFji-4Q60pPqxTCKspLOYohC5xHuo",
+      "pass": "eyJhbGciOiJIUzI1NiJ9.UHpiRzs4PDM4UHouIWdn.JX3O1BhxodhiODj1I7VvSUh07H8RIcUkZYl-OFVamUI"
+    },
+    "starttls": {
+      "ciphers": "eyJhbGciOiJIUzI1NiJ9.U1NMdjM.DolgjUG4vcRCy8OELWEYDF_IcNme4tVh3RU9klYJJrM"
+    }
+  },
+  "session": {
+    "publickey": "bailment",
+    "adminkey": "eyJhbGciOiJIUzI1NiJ9.YWRtaW5rZXlAc2Vzc2lvbiEkc2NoZW1lc3Rlci13ZWIkIQ.deC7TvStPnwaYPObYCM4uJi9Sfznq0uFEEd3K0ZNNqo",
+    "teacherkey": "eyJhbGciOiJIUzI1NiJ9.dGVhY2hlcmtleUBzZXNzaW9uISRzY2hlbWVzdGVyLXdlYiQh.-YsTKKrcN1BuANzaPHxzEsr9eTmJ7HArBsS_aAj0jgE",
+    "studentkey": "eyJhbGciOiJIUzI1NiJ9.c3R1ZGVudGtleUBzZXNzaW9uISRzY2hlbWVzdGVyLXdlYiQh.5UmHW59sNhhYuzUrQvdJhvnP1CHB-rYjz-V6GsdJXd8"
+  }
+}
