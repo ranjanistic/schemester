@@ -546,6 +546,7 @@ window.onload = (_) => {
   const settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
   new ThemeSwitch("darkmode");
   theme.setNav();
+  backRoot("backhistory",{client:client.admin})
   getElement("logout").oncilck=_=>{
     finishSession(client.admin);
   }

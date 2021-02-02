@@ -4,12 +4,10 @@
  */
 class Schedule{
     constructor(){
-        backRoot("backroot",{client:client.admin})
+        backHistory("backhistory");
         this.data = new ReceiveData();
         new ThemeSwitch('darkmode');
         sessionStorage.removeItem('switchclash');
-        this.back = getElement("back");
-        this.back.onclick=_=>{window.history.back()}
         this.settingsmenu = new Menu("settingsmenu","settingsmenubutton");
         this.editmodeview = getElement("editmodeview");
         this.editmode = new Switch('editmode');

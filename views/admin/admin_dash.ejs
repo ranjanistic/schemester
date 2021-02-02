@@ -107,17 +107,15 @@
                     <div class="" id="teachers">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Teachers
                     </div>
-                    <% if (inst.users.classes.length) { %>
                     <div class="" id="classrooms">
                         <img src="/graphic/elements/classicon.svg" width="25" /> Classrooms
                     </div>
-                    <% } %> 
                     <div class="" id="notificationbutton"><img src="/graphic/elements/bellicon.svg" width="25" />Notifications</div>
                     <div class="" id="settingsAdminButton">
                         <img src="/graphic/elements/settings.svg" width="25" /> Settings
                     </div>
                     <div class="negative" id="logoutAdminButton">
-                        ❌ Logout
+                        Logout
                     </div>
                 </div>
             </span >
@@ -223,6 +221,10 @@
                     <div class=" fmt-center fmt-padding container" >
                     <br/>
                 <% } else { %>
+                    <div class="b-warning container caption group-text" id="noteacherwarning">
+                        At least one teacher is required to join to start scheduling.
+                        <button class="neutral-button fmt-right" id="dismissnoteacherwarning">Dismiss</button>
+                    </div>
                     <div class="fmt-center fmt-padding container fmt-margin" >
                 <% } %>
                         <span class="heading">Add</span>
@@ -266,6 +268,7 @@
                     </div>
                 <% } %> 
             <% } %> 
+            
         </div>
         <span class="fmt-bottom bottom-container fmt-right fmt-animate-opacity"
             id="todayDateTime" style="width:fit-content;right:0;">
