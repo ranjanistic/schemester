@@ -173,6 +173,32 @@ They replace the conventional ```git commit``` command for better commit message
 git push -u origin branch-name
 ```
 
+### Useful CLI scripts
+
+- To sign a value using your SSH from environment variable
+
+  ```bash
+  npm run gentoken
+  ```
+
+- To decode a jwt signed using your SSH from environment variable
+
+  ```bash
+  npm run decode
+  ```
+
+- To send an email using mail configuration from [config/config.json](config/config.json)
+
+  ```bash
+  npm run sendmail
+  ```
+
+- To update all signed keys in [config/config.json](config/config.json) using SSH from environment variable
+
+  ```bash
+  npm run updatekeys
+  ```
+
 ## Footnotes
 
 - (*) _Steps with asterisk are the steps to be followed only for first time development setup._

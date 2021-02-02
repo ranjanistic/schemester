@@ -65,7 +65,6 @@ node_modules/
 .env
 .env.production
 backups/
-methods/
 schemesterenv/
 localhost-key.pem
 localhost.pem
