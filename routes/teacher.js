@@ -78,10 +78,11 @@ teacher.get(get.session, async (req, res) => {
   if (!session.valid(response)) return res.redirect(worker.toLogin(query));
   if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
   let teacher = await worker.self.account.getAccount(response.user);
-  if (!teacher)
-    session.finish(res).then((response) => {
+  if (!teacher){
+    return session.finish(res).then((response) => {
       if (response) return res.redirect(worker.toLogin(query));
     });
+  }
 
   if (!teacher.verified)
     return render(res,view.verification, { user: teacher });
@@ -127,6 +128,7 @@ teacher.get(get.session, async (req, res) => {
     switch (query.target) {
       case view.teacher.target.comms: {
         const comms = await worker.comms.getRoomAndCallList(response.user);
+        console.log(comms);
         return render(res,view.teacher.getViewByTarget(query.target), {
           client: teacher,
           rooms: comms.rooms,
