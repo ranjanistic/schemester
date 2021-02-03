@@ -80,7 +80,7 @@ teacher.get(get.session, async (req, res) => {
   let teacher = await worker.self.account.getAccount(response.user);
   if (!teacher)
     session.finish(res).then((response) => {
-      if (response) res.redirect(worker.toLogin(query));
+      if (response) return res.redirect(worker.toLogin(query));
     });
 
   if (!teacher.verified)

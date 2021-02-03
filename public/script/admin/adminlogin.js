@@ -8,7 +8,9 @@ class AdminLogin{
     this.emailField = new TextInput("email_fieldset","Email Address","youremail@example.domain",validType.email);
     this.passField = new TextInput("password_fieldset","Password","Your account password",validType.nonempty,true);
     this.uiidField = new TextInput("uiid_fieldset","UIID","Your institution's identifier",validType.nonempty);
-
+    getElement("createaccount").onclick=_=>{
+      showadminregistration(true,this.emailField.getInput(),this.uiidField.getInput())
+    };
     this.logInButton = getElement("loginAdminButton");
     this.logInLoader = getElement("loginLoader");
 
