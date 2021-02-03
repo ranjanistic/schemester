@@ -224,7 +224,14 @@ teacher.get(get.fragment, async (req, res) => {
             false,
             true
           );
-          if (classes) {
+          if(!inchargeof){
+            return render(res,view.teacher.getViewByTarget(query.fragment), {
+              classroom:false,
+              teacher,
+              other:false,
+              otherclasses:[],
+            });
+          } else if (classes) {
             query.classname = query.classname
               ? query.classname
               : classes.find((Class) => Class.classname == inchargeof.classname)
@@ -238,6 +245,7 @@ teacher.get(get.fragment, async (req, res) => {
               return render(res,view.notfound);
             }
           }
+          console.log(inchargeof);
           return render(res,view.teacher.getViewByTarget(query.fragment), {
             classroom: classes
               ? classes.find((Class) => Class.classname == query.classname)

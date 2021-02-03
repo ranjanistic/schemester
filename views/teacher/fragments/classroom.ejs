@@ -46,20 +46,22 @@
                                 Notifications
                             </section>
                             <% var notifs = false %>
-                            <% if(pseudostudents.length) {%>
-                                <% notifs = true %>
-                                <div class="fmt-center questrial" id="studentrequests">
-                                    👩‍🎓 <span id="requestees"><%= pseudostudents.length %></span> pending requests.
-                                </div>
+                            <% if(classroom){ %>
+                                <% if(pseudosudents&&pseudostudents.length) {%>
+                                    <% notifs = true %>
+                                    <div class="fmt-center questrial" id="studentrequests">
+                                        👩‍🎓 <span id="requestees"><%= pseudostudents.length %></span> pending requests.
+                                    </div>
+                                <% } %>
                             <% } %>
                             <% if(!notifs) {%>
                                 <section class="fmt-center group-text">
                                     Nothing here.
-                                </sectionn>
+                                </section>
                             <% } else {%>
                                 <section class="fmt-center positive">
                                     <img src="/graphic/elements/todayicon.svg" width="20"/>
-                                </sectionn>
+                                </section>
                                 <% } %>
                         </div>
                     </span>
@@ -135,9 +137,9 @@
         <div id="snackBar"></div>
         <span hidden>
             <span id="acsrf"><%= acsrf %></span>
-                <span id="other"><%= other %></span>
-                <span id="otherclasses"><%= otherclasses %></span>
-                <span id="hasclassroom"><%= classroom?true:false %></span>
+            <span id="hasclassroom"><%= classroom?true:false %></span>
+            <span id="other"><%= other %></span>
+            <span id="otherclasses"><%= otherclasses %></span>
             <% if(classroom) {%>
                 <span id="classname"><%= classroom.classname %></span>
                 <span id="totalstudents"><%= classroom.students.length %></span>

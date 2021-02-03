@@ -73,7 +73,7 @@ class Self {
        * Returns the teacher account associated with current user session.
        * @param {JSON} user The session user object.
        * @param {Boolean} raw If true, will return exact account data (including password, encrypted), else will return through sharedata methods. Defaults to false.
-       * @returns {JSON} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
+       * @returns {Promise} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
        */
       async getAccount(user,raw = false){
         let teacher = await this.getTeacherById(user.uiid,user.id);
