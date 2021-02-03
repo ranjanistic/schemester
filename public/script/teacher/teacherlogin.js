@@ -10,6 +10,9 @@ class TeacherLogin{
     this.loader(false);
     new ThemeSwitch('darkmode');
     new UIID();
+    getElement("createaccount").onclick=_=>{
+      showTeacherRegistration();
+    };
   }
   
   loader=(show=true)=>{

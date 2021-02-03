@@ -11,6 +11,9 @@ class StudentLogin{
     this.loader(false);
     new ThemeSwitch('darkmode');
     new UIID();
+    getElement("createaccount").onclick=_=>{
+      showStudentRegistration();
+    };
   }
   
   loader=(show=true)=>{
@@ -375,7 +378,6 @@ class Password{
 
 window.onload =_=>{
   theme.setNav();
-
-   new StudentLogin();
-  }
+  new StudentLogin();
+}
 
