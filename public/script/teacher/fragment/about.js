@@ -13,8 +13,7 @@ class TeacherAbout {
       this.hideclassswitch.isOn()?parent.hideClassroom():parent.showClassroom();
     }
 
-    this.logout = getElement("logout");
-    this.logout.onclick = (_) => {
+    getElement("logout").onclick = (_) => {
       finishSession(client.teacher,(_) => {parent.location.reload()});
     };
     this.name = new Editable(

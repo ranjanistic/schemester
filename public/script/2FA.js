@@ -14,6 +14,7 @@ class TwoFactor{
         this.verify = getElement("verify");
         this.verify.onclick=_=>{
             if(!this.codeinput.isValid()) return this.codeinput.validateNow();
+            this.load();
             postJsonData(post.getAuthByClient(data.client),{
                 action:action.verify,
                 code:this.codeinput.getInput()

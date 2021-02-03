@@ -670,6 +670,7 @@ class Stage2 {
                 classes:sessionStorage.getItem('fileclasses')?inst.pseudousers.classes:[]
               },
               invite:inst.invite,
+              comms:inst.comms||[],
               restricted:inst.restricted,
               vacations:inst.vacations,
               preferences:inst.preferences

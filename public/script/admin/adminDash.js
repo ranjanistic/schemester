@@ -337,8 +337,8 @@ class ConfirmClasses {
               `inchargeeditor${c}`,
               new TextInput(
                 `inchargefield${c}`,
-                `incharge${c}`,
-                `inchargeerror${c}`,
+                `Incharge ID of class ${Class}`,
+                "Type teacher ID",
                 validType.email
               ),
               `editincharge${c}`,
@@ -475,9 +475,6 @@ class ConfirmClasses {
           </div>
           <div id="classeditor${c}">
               <fieldset class="fmt-row text-field" style="margin:0" id="classfield${c}" style="margin:0">
-              <legend class="field-caption" style="font-size:16px" id="classcaption${c}">Rename ${Class} as</legend> 
-              <input class="text-input" id="class${c}" style="font-size:20px" placeholder="Actual class name">
-              <span class="fmt-right error-caption" id="classerror${c}"></span>
               </fieldset>
               <img class="fmt-spin-fast" style="display:none" width="20" src="/graphic/blueLoader.svg" id="loader${c}"/>
               <div class="fmt-col fmt-third fmt-padding">
@@ -500,10 +497,9 @@ class ConfirmClasses {
               `classeditor${c}`,
               new TextInput(
                 `classfield${c}`,
-                `class${c}`,
-                `classerror${c}`,
+                Class,
+                `New name for ${Class}`,
                 validType.nonempty,
-                `classcaption${c}`
               ),
               `editclass${c}`,
               `classname${c}`,
