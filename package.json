@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "config":"node config/config.js",
+    "config": "node config/config.js",
     "heroku-prebuild": "npm install pm2 -g",
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "devserver": "nodemon server.js",
@@ -36,6 +36,7 @@
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
+    "express-rate-limit": "^5.2.3",
     "fs": "0.0.1-security",
     "helmet": "^4.4.1",
     "jsonwebtoken": "^8.5.1",

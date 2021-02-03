@@ -7,14 +7,23 @@ const express = require("express"),
   {render} = require("./workers/common/inspector"),
   mongo = require('./config/db'),
   https = require('https'),
-  fs = require('fs');
+  fs = require('fs'),
+  rateLimit = require("express-rate-limit");
 
 server.set("view engine", "ejs");
+server.set("trust proxy",1);
 server.use(helmet());
 server.use(express.static("public"));
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
-
+server.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  handler:(req,res)=>{
+    render(res,view.ratelimited);
+  },
+  skipFailedRequests:true
+}));
 mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   if (err) return console.error(err.code == 8000?'DB CREDS MISMATCH':err+`\nIf you don't have local mongodb server running at port 27017, then set up that first.`);
   console.log(`Connected to ${dbname}`);
@@ -34,6 +43,7 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   server.get(get.offline,(_,res)=>{
     render(res,view.offline);
   });
+  
   server.get(get.notfound, (__, _, next) => {
     next();
   });
