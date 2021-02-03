@@ -108,18 +108,12 @@
                     </div>
                     <% 
                         function getDaysArray(indices){
-                            const days = Array('Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday');
-                            let indays = Array();
-                            indices.forEach((index,i)=>{
-                                if(i>0){
-                                    indays.push(` ${days[Number(index)]}`);
-                                } else {
-                                    indays.push(days[Number(index)]);
-                                }
-                            });
+                            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+                            let indays = [];
+                            indices.forEach((index,i)=>i>0?indays.push(` ${days[Number(index)]}`):indays.push(days[Number(index)]));
                             return indays;
                         }
-                        %> 
+                    %> 
                     <div class="fmt-row  tab-container b-neutral">
                         <div class="caption">Timings</div>
                         <div class="group-text questrial">Everyday, schedule starts at <span class="active"><%= defaults.timings.startTime %></span>, 

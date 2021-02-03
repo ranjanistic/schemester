@@ -62,11 +62,15 @@
                                 <section class="fmt-center positive">
                                     <img src="/graphic/elements/todayicon.svg" width="20"/>
                                 </section>
-                                <% } %>
+                            <% } %>
                         </div>
                     </span>
                     <span class="menu fmt-right">
-                        <button class="neutral-button-togg" id="chatbutton"><img width="25" src="/graphic/elements/chaticon.svg"/></button>
+                        <button class="neutral-button-togg" id="chatbutton"
+                        <% if(!classroom){ %>
+                            hidden
+                        <% } %>
+                        ><img width="25" src="/graphic/elements/chaticon.svg"/></button>
                     </span>
                 </div>
             </div>
@@ -125,7 +129,7 @@
                         <br/>
                         <div class="fmt-center">
                             <button class="negative-button" id="hidesection">Hide section</button><br/><br/>
-                            <div class="fmt-center group-text">You can toggle classroom from <a onclick="parent.getelement('settingstab').click()">settings</a> too.</div>
+                            <div class="fmt-center group-text">You can toggle classroom from <a id="settingslink">settings</a> too.</div>
                         </div>
                     </div>
                     <div class="fmt-col fmt-quarter fmt-padding">

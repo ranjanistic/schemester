@@ -16,6 +16,9 @@ class Classroom {
     this.setupmenu = new Menu("setup", "setupbutton");
     this.settings = getElement("classsetup");
     if(!this.data.hasclass){
+      getElement("settingslink").onclick=_=>{
+        parent.getelement('settingstab').click();
+      }
       return getElement("hidesection").onclick=_=>{
         parent.hideClassroom(true);
       }
