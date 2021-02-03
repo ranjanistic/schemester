@@ -532,6 +532,7 @@ class View {
     this.tour = "tour.ejs";
     this.servererror = "500.ejs";
     this.forbidden = "403.ejs";
+    this.ratelimited = "429.ejs";
     this.offline = "offline.ejs";
 
     this.userinvitaion = "invitation.ejs";
