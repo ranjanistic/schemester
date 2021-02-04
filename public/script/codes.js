@@ -710,7 +710,9 @@ class Gets {
     this.offline = locate.offline;
     this.search = locate.search+"*";
     this.tour = "/tour";
-
+    this.admin = locate.admin;
+    this.teacher = locate.teacher;
+    this.student = locate.student;
     this.authlogin = "/auth/login*";
     this.session = "/session*";
     this.external = "/external*";
