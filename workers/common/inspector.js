@@ -24,6 +24,7 @@ class Inspector{
       data['appname'] = appname;
       data['site'] = site;
       data['mailto'] = jwt.verify(email,process.env.SSH);
+      data['year'] = new Date().getFullYear();
       return response.render(view,data);
     }
 
