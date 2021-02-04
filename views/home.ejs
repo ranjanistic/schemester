@@ -91,7 +91,7 @@
       background-size: cover;
     "
   >
-    <div class="fmt-top fmt-shadow fmt-animate-top" id="topBar">
+    <nav class="fmt-top fmt-shadow fmt-animate-top" id="topBar">
       <img
         src="/graphic/icons/schemester512.svg"
         width="40"
@@ -114,7 +114,8 @@
           <span class="switch-positive"></span>
         </label>
       </span>
-    </div>
+      <a  href="/search?q"><button class="fmt-right neutral-button">Search</button></a>
+    </nav>
     <div class="fmt-row">
       <div class="fmt-col fmt-center " style="margin-top: 62px;padding: 14px 18px;">
         <div class="fmt-row" id="logintabs">
@@ -237,6 +238,7 @@
     <!--foot note-->
     <footer class="fmt-row fmt-padding b-neutral">
       <br />
+      <br />
       <div class="caption questrial fmt-col fmt-half fmt-left fmt-padding">
         <div>
           Feel free to <a href="mailto:<%= mailto %>">email us</a>.
@@ -259,7 +261,11 @@
             >instagram profile</a
           >.
         </div>
-      </div>
+        <div>
+          <a class="positive" target="_blank" rel="noreferrer" href="https://github.com/ranjanistic"><b>Ownership <%= year %></b></a>
+        </div>
+        <br/>
+        </div>
       <div class="fmt-col fmt-half fmt-padding">
         <img
           class="fmt-right"
@@ -268,6 +274,7 @@
           alt="Display Illustration Footer"
         />
       </div>
+      <br />
       <br />
     </footer>
     <div id="dialogView"></div>

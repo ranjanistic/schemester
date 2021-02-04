@@ -417,6 +417,7 @@ class Locations {
   constructor() {
     this.homepage = "/home";
     this.offline = "/offline";
+    this.search = "/search";
     this.root = "/";
     this.tour = "/tour";
     this.planspage = "/plans";
@@ -533,6 +534,7 @@ class View {
     this.servererror = "500.ejs";
     this.forbidden = "403.ejs";
     this.ratelimited = "429.ejs";
+    this.search = "search.ejs";
     this.offline = "offline.ejs";
 
     this.userinvitaion = "invitation.ejs";
@@ -706,6 +708,7 @@ class Gets {
     this.root = locate.root;
     this.home = locate.homepage;
     this.offline = locate.offline;
+    this.search = locate.search+"*";
     this.tour = "/tour";
 
     this.authlogin = "/auth/login*";
