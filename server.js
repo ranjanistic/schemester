@@ -40,6 +40,10 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   server.get(get.tour,(req,res)=>{
     render(res,view.tour,{filename:"slide",total:7});
   });
+  server.get(get.search,(req,res)=>{
+    render(res,view.search,{query:req.query.q,results:[]});
+  });
+
   server.get(get.offline,(_,res)=>{
     render(res,view.offline);
   });
