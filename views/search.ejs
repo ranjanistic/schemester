@@ -73,22 +73,21 @@
         </label>
       </span>
     </nav>
-    <div style="margin-top: 62px" class="fmt-padding fmt-row">
+    <div style="margin: 72px 0px 150px 0" class="fmt-padding fmt-row">
       <% if (results.length) { %>
         <% results.forEach(result => { %>
             <div class="fmt-col fmt-third fmt-padding-small">
                 <div class="fmt-row container questrial">
-                <div class="fmt-col heading positive"><%= result.heading %></div>
+                <div class="fmt-col heading active"><%= result.heading %></div>
                 <div class="fmt-col group-text"><%= result.body %></div>
-                <a class="fmt-col group-text positive" href="<%= result.link %> "
-                    >View</a
+                <a class="fmt-col group-text positive" target="_blank" rel="noreferrer" href="<%= result.link %> "
+                    >Open</a
                 >
                 </div>
             </div>
         <% }) %>
        <% } else { %>
         <% if (query.length) { %>
-        
             <div class="fmt-padding">
                 <div class="container fmt-center">
                     <span class="heading">No results found.</span>
@@ -100,7 +99,7 @@
        <% } %>
 
     </div>
-    <div class="fmt-bottom fmt-padding fmt-row">
+    <div class="b-neutral fmt-bottom fmt-padding fmt-row">
         <div class="fmt-col fmt-twothird">
             <fieldset id="searchfield" ></fieldset>
         </div>
