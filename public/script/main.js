@@ -1,35 +1,39 @@
 /**
  * This file maintains the Classes and methods to be used by client side,
- * defining the boilerplate and repetitive codes, so the at the other scripts do not have to 
+ * defining the boilerplate and repetitive codes, so the at the other scripts do not have to
  * be filled with the same, with Classes for custom made elements which provide useful methods
  * for direct utilization of large code pieces, shortening the code length in other scripts.
  * https://github.com/ranjanistic/schemester-web/blob/master/DOCUMENTATION.md#mainjspublicscriptmainjs
  */
 
 //Sets theme of whole application
-localStorage.getItem(theme.key)?document.documentElement.setAttribute("data-theme",localStorage.getItem(theme.key)):localStorage.setItem(theme.key,theme.light);
+localStorage.getItem(theme.key)
+  ? document.documentElement.setAttribute(
+      "data-theme",
+      localStorage.getItem(theme.key)
+    )
+  : localStorage.setItem(theme.key, theme.light);
 
-
-class Button{
-  constructor(buttonid){
+class Button {
+  constructor(buttonid) {
     this.button = getElement(buttonid);
   }
-  setType(actiontype = actionType.positive){
-    appendClass(this.button,actionType.getButtonStyle(actiontype));
+  setType(actiontype = actionType.positive) {
+    appendClass(this.button, actionType.getButtonStyle(actiontype));
   }
-  onclick(action=_=>{}){
+  onclick(action = (_) => {}) {
     this.action = action;
-    this.button.onclick=_=>{
+    this.button.onclick = (_) => {
       action();
-    }
+    };
   }
-  disable(){
-    opacityOf(this.button,0.5);
+  disable() {
+    opacityOf(this.button, 0.5);
     this.onclick();
   }
-  enable(action=_=>{}){
-    opacityOf(this.button,1);
-    this.onclick(this.action?this.action:action);
+  enable(action = (_) => {}) {
+    opacityOf(this.button, 1);
+    this.onclick(this.action ? this.action : action);
   }
 }
 
@@ -47,23 +51,31 @@ class TextInput {
     isTextArea = false
   ) {
     this.fieldset = getElement(fieldId);
-    if(caption!== false){
-    this.fieldset.innerHTML = 
-    `<legend class="field-caption" id="${fieldId}caption">${caption}</legend>
-      <${isTextArea?'textarea':"input"} class="text-input" ${required?'required':''} id="${fieldId}input" placeholder="${placeholder}" type="${caption.toLowerCase().includes(validType.password)?validType.password:validType.getHTMLInputType(type)}">${isTextArea?'</textarea>':''}
-      ${getLoader(`${fieldId}loader`,25)}
+    if (caption !== false) {
+      this.fieldset.innerHTML = `<legend class="field-caption" id="${fieldId}caption">${caption}</legend>
+      <${isTextArea ? "textarea" : "input"} class="text-input" ${
+        required ? "required" : ""
+      } id="${fieldId}input" placeholder="${placeholder}" type="${
+        caption.toLowerCase().includes(validType.password)
+          ? validType.password
+          : validType.getHTMLInputType(type)
+      }">${isTextArea ? "</textarea>" : ""}
+      ${getLoader(`${fieldId}loader`, 25)}
       <span class="fmt-right error-caption" id="${fieldId}error"></span>
-      ${forgotbutton?`<button class="active-button fmt-right" id="${fieldId}forgot">Forgot?</button>`:''}`
-      ;
+      ${
+        forgotbutton
+          ? `<button class="active-button fmt-right" id="${fieldId}forgot">Forgot?</button>`
+          : ""
+      }`;
     }
 
     this.caption = getElement(`${fieldId}caption`);
     this.input = getElement(`${fieldId}input`);
     this.loader = getElement(`${fieldId}loader`);
     this.error = getElement(`${fieldId}error`);
-    this.forgot = forgotbutton?getElement(`${fieldId}forgot`):null;
+    this.forgot = forgotbutton ? getElement(`${fieldId}forgot`) : null;
     this.type = type;
-    this.forgot?hide(this.forgot):_=>{};
+    this.forgot ? hide(this.forgot) : (_) => {};
     this.normalize();
   }
   show() {
@@ -72,9 +84,9 @@ class TextInput {
   hide() {
     hide(this.fieldset);
   }
-  load(load = true){
-    visibilityOf(this.loader,load);
-    visibilityOf(this.error,!load);
+  load(load = true) {
+    visibilityOf(this.loader, load);
+    visibilityOf(this.error, !load);
   }
   visible(isvisible = true) {
     visibilityOf(this.fieldset, isvisible);
@@ -93,36 +105,36 @@ class TextInput {
     this.input.focus();
   }
   disableInput() {
-    opacityOf(this.fieldset?this.fieldset:this.input,0.5);
+    opacityOf(this.fieldset ? this.fieldset : this.input, 0.5);
     this.input.disabled = true;
   }
-  toggleInput(enable = true){
-    enable?this.enableInput():this.disableInput();
+  toggleInput(enable = true) {
+    enable ? this.enableInput() : this.disableInput();
   }
   enableInput() {
-    opacityOf(this.fieldset?this.fieldset:this.input,1);
+    opacityOf(this.fieldset ? this.fieldset : this.input, 1);
     this.input.disabled = false;
   }
-  validateNow(validAction = _=>{}, ifmatchfield = null) {
+  validateNow(validAction = (_) => {}, ifmatchfield = null) {
     validateTextField(this, this.type, validAction, ifmatchfield);
   }
-  validate(validAction = _=>{}, ifmatchfield = null) {
+  validate(validAction = (_) => {}, ifmatchfield = null) {
     this.onTextDefocus((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
-  stopValidate(){
-    this.onTextDefocus(_=>{});
+  stopValidate() {
+    this.onTextDefocus((_) => {});
   }
   isValid(matchfieldvalue = null) {
     return stringIsValid(this.getInput(), this.type, matchfieldvalue);
   }
-  strictValidate(validAction = _=>{}, ifmatchfield = null) {
+  strictValidate(validAction = (_) => {}, ifmatchfield = null) {
     this.onTextInput((_) => {
       validateTextField(this, this.type, validAction, ifmatchfield);
     });
   }
-  onTextInput(action = _=>{}) {
+  onTextInput(action = (_) => {}) {
     if (this.input) {
       this.input.oninput = () => {
         action();
@@ -164,14 +176,14 @@ class TextInput {
     }
   }
   getInput() {
-    return this.type == validType.name||this.type == validType.phone
-      ?this.input.value.trim()
-      :this.input.value;
+    return this.type == validType.name || this.type == validType.phone
+      ? this.input.value.trim()
+      : this.input.value;
   }
   setInput(value) {
     this.input.value = value;
   }
-  clearInput(){
+  clearInput() {
     this.input.value = null;
   }
 }
@@ -179,8 +191,17 @@ class TextInput {
 /**
  * Class for editable input view, with specific methods.
  */
-class Editable{
-  constructor(viewID,editviewID,textInput = new TextInput(),editID,viewText,saveID,cancelID,loaderID = null){
+class Editable {
+  constructor(
+    viewID,
+    editviewID,
+    textInput = new TextInput(),
+    editID,
+    viewText,
+    saveID,
+    cancelID,
+    loaderID = null
+  ) {
     this.view = getElement(viewID);
     this.editView = getElement(editviewID);
     this.textInput = textInput;
@@ -188,88 +209,102 @@ class Editable{
     this.textView = getElement(viewText);
     this.saveButton = getElement(saveID);
     this.cancelButton = getElement(cancelID);
-    this.editButton.onclick=_=>{this.edit()};
-    loaderID?this.loader = getElement(loaderID):_=>{};
+    this.editButton.onclick = (_) => {
+      this.edit();
+    };
+    loaderID ? (this.loader = getElement(loaderID)) : (_) => {};
     this.display();
     this.onCancel();
   }
-  edit(){
+  edit() {
     hide(this.view);
     show(this.editView);
     this.enableInput();
   }
-  load(show=true){
-    if(this.loader){
-      visibilityOf(this.loader,show);
-      visibilityOf(this.saveButton,!show);
-      visibilityOf(this.cancelButton,!show);
-      show?this.disableInput():this.enableInput();
+  load(show = true) {
+    if (this.loader) {
+      visibilityOf(this.loader, show);
+      visibilityOf(this.saveButton, !show);
+      visibilityOf(this.cancelButton, !show);
+      show ? this.disableInput() : this.enableInput();
     }
   }
-  display(){
+  display() {
     show(this.view);
     hide(this.editView);
     this.load(false);
     this.disableInput();
   }
-  existence(isViewing = Boolean){
-    visibilityOf(this.view,isViewing);
-    visibilityOf(this.editView,!isViewing);
+  existence(isViewing = Boolean) {
+    visibilityOf(this.view, isViewing);
+    visibilityOf(this.editView, !isViewing);
   }
-  onSave(action=_=>{}){
-    this.saveButton.onclick=_=>{
+  onSave(action = (_) => {}) {
+    this.saveButton.onclick = (_) => {
       action();
-    }
+    };
   }
-  onCancel(action=_=>{this.display()}){
-    this.cancelButton.onclick=_=>{
+  onCancel(
+    action = (_) => {
+      this.display();
+    }
+  ) {
+    this.cancelButton.onclick = (_) => {
       action();
-    }
+    };
   }
-  disableInput(){
+  disableInput() {
     this.textInput.disableInput();
   }
-  enableInput(){
+  enableInput() {
     this.textInput.enableInput();
   }
-  validateInput(){
+  validateInput() {
     this.textInput.validate();
   }
-  validateInputNow(){
+  validateInputNow() {
     this.textInput.validateNow();
   }
-  isValidInput(){
+  isValidInput() {
     return this.textInput.isValid();
   }
-  getInputValue(trim = true){
-    return trim?this.textInput.getInput().trim():this.textInput.getInput();
+  getInputValue(trim = true) {
+    return trim ? this.textInput.getInput().trim() : this.textInput.getInput();
   }
-  displayText(){
+  displayText() {
     return this.textView.innerHTML;
   }
-  setDisplayText(text){
+  setDisplayText(text) {
     this.textView.innerHTML = text;
   }
-  clickCancel(){
+  clickCancel() {
     this.cancelButton.click();
   }
 }
 
-class Switch{
-  constructor(switchID,switchTextID,switchViewID,switchContainerID,viewType = bodyType.positive){
+class Switch {
+  constructor(
+    switchID,
+    switchTextID,
+    switchViewID,
+    switchContainerID,
+    viewType = bodyType.positive
+  ) {
     this.switch = getElement(switchID);
-    this.switchText = switchTextID?getElement(switchTextID):null;
-    this.switchView = switchViewID?getElement(switchViewID):null;
-    this.switchContainer = switchContainerID?getElement(switchContainerID):null;
-    this.switchView?this.setViewType(viewType):_=>{};
+    this.switchText = switchTextID ? getElement(switchTextID) : null;
+    this.switchView = switchViewID ? getElement(switchViewID) : null;
+    this.switchContainer = switchContainerID
+      ? getElement(switchContainerID)
+      : null;
+    this.switchView ? this.setViewType(viewType) : (_) => {};
   }
-  setViewType(viewType){
+  setViewType(viewType) {
     setClassNames(this.switchView, actionType.getSwitchStyle(viewType));
   }
   setLabel(text = String) {
     this.switchText.innerHTML = text;
   }
-  onTurnChange(onAction = _=>{}, offAction = _=>{}) {
+  onTurnChange(onAction = (_) => {}, offAction = (_) => {}) {
     this.switch.addEventListener(change, (_) => {
       if (this.switch.checked) {
         onAction();
@@ -277,19 +312,21 @@ class Switch{
         offAction();
       }
     });
-    this.switchText?this.switchText.onclick=_=>{
-      this.change();
-      if(this.isOn()){
-        onAction();
-      }else {
-        offAction();
-      }
-    }:_=>{};
+    this.switchText
+      ? (this.switchText.onclick = (_) => {
+          this.change();
+          if (this.isOn()) {
+            onAction();
+          } else {
+            offAction();
+          }
+        })
+      : (_) => {};
   }
   isOn() {
     return this.switch.checked;
   }
-  change(){
+  change() {
     this.turn(!this.isOn());
   }
   turn(on = true) {
@@ -312,34 +349,41 @@ class Switch{
   }
 }
 
-class ThemeSwitch{
-  constructor(switchID,base = false){
+class ThemeSwitch {
+  constructor(switchID, base = false) {
     this.darkmode = new Switch(switchID);
     this.darkmode.turn(theme.isDark());
-    this.darkmode.onTurnChange(_=>{theme.setDark(base)},_=>{theme.setLight(base)});
+    this.darkmode.onTurnChange(
+      (_) => {
+        theme.setDark(base);
+      },
+      (_) => {
+        theme.setLight(base);
+      }
+    );
   }
 }
 
-class Menu{
-  constructor(menuID,toggleID){
+class Menu {
+  constructor(menuID, toggleID) {
     this.menu = getElement(menuID);
-    this.toggle = toggleID?getElement(toggleID):null;
+    this.toggle = toggleID ? getElement(toggleID) : null;
     hide(this.menu);
     this.hidden = true;
-    this.toggle.onclick=_=>{
+    this.toggle.onclick = (_) => {
       this.visible(this.hidden);
-    }
+    };
   }
-  hide(){
+  hide() {
     hide(this.menu);
     this.hidden = true;
   }
-  show(){
+  show() {
     show(this.menu);
     this.hidden = false;
   }
-  visible(show= true){
-    visibilityOf(this.menu,show);
+  visible(show = true) {
+    visibilityOf(this.menu, show);
     this.hidden = !show;
   }
 }
@@ -350,7 +394,7 @@ class Snackbar {
     this.bar = getElement(this.id);
     this.bar.innerHTML = `<span id="snackText"></span>
     <button id="snackButton"></button>`;
-    appendClass(this.bar,'fmt-animate-bottom');
+    appendClass(this.bar, "fmt-animate-bottom");
     this.text = getElement("snackText");
     this.button = getElement("snackButton");
     this.button.innerHTML = null;
@@ -461,31 +505,31 @@ const snackBar = (
       });
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min([text.length*3,15])*1000); //lengthwise timer.
+      }, min([text.length * 3, 15]) * 1000); //lengthwise timer.
     } else {
       setTimeout((_) => {
         new Snackbar().hide();
-      }, min([text.length*(3/2),15])*1000); //lengthwise timer for non action snackbar.
+      }, min([text.length * (3 / 2), 15]) * 1000); //lengthwise timer for non action snackbar.
     }
     snack.displayType(isNormal);
   }
   snack.existence(text != constant.nothing && text != null);
 };
 
-const min=(numbers = [])=>{
+const min = (numbers = []) => {
   let min = numbers[0];
-  numbers.forEach((number)=>{
-    min = min>number?number:min;
+  numbers.forEach((number) => {
+    min = min > number ? number : min;
   });
   return min;
-}
+};
 
 /**
  * Manages the ids of dialog box elements, to be used by Dialog class in particular.
  */
 class DialogID {
   viewId = "dialogView";
-  innerview = `<div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox"></div>`
+  innerview = `<div class="dialog-box container fmt-row fmt-animate-opacity" style="padding:22px 0;" id="dialogBox"></div>`;
   boxId = "dialogBox";
   imagedivId = "dialogImagediv";
   imageId = "dialogImage";
@@ -552,7 +596,7 @@ class DialogID {
 }
 
 /**
- * The class to display and maintain dialog boxes of schemester, used throughout the application. 
+ * The class to display and maintain dialog boxes of schemester, used throughout the application.
  * Creates, hides, modifies, validates, and does many jobs using built-in methods for dialog boxes.
  * @note Requires the basic html content of dialog box to be present in current file.
  */
@@ -563,8 +607,8 @@ class Dialog extends DialogID {
     this.view.innerHTML = this.innerview;
     setDefaultBackground(this.view);
     this.box = getElement(this.boxId);
-    appendClass(this.view,'dialog');
-    appendClass(this.view,'fmt-animate-opacity');
+    appendClass(this.view, "dialog");
+    appendClass(this.view, "fmt-animate-opacity");
     opacityOf(this.box, 1);
     this.setBoxHTML(this.basicDialogContent); //sets default dialog html (left image, right heading, subheading, inputs, actions)
     this.image = getElement(this.imageId);
@@ -603,8 +647,11 @@ class Dialog extends DialogID {
     this.inputField = Array(total);
     for (var k = 0; k < total; k++) {
       this.inputField[k] = new TextInput(
-        this.dialogInputFieldID(k),'','',
-        validateTypes ? validateTypes[k] : null,false
+        this.dialogInputFieldID(k),
+        "",
+        "",
+        validateTypes ? validateTypes[k] : null,
+        false
       );
     }
 
@@ -669,11 +716,11 @@ class Dialog extends DialogID {
     this.loader(false);
   }
 
-  allValid(){
-    const invalid = this.inputField.every((_,i)=>{
+  allValid() {
+    const invalid = this.inputField.every((_, i) => {
       return this.isValid(i);
     });
-    return invalid?true:false;
+    return invalid ? true : false;
   }
   isValid(inputFieldIndex = 0) {
     return stringIsValid(
@@ -681,17 +728,17 @@ class Dialog extends DialogID {
       this.getInputType(inputFieldIndex)
     );
   }
-  validate(inputFieldIndex = 0, validateAction = _=>{}) {
+  validate(inputFieldIndex = 0, validateAction = (_) => {}) {
     this.inputField[inputFieldIndex].validate((_) => {
       validateAction();
     });
   }
-  validateNow(inputFieldIndex = 0, validateAction = _=>{}) {
+  validateNow(inputFieldIndex = 0, validateAction = (_) => {}) {
     this.inputField[inputFieldIndex].validateNow((_) => {
       validateAction();
     });
   }
-  setDisplay(head, body = null, imgsrc  = null) {
+  setDisplay(head, body = null, imgsrc = null) {
     this.heading.innerHTML = head;
     this.subHeading.innerHTML = body;
     visibilityOf(this.image, imgsrc != null);
@@ -699,7 +746,7 @@ class Dialog extends DialogID {
       this.content.classList.remove("fmt-twothird");
     } else {
       this.content.classList.add("fmt-twothird");
-      if(typeof imgsrc == "string"){
+      if (typeof imgsrc == "string") {
         this.image.src = imgsrc;
       } else {
         getElement(this.imagedivId).classList.add("fmt-padding");
@@ -713,17 +760,17 @@ class Dialog extends DialogID {
     );
   }
 
-  loader(show = true,onloadAction=_=>{}) {
+  loader(show = true, onloadAction = (_) => {}) {
     visibilityOf(this.loading, show);
-    opacityOf(this.box,show?0.5:1);
-    if(this.dialogButtons){
+    opacityOf(this.box, show ? 0.5 : 1);
+    if (this.dialogButtons) {
       for (var k = 0; k < this.dialogButtons.length; k++) {
         visibilityOf(this.dialogButtons[k], !show);
       }
     }
-    if(this.inputField)
-      this.inputField.forEach((field,_)=>{
-        show?field.disableInput():field.enableInput();
+    if (this.inputField)
+      this.inputField.forEach((field, _) => {
+        show ? field.disableInput() : field.enableInput();
       });
     onloadAction();
   }
@@ -733,7 +780,10 @@ class Dialog extends DialogID {
       this.textFieldId,
       this.textInputAreaId,
       this.textInputErrorId,
-      validType.nonempty,false,true,true
+      validType.nonempty,
+      false,
+      true,
+      true
     );
     this.largeTextField.normalize();
     this.largeTextField.setInputAttrs(hint);
@@ -750,7 +800,7 @@ class Dialog extends DialogID {
   getInputType(index) {
     return this.inputField[index].type;
   }
-  showFieldError(index,errortext){
+  showFieldError(index, errortext) {
     this.inputField[index].showError(errortext);
   }
   getDialogChip(index) {
@@ -786,7 +836,7 @@ class Dialog extends DialogID {
   setBackgroundColorType(type = bodyType.positive) {
     setDefaultBackground(this.view, type);
   }
-  transparent(){
+  transparent() {
     this.view.style.backgroundColor = colors.transparent;
   }
   setBackgroundColor(color = colors.base) {
@@ -810,11 +860,11 @@ class Dialog extends DialogID {
   hide() {
     this.existence(false);
   }
-  hideOnClickAnywhere(canhideifclickedoutside = false){
-    if(canhideifclickedoutside){
-      this.view.onclick=_=>{
+  hideOnClickAnywhere(canhideifclickedoutside = false) {
+    if (canhideifclickedoutside) {
+      this.view.onclick = (_) => {
         this.hide();
-      }
+      };
     }
   }
   existence(show = true) {
@@ -860,49 +910,59 @@ const authenticateDialog = (
     }
     loginDialog.validate();
     loginDialog.validate(1);
-    loginDialog.onButtonClick(
-      [
-        (_) => {
-          if (!(loginDialog.isValid(0) && loginDialog.isValid(1))) {
-            loginDialog.validateNow(0);
-            loginDialog.validateNow(1);
-          } else {
-            loginDialog.loader();
-            let postpath;
-            switch(clientType){
-              case client.admin:{postpath = post.admin.self;}break;
-              case client.teacher:{postpath = post.teacher.self;}break;
-              case client.student:{postpath = post.student.self;}break;
-            }
-            postJsonData(postpath, {
-              target: "authenticate",
-              email: loginDialog.getInputValue(0),
-              password: loginDialog.getInputValue(1),
-            }).then((response) => {
-              if (response.event == code.auth.AUTH_SUCCESS) {
-                afterLogin();
-              } else {
-                loginDialog.loader(false);
-                switch (response.event) {
-                  case code.auth.EMAIL_INVALID: {
-                    return loginDialog
-                      .inputField[0]
-                      .showError("Wrong email address");
-                  }
-                  case code.auth.WRONG_PASSWORD: {
-                    return loginDialog.inputField[1].showError("Wrong password");
-                  }
-                }
-                snackBar("Authentication failed");
+    loginDialog.onButtonClick([
+      (_) => {
+        if (!(loginDialog.isValid(0) && loginDialog.isValid(1))) {
+          loginDialog.validateNow(0);
+          loginDialog.validateNow(1);
+        } else {
+          loginDialog.loader();
+          let postpath;
+          switch (clientType) {
+            case client.admin:
+              {
+                postpath = post.admin.self;
               }
-            });
+              break;
+            case client.teacher:
+              {
+                postpath = post.teacher.self;
+              }
+              break;
+            case client.student:
+              {
+                postpath = post.student.self;
+              }
+              break;
           }
-        },
-        (_) => {
-          loginDialog.hide();
+          postJsonData(postpath, {
+            target: "authenticate",
+            email: loginDialog.getInputValue(0),
+            password: loginDialog.getInputValue(1),
+          }).then((response) => {
+            if (response.event == code.auth.AUTH_SUCCESS) {
+              afterLogin();
+            } else {
+              loginDialog.loader(false);
+              switch (response.event) {
+                case code.auth.EMAIL_INVALID: {
+                  return loginDialog.inputField[0].showError(
+                    "Wrong email address"
+                  );
+                }
+                case code.auth.WRONG_PASSWORD: {
+                  return loginDialog.inputField[1].showError("Wrong password");
+                }
+              }
+              snackBar("Authentication failed");
+            }
+          });
         }
-      ]
-    );
+      },
+      (_) => {
+        loginDialog.hide();
+      },
+    ]);
   }
   loginDialog.existence(isShowing);
 };
@@ -910,7 +970,13 @@ const authenticateDialog = (
 /**
  * Dialog box to change password of client accoriding to the type of client.
  */
-const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackBar("Your password was changed.","Done")}) => {
+const resetPasswordDialog = (
+  clientType,
+  isShowing = true,
+  onpasschange = (_) => {
+    snackBar("Your password was changed.", "Done");
+  }
+) => {
   const resetDialog = new Dialog();
   resetDialog.setDisplay(
     "Reset password",
@@ -920,7 +986,7 @@ const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackB
     ["Create new password"],
     ["A strong password"],
     ["password"],
-    [validType.password],
+    [validType.password]
   );
   resetDialog.createActions(
     ["Update password", "Cancel"],
@@ -929,44 +995,54 @@ const resetPasswordDialog = (clientType,isShowing = true,onpasschange=_=>{snackB
 
   resetDialog.validate(0);
 
-  resetDialog.onButtonClick(
-    [
-      () => {
-        resetDialog.validateNow(0);
-        if (!resetDialog.isValid(0)) return;
-        resetDialog.loader();
-        let postpath;
-        switch(clientType){
-          case client.admin:postpath = post.admin.self;break;
-          case client.teacher:postpath = post.teacher.self;break;
-          case client.student:postpath = post.student.self;break;
-        }
-        postJsonData(postpath, {
-          target:"account",
-          action:code.action.CHANGE_PASSWORD,
-          newpassword:resetDialog.getInputValue(0)
-        }).then(response=>{
-          if(response.event == code.OK){
-            resetDialog.hide();
-            return onpasschange();
-          }
-          resetDialog.loader(false);
-          snackBar(response.event,'Report');
-        })
-      },
-      () => {
-        resetDialog.hide();
+  resetDialog.onButtonClick([
+    () => {
+      resetDialog.validateNow(0);
+      if (!resetDialog.isValid(0)) return;
+      resetDialog.loader();
+      let postpath;
+      switch (clientType) {
+        case client.admin:
+          postpath = post.admin.self;
+          break;
+        case client.teacher:
+          postpath = post.teacher.self;
+          break;
+        case client.student:
+          postpath = post.student.self;
+          break;
       }
-    ]
-  );
+      postJsonData(postpath, {
+        target: "account",
+        action: code.action.CHANGE_PASSWORD,
+        newpassword: resetDialog.getInputValue(0),
+      }).then((response) => {
+        if (response.event == code.OK) {
+          resetDialog.hide();
+          return onpasschange();
+        }
+        resetDialog.loader(false);
+        snackBar(response.event, "Report");
+      });
+    },
+    () => {
+      resetDialog.hide();
+    },
+  ]);
   resetDialog.existence(isShowing);
 };
 
 /**
  * Dialog box to change email of client accoriding to the type of client.
  */
-const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType == client.admin?location.reload():parent.location.reload()}) => {
-  authenticateDialog(clientType,(_) => {
+const changeEmailBox = (
+  clientType,
+  isShowing = true,
+  onemailchange = (_) => {
+    clientType == client.admin ? location.reload() : parent.location.reload();
+  }
+) => {
+  authenticateDialog(clientType, (_) => {
     const mailChange = new Dialog();
     mailChange.setDisplay(
       "Change Email Address",
@@ -983,48 +1059,51 @@ const changeEmailBox = (clientType,isShowing = true,onemailchange=_=>{clientType
       [actionType.negative, actionType.neutral]
     );
     mailChange.validate(0);
-    mailChange.onButtonClick(
-      [
-        () => {
-          if (!mailChange.isValid(0)) return mailChange.validateNow(0);
-          mailChange.loader();
-          let postpath;
-          switch(clientType){
-            case client.admin:postpath = post.admin.self;break;
-            case client.teacher:postpath = post.teacher.self;break;
-            case client.student:postpath = post.student.self;break;
-          }
-          postJsonData(postpath, {
-            target: "account",
-            action: code.action.CHANGE_ID,
-            newemail: mailChange.getInputValue(0),
-          }).then((response) => {
-            if (response.event == code.OK) {
-              return onemailchange();
-            }
-            mailChange.loader(false);
-            switch (response.event) {
-              case code.auth.SAME_EMAIL:
-                return mailChange
-                  .inputField[0]
-                  .showError("Already the same.");
-              case code.auth.USER_EXIST:
-                return mailChange
-                  .inputField[0]
-                  .showError("Account already exists.");
-              case code.auth.EMAIL_INVALID:
-                return mailChange
-                  .inputField[0]
-                  .showError("Invalid email address.");
-              default:snackBar('Action Failed');
-            }
-          });
-        },
-        () => {
-          mailChange.hide();
+    mailChange.onButtonClick([
+      () => {
+        if (!mailChange.isValid(0)) return mailChange.validateNow(0);
+        mailChange.loader();
+        let postpath;
+        switch (clientType) {
+          case client.admin:
+            postpath = post.admin.self;
+            break;
+          case client.teacher:
+            postpath = post.teacher.self;
+            break;
+          case client.student:
+            postpath = post.student.self;
+            break;
         }
-      ]
-    );
+        postJsonData(postpath, {
+          target: "account",
+          action: code.action.CHANGE_ID,
+          newemail: mailChange.getInputValue(0),
+        }).then((response) => {
+          if (response.event == code.OK) {
+            return onemailchange();
+          }
+          mailChange.loader(false);
+          switch (response.event) {
+            case code.auth.SAME_EMAIL:
+              return mailChange.inputField[0].showError("Already the same.");
+            case code.auth.USER_EXIST:
+              return mailChange.inputField[0].showError(
+                "Account already exists."
+              );
+            case code.auth.EMAIL_INVALID:
+              return mailChange.inputField[0].showError(
+                "Invalid email address."
+              );
+            default:
+              snackBar("Action Failed");
+          }
+        });
+      },
+      () => {
+        mailChange.hide();
+      },
+    ]);
     mailChange.existence(isShowing);
   });
 };
@@ -1066,24 +1145,33 @@ const hasAnyKeyNull = (data = {}) => {
 /**
  * Retrives current user session data and stores it in localstorage.
  */
-const getSessionUserData = async(clientType) => {
+const getSessionUserData = async (clientType) => {
   let data = {
     [constant.sessionID]: localStorage.getItem(constant.sessionID),
     [constant.sessionUID]: localStorage.getItem(constant.sessionUID),
     username: localStorage.getItem(key.username),
-    uiid: localStorage.getItem(key.uiid)=='null'?false:localStorage.getItem(key.uiid),
+    uiid:
+      localStorage.getItem(key.uiid) == "null"
+        ? false
+        : localStorage.getItem(key.uiid),
   };
-  if(hasAnyKeyNull(data)){
+  if (hasAnyKeyNull(data)) {
     let postpath;
-    switch(clientType){
-      case client.admin:postpath = post.admin.self;break;
-      case client.teacher:postpath = post.teacher.self;break;
-      case client.student:postpath = post.student.self;break;
+    switch (clientType) {
+      case client.admin:
+        postpath = post.admin.self;
+        break;
+      case client.teacher:
+        postpath = post.teacher.self;
+        break;
+      case client.student:
+        postpath = post.student.self;
+        break;
     }
     let result = await postJsonData(postpath, {
-      target:action.receive,
+      target: action.receive,
     });
-    if(result.event == code.auth.SESSION_INVALID){
+    if (result.event == code.auth.SESSION_INVALID) {
       return false;
     }
     saveDataLocally(result);
@@ -1092,7 +1180,6 @@ const getSessionUserData = async(clientType) => {
     return data;
   }
 };
-
 
 /**
  * The global feedback box for schemester. Uses Dialog class.
@@ -1121,10 +1208,7 @@ const feedBackBox = (
     "Describe everything",
     "Start typing your experience here"
   );
-  feedback.createRadios(
-    ["Feedback", "Error"],
-    error ? "Error" : "Feedback"
-  );
+  feedback.createRadios(["Feedback", "Error"], error ? "Error" : "Feedback");
 
   feedback.setBackgroundColorType(!error);
 
@@ -1132,16 +1216,14 @@ const feedBackBox = (
     ["Submit", "Abort"],
     [actionType.positive, actionType.negative]
   );
-  feedback.onChipClick(
-    [
-      (_) => {
-        feedback.setBackgroundColorType();
-      },
-      (_) => {
-        feedback.setBackgroundColorType(bodyType.negative);
-      }
-    ]
-  );
+  feedback.onChipClick([
+    (_) => {
+      feedback.setBackgroundColorType();
+    },
+    (_) => {
+      feedback.setBackgroundColorType(bodyType.negative);
+    },
+  ]);
 
   feedback.largeTextField.input.value = defaultText;
 
@@ -1150,33 +1232,35 @@ const feedBackBox = (
   });
   feedback.largeTextField.validate();
 
-  feedback.onButtonClick(
-    [
-      () => {
-        if (
-          !(
-            stringIsValid(feedback.getInputValue(0), validType.email) &&
-            stringIsValid(feedback.largeTextField.getInput())
-          )
-        ) {
-          feedback.largeTextField.validateNow();
-          feedback.inputField[0].validateNow((_) => {
-            feedback.largeTextField.inputFocus();
-          });
-        } else {
-          mailTo("schemester@outlook.in",`From ${feedback.getInputValue(0)}`,feedback.largeTextField.getInput());
-          feedback.hide();
-          snackBar(
-            "Thanks for the interaction. We'll look forward to that.",
-            "Hide"
-          );
-        }
-      },
-      () => {
-       feedback.hide();
+  feedback.onButtonClick([
+    () => {
+      if (
+        !(
+          stringIsValid(feedback.getInputValue(0), validType.email) &&
+          stringIsValid(feedback.largeTextField.getInput())
+        )
+      ) {
+        feedback.largeTextField.validateNow();
+        feedback.inputField[0].validateNow((_) => {
+          feedback.largeTextField.inputFocus();
+        });
+      } else {
+        mailTo(
+          "schemester@outlook.in",
+          `From ${feedback.getInputValue(0)}`,
+          feedback.largeTextField.getInput()
+        );
+        feedback.hide();
+        snackBar(
+          "Thanks for the interaction. We'll look forward to that.",
+          "Hide"
+        );
       }
-    ]
-  );
+    },
+    () => {
+      feedback.hide();
+    },
+  ]);
   feedback.existence(isShowing);
 };
 
@@ -1198,35 +1282,54 @@ const loadingBox = (
 /**
  * Can be used to show any confirmation via Dialog class.
  */
-const confirmDialog=(heading,body,imgsrc,yesaction=_=>{}, serious = false,noaction)=>{
+const confirmDialog = (
+  heading,
+  body,
+  imgsrc,
+  yesaction = (_) => {},
+  serious = false,
+  noaction
+) => {
   const confdialog = new Dialog();
-  confdialog.setDisplay(heading,body,imgsrc?imgsrc:serious?'/graphic/elements/warnicon.svg':null);
+  confdialog.setDisplay(
+    heading,
+    body,
+    imgsrc ? imgsrc : serious ? "/graphic/elements/warnicon.svg" : null
+  );
   confdialog.transparent();
-  if(serious){
+  if (serious) {
     confdialog.setHeadingColor(colors.negative);
   }
-  confdialog.createActions(['Proceed','Abort'],[serious?actionType.negative:actionType.positive,actionType.neutral]);
-  confdialog.onButtonClick([_=>{
-    yesaction();
-  },_=>{
-    noaction?noaction():confdialog.hide();
-  }]);
+  confdialog.createActions(
+    ["Proceed", "Abort"],
+    [serious ? actionType.negative : actionType.positive, actionType.neutral]
+  );
+  confdialog.onButtonClick([
+    (_) => {
+      yesaction();
+    },
+    (_) => {
+      noaction ? noaction() : confdialog.hide();
+    },
+  ]);
   confdialog.show();
-}
+};
 
 /**
  * Can be used to show any information via Dialog class.
  */
-const infoDialog=(heading,body,imgsrc,action)=>{
+const infoDialog = (heading, body, imgsrc, action) => {
   const infodialog = new Dialog();
-  infodialog.setDisplay(heading,body,imgsrc);
+  infodialog.setDisplay(heading, body, imgsrc);
   infodialog.transparent();
-  infodialog.createActions(['Got it'],[actionType.neutral]);
-  infodialog.onButtonClick([_=>{
-    action?action():infodialog.hide();
-  }]);
+  infodialog.createActions(["Got it"], [actionType.neutral]);
+  infodialog.onButtonClick([
+    (_) => {
+      action ? action() : infodialog.hide();
+    },
+  ]);
   infodialog.show();
-}
+};
 
 /**
  * Displays a timer on given element for which it remains disabled. This method however, doesn't actually disable the element,
@@ -1237,23 +1340,33 @@ const infoDialog=(heading,body,imgsrc,action)=>{
  * @param {Function} afterRestriction The method to be excecuted after restrication is lifted. (optional)
  * @param {Boolean} strict Defaults to false. If false, uses sessionStorage for timer (which means, timer will be removed if browser is closed), else uses localStorage.
  */
-const restrictElement=(element,duration,id,afterRestriction=_=>{},strict = false)=>{
+const restrictElement = (
+  element,
+  duration,
+  id,
+  afterRestriction = (_) => {},
+  strict = false
+) => {
   opacityOf(element, 0.5);
   const ogtext = element.innerHTML;
   let time = duration;
   const timer = setInterval(() => {
     time--;
-    strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.setItem(`restrict${id}`, time);
+    strict
+      ? localStorage.setItem(`restrict${id}`, time)
+      : sessionStorage.setItem(`restrict${id}`, time);
     element.innerHTML = `Wait for ${time} seconds.`;
     if (time == 0) {
       element.innerHTML = ogtext;
       opacityOf(element, 1);
-      strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.removeItem(`restrict${id}`);
+      strict
+        ? localStorage.setItem(`restrict${id}`, time)
+        : sessionStorage.removeItem(`restrict${id}`);
       afterRestriction();
       clearInterval(timer);
     }
   }, 1000);
-}
+};
 
 /**
  * Resumes a timer on given element for which it remains disabled, if set by [restrictElement] method. This method however, doesn't actually disable the element,
@@ -1264,27 +1377,36 @@ const restrictElement=(element,duration,id,afterRestriction=_=>{},strict = false
  * @param {Boolean} strict Defaults to false. If false, uses sessionStorage for timer (which means, timer will be removed if browser is closed), else uses localStorage.
  * @note The param id and strict must be same for the same element as set by ]restrictElement] method.
  */
-const resumeElementRestriction=(element,id,afterRestriction=_=>{},strict=false)=>{
+const resumeElementRestriction = (
+  element,
+  id,
+  afterRestriction = (_) => {},
+  strict = false
+) => {
   if (Number(sessionStorage.getItem(`restrict${id}`)) > 0) {
     opacityOf(element, 0.5);
     const ogtext = element.innerHTML;
     let time = Number(sessionStorage.getItem(`restrict${id}`));
     const timer = setInterval(() => {
       time--;
-      strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.setItem(`restrict${id}`, time);
+      strict
+        ? localStorage.setItem(`restrict${id}`, time)
+        : sessionStorage.setItem(`restrict${id}`, time);
       element.innerHTML = `Wait for ${time} seconds.`;
       if (time == 0) {
         element.innerHTML = ogtext;
         opacityOf(element, 1);
-        strict?localStorage.setItem(`restrict${id}`, time):sessionStorage.removeItem(`restrict${id}`);
+        strict
+          ? localStorage.setItem(`restrict${id}`, time)
+          : sessionStorage.removeItem(`restrict${id}`);
         afterRestriction();
         clearInterval(timer);
       }
     }, 1000);
   } else {
     afterRestriction();
-  }  
-}
+  }
+};
 
 /**
  * This method checks if session is valid for given client, and executes the provided methods accordingly.
@@ -1299,7 +1421,8 @@ const checkSessionValidation = (
   invalidAction = (_) => relocate(locate.homepage)
 ) => {
   switch (clientType) {
-    case client.admin:{
+    case client.admin:
+      {
         postJsonData(post.admin.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
@@ -1317,9 +1440,7 @@ const checkSessionValidation = (
           })
           .catch((error) => {
             clog(error);
-            snackBar(
-              'Network error',
-            );
+            snackBar("Network error");
             relocate(locate.homepage);
           });
       }
@@ -1343,15 +1464,14 @@ const checkSessionValidation = (
           })
           .catch((error) => {
             clog(error);
-            snackBar(
-              'Network error',
-            );
+            snackBar("Network error");
             relocate(locate.homepage);
           });
       }
       break;
-    case client.student:{
-      postJsonData(post.student.sessionValidate)
+    case client.student:
+      {
+        postJsonData(post.student.sessionValidate)
           .then((result) => {
             if (result.event == code.auth.SESSION_INVALID) {
               invalidAction();
@@ -1368,12 +1488,11 @@ const checkSessionValidation = (
           })
           .catch((error) => {
             clog(error);
-            snackBar(
-              'Network error',
-            );
+            snackBar("Network error");
             relocate(locate.homepage);
           });
-    }break;
+      }
+      break;
     default: {
       checkSessionValidation(client.admin, null, (_) => {
         checkSessionValidation(client.teacher, null, (_) => {
@@ -1388,60 +1507,81 @@ const checkSessionValidation = (
 
 const onSessionStatus = (
   clientType,
-  validAction = _=>{},
-  invalidAction = _=>{}
+  validAction = (_) => {},
+  invalidAction = (_) => {}
 ) => {
-  getSessionUserData(clientType).then(data=>{
-    if(!data){
-      invalidAction();
-    }else {
-      validAction(); 
-    }
-  }).catch(error=>{
-    if(!navigator.onLine){
-      snackBar("Couldn't connect to the network",null,false);
-    } else {
-      snackBar(error,'Report');
-    }
-  });
+  getSessionUserData(clientType)
+    .then((data) => {
+      if (!data) {
+        invalidAction();
+      } else {
+        validAction();
+      }
+    })
+    .catch((error) => {
+      if (!navigator.onLine) {
+        snackBar("Couldn't connect to the network", null, false);
+      } else {
+        snackBar(error, "Report");
+      }
+    });
 };
 
 const validateTextField = (
   textfield = new TextInput(),
   type = validType.nonempty,
-  afterValidAction =_=>{},
+  afterValidAction = (_) => {},
   ifmatchField = null
 ) => {
-  let error, matcher = constant.nothing;
+  let error,
+    matcher = constant.nothing;
   switch (type) {
-    case validType.name:{
-      error = "There has to be a name.";
-    }break;
-    case validType.email:{
-      error = "Invalid email address.";
-    }break;
-    case validType.phone:{
-      error = "Not a valid number"
-    }break;
-    case validType.number:{
-      error = "Not a valid number"
-    }break;
-    case validType.naturalnumber:{
-      error = "Must be greater than zero";
-    }break;
-    case validType.wholenumber:{
-      error = "Must be a positive number";
-    }break;
-    case validType.password:{
-      error = "Weak password, try something else."
-    }break;
-    case validType.match:{
-      error = "This one is different.";
-      matcher = ifmatchField.getInput();
-    }break;
-    case validType.weekday:{
-      error = "Invalid weekday"
-    }break;
+    case validType.name:
+      {
+        error = "There has to be a name.";
+      }
+      break;
+    case validType.email:
+      {
+        error = "Invalid email address.";
+      }
+      break;
+    case validType.phone:
+      {
+        error = "Not a valid number";
+      }
+      break;
+    case validType.number:
+      {
+        error = "Not a valid number";
+      }
+      break;
+    case validType.naturalnumber:
+      {
+        error = "Must be greater than zero";
+      }
+      break;
+    case validType.wholenumber:
+      {
+        error = "Must be a positive number";
+      }
+      break;
+    case validType.password:
+      {
+        error = "Weak password, try something else.";
+      }
+      break;
+    case validType.match:
+      {
+        error = "This one is different.";
+        matcher = ifmatchField.getInput();
+      }
+      break;
+    case validType.weekday:
+      {
+        error = "Invalid weekday";
+      }
+      break;
     default: {
       error = "This can't be empty";
     }
@@ -1509,35 +1649,47 @@ const finishSession = (
   }
 ) => {
   let postpath;
-  switch(clientType){
-    case client.admin:postpath = post.admin.auth;break;
-    case client.teacher:postpath = post.teacher.auth;break;
-    case client.student:postpath = post.student.auth;break;
+  switch (clientType) {
+    case client.admin:
+      postpath = post.admin.auth;
+      break;
+    case client.teacher:
+      postpath = post.teacher.auth;
+      break;
+    case client.student:
+      postpath = post.student.auth;
+      break;
   }
-  postJsonData(postpath,{
-    action:action.logout,
-  }).then((res) => {
-    if (res.event == code.auth.LOGGED_OUT) {
-      sessionStorage.clear();
-      clearLocalData();
-      return afterfinish();
-    }
-    snackBar("Failed to logout", "Try again", false, (_) => {
-      finishSession(clientType,_=>{afterfinish()});
+  postJsonData(postpath, {
+    action: action.logout,
+  })
+    .then((res) => {
+      if (res.event == code.auth.LOGGED_OUT) {
+        sessionStorage.clear();
+        clearLocalData();
+        return afterfinish();
+      }
+      snackBar("Failed to logout", "Try again", false, (_) => {
+        finishSession(clientType, (_) => {
+          afterfinish();
+        });
+      });
+      parent.location.reload();
+    })
+    .catch((e) => {
+      clog(e);
+      snackBar("Failed to logout", "Try again", false, (_) => {
+        finishSession(clientType, (_) => {
+          afterfinish();
+        });
+      });
+      parent.location.reload();
     });
-    parent.location.reload();
-  }).catch(e=>{
-    clog(e);
-    snackBar("Failed to logout", "Try again", false, (_) => {
-      finishSession(clientType,_=>{afterfinish()});
-    });
-    parent.location.reload();
-  });
 };
 
 /**
  * Clears key value pairs from using localStorage API of browser.
- * @param {Boolean} absolute Defaults to false. If true, will clear every key-value pair from localStorage, otherwise, will keep 
+ * @param {Boolean} absolute Defaults to false. If true, will clear every key-value pair from localStorage, otherwise, will keep
  * the globally applied setting storage (like theme value,etc.) and remove others.
  */
 const clearLocalData = (absolute = false) => {
@@ -1550,9 +1702,9 @@ const clearLocalData = (absolute = false) => {
     const hplogintab = localStorage.getItem(key.homelogintab);
     localStorage.clear();
     theme.setTheme(t);
-    localStorage.setItem(key.teacher.rememberuiid,tuiid);
-    localStorage.setItem(key.student.rememberuiid,suiid);
-    localStorage.setItem(key.homelogintab,hplogintab);
+    localStorage.setItem(key.teacher.rememberuiid, tuiid);
+    localStorage.setItem(key.student.rememberuiid, suiid);
+    localStorage.setItem(key.homelogintab, hplogintab);
   }
 };
 
@@ -1576,7 +1728,8 @@ const setFieldSetof = (
   );
 };
 
-const setClass = (element = new HTMLElement(), classname) => (element.className = classname);
+const setClass = (element = new HTMLElement(), classname) =>
+  (element.className = classname);
 
 const setClassNames = (
   element,
@@ -1588,15 +1741,15 @@ const setClassNames = (
 ) => {
   switch (condition) {
     case actionType.positive:
-      return element.className = normalClass;
+      return (element.className = normalClass);
     case actionType.negative:
-      return element.className = errorClass;
+      return (element.className = errorClass);
     case actionType.warning:
-      return element.className = warnClass;
+      return (element.className = warnClass);
     case actionType.active:
-      return element.className = activeClass;
+      return (element.className = activeClass);
     default:
-      return element.className = condition?normalClass:errorClass;
+      return (element.className = condition ? normalClass : errorClass);
   }
 };
 
@@ -1640,7 +1793,7 @@ const hideElement = (elements = [], index = null, showRest = true) => {
   }
 };
 
-const hideElementById=(id)=>hide(getElement(id));
+const hideElementById = (id) => hide(getElement(id));
 
 const elementFadeVisibility = (element, isVisible) => {
   replaceClass(
@@ -1716,18 +1869,21 @@ const opacityOf = (element = new HTMLElement(), value = 1) =>
  * @param {Number} value The numeric value of opacity of the element(s) to set. Defaults to 1. Must be >=0 & <=1.
  * @param {Number} index The particular index element's opacity to be set. If not provided, will set the opacity for all elements.
  */
-const opacityOfAll = (elements = [], value = 1,index = null) => index!=null? opacityOf(elements[index],value):elements.forEach((element)=>opacityOf(element,value))
+const opacityOfAll = (elements = [], value = 1, index = null) =>
+  index != null
+    ? opacityOf(elements[index], value)
+    : elements.forEach((element) => opacityOf(element, value));
 
 /**
  * Controls visiblity of the given HTML element, as per the condition. (using hidden attribute of HTMLElement)
  * @param {HTMLElement} element The element whose visibility is to be toggled.
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown).
  */
-const visibilityOf = (element, visible = true) =>{
-  if(!element) return;
+const visibilityOf = (element, visible = true) => {
+  if (!element) return;
   element.hidden = !visible;
-  element.style.display = visible?constant.show:constant.hide;
-}
+  element.style.display = visible ? constant.show : constant.hide;
+};
 
 /**
  * Controls visiblity of the HTML elements in given array, as per the condition. (using hidden attribute of HTMLElement).
@@ -1735,15 +1891,15 @@ const visibilityOf = (element, visible = true) =>{
  * @param {Boolean} visible The boolean value to show or hide the given element. Defaults to true (shown). The visibility of rest elements will be toggled oppositly.
  * @param {Number} index If not set, all the elements will have the same visibility state, else the element at given index will have the provided visibility state, and others opposite.
  */
-const visibilityOfAll = (elements = [], visible = true, index = null) =>{
+const visibilityOfAll = (elements = [], visible = true, index = null) => {
   index != null
-    ?elements.forEach((element, e) => {
-      visibilityOf(element, e==index);
-    })
+    ? elements.forEach((element, e) => {
+        visibilityOf(element, e == index);
+      })
     : elements.forEach((element, _) => {
-      visibilityOf(element, visible);
-    });
-}
+        visibilityOf(element, visible);
+      });
+};
 
 /** Hides the given element
  * @param {HTMLElement} element The element to be hidden.
@@ -1754,9 +1910,14 @@ const hide = (element = new HTMLElement()) => visibilityOf(element, false);
  * @param {Array} elements The array element(s) to be hidden
  * @param {Number} index The particular index element to be hidden. Will not affect visiblity of other elements if provided.
  */
-const hideAll = (elements = [],index = null) => index!=null?hide(elements[index]):elements.forEach((element)=>{hide(element)});
+const hideAll = (elements = [], index = null) =>
+  index != null
+    ? hide(elements[index])
+    : elements.forEach((element) => {
+        hide(element);
+      });
 
-/** Shows the given element 
+/** Shows the given element
  * @param {HTMLElement} element The element to be shown
  */
 const show = (element = new HTMLElement()) => visibilityOf(element);
@@ -1765,14 +1926,19 @@ const show = (element = new HTMLElement()) => visibilityOf(element);
  * @param {Array} elements The array element(s) to be shown
  * @param {Number} index The particular index element to be shown. Will not affect visiblity of other elements if provided.
  */
-const showAll = (elements = [],index = null) => index!=null?show(elements[index]):elements.forEach((element)=>{show(element)});
+const showAll = (elements = [], index = null) =>
+  index != null
+    ? show(elements[index])
+    : elements.forEach((element) => {
+        show(element);
+      });
 
 /**Checks if element is visible or not
  * @param {HTMLElement} element The element whose visibility is to be determined
  * @returns {Boolean} If element visible, true, or false otherwise.
  */
 const isVisible = (element = new HTMLElement()) =>
-element.style.display != constant.hide || !element.hidden;
+  element.style.display != constant.hide || !element.hidden;
 
 /** Checks if element(s) in given array is/are visible or not.
  * @param {Array} elements The array of elements whose visibility is to be determined for single or each.
@@ -1783,8 +1949,8 @@ const areVisible = (elements = [], index = null) =>
   index != null
     ? elements[index].style.display == constant.show
     : elements.some((_, e) => {
-      return areVisible(elements,e)
-    });
+        return areVisible(elements, e);
+      });
 
 /**
  * Returns name of week day as per index.
@@ -1792,10 +1958,9 @@ const areVisible = (elements = [], index = null) =>
  * @returns {String} The day name from weekdays
  */
 const getDayName = (dIndex = Number) =>
-dIndex < constant.weekdays.length && dIndex >= 0
-? constant.weekdays[dIndex]
-: null;
-
+  dIndex < constant.weekdays.length && dIndex >= 0
+    ? constant.weekdays[dIndex]
+    : null;
 
 /**
  * Returns name of month as per index.
@@ -1809,7 +1974,7 @@ const getMonthName = (mIndex = Number) =>
 
 /**
  * Shorthand for window.document.getElementById() method
- * @param {String} id The id of HTMLElement to return 
+ * @param {String} id The id of HTMLElement to return
  * @returns {HTMLElement} The element associated with provided id
  */
 const getElement = (id) => document.getElementById(id);
@@ -1819,7 +1984,8 @@ const getElement = (id) => document.getElementById(id);
  * @param {String} path The path or link to be passed in replace() function of window.location
  * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
  */
-const relocate = (path = String, data = null) => window.location.replace(path+getRequestBody(data));
+const relocate = (path = String, data = null) =>
+  window.location.replace(path + getRequestBody(data));
 
 /**
  * This function extends the ability of window.location.replace(), by allowing you to provide additional link data passed as query along with the link.
@@ -1827,35 +1993,40 @@ const relocate = (path = String, data = null) => window.location.replace(path+ge
  * @param {String} path The path or link to be passed in replace() function of window.location
  * @param {JSON} data The data to be passed with the link as query. The data should be provided as JSON key:value pairs. E.g. {question:'How?',response:'somehow'}.
  */
-const relocateParent = (path, data = null) => window.parent.location.replace(path+getRequestBody(data));
+const relocateParent = (path, data = null) =>
+  window.parent.location.replace(path + getRequestBody(data));
 
 /**
  * Sets location as per given params
  * @param {String} href The base url of location
  * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
  */
-const refer = (href, data = null) => window.location.href = href+getRequestBody(data);
+const refer = (href, data = null) =>
+  (window.location.href = href + getRequestBody(data));
 
 /**
  * Opens link in a new tab as per given params
  * @param {String} href The base url of location
  * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
  */
-const referTab = (href, data = null) => window.open(href+getRequestBody(data));
+const referTab = (href, data = null) =>
+  window.open(href + getRequestBody(data));
 
 /**
  * Sets parent location href as per given params. Useful in loading a url from an iframe source.
  * @param {String} href The base url of location
  * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
  */
-const referParent = (href, data = null) => window.parent.location.href = href+getRequestBody(data);
+const referParent = (href, data = null) =>
+  (window.parent.location.href = href + getRequestBody(data));
 
 /**
  * Opens a link in new tab as per given params. Useful in opening a new tab from an iframe source.
  * @param {String} href The base url of location
  * @param {JSON} data The optional parameters to be attached with url, like in GET type requests.
  */
-const referParentTab = (href, data = null) => window.parent.open(href+getRequestBody(data));
+const referParentTab = (href, data = null) =>
+  window.parent.open(href + getRequestBody(data));
 
 /**
  * Sends post request using browser fetch API, with json type body, and receives response in JSON format.
@@ -1864,10 +2035,10 @@ const referParentTab = (href, data = null) => window.parent.open(href+getRequest
  * @returns {Promise} response object as a promise.
  */
 const postJsonData = async (url = String, data = {}) => {
-  try{
-    data['acsrf'] = getElement("acsrf").innerHTML;
-  }catch{};
-  try{
+  try {
+    data["acsrf"] = getElement("acsrf").innerHTML;
+  } catch {}
+  try {
     if (window.fetch) {
       const response = await fetch(url, {
         method: constant.post,
@@ -1879,15 +2050,24 @@ const postJsonData = async (url = String, data = {}) => {
         body: JSON.stringify(data),
       });
       const content = await response.json();
-      if(content.result.event == code.auth.SESSION_INVALID&&![post.admin.sessionValidate,post.teacher.sessionValidate,post.student.sessionValidate].includes(url)){
+      if (
+        content.result.event == code.auth.SESSION_INVALID &&
+        ![
+          post.admin.sessionValidate,
+          post.teacher.sessionValidate,
+          post.student.sessionValidate,
+        ].includes(url)
+      ) {
         return window.parent.location.reload();
       }
       return content.result;
     }
-  } catch (error){
+  } catch (error) {
     clog(error);
-    if(!navigator.onLine){return snackBar('Network Error','',false)}
-    snackBar(error,'Report');
+    if (!navigator.onLine) {
+      return snackBar("Network Error", "", false);
+    }
+    snackBar(error, "Report");
   }
 };
 
@@ -1898,7 +2078,7 @@ const postJsonData = async (url = String, data = {}) => {
  * @return {String} The query in string from, ready to be concatenated with some action URL of form kind.
  */
 const getRequestBody = (data = {}, isPost = false) => {
-  if(!data) return constant.nothing;
+  if (!data) return constant.nothing;
   let i = 0;
   let body = constant.nothing;
   for (let key in data) {
@@ -1924,18 +2104,25 @@ const getRequestBody = (data = {}, isPost = false) => {
  * @param {String} cc CC address
  * @param {String} bcc BCC address
  */
-const mailTo = (to,subject = constant.nothing,body = constant.nothing,cc=constant.nothing,bcc=constant.nothing) => refer(`mailto:${to}`,{
-  subject: subject,
-  body: body,
-  cc:cc,
-  bcc:bcc,
-});
+const mailTo = (
+  to,
+  subject = constant.nothing,
+  body = constant.nothing,
+  cc = constant.nothing,
+  bcc = constant.nothing
+) =>
+  refer(`mailto:${to}`, {
+    subject: subject,
+    body: body,
+    cc: cc,
+    bcc: bcc,
+  });
 
 /**
  * To use browser get method to trigger calling href.
  * @param {String} to The contact number of receiver
  */
-const callTo = (to) => refer(`tel:${to}`); 
+const callTo = (to) => refer(`tel:${to}`);
 
 const idbSupported = () => {
   if (!window.indexedDB) {
@@ -1959,54 +2146,57 @@ const idbSupported = () => {
  * @param {Boolean} html If true, then the suffex will be added as an html <sup> element, else simply concatenated as string.
  * @returns {String} Suffixed number, html or simple string, based on previous parameter.
  */
-const addNumberSuffixHTML = (number = Number,html = true) => {
+const addNumberSuffixHTML = (number = Number, html = true) => {
   var str = String(number);
   switch (number) {
     case 1:
-      return html?number + "<sup>st</sup>":number + "st";
+      return html ? number + "<sup>st</sup>" : number + "st";
     case 2:
-      return html?number + "<sup>nd</sup>":number + "nd";
+      return html ? number + "<sup>nd</sup>" : number + "nd";
     case 3:
-      return html?number + "<sup>rd</sup>":number + "rd";
+      return html ? number + "<sup>rd</sup>" : number + "rd";
     default: {
       if (number > 9) {
-        if (str.charAt(str.length - 2) == "1") return html?number + "<sup>th</sup>":number + "th";
-        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)),html);
+        if (str.charAt(str.length - 2) == "1")
+          return html ? number + "<sup>th</sup>" : number + "th";
+        return addNumberSuffixHTML(Number(str.charAt(str.length - 1)), html);
       } else {
-        return html?number + "<sup>th</sup>":number + "th";
+        return html ? number + "<sup>th</sup>" : number + "th";
       }
     }
   }
 };
 
-const backHistory=(elementID = "backhistory")=>{
-  getElement(elementID).onclick=_=>{
-    tryCalling(()=>{
+const backHistory = (elementID = "backhistory") => {
+  getElement(elementID).onclick = (_) => {
+    tryCalling(() => {
       showLoader();
     });
-    if(window.parent.history.length>1){
-      window.parent.history.back()
+    if (window.parent.history.length > 1) {
+      window.parent.history.back();
     } else {
       backRoot(elementID);
       getElement(elementID).click();
     }
-  }
-}
+  };
+};
 
-const backRoot=(elementID = "backroot",data = {})=>{
-  getElement(elementID).onclick=_=>{
-    elementID.includes("parent")?relocateParent(locate.root,data):relocate(locate.root,data);
-  }
-}
+const backRoot = (elementID = "backroot", data = {}) => {
+  getElement(elementID).onclick = (_) => {
+    elementID.includes("parent")
+      ? relocateParent(locate.root, data)
+      : relocate(locate.root, data);
+  };
+};
 
 /**
  * @deprecated This method is deprecated as of October 3, 2020 23:53 (IST). See the new addNumberSuffixHTML(Number, Boolean) method, on which this method relies too now.
- * 
+ *
  * Adds string suffix to number passed (1->1st, etc).
  * @param {Number} number The number to be suffixed
  * @returns {String} Suffixed number as string.
  */
-const addNumberSuffix = (number = Number) => addNumberSuffixHTML(number,false);
+const addNumberSuffix = (number = Number) => addNumberSuffixHTML(number, false);
 
 /**
  * Returns phrase readable form of date from standard Schemester form of date.
@@ -2015,26 +2205,76 @@ const addNumberSuffix = (number = Number) => addNumberSuffixHTML(number,false);
  */
 const getProperDate = (dateTillMillis) => {
   dateTillMillis = String(dateTillMillis);
-  return `${getMonthName(dateTillMillis.substring(4, 6) - 1)} ${dateTillMillis.substring(6, 8)}, ${dateTillMillis.substring(0, 4)} at ${dateTillMillis.substring(8, 10)}:${dateTillMillis.substring(10, 12)} hours ${dateTillMillis.substring(12, 14)} seconds`;
+  return `${getMonthName(
+    dateTillMillis.substring(4, 6) - 1
+  )} ${dateTillMillis.substring(6, 8)}, ${dateTillMillis.substring(
+    0,
+    4
+  )} at ${dateTillMillis.substring(8, 10)}:${dateTillMillis.substring(
+    10,
+    12
+  )} hours ${dateTillMillis.substring(12, 14)} seconds`;
 };
 
-const tryCalling=(method=_=>{},catchMethod=_=>{})=>{try{method()}catch(e){catchMethod();return e;}};
+const tryCalling = (method = (_) => {}, catchMethod = (_) => {}) => {
+  try {
+    method();
+  } catch (e) {
+    catchMethod();
+    return e;
+  }
+};
+
+const registerServiceWorker = () => {
+  if ("serviceWorker" in window.navigator) {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => {
+        console.log("SW:1:", reg.scope);
+        reg.onupdatefound = () => {
+          var newServiceWorker = reg.installing;
+          console.log(newServiceWorker.state);
+          newServiceWorker.onstatechange = () => {
+            if (newServiceWorker.state === "installed") {
+              if (
+                confirm(
+                  "Updates are available, would you like to reload to update?"
+                )
+              ) {
+                newServiceWorker.postMessage("skipWaiting");
+              }
+            }
+          };
+        };
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
+      })
+      .catch((err) => {
+        console.log("SW:0:", err);
+      });
+  }
+}
 
 /**
  * Returns HH:MM/HH:MM:ss as HHMM/HHMMss
  */
-const getNumericTime=(time)=> Number(String(time).replace(':',constant.nothing));
+const getNumericTime = (time) =>
+  Number(String(time).replace(":", constant.nothing));
 
 const getLogInfo = (code, message) => `type:${code}\ninfo:${message}\n`;
 
 //The following methods return templates for certain elements to be inserted dynamically.
 
-const getButton = (id,label,type=actionType.positive)=>`<button class="${actionType.getButtonStyle(type)}" id="${id}">${label}</button>`;
+const getButton = (id, label, type = actionType.positive) =>
+  `<button class="${actionType.getButtonStyle(
+    type
+  )}" id="${id}">${label}</button>`;
 const getRadioChip = (labelID, label, radioID) =>
   `<label class="radio-container" id="${labelID}">${label}<input type="radio" name="dialogChip" id="${radioID}"><span class="checkmark"></span></label>`;
 const getCheckBox = (labelID, label, checkboxID) =>
   `<label class="check-container" id="${labelID}">${label}<input type="checkbox" id="${checkboxID}"><span class="tickmark-positive"></span></label>`;
-const getSwitch = (labelID,label,checkID,switchcontainerID,switchviewID)=>
+const getSwitch = (labelID, label, checkID, switchcontainerID, switchviewID) =>
   `<span class="fmt-row switch-view" id="${switchcontainerID}">
     <span class="switch-text" id="${labelID}">${label}</span>
     <label class="switch-container">
@@ -2050,7 +2290,11 @@ const getDialogButton = (buttonClass, buttonID, label) =>
 const getDialogLoaderSmall = (loaderID) =>
   `<img class="fmt-spin-fast fmt-right" width="50" src="/graphic/blueLoader.svg" id="${loaderID}"/>`;
 
-const getLoader=(id,size = 30,blue = true) =>`<img class="fmt-spin-fast" width="${size}" src="/graphic/${blue?'blueLoader':'onethreeload'}.svg" id="${id}"/>`;
+const getLoader = (id, size = 30, blue = true) =>
+  `<img class="fmt-spin-fast" width="${size}" src="/graphic/${
+    blue ? "blueLoader" : "onethreeload"
+  }.svg" id="${id}"/>`;
 
-const editIcon=(size)=>`<img width="${size}" src="/graphic/elements/editicon.svg"/>`
-const appicon=(size=256)=>`/graphic/icons/schemester${size}.png`
+const editIcon = (size) =>
+  `<img width="${size}" src="/graphic/elements/editicon.svg"/>`;
+const appicon = (size = 256) => `/graphic/icons/schemester${size}.png`;

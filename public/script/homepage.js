@@ -89,32 +89,5 @@ window.onload = _=> {
     theme.setNav();
     window.app = new Homepage();
     return;
-    if ("serviceWorker" in window.navigator) {
-        navigator.serviceWorker.register("/sw.js")
-          .then((reg) => {
-            console.log("SW:1:", reg.scope);
-            reg.onupdatefound = () => {
-              var newServiceWorker = reg.installing;
-              console.log(newServiceWorker.state);
-              newServiceWorker.onstatechange = ()=> {
-                if (newServiceWorker.state === "installed") {
-                  if (
-                    confirm("Updates are available, would you like to reload to update?")
-                  ) {
-                    newServiceWorker.postMessage("skipWaiting");
-                  }
-                }
-              };
-            };
-            navigator.serviceWorker.addEventListener(
-              "controllerchange",
-              ()=> {
-                window.location.reload();
-              }
-            );
-          })
-          .catch((err) => {
-            console.log("SW:0:", err);
-          });
-    }
+    registerServiceWorker();
 };
