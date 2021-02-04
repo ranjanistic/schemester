@@ -17,9 +17,20 @@
     <script src="/script/codes.js"></script>
     <script src="/script/main.js"></script>
     <script src="/script/tour.js"></script>
-    <title>Tour · Schemester</title>
+    <title>Tour · <%= appname %></title>
 </head>
 <body class="fmt-center">
-    <button class="positive-button" id="backroot">Return</button>
+    <% for (let index = 1; index <= total; index++) { %>
+        <img width="100%" src="/graphic/tour/<%= filename %><%= index %>.svg" ></img>
+    <% } %>
+    <div class="fmt-top fmt-opacity fmt-hover-opacity-off ">
+        <button class="neutral-button questrial fmt-right" id="backroot">Home</button>
+        <button class="neutral-button questrial fmt-right" id="share">Share</button>
+    </div>
+    <span hidden>
+        <span id="appname"><%= appname %></span>
+        <a href="<%= site %>"><span id="site"><%= site %></span></a>
+    </span>
+    <div id="snackBar"></div>
 </body>
 </html>

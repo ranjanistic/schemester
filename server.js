@@ -38,7 +38,7 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
     render(res,view.homepage);
   });
   server.get(get.tour,(req,res)=>{
-    render(res,view.tour);
+    render(res,view.tour,{filename:"slide",total:7});
   });
   server.get(get.offline,(_,res)=>{
     render(res,view.offline);
