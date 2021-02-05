@@ -3,7 +3,7 @@ class TeacherFiller {
   constructor() {
     sessionStorage.clear();
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-    new ThemeSwitch('darkmode');
+    new ThemeSwitch("darkmode");
     this.data = new ReceiveData();
     this.view = getElement("workbox");
     this.back = getElement("back");
@@ -13,15 +13,17 @@ class TeacherFiller {
       };
     } else {
       this.back.onclick = (_) => {
-        relocate(locate.root,{client:client.teacher});
+        relocate(locate.root, { client: client.teacher });
       };
     }
 
     this.uploadfile = getElement("uploadschedule");
-    this.uploadfile.onclick=_=>{
+    this.uploadfile.onclick = (_) => {
       this.updial = new Dialog();
       this.updial.transparent();
-      this.updial.setDisplay('Upload schedule',`
+      this.updial.setDisplay(
+        "Upload schedule",
+        `
       <center>If you have already a backup file (.json) of schedule, then you can upload it here to directly create schedule from it.</center>
       <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_NNNNNNNNNNNNNNNNN.json</div>
         <fieldset class="text-field" id="fileuploadfield">
@@ -29,35 +31,45 @@ class TeacherFiller {
           <input class="text-input" required type="file" id="fileuploadfieldinput" name="schedulefileupload">
           <span class="error-caption" id="fileuploadfielderror"></span>
         </fieldset>
-      `);
-      const fileinput = new TextInput("fileuploadfield",false);
-      this.updial.createActions(['Create Schedule','Cancel'],[actionType.positive,actionType.neutral]);
-      fileinput.input.addEventListener('change',(event)=>{
-        var files = event.target.files;
-        var file = files[0];           
-        var reader = new FileReader();
-        reader.onload = (eve)=> {
-          try{
-            teacher = JSON.parse(eve.target.result);
-          }catch(e){
-            clog(e);
-            fileinput.showError('Problem with your file');
+      `
+      );
+      const fileinput = new TextInput("fileuploadfield", false);
+      this.updial.createActions(
+        ["Create Schedule", "Cancel"],
+        [actionType.positive, actionType.neutral]
+      );
+      fileinput.input.addEventListener(
+        "change",
+        (event) => {
+          var files = event.target.files;
+          var file = files[0];
+          var reader = new FileReader();
+          reader.onload = (eve) => {
+            try {
+              teacher = JSON.parse(eve.target.result);
+            } catch (e) {
+              clog(e);
+              fileinput.showError("Problem with your file");
+            }
+          };
+          reader.readAsText(file);
+        },
+        false
+      );
+      this.updial.onButtonClick([
+        (_) => {
+          if (!teacher) {
+            snackBar("File corrupt", "Help", false);
+          } else {
+            this.fillScheduleFromfile(teacher);
           }
-        }
-        reader.readAsText(file)
-      },false);
-      this.updial.onButtonClick([_=>{
-        if(!teacher){
-          snackBar('File corrupt','Help',false);
-        }else{
-          this.fillScheduleFromfile(teacher);
-
-        }
-      },_=>{
-        this.updial.hide();
-      }])
+        },
+        (_) => {
+          this.updial.hide();
+        },
+      ]);
       this.updial.show();
-    }
+    };
 
     this.logout = getElement("logout");
     this.next = getElement("nextSchedule");
@@ -186,25 +198,32 @@ class TeacherFiller {
     };
   }
 
-  fillScheduleFromfile(teacher){
-    try{
-    teacher.days.forEach(day=>{
-      day.period.forEach((period,p)=>{
-        sessionStorage.setItem(`${day.dayIndex}classname${p}`, period.classname);
-        sessionStorage.setItem(`${day.dayIndex}subject${p}`, period.subject);
+  fillScheduleFromfile(teacher) {
+    try {
+      teacher.days.forEach((day) => {
+        day.period.forEach((period, p) => {
+          sessionStorage.setItem(
+            `${day.dayIndex}classname${p}`,
+            period.classname
+          );
+          sessionStorage.setItem(`${day.dayIndex}subject${p}`, period.subject);
+        });
       });
-    });
-    this.teachername = teacher.teachername;
-    sessionStorage.setItem('teacherID',teacher.teacherID)
-    this.teacherIDField.setInput(teacher.teacherID);
-    this.fillFromSession();
-    this.updial.hide();
-    this.uploadfile.innerHTML = 'File Selected';
-    opacityOf(this.uploadfile,0.5);
-    this.uploadfile.onclick=_=>{snackBar('A file is already selected','Deselect File',true,_=>{location.reload()})}
-    }catch(e){
+      this.teachername = teacher.teachername;
+      sessionStorage.setItem("teacherID", teacher.teacherID);
+      this.teacherIDField.setInput(teacher.teacherID);
+      this.fillFromSession();
+      this.updial.hide();
+      this.uploadfile.innerHTML = "File Selected";
+      opacityOf(this.uploadfile, 0.5);
+      this.uploadfile.onclick = (_) => {
+        snackBar("A file is already selected", "Deselect File", true, (_) => {
+          location.reload();
+        });
+      };
+    } catch (e) {
       clog(e);
-      snackBar(`File corrupted`,'Report',false);
+      snackBar(`File corrupted`, "Report", false);
     }
   }
 
@@ -272,7 +291,7 @@ class TeacherFiller {
     };
     postJsonData(post.teacher.schedule, {
       action: action.upload,
-      teachername:this.data.teacherName,
+      teachername: this.data.teacherName,
       teacherID: sessionStorage.getItem("teacherID"),
       data: data,
     })
@@ -322,6 +341,7 @@ class TeacherFiller {
         this.handleScheduleResponse(response);
       })
       .catch((error) => {
+        this.load(false);
         if (!navigator.onLine) {
           snackBar(
             `Network error, Unable to save.`,
@@ -362,51 +382,73 @@ class TeacherFiller {
     }
   };
   handleScheduleResponse(response) {
-      if(response.event == code.schedule.SCHEDULE_CREATED){
-          for (let i = 0; i < this.data.totalPeriods; i++) {
-            this.teacherClass[i].activate();
-            this.teacherSubject[i].activate();
-          }
-          this.dayCount++;
-          show(this.previous);
-          if (this.dayCount < this.data.totalDays.length) {
-            this.setDayCaption();
-            this.setDayView();
-            this.clearForm();
-            this.fillFromSession();
-            if (this.data.isAdmin) {
-              this.teacherIDField.setInput(sessionStorage.getItem("teacherID"));
-              this.teacherIDField.disableInput();
-              this.teacherIDField.activate();
-            }
-            this.load(false);
-          } else {
-            window.onbeforeunload = () => {};
-            if (this.data.isAdmin) {
-              postJsonData(post.admin.email,{
-                to:sessionStorage.getItem("teacherID"),
-                target:client.teacher,
-                type:'personalinvite'
-              }).then(res=>{
-                if(res.event == code.mail.MAIL_SENT){
-                  snackBar(`Request email has been sent to ${sessionStorage.getItem("teacherID")}.`,'OK');
-                  return new ScheduleComplete(this.data);
-                }
-                throw res;
-              }).catch(e=>{
-                clog(e);
-                snackBar('Failed to send email. You can resend it from teachers view.',null,false);
-                return new ScheduleComplete(this.data);
-              })
-            } else if (this.data.isTeacher) {
-              return location.reload();
-            }
-          }
-          return;
+    if (response.event == code.schedule.SCHEDULE_CREATED) {
+      for (let i = 0; i < this.data.totalPeriods; i++) {
+        this.teacherClass[i].activate();
+        this.teacherSubject[i].activate();
       }
-    switch(response.event){
-      case code.schedule.SCHEDULE_EXISTS:{
+      this.dayCount++;
+      show(this.previous);
+      if (this.dayCount < this.data.totalDays.length) {
+        this.setDayCaption();
+        this.setDayView();
+        this.clearForm();
+        this.fillFromSession();
+        if (this.data.isAdmin) {
+          this.teacherIDField.setInput(sessionStorage.getItem("teacherID"));
+          this.teacherIDField.disableInput();
+          this.teacherIDField.activate();
+        }
         this.load(false);
+      } else {
+        window.onbeforeunload = () => {};
+        if (this.data.isAdmin) {
+          postJsonData(post.admin.email, {
+            to: sessionStorage.getItem("teacherID"),
+            target: client.teacher,
+            type: "personalinvite",
+          })
+            .then((res) => {
+              if (res.event == code.mail.MAIL_SENT) {
+                snackBar(
+                  `Request email has been sent to ${sessionStorage.getItem(
+                    "teacherID"
+                  )}.`,
+                  "OK"
+                );
+                return new ScheduleComplete(this.data);
+              }
+              if (res.event == code.OK) {
+                snackBar(
+                  `${sessionStorage.getItem(
+                    "teacherID"
+                  )}'s schedule successfully created.`,
+                  "OK"
+                );
+                return new ScheduleComplete(this.data);
+              }
+              throw res;
+            })
+            .catch((e) => {
+              clog(e);
+              snackBar(
+                "Failed to send email. You can resend it from teachers view.",
+                null,
+                false
+              );
+              return new ScheduleComplete(this.data);
+            });
+        } else if (this.data.isTeacher) {
+          return location.reload();
+        }
+      }
+      return;
+    }
+
+    this.load(false);
+    switch (response.event) {
+      case code.schedule.SCHEDULE_EXISTS:
+        {
           if (this.data.isAdmin) {
             snackBar(
               `Schedule for ${sessionStorage.getItem(
@@ -418,7 +460,7 @@ class TeacherFiller {
                 referTab(locate.admin.session, {
                   target: locate.admin.target.viewschedule,
                   type: client.teacher,
-                  [response.id ?"teacherID":"id"]: response.uid
+                  [response.id ? "teacherID" : "id"]: response.uid
                     ? response.uid
                     : response.id,
                 });
@@ -427,7 +469,8 @@ class TeacherFiller {
           }
         }
         break;
-      case code.schedule.SCHEDULE_CLASHED:{
+      case code.schedule.SCHEDULE_CLASHED:
+        {
           if (this.data.isAdmin) {
             this.teacherClass[response.clash.period].showError(
               `This class is already taken at this period by 
@@ -497,7 +540,7 @@ class ScheduleComplete {
     this.exit = getElement("exitadder");
     this.addAnother.onclick = (_) => {
       relocate(locate.admin.session, {
-        u:localStorage.getItem(constant.seesionUID),
+        u: localStorage.getItem(constant.seesionUID),
         target: locate.admin.target.addteacher,
       });
     };
@@ -526,4 +569,5 @@ window.onbeforeunload = () => {
 
 window.onload = () => {
   theme.setNav();
-  window.app = new TeacherFiller();}
+  window.app = new TeacherFiller();
+};

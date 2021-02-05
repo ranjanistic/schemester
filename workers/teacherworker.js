@@ -213,7 +213,7 @@ class Self {
           }
         );
         if(newteacher.value){
-          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
             to:teacher.teacherID,
             username:teacher.username,
             client:client.teacher,
@@ -257,7 +257,7 @@ class Self {
           }
         });
         if(newteacher.value){
-          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+          mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
             to:teacher.teacherID,
             newmail:body.newemail,
             username:teacher.username,
@@ -271,9 +271,9 @@ class Self {
        *To delete teacher account, pseudo or user.
        */
       deleteAccount = async (user) => {
-        let teacher = await getTeacherById(user.uiid,user.id);
+        let teacher = await this.getTeacherById(user.uiid,user.id);
         const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        teacher = teacher?teacher:await this.getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const path = pseudo?pseudoteacherpath:this.teacherpath;
         const deluser = await Institute.findOneAndUpdate({
@@ -286,8 +286,15 @@ class Self {
             },
           }
         );
+        await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          "users.classes":{$elemMatch:{inchargeID:teacher.teacherID}}
+        },{ $set:{
+          "users.classes.$.inchargename":null,
+          "users.classes.$.inchargeID":null,
+        }});
         if(deluser.value){
-          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
             to:teacher.teacherID,
             username:teacher.username,
             client:client.teacher,
@@ -841,7 +848,7 @@ class Classroom {
     if(!scheddoc) return false
     scheddoc.schedule.teachers[0].days.forEach((day)=>{
       day.period.forEach((period)=>{
-        if(!classnames.includes(period.classname)){
+        if(!classnames.includes(period.classname)&&period.classname!==code.free){
           classnames.push(period.classname);
         }
       })
