@@ -75,17 +75,22 @@ class Classroom {
     this.invitestudents.onclick=_=>{
       this.linkGenerator();
     }
+    tryCalling(()=>{
+      getElement("invitestudents1").onclick=_=>{
+        this.linkGenerator();
+      }
+    });
 
     this.students.forEach((stud,s)=>{
       stud.removestudent.onclick=_=>{
         const removeconfirm = new Dialog();
         removeconfirm.setDisplay('Remove student?', `Are you sure you want to remove <span class="negative">${stud.studentName}</span> (${stud.studentID})?
-        Their account will be removed from classroom ${this.data.classname}, and ${stud.studentName} <span class="negative">won't be able to access ${this.data.classname}</span>.`);
-        removeconfirm.createActions(Array(`Remove ${stud.studentName}`,'No, abort'),Array(actionType.negative,actionType.neutral));
+        Their account will be removed from classroom, and ${stud.studentName} <span class="negative">won't be able to login into ${this.data.classname}</span>.`);
+        removeconfirm.createActions([`Remove ${stud.studentName}`,'No, abort'],[actionType.negative,actionType.neutral]);
         removeconfirm.setBackgroundColor(colors.transparent);
         removeconfirm.setHeadingColor(colors.negative);
         removeconfirm.hideOnClickAnywhere(true);
-        removeconfirm.onButtonClick(Array(
+        removeconfirm.onButtonClick([
           _=>{
             removeconfirm.loader();
             postJsonData(post.teacher.classroom,{
@@ -111,7 +116,7 @@ class Classroom {
           _=>{
             removeconfirm.hide();
           }
-        ));
+        ]);
         removeconfirm.show();
       }
     })
@@ -220,11 +225,14 @@ class Classroom {
           );
           new QRCode(getElement(linkdialog.imagedivId),response.link);
           linkdialog.createActions(
-            ["Disable link", "Copy", "Hide"],
-            [actionType.negative, actionType.positive, actionType.neutral]
+            ["Share" ,"Disable", "Copy", "Hide"],
+            [actionType.positive, actionType.negative, actionType.positive, actionType.neutral]
           );
           linkdialog.onButtonClick(
             [
+              ()=>{
+                shareLinkAction('Student Invitation',response.link);
+              },
               (_) => {
                 linkdialog.loader(true);
                 this.revokeLink();

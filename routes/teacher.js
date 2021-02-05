@@ -128,7 +128,6 @@ teacher.get(get.session, async (req, res) => {
     switch (query.target) {
       case view.teacher.target.comms: {
         const comms = await worker.comms.getRoomAndCallList(response.user);
-        console.log(comms);
         return render(res,view.teacher.getViewByTarget(query.target), {
           client: teacher,
           rooms: comms.rooms,
@@ -247,7 +246,6 @@ teacher.get(get.fragment, async (req, res) => {
               return render(res,view.notfound);
             }
           }
-          console.log(inchargeof);
           return render(res,view.teacher.getViewByTarget(query.fragment), {
             classroom: classes
               ? classes.find((Class) => Class.classname == query.classname)
