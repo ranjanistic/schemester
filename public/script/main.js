@@ -2216,6 +2216,34 @@ const getProperDate = (dateTillMillis) => {
   )} hours ${dateTillMillis.substring(12, 14)} seconds`;
 };
 
+/**
+ * Uses the native sharing action of navigator.share to share given arguments.
+ * @param {String} title The title on native sharing view
+ * @param {String} url The url to be shared.
+ * @param {Function} afterShared To be called after sharing is done successfully.
+ */
+const shareLinkAction = (
+  title,
+  url,
+  afterShared = (_) => {
+    console.log("Thanks for sharing!");
+  }
+) => {
+  if (navigator.share) {
+    navigator
+      .share({
+        title: title,
+        url: url,
+      })
+      .then(() => {
+        afterShared();
+      })
+      .catch(console.error);
+  } else {
+    snackBar("Sharing not available on your system.");
+  }
+};
+
 const tryCalling = (method = (_) => {}, catchMethod = (_) => {}) => {
   try {
     method();
@@ -2254,7 +2282,7 @@ const registerServiceWorker = () => {
         console.log("SW:0:", err);
       });
   }
-}
+};
 
 /**
  * Returns HH:MM/HH:MM:ss as HHMM/HHMMss
