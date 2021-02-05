@@ -310,11 +310,14 @@ class Admin {
           );
           new QRCode(getElement(linkdialog.imagedivId),response.link);
           linkdialog.createActions(
-            ["Disable Link", "Copy", "Done"],
+            ["Share", "Disable", "Copy", "Done"],
             [actionType.negative, actionType.positive, actionType.neutral]
           );
           linkdialog.onButtonClick(
             [
+              ()=>{
+                shareLinkAction("Admin Invitation",response.link);
+              },
               (_) => {
                 linkdialog.loader();
                 revokeLink(client.admin);
