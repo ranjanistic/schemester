@@ -794,7 +794,7 @@ class Users {
       }
 
       async removeTeacher(user, body) {
-        const deldoc = await Institute.findOneAndUpdate(
+        let deldoc = await Institute.findOneAndUpdate(
           {
             uiid: user.uiid,
             "users.teachers": { $elemMatch: { teacherID: body.teacherID } },
@@ -805,6 +805,13 @@ class Users {
             },
           }
         );
+        await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          "users.classes":{$elemMatch:{inchargeID:body.teacherID}}
+        },{ $set:{
+          "users.classes.$.inchargename":null,
+          "users.classes.$.inchargeID":null,
+        }});
         return code.event(deldoc.value ? code.OK : code.NO);
       }
     }

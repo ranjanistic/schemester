@@ -271,9 +271,9 @@ class Self {
        *To delete teacher account, pseudo or user.
        */
       deleteAccount = async (user) => {
-        let teacher = await getTeacherById(user.uiid,user.id);
+        let teacher = await this.getTeacherById(user.uiid,user.id);
         const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
+        teacher = teacher?teacher:await this.getTeacherById(user.uiid,user.id,true);
         if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const path = pseudo?pseudoteacherpath:this.teacherpath;
         const deluser = await Institute.findOneAndUpdate({
@@ -286,8 +286,15 @@ class Self {
             },
           }
         );
+        await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          "users.classes":{$elemMatch:{inchargeID:teacher.teacherID}}
+        },{ $set:{
+          "users.classes.$.inchargename":null,
+          "users.classes.$.inchargeID":null,
+        }});
         if(deluser.value){
-          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
             to:teacher.teacherID,
             username:teacher.username,
             client:client.teacher,
