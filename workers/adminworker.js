@@ -334,6 +334,7 @@ class Self {
     const thecode = inspect.randomCode().toUpperCase();
     const done = await Admin.findOneAndUpdate({_id:ObjectId(user.id)},{$set:{twofactorcode:thecode}});
     if(!done.value) return code.event(code.mail.ERROR_MAIL_NOTSENT)
+    if(inspect.isDev) console.log(`OTP: ${thecode}`);
     return await mailer.sendActionMail(code.mail.TWO_FACTOR_AUTH,{
       to:admin.id,
       code:thecode
