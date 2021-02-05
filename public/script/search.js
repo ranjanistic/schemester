@@ -8,6 +8,7 @@ window.onload=_=>{
     saction.onclick=_=>{
         search.validateNow();
         if(!search.isValid()) return;
+        showLoader();
         relocateParent(locate.search,{
             q:search.getInput().trim()
         });

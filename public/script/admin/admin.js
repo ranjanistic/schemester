@@ -230,11 +230,14 @@ function linkGenerator(target) {
           }
         );
         linkdialog.createActions(
-          ["Disable Link", "Copy", "Done"],
-          [actionType.negative, actionType.positive, actionType.neutral]
+          ["Share", "Disable", "Copy", "Done"],
+          [actionType.positive, actionType.negative, actionType.positive, actionType.neutral]
         );
         linkdialog.onButtonClick(
           [
+            ()=>{
+              shareLinkAction('Teacher Invitation',response.link);
+            },
             (_) => {
               linkdialog.loader();
               revokeLink(target);
