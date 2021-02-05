@@ -546,8 +546,8 @@ admin.post(post.mail, async (req, res) => {
             let teacher = await worker.users.teachers.getTeacherByTeacherID(response.user,body.to);
             if(!teacher){
               teacher = await worker.users.teachers.getTeacherByTeacherID(response.user,body.to,true);
-              if(teacher) return res.json(code.event(code.OK));
-            } else return res.json(code.event(code.OK));
+              if(teacher) return res.json({result:code.event(code.OK)});
+            } else return res.json({result:code.event(code.OK)});
 
             return res.json({
               result: await worker.users.teachers.sendInvitation(
