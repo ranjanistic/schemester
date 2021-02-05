@@ -326,7 +326,7 @@ class Teacher{
         periods.forEach((period,p)=>{
             this.dayperiods.push(getElement(`period${index}${p}`));
             this.classeditable.push(new Editable(`classnameview${index}${p}`,`classnameeditor${index}${p}`,
-                new TextInput(`classnamefield${index}${p}`,`classnameinput${index}${p}`,`classnameerror${index}${p}`,validType.nonempty),
+                new TextInput(`classnamefield${index}${p}`,`Replace ${period.classname}`,`New class`,validType.nonempty),
                 `editclassname${index}${p}`,`classname${index}${p}`,`saveclassname${index}${p}`,`cancelclassname${index}${p}`,`classnameloader${index}${p}`
             ));
             this.classeditable[p].onSave(_=>{
@@ -383,7 +383,7 @@ class Teacher{
                 
             })
             this.subjecteditable.push(new Editable(`subjectview${index}${p}`,`subjecteditor${index}${p}`,
-                new TextInput(`subjectfield${index}${p}`,`subjectinput${index}${p}`,`subjecterror${index}${p}`,validType.nonempty),
+                new TextInput(`subjectfield${index}${p}`,`Replace ${period.subject}`,`New subject`,validType.nonempty),
                 `editsubject${index}${p}`,`subject${index}${p}`,`savesubject${index}${p}`,`cancelsubject${index}${p}`,`subjectloader${index}${p}`
             ));
             this.subjecteditable[p].onSave(_=>{
@@ -471,7 +471,7 @@ class Class{
 
         }
         this.classname = new Editable('classnameview','classnameeditor',
-            new TextInput('classnamefield','classnameinput','classnameerror',validType.nonempty,'classnamecaption'),
+            new TextInput('classnamefield','New classname',`Change ${this.classname.displayText()} to`,validType.nonempty),
             'editclassname','classname','saveclassname','cancelclassname','classnameloader'
         );
         this.classname.validateInput();
@@ -651,7 +651,7 @@ class Class{
         periods.forEach((period,p)=>{
             this.dayperiods.push(getElement(`period${index}${p}`));
             this.subjecteditable.push(new Editable(`subjectview${index}${p}`,`subjecteditor${index}${p}`,
-                new TextInput(`subjectfield${index}${p}`,`subjectinput${index}${p}`,`subjecterror${index}${p}`,validType.nonempty),
+                new TextInput(`subjectfield${index}${p}`,`Replace ${period?period.subject:''}`,`New subject`,validType.nonempty),
                 `editsubject${index}${p}`,`subject${index}${p}`,`savesubject${index}${p}`,`cancelsubject${index}${p}`,`subjectloader${index}${p}`
             ));
             this.subjecteditable[p].onSave(_=>{
@@ -701,7 +701,7 @@ class Class{
                 
             })
             this.teachereditable.push(new Editable(`teacherIDview${index}${p}`,`teacherIDeditor${index}${p}`,
-                new TextInput(`teacherIDfield${index}${p}`,`teacherIDinput${index}${p}`,`teacherIDerror${index}${p}`,validType.email),
+                new TextInput(`teacherIDfield${index}${p}`,`Replace ${period?period.teachername:''}`,`New teacher ID`,validType.email),
                 `editteacherID${index}${p}`,`teacherID${index}${p}`,`saveteacherID${index}${p}`,`cancelteacherID${index}${p}`,`teacherIDloader${index}${p}`
             ));
             this.teachereditable[p].textInput.onTextInput(_=>{this.teacherpredictor(this.teachereditable[p].getInputValue().trim(),this.teachereditable[p].textInput)});
