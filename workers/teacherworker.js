@@ -848,7 +848,7 @@ class Classroom {
     if(!scheddoc) return false
     scheddoc.schedule.teachers[0].days.forEach((day)=>{
       day.period.forEach((period)=>{
-        if(!classnames.includes(period.classname)){
+        if(!classnames.includes(period.classname)&&period.classname!==code.free){
           classnames.push(period.classname);
         }
       })
