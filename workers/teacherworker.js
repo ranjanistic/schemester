@@ -213,7 +213,7 @@ class Self {
           }
         );
         if(newteacher.value){
-          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
             to:teacher.teacherID,
             username:teacher.username,
             client:client.teacher,
@@ -257,7 +257,7 @@ class Self {
           }
         });
         if(newteacher.value){
-          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+          mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
             to:teacher.teacherID,
             newmail:body.newemail,
             username:teacher.username,

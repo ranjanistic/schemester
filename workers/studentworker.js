@@ -257,7 +257,7 @@ class Self {
           },
         }); //updating in student account
         if(accdoc.value){
-          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
             to:student.studentID,
             username:student.username,
             client:client.student,
@@ -328,7 +328,7 @@ class Self {
           })
         );
         if(accdoc.value)
-          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+          mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
             to:student.studentID,
             newmail:body.newemail,
             username:student.username,
@@ -426,7 +426,7 @@ class Self {
             })
           )
         if(delacc.value){
-          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
             to:student.studentID,
             username:student.username,
             client:client.student,
