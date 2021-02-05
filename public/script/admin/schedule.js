@@ -32,11 +32,11 @@ class Schedule{
         getElement("logout").onclick=_=>{
             finishSession(client.admin);
         }
-        try{
-            window.fragment =this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
-        }catch{
+        tryCalling(()=>{
+            window.fragment=this.data.isTeacher()?new Teacher(this.data):new Class(this.data);
+        },()=>{
             new NoSchedule();
-        }
+        });
     }
 }
 
@@ -471,7 +471,7 @@ class Class{
 
         }
         this.classname = new Editable('classnameview','classnameeditor',
-            new TextInput('classnamefield','New classname',`Change ${this.classname.displayText()} to`,validType.nonempty),
+            new TextInput('classnamefield','New classname',`Change ${this.data.classname} to`,validType.nonempty),
             'editclassname','classname','saveclassname','cancelclassname','classnameloader'
         );
         this.classname.validateInput();
