@@ -55,7 +55,7 @@
                     <%}%>
                      <b><%= invite.instname %></b> as <%= invite.target %>, on <a target="_blank" rel="noreferrer" href="/"><%= appname %></a>.
                     Fill up your details, create a password, and join, if you are a
-                    <%= invite.target %> at <%= invite.instname %> (code name: <b><%= invite.uiid %></b>).<br/><br/>
+                    <%= invite.target %> at <%= invite.instname %> (uiid: <b><%= invite.uiid %></b>).<br/><br/>
                     <% if(invite.expireAt) {%>
                         <center><span class="error-caption">This invitation will automatically expire on <b id="expireat"><%= invite.expireAt %></b>, exactly.</span></center>
                     <%}%>
@@ -118,7 +118,7 @@
                 <li>For admins, if you are already an admin of some other institution, then accepting this will NOT lead you to lose it, instead, you'll be able to access any of your institution depending upon the uiid you provide on login.
                     At this moment, if you accept this invite, you'll be logged out of your (if) previously logged in institution, and your session will move to this new institution.
                 </li>
-                <li>Providing erronous details could get you in organizational trouble. <a target="_blank" rel="noreferrer" href="">Get help on registration</a></li>
+                <li>Providing erronous details could get you in organizational trouble. <a target="_blank" rel="noreferrer" href="/help">Get help on registration</a>.</li>
             </ul>
         </div>
         <span hidden>

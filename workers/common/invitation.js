@@ -271,13 +271,13 @@ class Invitation {
           expires,
           query.t
         ))) return false;
-        const invitor = await Admin.findOne({_id:ObjectId(query.ad)})
+        const host = await Admin.findOne({_id:ObjectId(query.ad)})
         return {
           invite: {
             valid: true,
             uiid: inst.uiid,
-            invitorID: invitor.email,
-            invitorName: invitor.username,
+            invitorID: host.email,
+            invitorName: host.username,
             instname: inst.default.institute.instituteName,
             expireAt: expires,
             target: target,
@@ -285,19 +285,20 @@ class Invitation {
         };
       }break;
       case client.teacher: {
-        if (!(query.in && query.t)) return false;
+        if (!(query.in && query.t && query.ad)) return false;
         const inst = await Institute.findOne(
           { _id: ObjectId(query.in) },
           { projection: { [`invite.${target}`]: 1, default: 1, uiid: 1 } }
         );
         if (!inst) return false;
+        const host = await Admin.findOne({_id:ObjectId(query.ad)})
         if (!inst.invite.teacher.active)
           return {
             invite: {
               valid: false,
               uiid: inst.uiid,
-              adminemail: inst.default.admin.email,
-              adminName: inst.default.admin.username,
+              adminemail: host.email,
+              adminName: host.username,
               expireAt: inst.invite.teacher.expiresAt,
               instname: inst.default.institute.instituteName,
               target: target,
@@ -315,8 +316,8 @@ class Invitation {
           invite: {
             valid: this.isActive(validity),
             uiid: inst.uiid,
-            invitorID: inst.default.admin.email,
-            invitorName: inst.default.admin.username,
+            invitorID: host.email,
+            invitorName: host.username,
             instname: inst.default.institute.instituteName,
             expireAt: expires,
             target: target,
