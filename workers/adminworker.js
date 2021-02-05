@@ -170,7 +170,7 @@ class Self {
           }
         );
         if(newpassadmin.ok){
-          await mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
+          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
             to:newpassadmin.value.email,
             username:newpassadmin.value.username,
             client:client.admin,
@@ -198,7 +198,7 @@ class Self {
           }
         );
         if(newadmin.ok){
-          await mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
+          mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
             to:admin.id,
             newmail:body.newemail,
             username:admin.username,
@@ -242,7 +242,7 @@ class Self {
         }
         const del = await Admin.findOneAndDelete({ _id: ObjectId(user.id) });
         if(del.value){
-          await mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
+          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
             to:del.value.email,
             username:del.value.username,
             client:client.admin,
@@ -795,7 +795,7 @@ class Users {
       }
 
       async removeTeacher(user, body) {
-        const deldoc = await Institute.findOneAndUpdate(
+        let deldoc = await Institute.findOneAndUpdate(
           {
             uiid: user.uiid,
             "users.teachers": { $elemMatch: { teacherID: body.teacherID } },
@@ -806,6 +806,13 @@ class Users {
             },
           }
         );
+        await Institute.findOneAndUpdate({
+          uiid:user.uiid,
+          "users.classes":{$elemMatch:{inchargeID:body.teacherID}}
+        },{ $set:{
+          "users.classes.$.inchargename":null,
+          "users.classes.$.inchargeID":null,
+        }});
         return code.event(deldoc.value ? code.OK : code.NO);
       }
     }
