@@ -61,7 +61,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="linkedin:card"
-      content="<%= site %>/graphic/icons/schemester512.png"
+      content="<%= site %>/graphic/illustrations/banner.jpg"
     />
     <link
       rel="icon"
@@ -118,6 +118,20 @@
     </nav>
     <div class="fmt-row">
       <div class="fmt-col fmt-center " style="margin-top: 62px;padding: 14px 18px;">
+        <div class="fmt-animate-top" id="alerts">
+          <% alerts.forEach((alert,a) => { %>
+            <div class="fmt-row container fmt-padding-small b-<%= alert.type %>" id="alert<%= a %>" style="margin-bottom: 8px;">
+              <div class="fmt-col half questrial fmt-padding" style="text-align: left;">
+                <%= alert.message %>
+              </div>
+              <div class="fmt-col half caption fmt-padding">
+                <button class="neutral-button fmt-right" id="hideAlert<%= a %>">Hide</button>
+                <a target="_blank" rel="noreferrer" href="<%= alert.link %>"><button class="neutral-button fmt-right"><%= alert.action %></button></a>
+              </div>
+              <span hidden id="alertID<%= a %>"><%= alert._id  %></span>
+            </div>
+          <% }) %>
+        </div>
         <div class="fmt-row" id="logintabs">
         </div>
       </div>
@@ -281,6 +295,7 @@
     <div id="snackBar"></div>
     <span hidden>
       <span id="acsrf"><%= acsrf %></span>
+      <span id="totalAlerts"><%= alerts.length %></span>
     </span>
   </body>
   <noscript id="noscript" class="dialog fmt-red" style="display: block">

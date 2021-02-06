@@ -154,6 +154,20 @@
             <img class="fmt-spin-fast fmt-circle fmt-right" style="display:none" width="40" src="/graphic/onethreeload.svg" id="navLoader" alt="Loader"/>
         </div>
         <div class="fmt-row fmt-padding-small" id="adminBody" style="margin-top: 72px;">
+            <div class="fmt-animate-top" id="alerts">
+                <% alerts.forEach((alert,a) => { %>
+                  <div class="fmt-row container fmt-padding-small b-<%= alert.type %>" id="alert<%= a %>" style="margin-bottom: 8px;">
+                    <div class="fmt-col half questrial fmt-padding" style="text-align: left;">
+                      <%= alert.message %>
+                    </div>
+                    <div class="fmt-col half caption fmt-padding">
+                      <button class="neutral-button fmt-right" id="hideAlert<%= a %>">Hide</button>
+                      <a target="_blank" rel="noreferrer" href="<%= alert.link %>"><button class="neutral-button fmt-right"><%= alert.action %></button></a>
+                    </div>
+                    <span hidden id="alertID<%= a %>"><%= alert._id  %></span>
+                  </div>
+                <% }) %>
+            </div>
             <% if (inst.users.classes.length) { %>
                 <% if (inst.preferences.active) { %>
                     <div class="fmt-col fmt-half fmt-padding-small">
@@ -279,6 +293,7 @@
             <span id="acsrf"><%= acsrf %></span>
             <span id="hasTeacherSchedule"><%= !isEmptyObject(inst.users.teachers) %></span>
             <span id="hasTeachers"><%= !isEmptyObject(inst.schedule.teachers) %></span>
+            <span id="totalAlerts"><%= alerts.length %></span>
         </span>
     </body>
     <noscript id="noscript" class="dialog fmt-red" style="display:block">

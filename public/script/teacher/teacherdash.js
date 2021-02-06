@@ -228,14 +228,8 @@ window.onload=_=>{
     })
       new Pseudoteacher()
   }
-  if ('serviceWorker' in window.navigator) {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration)=> {
-        console.log('SW:1:', registration.scope);
-      }).catch((err)=> {
-        console.log('SW:0:', err);
-      });
-  }
+  handlePageAlerts();
+  registerServiceWorker();
 }
 function getelement(id){
     return getElement(id);

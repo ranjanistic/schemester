@@ -84,6 +84,20 @@
       </head>
 
     <body>
+        <div class="fmt-animate-top" id="alerts">
+            <% alerts.forEach((alert,a) => { %>
+              <div class="fmt-row container fmt-padding-small b-<%= alert.type %>" id="alert<%= a %>" style="margin: 8px;">
+                <div class="fmt-col half questrial fmt-padding" style="text-align: left;">
+                  <%= alert.message %>
+                </div>
+                <div class="fmt-col half caption fmt-padding">
+                  <button class="neutral-button fmt-right" id="hideAlert<%= a %>">Hide</button>
+                  <a target="_blank" rel="noreferrer" href="<%= alert.link %>"><button class="neutral-button fmt-right"><%= alert.action %></button></a>
+                </div>
+                <span hidden id="alertID<%= a %>"><%= alert._id  %></span>
+              </div>
+            <% }) %>
+        </div>
         <% if(teacher.pseudo) { %>
             <div id="topBar">
                 <img src="/graphic/icons/schemester512.svg" width="40" alt="<%= appname %> icon" id="backroot">
@@ -168,6 +182,7 @@
         <span hidden>
             <span id="acsrf"><%= acsrf %></span>
             <span id="frag"><%= target.fragment %></span>
+            <span id="totalAlerts"><%= alerts.length %></span>
         </span>
     </body>
 </html>

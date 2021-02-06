@@ -16,7 +16,8 @@ module.exports = {
         return callback( err,db.name );
       });
     } catch(e){
-      return callback("ACCESS DENIED:DB KEY FAILURE")
+      if(e==403)
+        return callback("ACCESS DENIED:DB KEY FAILURE")
     }
   },
   getAdmin:(key)=>{
@@ -24,7 +25,8 @@ module.exports = {
       if(token.verify(key)) return dbobj.collection(db.admin_collection);
       throw 403
     } catch(e){
-      console.log("ACESSS DENIED:COLLECTION 0 KEY FAILURE");
+      if(e==403)
+        console.log("ACESSS DENIED:COLLECTION 0 KEY FAILURE");
     }
     return null;
   },
@@ -33,7 +35,18 @@ module.exports = {
       if(token.verify(key)) return dbobj.collection(db.institute_collection);
       throw 403
     } catch(e){
-      console.log("ACESSS DENIED:COLLECTION 1 KEY FAILURE");
+      if(e==403)
+       console.log("ACESSS DENIED:COLLECTION 1 KEY FAILURE");
+    }
+    return null;
+  },
+  getAlerts:(key)=>{
+    try{
+      if(token.verify(key)) return dbobj.collection(db.alert_collection);
+      throw 403
+    } catch(e){
+      if(e==403)
+        console.log("ACESSS DENIED:COLLECTION 3 KEY FAILURE");
     }
     return null;
   }

@@ -5,6 +5,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   {render} = require("../workers/common/inspector"),
+  alert = require("../workers/common/alerts"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/teacherworker");
@@ -87,12 +88,13 @@ teacher.get(get.session, async (req, res) => {
   if (!teacher.verified)
     return render(res,view.verification, { user: teacher });
 
-    
+  const alerts = await alert.teacherAlerts();
   if (teacher.pseudo)
     //if membership requested (pseudo user)
     return render(res,view.teacher.getViewByTarget(view.teacher.target.dash), {
       teacher,
       target: { fragment: null },
+      alerts
     });
 
   //user teacher exists
@@ -153,6 +155,7 @@ teacher.get(get.session, async (req, res) => {
           target: {
             fragment: query.fragment,
           },
+          alerts
         });
     }
   } catch (e) {

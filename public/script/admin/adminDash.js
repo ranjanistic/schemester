@@ -769,16 +769,6 @@ window.onload = (_) => {
   } catch {
     window.app = new Dashboard();
   }
-  if ("serviceWorker" in window.navigator) {
-    window.addEventListener("load", (_) => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => {
-          console.log("SW:1:", registration.scope);
-        })
-        .catch((err) => {
-          console.log("SW:0:", err);
-        });
-    });
-  }
+  handlePageAlerts();
+  registerServiceWorker();
 };

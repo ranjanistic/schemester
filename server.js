@@ -28,6 +28,7 @@ server.use(rateLimit({
 mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   if (err) return console.error(err.code == 8000?'DB CREDS MISMATCH':err+`\nIf you don't have local mongodb server running at port 27017, then set up that first.`);
   console.log(`Connected to ${dbname}`);
+  const alert = require("./workers/common/alerts");
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
@@ -35,8 +36,10 @@ mongo.connectToDB(require("./config/config.json").db.dpass,( err,dbname )=>{
   server.get(get.root, (req, res) => {
     render(res,view.loader, { data:{ client: req.query.client }});
   });
-  server.get(get.home, (_, res) => {
-    render(res,view.homepage);
+  server.get(get.home, async(_, res) => {
+    render(res,view.homepage,{
+      alerts:await alert.globalAlerts()
+    });
   });
   server.get(get.tour,(req,res)=>{
     render(res,view.tour,{filename:"slide",total:7});
