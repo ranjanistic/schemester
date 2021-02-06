@@ -2254,6 +2254,7 @@ const tryCalling = (method = (_) => {}, catchMethod = (_) => {}) => {
 };
 
 const registerServiceWorker = () => {
+  return;
   if ("serviceWorker" in window.navigator) {
     navigator.serviceWorker
       .register("/sw.js")
@@ -2282,6 +2283,24 @@ const registerServiceWorker = () => {
         console.log("SW:0:", err);
       });
   }
+};
+
+const handlePageAlerts=_=>{
+  tryCalling(()=>{
+    let totalAlerts = Number(getElement("totalAlerts").innerHTML);
+    if(totalAlerts){
+      for(let a =0;a<totalAlerts;++a){
+        let id = getElement(`alertID${a}`).innerHTML;
+        getElement(`hideAlert${a}`).onclick=_=>{
+          sessionStorage.setItem(`hidealert${id}`,1);
+          hide(getElement(`alert${a}`));
+        }
+        if(sessionStorage.getItem(`hidealert${id}`)==1){
+          hide(getElement(`alert${a}`));
+        }
+      }
+    }
+  });
 };
 
 /**

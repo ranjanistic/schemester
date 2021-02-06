@@ -19,6 +19,20 @@
     <title>Student · <%= appname %></title>
 </head>
 <body class="fmt-center">
+    <div class="fmt-animate-top" id="alerts">
+        <% alerts.forEach((alert,a) => { %>
+          <div class="fmt-row container fmt-padding-small b-<%= alert.type %>" id="alert<%= a %>" style="margin: 8px;">
+            <div class="fmt-col half questrial fmt-padding" style="text-align: left;">
+              <%= alert.message %>
+            </div>
+            <div class="fmt-col half caption fmt-padding">
+              <button class="neutral-button fmt-right" id="hideAlert<%= a %>">Hide</button>
+              <a target="_blank" rel="noreferrer" href="<%= alert.link %>"><button class="neutral-button fmt-right"><%= alert.action %></button></a>
+            </div>
+            <span hidden id="alertID<%= a %>"><%= alert._id  %></span>
+          </div>
+        <% }) %>
+    </div>
     <button class="positive-button" onclick="relocate(locate.root)">Return</button>
 </body>
 </html>

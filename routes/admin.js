@@ -4,6 +4,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   {render} = require("../workers/common/inspector"),
+  alert = require("../workers/common/alerts"),
   path = require("path"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
@@ -113,6 +114,7 @@ admin.get(get.session, async (req, res) => {
       );
     }
     try {
+      const alerts = await alert.adminAlerts();
       switch (query.target) {
         case view.admin.target.addteacher: {
           return render(res,view.admin.getViewByTarget(query.target), {
@@ -195,11 +197,13 @@ admin.get(get.session, async (req, res) => {
           }
           return render(res,view.notfound);
         }
-        default:
+        default:{
           return render(res,view.admin.getViewByTarget(query.target), {
             adata: admin,
             inst,
+            alerts
           });
+        }
       }
     } catch (e) {
       query.target = view.admin.target.dashboard;

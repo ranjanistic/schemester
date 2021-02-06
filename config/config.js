@@ -15,6 +15,7 @@ const genConfig = (_) => {
       admin_collection: env.ADMIN_COL,
       institute_collection: env.INST_COL,
       session_collection: env.SESS_COL,
+      alert_collection:env.ALERT_COL,
       dpass: env.DPASS,
       cpass: env.CPASS,
     },

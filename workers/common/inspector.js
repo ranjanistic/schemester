@@ -8,6 +8,7 @@ const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require
  */
 class Inspector{
     constructor(){
+      
       this.token = {
         sign:(value)=>{
           return jwt.sign(value,process.env.SSH)
@@ -60,7 +61,6 @@ class Inspector{
 
     emailValid=(emailstring)=>stringIsValid(emailstring,validType.email)
     passValid =(passstring)=>stringIsValid(passstring,validType.password)
-
 }
 
 module.exports = new Inspector();

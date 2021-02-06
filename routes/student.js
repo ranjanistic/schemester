@@ -4,6 +4,7 @@ const express = require("express"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
   {render} = require("../workers/common/inspector"),
+  alert = require("../workers/common/alerts"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/studentworker");
@@ -87,11 +88,13 @@ student.get(get.session, async (req, res) => {
     response.user.uiid,
     student.id
   );
+  const alerts = await alert.studentAlerts();
   if (student.pseudo)
     return render(res,view.student.getViewByTarget(view.student.target.dash), {
       student: student,
       target: { fragment: null },
       pseudoclasses: classrooms.pseudoclasses,
+      alerts
     });
   try {
     switch (query.target) {
@@ -123,6 +126,7 @@ student.get(get.session, async (req, res) => {
           target: {
             fragment: query.fragment,
           },
+          alerts
         });
     }
   } catch (e) {

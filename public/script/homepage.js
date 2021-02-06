@@ -2,6 +2,7 @@ class Homepage{
     constructor(){
         backRoot();
         new ThemeSwitch('darkmode');
+        handlePageAlerts();
         this.logintabs = getElement('logintabs');
         this.tabshtml = [];
         this.tabs = [];
@@ -88,6 +89,5 @@ class Homepage{
 window.onload = _=> {
     theme.setNav();
     window.app = new Homepage();
-    return;
     registerServiceWorker();
 };

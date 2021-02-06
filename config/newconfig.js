@@ -1,15 +1,16 @@
-require("dotenv").config({ silent: process.env.NODE_ENV == 'production' });
+require("dotenv").config({ silent: process.env.NODE_ENV == "production" });
 const path = require("path");
 
 const readline = require("readline").createInterface({
     input: process.stdin,
     output: process.stdout,
-  }), jwt = require("jsonwebtoken");
+  }),
+  jwt = require("jsonwebtoken");
 
 const token = {
-  sign:(value)=>{
-    return jwt.sign(value,process.env.SSH)
-  }
+  sign: (value) => {
+    return jwt.sign(value, process.env.SSH);
+  },
 };
 const fs = require("fs");
 const fileName = "/config.json";
@@ -78,14 +79,18 @@ function ex(final = false) {
           ? "All keys updated at config/config.json."
           : "Except this one and all remaining, above keys updated at config/config.json."
       );
-      console.log("\nDon't forget to update your changed keys at your environment variables in production, or anywhere you've set, too.")
+      console.log(
+        "\nDon't forget to update your changed keys at your environment variables in production, or anywhere you've set, too."
+      );
       process.exit(0);
     }
   );
 }
 ((_) => {
-  if(!process.env.SSH){
-    console.log("Create a .env file at root of this project, and set SSH = <YOUR_SUPER_SECRET_KEY> in it. Then run this script.")
+  if (!process.env.SSH) {
+    console.log(
+      "Create a .env file at root of this project, and set SSH = <YOUR_SUPER_SECRET_KEY> in it. Then run this script."
+    );
     return process.exit(0);
   }
   readline.question("Proceed to update configuration keys [y/n]:", (value) => {
@@ -133,118 +138,116 @@ function ex(final = false) {
                                 : V == ""
                                 ? file.db.session_collection
                                 : V;
-
                             readline.question(
-                              "db.dpass (database method access password):",
+                              "db.alert_collection (Alert collection name):",
                               (V) => {
-                                file.db.dpass =
+                                file.db.alert_collection =
                                   V == "x"
                                     ? ex()
                                     : V == ""
-                                    ? file.db.dpass
-                                    : token.sign(V);
+                                    ? file.db.alert_collection
+                                    : V;
+
                                 readline.question(
-                                  "db.cpass (collection(s) method access password):",
+                                  "db.dpass (database method access password):",
                                   (V) => {
-                                    file.db.cpass =
+                                    file.db.dpass =
                                       V == "x"
                                         ? ex()
                                         : V == ""
-                                        ? file.db.cpass
+                                        ? file.db.dpass
                                         : token.sign(V);
-                                    console.log("\nFor Pusher API service.");
-                                    readline.question("pusher.appId:", (V) => {
-                                      file.pusher.appId =
-                                        V == "x"
-                                          ? ex()
-                                          : V == ""
-                                          ? file.pusher.appId
-                                          : V;
-                                      readline.question("pusher.key:", (V) => {
-                                        file.pusher.key =
+                                    readline.question(
+                                      "db.cpass (collection(s) method access password):",
+                                      (V) => {
+                                        file.db.cpass =
                                           V == "x"
                                             ? ex()
                                             : V == ""
-                                            ? file.pusher.key
+                                            ? file.db.cpass
                                             : token.sign(V);
+                                        console.log(
+                                          "\nFor Pusher API service."
+                                        );
                                         readline.question(
-                                          "pusher.secret:",
+                                          "pusher.appId:",
                                           (V) => {
-                                            file.pusher.secret =
+                                            file.pusher.appId =
                                               V == "x"
                                                 ? ex()
                                                 : V == ""
-                                                ? file.pusher.secret
-                                                : token.sign(V);
+                                                ? file.pusher.appId
+                                                : V;
                                             readline.question(
-                                              "pusher.cluster:",
+                                              "pusher.key:",
                                               (V) => {
-                                                file.pusher.cluster =
+                                                file.pusher.key =
                                                   V == "x"
                                                     ? ex()
                                                     : V == ""
-                                                    ? file.pusher.cluster
-                                                    : V;
+                                                    ? file.pusher.key
+                                                    : token.sign(V);
                                                 readline.question(
-                                                  "pusher.useTLS (Boolean):",
+                                                  "pusher.secret:",
                                                   (V) => {
-                                                    file.pusher.useTLS =
+                                                    file.pusher.secret =
                                                       V == "x"
                                                         ? ex()
                                                         : V == ""
-                                                        ? file.pusher.useTLS
-                                                        : V == "true";
-                                                    console.log(
-                                                      "\nFor server mailing service."
-                                                    );
+                                                        ? file.pusher.secret
+                                                        : token.sign(V);
                                                     readline.question(
-                                                      "mail.host:",
+                                                      "pusher.cluster:",
                                                       (V) => {
-                                                        file.mail.host =
+                                                        file.pusher.cluster =
                                                           V == "x"
                                                             ? ex()
                                                             : V == ""
-                                                            ? file.mail.host
-                                                            : token.sign(V);
+                                                            ? file.pusher
+                                                                .cluster
+                                                            : V;
                                                         readline.question(
-                                                          "mail.secureConnection (Boolean):",
+                                                          "pusher.useTLS (Boolean):",
                                                           (V) => {
-                                                            file.mail.secureConnection =
+                                                            file.pusher.useTLS =
                                                               V == "x"
                                                                 ? ex()
                                                                 : V == ""
-                                                                ? file.mail
-                                                                    .secureConnection
+                                                                ? file.pusher
+                                                                    .useTLS
                                                                 : V == "true";
+                                                            console.log(
+                                                              "\nFor server mailing service."
+                                                            );
                                                             readline.question(
-                                                              "mail.port (Integer):",
+                                                              "mail.host:",
                                                               (V) => {
-                                                                file.mail.port =
+                                                                file.mail.host =
                                                                   V == "x"
                                                                     ? ex()
                                                                     : V == ""
                                                                     ? file.mail
-                                                                        .port
-                                                                    : Number(V);
+                                                                        .host
+                                                                    : token.sign(
+                                                                        V
+                                                                      );
                                                                 readline.question(
-                                                                  "mail.auth.user (mail address):",
+                                                                  "mail.secureConnection (Boolean):",
                                                                   (V) => {
-                                                                    file.mail.auth.user =
+                                                                    file.mail.secureConnection =
                                                                       V == "x"
                                                                         ? ex()
                                                                         : V ==
                                                                           ""
                                                                         ? file
                                                                             .mail
-                                                                            .auth
-                                                                            .user
-                                                                        : token.sign(
-                                                                            V
-                                                                          );
+                                                                            .secureConnection
+                                                                        : V ==
+                                                                          "true";
                                                                     readline.question(
-                                                                      "mail.auth.pass (raw password):",
+                                                                      "mail.port (Integer):",
                                                                       (V) => {
-                                                                        file.mail.auth.pass =
+                                                                        file.mail.port =
                                                                           V ==
                                                                           "x"
                                                                             ? ex()
@@ -252,17 +255,16 @@ function ex(final = false) {
                                                                               ""
                                                                             ? file
                                                                                 .mail
-                                                                                .auth
-                                                                                .pass
-                                                                            : token.sign(
+                                                                                .port
+                                                                            : Number(
                                                                                 V
                                                                               );
                                                                         readline.question(
-                                                                          "mail.starttls.ciphers:",
+                                                                          "mail.auth.user (mail address):",
                                                                           (
                                                                             V
                                                                           ) => {
-                                                                            file.mail.starttls.ciphers =
+                                                                            file.mail.auth.user =
                                                                               V ==
                                                                               "x"
                                                                                 ? ex()
@@ -270,53 +272,56 @@ function ex(final = false) {
                                                                                   ""
                                                                                 ? file
                                                                                     .mail
-                                                                                    .starttls
-                                                                                    .ciphers
+                                                                                    .auth
+                                                                                    .user
                                                                                 : token.sign(
                                                                                     V
                                                                                   );
-                                                                            console.log(
-                                                                              "\nFor session management."
-                                                                            );
                                                                             readline.question(
-                                                                              "session.publickey:",
+                                                                              "mail.auth.pass (raw password):",
                                                                               (
                                                                                 V
                                                                               ) => {
-                                                                                file.session.publickey =
+                                                                                file.mail.auth.pass =
                                                                                   V ==
                                                                                   "x"
                                                                                     ? ex()
                                                                                     : V ==
                                                                                       ""
                                                                                     ? file
-                                                                                        .session
-                                                                                        .publickey
-                                                                                    :
-                                                                                        V;
+                                                                                        .mail
+                                                                                        .auth
+                                                                                        .pass
+                                                                                    : token.sign(
+                                                                                        V
+                                                                                      );
                                                                                 readline.question(
-                                                                                  "session.adminkey (secret):",
+                                                                                  "mail.starttls.ciphers:",
                                                                                   (
                                                                                     V
                                                                                   ) => {
-                                                                                    file.session.adminkey =
+                                                                                    file.mail.starttls.ciphers =
                                                                                       V ==
                                                                                       "x"
                                                                                         ? ex()
                                                                                         : V ==
                                                                                           ""
                                                                                         ? file
-                                                                                            .session
-                                                                                            .adminkey
+                                                                                            .mail
+                                                                                            .starttls
+                                                                                            .ciphers
                                                                                         : token.sign(
                                                                                             V
                                                                                           );
+                                                                                    console.log(
+                                                                                      "\nFor session management."
+                                                                                    );
                                                                                     readline.question(
-                                                                                      "session.teacherkey (secret):",
+                                                                                      "session.publickey:",
                                                                                       (
                                                                                         V
                                                                                       ) => {
-                                                                                        file.session.teacherkey =
+                                                                                        file.session.publickey =
                                                                                           V ==
                                                                                           "x"
                                                                                             ? ex()
@@ -324,16 +329,14 @@ function ex(final = false) {
                                                                                               ""
                                                                                             ? file
                                                                                                 .session
-                                                                                                .teacherkey
-                                                                                            : token.sign(
-                                                                                                V
-                                                                                              );
+                                                                                                .publickey
+                                                                                            : V;
                                                                                         readline.question(
-                                                                                          "session.studentkey (secret):",
+                                                                                          "session.adminkey (secret):",
                                                                                           (
                                                                                             V
                                                                                           ) => {
-                                                                                            file.session.studentkey =
+                                                                                            file.session.adminkey =
                                                                                               V ==
                                                                                               "x"
                                                                                                 ? ex()
@@ -341,17 +344,55 @@ function ex(final = false) {
                                                                                                   ""
                                                                                                 ? file
                                                                                                     .session
-                                                                                                    .studentkey
+                                                                                                    .adminkey
                                                                                                 : token.sign(
                                                                                                     V
                                                                                                   );
-                                                                                            if (
-                                                                                              V !=
-                                                                                              "x"
-                                                                                            )
-                                                                                              ex(
-                                                                                                true
-                                                                                              );
+                                                                                            readline.question(
+                                                                                              "session.teacherkey (secret):",
+                                                                                              (
+                                                                                                V
+                                                                                              ) => {
+                                                                                                file.session.teacherkey =
+                                                                                                  V ==
+                                                                                                  "x"
+                                                                                                    ? ex()
+                                                                                                    : V ==
+                                                                                                      ""
+                                                                                                    ? file
+                                                                                                        .session
+                                                                                                        .teacherkey
+                                                                                                    : token.sign(
+                                                                                                        V
+                                                                                                      );
+                                                                                                readline.question(
+                                                                                                  "session.studentkey (secret):",
+                                                                                                  (
+                                                                                                    V
+                                                                                                  ) => {
+                                                                                                    file.session.studentkey =
+                                                                                                      V ==
+                                                                                                      "x"
+                                                                                                        ? ex()
+                                                                                                        : V ==
+                                                                                                          ""
+                                                                                                        ? file
+                                                                                                            .session
+                                                                                                            .studentkey
+                                                                                                        : token.sign(
+                                                                                                            V
+                                                                                                          );
+                                                                                                    if (
+                                                                                                      V !=
+                                                                                                      "x"
+                                                                                                    )
+                                                                                                      ex(
+                                                                                                        true
+                                                                                                      );
+                                                                                                  }
+                                                                                                );
+                                                                                              }
+                                                                                            );
                                                                                           }
                                                                                         );
                                                                                       }
@@ -378,8 +419,8 @@ function ex(final = false) {
                                             );
                                           }
                                         );
-                                      });
-                                    });
+                                      }
+                                    );
                                   }
                                 );
                               }
