@@ -1,4 +1,6 @@
 window.onload=_=>{
     theme.setNav(false);
-    backRoot('returnbase');
+    getElement('returnbase').onclick=_=>{
+     relocateParent(locate.root)
+    }
 }
