@@ -116,6 +116,7 @@ class Codes {
     class Mailcodes {
       constructor() {
         this.ACCOUNT_VERIFICATION = "mail/account-verification";
+        this.ACCOUNT_AUTHORIZATION = "mail/account-oauth-authorization";
         this.RESET_PASSWORD = "mail/reset-password";
         this.PASSWORD_CHANGED = "mail/password-changed";
         this.EMAIL_CHANGED = "mail/email-address-changed";

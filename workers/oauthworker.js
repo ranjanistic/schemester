@@ -1,4 +1,5 @@
-const { client } = require("../public/script/codes");
+const { client ,code} = require("../public/script/codes");
+const mailer = require("./common/mailer");
 
 const cpass = require("../config/config.json").db.cpass,
     Admin = require("../config/db").getAdmin(cpass),
@@ -45,6 +46,14 @@ class OAuth{
                         "oauth":domain
                     }
                 });
+                if(done.value){
+                    mailer.sendAlertMail(code.mail.ACCOUNT_AUTHORIZATION,{
+                        to:done.value.email,
+                        username:done.value.username,
+                        client:user.client,
+                        oauthdomain:domain,
+                    });
+                }
                 return done.value?true:false;
             }
         }

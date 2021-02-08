@@ -110,6 +110,7 @@ class ShareData {
       case code.mail.TWO_FACTOR_AUTH: return `${appname} 2FA Code`;
       case code.mail.PASSWORD_CHANGED:return `${appname} Password Alert`;
       case code.mail.ACCOUNT_DELETED:return `${appname} Account Alert`;
+      case code.mail.ACCOUNT_AUTHORIZATION:return `${appname} OAuth Alert`;
       default: return this.getHeadingByMailtype();
     }
   }
@@ -127,6 +128,7 @@ class ShareData {
       case code.mail.EMAIL_CHANGED: return `This is to inform you that your ${appname} ${data.client} account email address has been moved to ${data.newmail}. If you do not recognise this act, then login using the new email address and change it back.`;
       case code.mail.PASSWORD_CHANGED: return `This is to inform you that your ${appname} ${data.client} account password has been changed. If you do not recognise this act, then do reset your password again.`;
       case code.mail.ACCOUNT_DELETED: return `This is to inform you that your ${appname} ${data.client} account has been deleted.`;
+      case code.mail.ACCOUNT_AUTHORIZATION: return `This is to inform you that your ${appname} ${data.client} account has been used to authorize a third party application at ${data.oauthdomain}.`;
     }
   }
 
@@ -154,6 +156,7 @@ class ShareData {
       case code.mail.INSTITUTION_INVITATION: return `This link can expire anytime.`;
       case code.mail.EMAIL_CHANGED: return `Ignore if you already know this.`;
       case code.mail.PASSWORD_CHANGED: return `Ignore if you already know this.`;
+      case code.mail.ACCOUNT_AUTHORIZATION: return `Ignore if you already know this. The authorization token will remain valid for 30 days from now.`;
       case code.mail.TWO_FACTOR_AUTH: return `Do not share this code with anyone, even if they say they're from ${appname}.`;
       case code.mail.ACCOUNT_DELETED: return `Good Bye.`;
     }
