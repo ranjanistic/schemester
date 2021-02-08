@@ -1,5 +1,5 @@
 {
-  "name": "Schemester",
+  "name": "schemester",
   "version": "1.0.0",
   "description": "An autonomous schedule management system primarily target on educational niche.",
   "main": "server.js",
@@ -33,6 +33,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",

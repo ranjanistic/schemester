@@ -405,6 +405,7 @@ class Action{
     this.videocall = "videocall";
     this.invite = "invite";
     this.join = "join";
+    this.oauth = "oauth";
     this.registerInstitute = "registerinstitute";
   }
 }
@@ -535,6 +536,7 @@ class View {
     this.forbidden = "403.ejs";
     this.ratelimited = "429.ejs";
     this.search = "search.ejs";
+    this.oauth = "oauth.ejs";
     this.offline = "offline.ejs";
 
     this.userinvitaion = "invitation.ejs";

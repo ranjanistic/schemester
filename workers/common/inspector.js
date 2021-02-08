@@ -29,6 +29,13 @@ class Inspector{
       return response.render(view,data);
     }
 
+    isValidObjectID(objectId){
+      try{
+        return ObjectId(objectId)?true:false
+      }catch{
+        return false;
+      }
+    }
     /**
      * Checks auth token validity
      * @param {JSON} token The masked session token
