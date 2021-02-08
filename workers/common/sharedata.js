@@ -25,7 +25,8 @@ class ShareData {
       verified: data.verified,
       twofactor:data.twofactor,
       vlinkexp: data.vlinkexp,
-      prefs:data.prefs
+      prefs:data.prefs,
+      oauth:data.oauth,
     }:null;
   }
 

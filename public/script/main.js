@@ -350,7 +350,7 @@ class Switch {
 }
 
 class ThemeSwitch {
-  constructor(switchID, base = false) {
+  constructor(switchID = "darkmode", base = false) {
     this.darkmode = new Switch(switchID);
     this.darkmode.turn(theme.isDark());
     this.darkmode.onTurnChange(

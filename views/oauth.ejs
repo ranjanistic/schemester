@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OAuth · <%= appname %></title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-16LE" />
+    <meta name="theme-color" content="#216bf3" id="themecolor" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link
+      rel="apple-touch-startup-image"
+      href="/graphic/icons/schemester128.png"
+    />
+    <link
+      rel="icon"
+      href="/graphic/icons/schemester128.png"
+      type="image/png"
+      sizes="128x128"
+    />
+    <link rel="stylesheet" href="/css/fmt.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/switch.css" />
+    <link href="/font/Jost.css" rel="stylesheet" />
+    <link href="/font/Questrial.css" rel="stylesheet" />
+    <script src="/script/codes.js"></script>
+    <script src="/script/main.js"></script>
+    <script src="/script/oauth.js"></script>
+  </head>
+  <body class="b-base">
+    <div class="fmt-animate-top" id="topBar">
+      <img
+        src="/graphic/icons/schemester512.svg"
+        width="40"
+        class="fmt-animate-left"
+        alt="<%= appname %> icon"
+        id="backroot"
+      />
+      <span>OAuthentication</span>
+      <img
+        class="fmt-spin-fast fmt-circle fmt-right"
+        style="display: none"
+        width="40"
+        src="/graphic/onethreeload.svg"
+        id="navLoader"
+      />
+      <span class="fmt-right fmt-padding-small">
+        <label class="switch-container">
+          <input type="checkbox" id="darkmode" />
+          <span class="switch-positive"></span>
+        </label>
+      </span>
+    </div>
+    <div class="fmt-row fmt-padding" style="margin-top: 72px">
+      <div class="fmt-col fmt-padding fmt-quarter"></div>
+      <div class="fmt-col fmt-half container fmt-animate-top" id="workbox">
+        <% if(!session) { %>
+        <div class="questrial">
+          You need to log in to <%= appname %> to continue.
+        </div>
+        <br />
+        <button class="positive-button" id="adminlogin">
+          Login as administrator
+        </button>
+        <%} else { %> <% if(authorized) { %>
+        <span class="heading fmt-hide-small"><center>Continue?</center></span>
+        <div class="fmt-row questrial">
+          <b><%= domdata.appname %> (<%= domdata.domain %>)</b> wants to log you
+          in with your <%= appname %> account using following details.
+        </div>
+        <div class="fmt-row fmt-padding">
+          <span class="caption">Your name</span>
+          <div class="active questrial"><%= user.username %></div>
+          <span class="caption">Your email address</span>
+          <div class="active questrial"><%= user.id %></div>
+        </div>
+        <br />
+        <div class="fmt-padding fmt-row caption" id="actions">
+          <button class="positive-button fmt-right" id="continue">
+            Yes, continue
+          </button>
+          <button class="negative-button fmt-right" id="reject">
+            No, step back
+          </button>
+          <button class="negative-button fmt-right" id="deauthorize">
+            Deauthorize <%= domdata.appname %>
+          </button>
+          <button class="warning-button fmt-right" id="logout">
+            Use another account
+          </button>
+        </div>
+        <img
+          class="fmt-spin-fast fmt-right"
+          style="display: none"
+          width="50"
+          src="/graphic/blueLoader.svg"
+          id="loader"
+          hidden
+        />
+        <% } else { %>
+        <span class="heading fmt-hide-small"
+          ><center>Authorization</center></span
+        >
+        <div class="fmt-row questrial">
+          Are you sure you want to authorize
+          <b><%= domdata.appname %> (<%= domdata.domain %>)</b> with your <%=
+          appname %> account? The following details will be shared.
+        </div>
+        <div class="fmt-row fmt-padding">
+          <span class="caption">Your name</span>
+          <div class="active questrial"><%= user.username %></div>
+          <span class="caption">Your email address</span>
+          <div class="active questrial"><%= user.id %></div>
+        </div>
+        <br />
+        <div class="fmt-padding fmt-row caption" id="actions">
+          <button class="positive-button fmt-right" id="authorize">
+            Authorize
+          </button>
+          <button class="negative-button fmt-right" id="reject">
+            No, step back
+          </button>
+          <button class="warning-button fmt-right" id="logout">
+            Use another account
+          </button>
+        </div>
+        <img
+          class="fmt-spin-fast fmt-right"
+          style="display: none"
+          width="50"
+          src="/graphic/blueLoader.svg"
+          id="loader"
+          hidden
+        />
+
+        <% } %>
+        <span hidden>
+          <span id="client"><%= client %></span>
+          <span id="domain"><%= domdata.domain %></span>
+          <span id="tokenendpoint"><%= domdata.tokenendpoint %></span>
+        </span>
+        <% } %>
+      </div>
+      <div class="fmt-col fmt-padding fmt-quarter"></div>
+    </div>
+    <div
+      class="fmt-row fmt-center fmt-bottom fmt-padding fmt-animate-bottom"
+    ></div>
+
+    <div id="snackBar"></div>
+
+    <span hidden>
+      <span id="acsrf"><%= acsrf %></span>
+      <span id="session"><%= session %></span>
+      <span id="authorized"><%= authorized %></span>
+    </span>
+  </body>
+
+  <noscript id="noscript" class="dialog fmt-red" style="display: block">
+    <div
+      class="dialog-box container fmt-center fmt-row fmt-animate-opacity"
+      style="padding: 22px 0"
+      id="dialogBox"
+    >
+      <div class="heading">Javascript required</div>
+      <br />
+      <div class="group-text fmt-center">
+        Please enable javascript in your browser, or allow this site to use, if
+        denied. <br />If your browser doesn't support javascript, try a
+        <a
+          target="_blank"
+          rel="noreferrer"
+          href="https://google.com/search?q=modern+browsers"
+          >modern browser</a
+        >.
+      </div>
+    </div>
+  </noscript>
+</html>

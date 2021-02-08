@@ -1,5 +1,5 @@
 {
-  "appname": "Schemester (β)",
+  "appname": "Schemester",
   "email": "eyJhbGciOiJIUzI1NiJ9.c2NoZW1lc3RlckBvdXRsb29rLmlu.fQIGcuNZj_eokdHFji-4Q60pPqxTCKspLOYohC5xHuo",
   "site": "https://schemester.herokuapp.com",
   "db": {
@@ -10,6 +10,7 @@
     "institute_collection": "1institutions",
     "session_collection": "2sessions",
     "alert_collection" : "3alerts",
+    "oauth_collection": "4oauth",
     "dpass": "eyJhbGciOiJIUzI1NiJ9.JGRicGFzc0Akc2NoZW1lc3Rlci13ZWJfY29ubmVjdGlvbiRAIQ.1a30VGjoOR1Zbwi1NJvUgdEK2bK6on8nlv_5YW3_EXI",
     "cpass": "eyJhbGciOiJIUzI1NiJ9.JGNvbGxlY3Rpb25wYXNzQCRzY2hlbWVzdGVyLXdlYl9zY2hlbWVzdGVyREJAY29sbGVjdGlvbnMkQCE.CcagPR66E2qzsnCKYbZgaDuF_Qhi2YmDrLm_Hob87dI"
   },

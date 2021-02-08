@@ -22,6 +22,7 @@ class AdminLogin{
     if(!stringIsValid(this.section,validType.nonempty)){
       this.section = locate.admin.section.account;
     }
+    this.nexturl = getElement('nexturl').innerHTML||false;
     this.emailField.validate(_=>{this.passField.inputFocus()});
     this.passField.validate(_=>{this.uiidField.inputFocus()});
     this.uiidField.validate();
@@ -79,7 +80,8 @@ class AdminLogin{
         password:this.passField.getInput(),
         uiid:String(this.uiidField.getInput()).trim(),
         target:this.target,
-        section:this.section
+        section:this.section,
+        nexturl:this.nexturl
       })
       .then((result) => {
         this.handleAuthResult(result);
@@ -93,6 +95,9 @@ class AdminLogin{
   handleAuthResult=(result)=>{
     if(result.event == code.auth.AUTH_SUCCESS){
       saveDataLocally(result.user);
+      if(result.nexturl){
+        return relocate(result.nexturl);
+      }
       return relocate(locate.admin.session,{
         u:result.user.uid,
         target:result.target,

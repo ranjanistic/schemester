@@ -45,6 +45,7 @@ jobs:
     #     echo "INST_COL = ${{ secrets.INST_COL }}" >> .env
     #     echo "SESS_COL = ${{ secrets.SESS_COL }}" >> .env
     #     echo "ALERT_COL = ${{ secrets.ALERT_COL }}" >> .env
+    #     echo "OAUTH_COL = ${{ secrets.OAUTH_COL }}" >> .env
     #     echo "DPASS = ${{ secrets.DPASS }}" >> .env
     #     echo "CPASS = ${{ secrets.CPASS }}" >> .env
     #     echo "PUSH_ID = ${{ secrets.PUSH_ID }}" >> .env
