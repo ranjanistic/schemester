@@ -1,3 +1,5 @@
+const oauthworker = require("../oauthworker");
+
 const { ObjectId } = require("mongodb"),
   cookieParser = require("cookie-parser"),
   jwt = require("jsonwebtoken"),
@@ -41,15 +43,16 @@ class Session {
     }
   };
 
-  createTempSession(response,userID,userUIID,secret){
+  createTempSession(response,userID,userUIID,clientType){
     const payload = {
       user:{
         id:userID,
         uiid:userUIID,
+        client:clientType,
         temp:true
       }
     }
-    const token = jwt.sign(payload,secret,{expiresIn:this.expiresInTemp})
+    const token = jwt.sign(payload,getSecretByClient(clientType),{expiresIn:this.expiresInTemp})
     try{
       return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresInTemp*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
     }catch(e){
@@ -57,12 +60,13 @@ class Session {
     }
   }
 
-  createSession(response, userID, userUIID, secret, classname = null) {
+  createSession(response, userID, userUIID, clientType, classname = null) {
     const payload = classname
       ? {
           user: {
             id: userID,
             uiid: userUIID,
+            client:clientType,
             classname: classname,
           },
         }
@@ -70,9 +74,10 @@ class Session {
           user: {
             id: userID,
             uiid: userUIID,
+            client:clientType
           },
         };
-    const token = jwt.sign(payload, secret, { expiresIn: this.expiresIn });
+    const token = jwt.sign(payload, getSecretByClient(clientType), { expiresIn: this.expiresIn });
     try{
       return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresIn*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
     }catch(e){
@@ -95,10 +100,41 @@ class Session {
         const admin = await Admin.findOne({_id:ObjectId(user.id)});
         if(admin.twofactorcode !== code2fa) return code.event(code.NO);
         await Admin.findOneAndUpdate({_id:ObjectId(user.id)},{$set:{twofactorcode:0}});
-        this.createSession(response,user.id,user.uiid,getSecretByClient(clientType))
+        this.createSession(response,user.id,user.uiid,clientType);
         return code.event(code.OK);
       }
     }    
+  }
+
+  async getOauthToken(user,domain){
+    switch(user.client){
+      case client.admin:{
+        let account = await adminworker.self.account.getAccount(user);
+        if(!account) return code.event(code.auth.USER_EXIST);
+        const added = await oauthworker.addUserAuthDomain(user,domain)
+        if(!added) return code.event(code.NO);
+        const oauthtoken = jwt.sign({
+          id:account.uid,
+          username:account.username,
+          email:account.id
+        },getSecretByClient(user.client),{expiresIn:"30d"});
+        return {
+          event:code.OK,
+          token:oauthtoken
+        }
+      }
+    }
+  }
+
+  async deauthorizeOauthDomain(user,domain){
+    switch(user.client){
+      case client.admin:{
+        let account = await adminworker.self.account.getAccount(user);
+        if(!account) return code.event(code.auth.USER_EXIST);
+        const removed = await oauthworker.removeUserAuthDomain(user,domain)
+        return code.event(removed?code.OK:code.NO);
+      }
+    }
   }
 
   async login (request, response, clientType,with2fa = true){
@@ -125,11 +161,12 @@ class Session {
           }
         }
         admin.twofactor&&with2fa
-          ?this.createTempSession(response, admin._id, uiid, getSecretByClient(clientType))
-          :this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
+          ?this.createTempSession(response, admin._id, uiid, clientType)
+          :this.createSession(response, admin._id, uiid, clientType);
         return {
           event: code.auth.AUTH_SUCCESS,
           user: share.getAdminShareData(admin,uiid),
+          nexturl:body.nexturl,
           target: body.target,
           section:body.section
         };
@@ -165,7 +202,7 @@ class Session {
                     teacher.password
                   );
                   if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-                  this.createSession(response, teacher._id, uiid, getSecretByClient(clientType));
+                  this.createSession(response, teacher._id, uiid, clientType);
                   return {
                     event: code.auth.AUTH_SUCCESS,
                     user: pteacher
@@ -260,7 +297,7 @@ class Session {
                     response,
                     student._id,
                     uiid,
-                    getSecretByClient(clientType),
+                    clientType,
                     classname
                   );
                   return {
@@ -295,7 +332,7 @@ class Session {
         const isMatch = await bcrypt.compare(body.password, admin.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
         if(!admin.uiid.includes(resp.user.uiid)) return code.event(code.auth.WRONG_UIID);
-        this.createSession(res, admin._id, resp.user.uiid, getSecretByClient(clientType));
+        this.createSession(res, admin._id, resp.user.uiid, clientType);
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case client.teacher: {
@@ -304,7 +341,7 @@ class Session {
         if (body.email != teacher.teacherID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, teacher.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res, teacher._id, resp.user.uiid, getSecretByClient(clientType));
+        this.createSession(res, teacher._id, resp.user.uiid, clientType);
         return code.event(code.auth.AUTH_SUCCESS);
       }
       case client.student: {
@@ -313,7 +350,7 @@ class Session {
         if (body.email != student.studentID) return code.event(code.auth.EMAIL_INVALID);
         const isMatch = await bcrypt.compare(body.password, student.password);
         if (!isMatch) return code.event(code.auth.WRONG_PASSWORD);
-        this.createSession(res, student._id, resp.user.uiid, getSecretByClient(clientType),resp.user.classname);
+        this.createSession(res, student._id, resp.user.uiid,clientType,resp.user.classname);
         return code.event(code.auth.AUTH_SUCCESS);
       }
     }
@@ -345,7 +382,7 @@ class Session {
               $push:{[this.uiid]:uiid}
             });
             if(!doc.value) code.event(code.NO);
-            this.createSession(response, admin._id, uiid, getSecretByClient(clientType));
+            this.createSession(response, admin._id, uiid, clientType);
             return {
               event: code.auth.ACCOUNT_CREATED,
               user: share.getAdminShareData(admin),
@@ -364,7 +401,7 @@ class Session {
           email: email,
           password: epassword,
           uiid: [uiid],
-          createdAt: time.getTheMoment(false),
+          createdAt: time.getMoment(),
           verified: false,
           prefs: {
             showemailtoteacher: false,
@@ -376,7 +413,7 @@ class Session {
         if (result.event == code.NO)
           return code.event(code.auth.ACCOUNT_CREATION_FAILED);
         //account created
-        this.createSession(response, result._id, result.uiid, getSecretByClient(clientType));
+        this.createSession(response, result._id, result.uiid, clientType);
         return {
           event: code.auth.ACCOUNT_CREATED,
           user: share.getAdminShareData(result),
@@ -400,7 +437,7 @@ class Session {
             username: username,
             teacherID: email,
             password: epassword,
-            createdAt: time.getTheMoment(false),
+            createdAt: time.getMoment(),
             verified: false,
             vacations: [],
             prefs: {
@@ -417,7 +454,7 @@ class Session {
             return code.event(code.auth.ACCOUNT_CREATION_FAILED);
           teacher = await teacherworker.self.account.getTeacherByEmail(uiid,email,pseudo)
           if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
-          this.createSession(response, teacher._id, uiid, getSecretByClient(clientType));
+          this.createSession(response, teacher._id, uiid, clientType);
           return {
             event: code.auth.ACCOUNT_CREATED,
             user: pseudo
@@ -460,7 +497,7 @@ class Session {
           studentID: email,
           password: epassword,
           className: classname,
-          createdAt: time.getTheMoment(false),
+          createdAt: time.getMoment(),
           verified: false,
           prefs: {},
         }
@@ -470,7 +507,7 @@ class Session {
         //adding student to classroom
         result = await studentworker.self.account.addStudentToClass(uiid,classname,{username :newstudent.username,studentID:newstudent.studentID},pseudo)
         if(result.event == code.NO) return code.event(code.inst.CLASS_JOIN_FAILED);
-        this.createSession(response, newstudent._id, uiid, getSecretByClient(clientType), classname);
+        this.createSession(response, newstudent._id, uiid, clientType, classname);
         return {
           event: code.auth.ACCOUNT_CREATED,
           user: pseudo?share.getPseudoStudentShareData(newstudent):share.getStudentShareData(newstudent),

@@ -46,7 +46,17 @@ module.exports = {
       throw 403
     } catch(e){
       if(e==403)
-        console.log("ACESSS DENIED:COLLECTION 3 KEY FAILURE");
+      console.log("ACESSS DENIED:COLLECTION 3 KEY FAILURE");
+    }
+    return null;
+  },
+  getOauth:(key)=>{
+    try{
+      if(token.verify(key)) return dbobj.collection(db.oauth_collection);
+      throw 403
+    } catch(e){
+      if(e==403)
+       console.log("ACESSS DENIED:COLLECTION 4 KEY FAILURE");
     }
     return null;
   }

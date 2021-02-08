@@ -1,3 +1,5 @@
+const oauthworker = require("../workers/oauthworker");
+
 const express = require("express"),
   admin = express.Router(),
   { code, client, view,action, clog, get,post,key } = require("../public/script/codes"),
@@ -20,7 +22,7 @@ admin.get(get.root, (_, res) => {
 admin.get(get.authlogin, (req, res) => {
   const response = session.verify(req, client.admin);
   if (!session.valid(response))
-    return render(res,view.admin.login, { autofill: req.query });
+    return render(res,view.admin.login, { autofill: req.query,nexturl:req.query.nexturl||null });
   let data = req.query;
   delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, data));
@@ -68,6 +70,22 @@ admin.post(post.auth, async (req, res) => {
         .catch((error) => {
           return res.json({error:error});
         });
+    }break;
+    case action.oauth:{
+      const response = session.verify(req,client.admin);
+      if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
+      if(body.deauthorize){
+        return session.deauthorizeOauthDomain(response.user,body.domain).then((resp)=>{
+          return res.json({result:resp});
+        }).catch(err=>{
+          res.json({result:err});
+        })
+      }
+      session.getOauthToken(response.user,body.domain).then((resp)=>{
+        return res.json({result:resp})
+      }).catch((err)=>{
+        res.json({result:err});
+      })
     }break;
     default:
       res.sendStatus(500);
