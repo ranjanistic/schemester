@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer"),
   ejs = require("ejs"),
   path = require("path"),
-  { appname, email, mail } = require("../../config/config.json"),
+  { appname, email, mail } = require("../../config/config.js"),
   {token,emailValid} = require("./inspector"),
   shared = require("./sharedata"),
   { code } = require("../../public/script/codes");

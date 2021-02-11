@@ -1,4 +1,4 @@
-const cpass = require("../config/config.json").db.cpass,
+const cpass = require("../config/config.js").db.cpass,
   Admin = require("../config/db").getAdmin(cpass),
   Institute = require("../config/db").getInstitute(cpass),
   fs = require("fs"),

@@ -1,4 +1,4 @@
-require("dotenv").config({ silent: process.env.NODE_ENV == "production" });
+require("dotenv").config();
 const path = require("path");
 
 const readline = require("readline").createInterface({
@@ -29,6 +29,7 @@ try {
       admin_collection: "",
       institute_collection: "",
       session_collection: "",
+      oauth_collection: "",
       dpass: "",
       cpass: "",
     },
@@ -87,9 +88,10 @@ function ex(final = false) {
   );
 }
 ((_) => {
+  console.log("This will only set/update keys at config/config.json for your reference. You'll still have to manually set/update keys of environment variables elsewhere after using this script.\n")
   if (!process.env.SSH) {
     console.log(
-      "Create a .env file at root of this project, and set SSH = <YOUR_SUPER_SECRET_KEY> in it. Then run this script."
+      "Create a .env file at root of this project, and set SSH = <YOUR_SUPER_SECRET_KEY> in it. Then run this script to generate other environment variables in config/config.json file.\n Then set other variables from .sample.env using values from this file."
     );
     return process.exit(0);
   }

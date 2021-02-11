@@ -6,7 +6,7 @@ const express = require("express"),
   cors = require("cors"),
   { render } = require("./workers/common/inspector"),
   { search } = require("./workers/common/indices"),
-  mongo = require("./config/db"),
+  { connectToDB } = require("./config/db"),
   https = require("https"),
   fs = require("fs"),
   rateLimit = require("express-rate-limit");
@@ -21,13 +21,14 @@ server.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // limit each IP to 100 requests per windowMs
-    handler: (req, res) => {
+    handler: (_, res) => {
       render(res, view.ratelimited);
     },
     skipFailedRequests: true,
   })
 );
-mongo.connectToDB(require("./config/config.json").db.dpass, (err, dbname) => {
+
+connectToDB(require("./config/config.js").db.dpass, (err, dbname) => {
   if (err)
     return console.error(
       err.code == 8000

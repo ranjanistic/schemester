@@ -1,5 +1,5 @@
 // For alert & notification management
-const cpass = require("./../../config/config.json").db.cpass,
+const cpass = require("./../../config/config.js").db.cpass,
   Alerts = require("./../../config/db").getAlerts(cpass),
   {client} = require("../../public/script/codes");
 

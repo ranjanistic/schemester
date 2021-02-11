@@ -1,4 +1,4 @@
-const Pusher = require("pusher"),{pusher} = require("./config.json"), {token} = require("./../workers/common/inspector");
+const Pusher = require("pusher"),{pusher} = require("./config.js"), {token} = require("./../workers/common/inspector");
 module.exports = new Pusher({
     appId:pusher.appId,
     key: token.verify(pusher.secret),

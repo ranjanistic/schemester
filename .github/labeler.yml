@@ -1,9 +1,6 @@
 testing:
   - ./test/*
 
-workflow:
-  - ["./**/*.yml", "./**/*.yaml"]
-
 markdown:
   - ./**/*.md
 

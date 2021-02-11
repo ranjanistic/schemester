@@ -1,7 +1,7 @@
 const { client ,code} = require("../public/script/codes");
 const mailer = require("./common/mailer");
 
-const cpass = require("../config/config.json").db.cpass,
+const cpass = require("../config/config.js").db.cpass,
     Admin = require("../config/db").getAdmin(cpass),
     Institute = require("../config/db").getInstitute(cpass),
     Oauth = require("../config/db").getOauth(cpass),

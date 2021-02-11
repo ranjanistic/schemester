@@ -65,6 +65,7 @@ node_modules/
 .env
 .env.production
 backups/
+config/config.json
 schemesterenv/
 localhost-key.pem
 localhost.pem

@@ -1,4 +1,4 @@
-const { appname, email,site } = require("../../config/config.json");
+const { appname, email,site } = require("../../config/config.js");
 const {key,code, client} = require("../../public/script/codes");
 
 const { token } = require("./inspector");

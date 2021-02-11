@@ -1,30 +1,27 @@
-require("dotenv").config({ silent: process.env.NODE_ENV == 'production' });
-
 const {ObjectId} = require("mongodb"),{client,stringIsValid,validType} = require("../../public/script/codes"),
-  jwt = require("jsonwebtoken"), timer = require("./timer"),{appname,site,email} = require("./../../config/config.json");
+  jwt = require("jsonwebtoken"), timer = require("./timer"),{appname,site,email,SSH,NODE_ENV} = require("./../../config/config.js");
 
 /**
  * For inspection of data received by client.
  */
 class Inspector{
     constructor(){
-      
       this.token = {
         sign:(value)=>{
-          return jwt.sign(value,process.env.SSH)
+          return jwt.sign(value,SSH)
         },
         verify:(token)=>{
-          return jwt.verify(token,process.env.SSH)
+          return jwt.verify(token,SSH)
         },
       }
-      this.isDev = process.env.NODE_ENV != 'production';
+      this.isDev = NODE_ENV !== 'production';
     }
 
     render(response,view,data = {}){
-      data['acsrf'] = jwt.sign(timer.getMoment(),process.env.SSH);
+      data['acsrf'] = jwt.sign(timer.getMoment(),SSH);
       data['appname'] = appname;
       data['site'] = site;
-      data['mailto'] = jwt.verify(email,process.env.SSH);
+      data['mailto'] = jwt.verify(email,SSH);
       data['year'] = new Date().getFullYear();
       return response.render(view,data);
     }

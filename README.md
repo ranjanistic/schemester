@@ -76,21 +76,24 @@ This will create ```localhost.pem``` &amp; ```localhost-key.pem``` files locally
 
 ### Environment Variables*
 
-Create a .env file at root of the project. Use [.sample.env](/.sample.env) for environment variable keys.
+Create a .env file at root of the project. Use [.sample.env](/.sample.env) for environment variable keys. Set the SSH value of your choice. Other values will be discussed in next steps.
 
 ### Setup configuration keys*
 
-A config.json with keys is required for the application to run, and the following command will help you set that up automatically.
+A .env file with keys is required for the application to run, and the following command will help you set that up automatically.
 
 ```bash
 npm run newconfig
 ```
 
-The CLI interface will ask you for your raw keys (unmasked), and will mask them in config/config.json using the SSH key provided by you in .env file as an environment variable ([set that up](#environment-variables) in previous step first before doing this).
+The CLI interface will ask you for your raw keys (unmasked), and will mask some of them in config/config.json using the SSH key provided by you in .env file as an environment variable ([set that up](#environment-variables) in previous step first before doing this).
 
-You can run this command anytime to update any of your configuration keys.
+After finishing, you'll find a config.json file [here](config/config.json), and from that file, copy and paste the values of keys into your local .env file, and/or elsewhere as environment variables, with keys from [.sample.env](.sample.env) & values from [config/config.json](config/config.json).
 
-**IMPORTANT: After config.json is generated, follow [.sample.env](.sample.env) to create environment variables by copying them from the config.json, for the project, for production environment, or wherever you'll need them. Then, use ```npm run config``` to autogenerate config.json from your environment variables, effectively in production environment. This command won't work in other environments.**
+**IMPORTANT: After config.json is generated, follow [.sample.env](.sample.env) to create environment variables by copying their values from the [config.json](config/config.json) (except SSH, which is your own project secret), in the project root in .env file, or for production environment, or wherever you'll need them.**
+
+You can run this command anytime to update any of your configuration keys, but it will only update in [config/config.json](config/config.json).
+You'll still have to manually update your keys in environment variables elsewhere (including the .env file you created locally).
 
 ### Local MongoDB database
 
@@ -158,15 +161,6 @@ After ensuring that ```listening on 3000 (https)``` is being logged on node cons
 npm run commit
 ```
 
-Alternatively,
-
-```bash
-git add .
-git cz
-```
-
-They replace the conventional ```git commit``` command for better commit messages.
-
 ### Push to branch-name
 
 ```bash
@@ -187,16 +181,10 @@ git push -u origin branch-name
   npm run decode
   ```
 
-- To send an email using mail configuration from [config/config.json](config/config.json)
+- To send an email using mail configuration from [config/config.js](config/config.js) (mail environment variables)
 
   ```bash
   npm run sendmail
-  ```
-
-- To update all signed keys in [config/config.json](config/config.json) using SSH from environment variable
-
-  ```bash
-  npm run updatekeys
   ```
 
 ## Footnotes

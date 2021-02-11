@@ -1,6 +1,6 @@
 const {MongoClient} = require('mongodb'),
-  {db} = require('./config.json'),
-  {token,isDev} = require("./../workers/common/inspector");
+  {db,isDev} = require('./config.js'),
+  {token} = require("./../workers/common/inspector");
 
 var dbobj;
 module.exports = {

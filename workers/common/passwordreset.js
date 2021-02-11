@@ -1,5 +1,5 @@
 const { code, client, clog } = require("../../public/script/codes"),
-cpass = require("../../config/config.json").db.cpass
+cpass = require("../../config/config.js").db.cpass
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),

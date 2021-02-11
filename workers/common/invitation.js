@@ -1,5 +1,5 @@
 const {code,client,clog} = require("../../public/script/codes"),
-  cpass = require("../../config/config.json").db.cpass,
+  cpass = require("../../config/config.js").db.cpass,
   Admin = require("../../config/db").getAdmin(cpass),
   Institute = require("../../config/db").getInstitute(cpass),
   share = require("./sharedata"),

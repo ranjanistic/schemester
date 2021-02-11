@@ -34,35 +34,33 @@ jobs:
       run: |
         touch .env
         echo "SSH = ${{ secrets.SSH }}" >> .env
-    #     echo "NODE_ENV = ${{ secrets.NODE_ENV }}" >> .env
-    #     echo "APP_NAME = ${{ secrets.APP_NAME }}" >> .env
-    #     echo "EMAIL = ${{ secrets.EMAIL }}" >> .env
-    #     echo "SITE = ${{ secrets.SITE }}" >> .env
-    #     echo "DBUSER = ${{ secrets.DBUSER }}" >> .env
-    #     echo "DBPASS = ${{ secrets.DBPASS }}" >> .env
-    #     echo "DBNAME = ${{ secrets.DBNAME }}" >> .env
-    #     echo "ADMIN_COL = ${{ secrets.ADMIN_COL }}" >> .env
-    #     echo "INST_COL = ${{ secrets.INST_COL }}" >> .env
-    #     echo "SESS_COL = ${{ secrets.SESS_COL }}" >> .env
-    #     echo "ALERT_COL = ${{ secrets.ALERT_COL }}" >> .env
-    #     echo "OAUTH_COL = ${{ secrets.OAUTH_COL }}" >> .env
-    #     echo "DPASS = ${{ secrets.DPASS }}" >> .env
-    #     echo "CPASS = ${{ secrets.CPASS }}" >> .env
-    #     echo "PUSH_ID = ${{ secrets.PUSH_ID }}" >> .env
-    #     echo "PUSH_KEY = ${{ secrets.PUSH_KEY }}" >> .env
-    #     echo "PUSH_SEC = ${{ secrets.PUSH_SEC }}" >> .env
-    #     echo "PUSH_CLUS = ${{ secrets.PUSH_CLUS }}" >> .env
-    #     echo "MAIL_HOST = ${{ secrets.MAIL_HOST }}" >> .env
-    #     echo "MAIL_PORT = ${{ secrets.MAIL_PORT }}" >> .env
-    #     echo "MAILUSER = ${{ secrets.MAILUSER }}" >> .env
-    #     echo "MAILPASS = ${{ secrets.MAILPASS }}" >> .env
-    #     echo "MAILCIPHER = ${{ secrets.MAILCIPHER }}" >> .env
-    #     echo "SESSPUBKEY = ${{ secrets.SESSPUBKEY }}" >> .env
-    #     echo "SESSADMIN = ${{ secrets.SESSADMIN }}" >> .env
-    #     echo "SESSTEACH = ${{ secrets.SESSTEACH }}" >> .env
-    #     echo "SESSSTUD = ${{ secrets.SESSSTUD }}" >> .env
-    # - name : Generate Config Keys
-    #   run: npm run config
+        echo "NODE_ENV = ${{ secrets.NODE_ENV }}" >> .env
+        echo "APP_NAME = ${{ secrets.APP_NAME }}" >> .env
+        echo "EMAIL = ${{ secrets.EMAIL }}" >> .env
+        echo "SITE = ${{ secrets.SITE }}" >> .env
+        echo "DBUSER = ${{ secrets.DBUSER }}" >> .env
+        echo "DBPASS = ${{ secrets.DBPASS }}" >> .env
+        echo "DBNAME = ${{ secrets.DBNAME }}" >> .env
+        echo "ADMIN_COL = ${{ secrets.ADMIN_COL }}" >> .env
+        echo "INST_COL = ${{ secrets.INST_COL }}" >> .env
+        echo "SESS_COL = ${{ secrets.SESS_COL }}" >> .env
+        echo "ALERT_COL = ${{ secrets.ALERT_COL }}" >> .env
+        echo "OAUTH_COL = ${{ secrets.OAUTH_COL }}" >> .env
+        echo "DPASS = ${{ secrets.DPASS }}" >> .env
+        echo "CPASS = ${{ secrets.CPASS }}" >> .env
+        echo "PUSH_ID = ${{ secrets.PUSH_ID }}" >> .env
+        echo "PUSH_KEY = ${{ secrets.PUSH_KEY }}" >> .env
+        echo "PUSH_SEC = ${{ secrets.PUSH_SEC }}" >> .env
+        echo "PUSH_CLUS = ${{ secrets.PUSH_CLUS }}" >> .env
+        echo "MAIL_HOST = ${{ secrets.MAIL_HOST }}" >> .env
+        echo "MAIL_PORT = ${{ secrets.MAIL_PORT }}" >> .env
+        echo "MAILUSER = ${{ secrets.MAILUSER }}" >> .env
+        echo "MAILPASS = ${{ secrets.MAILPASS }}" >> .env
+        echo "MAILCIPHER = ${{ secrets.MAILCIPHER }}" >> .env
+        echo "SESSPUBKEY = ${{ secrets.SESSPUBKEY }}" >> .env
+        echo "SESSADMIN = ${{ secrets.SESSADMIN }}" >> .env
+        echo "SESSTEACH = ${{ secrets.SESSTEACH }}" >> .env
+        echo "SESSSTUD = ${{ secrets.SESSSTUD }}" >> .env
     - name: Test
       run: |
         npm run build --if-present
