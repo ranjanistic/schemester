@@ -1,4 +1,4 @@
-const {appname} = require("./config/config.json");
+const {appname} = require("./config/config.js");
 module.exports = {
     apps : [{
       name: appname,
