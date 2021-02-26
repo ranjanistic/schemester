@@ -67,9 +67,4 @@ node_modules/
 backups/
 config/config.json
 schemesterenv/
-localhost-key.pem
-localhost.pem
-192.168.43.56.pem 
-192.168.43.56-key.pem 
-schemester.herokuapp.com.pem
-schemester.herokuapp.com-key.pem
+*.pem

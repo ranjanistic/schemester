@@ -1,26 +1,34 @@
-class Homepage{
-    constructor(){
-        backRoot();
-        new ThemeSwitch('darkmode');
-        handlePageAlerts();
-        this.logintabs = getElement('logintabs');
-        this.tabshtml = [];
-        this.tabs = [];
-        this.loginlocates = [locate.admin.login,locate.teacher.login,locate.student.login];
-        [{
-          client:client.admin,
-          name:"Admin",
-          tagline:"Sign in here to access your institution."
-        },{
-          client:client.teacher,
-          name:"Teacher",
-          tagline:"Sign in here to access your schedule."
-        },{
-          client:client.student,
-          name:"Student",
-          tagline:"Sign in to see what's on your day today"
-        }].forEach((user)=>{
-          this.tabshtml.push(`
+class Homepage {
+  constructor() {
+    backRoot();
+    new ThemeSwitch("darkmode");
+    handlePageAlerts();
+    this.logintabs = getElement("logintabs");
+    this.tabshtml = [];
+    this.tabs = [];
+    this.loginlocates = [
+      locate.admin.login,
+      locate.teacher.login,
+      locate.student.login,
+    ];
+    [
+      {
+        client: client.admin,
+        name: "Admin",
+        tagline: "Sign in here to access your institution.",
+      },
+      {
+        client: client.teacher,
+        name: "Teacher",
+        tagline: "Sign in here to access your schedule.",
+      },
+      {
+        client: client.student,
+        name: "Student",
+        tagline: "Sign in to see what's on your day today",
+      },
+    ].forEach((user) => {
+      this.tabshtml.push(`
           <div class="fmt-col fmt-third fmt-padding-small fmt-animate-top">
           <button
             class="image-text-button"
@@ -45,49 +53,62 @@ class Homepage{
           </button>
         </div>
           `);
-          
-        });
-        if(localStorage.getItem(key.homelogintab)){
-            this.logintabs.innerHTML = this.tabshtml[Number(localStorage.getItem(key.homelogintab))];
-            this.tabshtml.forEach((tabcont,t)=>{
-                if(t!=Number(localStorage.getItem(key.homelogintab))){
-                  this.logintabs.innerHTML+= tabcont;
-                }
-            })
-        } else {
-          this.tabshtml.forEach((tabcont)=>{
-              this.logintabs.innerHTML+= tabcont;
-          });
+    });
+    if (localStorage.getItem(key.homelogintab)) {
+      this.logintabs.innerHTML = this.tabshtml[
+        Number(localStorage.getItem(key.homelogintab))
+      ];
+      this.tabshtml.forEach((tabcont, t) => {
+        if (t != Number(localStorage.getItem(key.homelogintab))) {
+          this.logintabs.innerHTML += tabcont;
         }
-
-        [client.admin,client.teacher,client.student].forEach((c)=>{
-          this.tabs.push(getElement(`${c}Login`));
-        });
-
-        this.tabs.forEach((tab,t)=>{
-          tab.onclick=_=>{
-            showLoader();
-            localStorage.setItem(key.homelogintab,t);
-            refer(this.loginlocates[t])
-          }
-        });
-
-        this.adminSignup = getElement('registeradmin');
-        this.teacherSignup = getElement('registerteacher');
-        this.studentSignup = getElement('registerstudent');
-
-        this.getstarted = getElement('getStarted'); 
-        
-        this.adminSignup.onclick=_=>{showadminregistration()};
-        this.teacherSignup.onclick=_=>{showTeacherRegistration()};
-        this.studentSignup.onclick=_=>{showStudentRegistration()};
-        
-        this.getstarted.onclick=_=> {showLoader();refer(locate.tour);}
+      });
+    } else {
+      this.tabshtml.forEach((tabcont) => {
+        this.logintabs.innerHTML += tabcont;
+      });
     }
+
+    [client.admin, client.teacher, client.student].forEach((c) => {
+      this.tabs.push(getElement(`${c}Login`));
+    });
+
+    this.tabs.forEach((tab, t) => {
+      tab.onclick = (_) => {
+        showLoader();
+        localStorage.setItem(key.homelogintab, t);
+        refer(this.loginlocates[t]);
+      };
+    });
+
+    this.adminSignup = getElement("registeradmin");
+    this.teacherSignup = getElement("registerteacher");
+    this.studentSignup = getElement("registerstudent");
+
+    this.getstarted = getElement("getStarted");
+
+    this.adminSignup.onclick = (_) => {
+      showadminregistration();
+    };
+    this.teacherSignup.onclick = (_) => {
+      showTeacherRegistration();
+    };
+    this.studentSignup.onclick = (_) => {
+      showStudentRegistration();
+    };
+
+    this.getstarted.onclick = (_) => {
+      showLoader();
+      refer(locate.tour);
+    };
+  }
 }
 
-window.onload = _=> {
-    theme.setNav();
-    window.app = new Homepage();
-    registerServiceWorker();
+window.onload = (_) => {
+  if (window.location.protocol !== "https:") {
+    refer(`https://${location.hostname}${location.pathname}`);
+  }
+  theme.setNav();
+  window.app = new Homepage();
+  registerServiceWorker();
 };
