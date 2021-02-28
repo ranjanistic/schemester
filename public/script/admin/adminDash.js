@@ -231,10 +231,10 @@ class NoDataView {
       };
     });
     tryCalling(() => {
-      getElement("dismissnoteacherwarning").onclick=_=>{
-        hideElementById('noteacherwarning');
-      }
-    })
+      getElement("dismissnoteacherwarning").onclick = (_) => {
+        hideElementById("noteacherwarning");
+      };
+    });
     tryCalling(() => {
       getElement("institutesetup").onclick = (_) => {
         refer(locate.admin.session, {
@@ -499,7 +499,7 @@ class ConfirmClasses {
                 `classfield${c}`,
                 Class,
                 `New name for ${Class}`,
-                validType.nonempty,
+                validType.nonempty
               ),
               `editclass${c}`,
               `classname${c}`,

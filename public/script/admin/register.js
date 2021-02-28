@@ -9,22 +9,22 @@ class Register {
     this.settings = getElement("settingsButton");
     this.logout = getElement("logoutAdminButton");
     this.settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
-    new ThemeSwitch('darkmode');
+    new ThemeSwitch("darkmode");
     this.finalize = getElement("registrationComplete");
     this.stage1Loader = getElement("stage1load");
     this.stage2Loader = getElement("stage2load");
     this.logout.onclick = () => {
       finishSession(client.admin);
     };
-    this.updating = getElement("updatinginst").innerHTML == 'true';
-    if(!this.updating){
-   this.uploadfile = getElement("uploadinst");
-  this.uploadfile.onclick = (_) => {
-    this.updial = new Dialog();
-    this.updial.transparent();
-    this.updial.setDisplay(
-      "Upload Institute",
-      `
+    this.updating = getElement("updatinginst").innerHTML == "true";
+    if (!this.updating) {
+      this.uploadfile = getElement("uploadinst");
+      this.uploadfile.onclick = (_) => {
+        this.updial = new Dialog();
+        this.updial.transparent();
+        this.updial.setDisplay(
+          "Upload Institute",
+          `
       <center>If you have already a backup file (.json) of your institution, then you can upload it here to directly create schedule from it.</center>
       <div class="fmt-center group-text">The file must appear like XXXXXXXXXXXXXXXX_AA_NNNNNNNNNNNNNNNNN.json</div>
         <fieldset class="text-field" id="fileuploadfield">
@@ -33,138 +33,205 @@ class Register {
           <span class="error-caption" id="fileuploadfielderror"></span>
         </fieldset>
       `
-    );
-    const fileinput = new TextInput(
-      "fileuploadfield",
-      false
-    );
-    this.updial.createActions(
-      ["Create Institute", "Cancel"],
-      [actionType.positive, actionType.neutral]
-    );
-    fileinput.input.addEventListener(
-      "change",
-      (event) => {
-        var files = event.target.files;
-        var file = files[0];
-        var reader = new FileReader();
-        reader.onload = (eve) => {
-          try {
-            inst = JSON.parse(eve.target.result);
-          } catch (e) {
-            clog(e);
-            fileinput.showError('Invalid file, must be of JSON type.');
-          }
-        };
-        reader.readAsText(file);
-      },
-      false
-    );
-    this.updial.onButtonClick([
-      (_) => {
-        if(inst){
-          this.updial.loader(true);
-          this.fillScheduleFromfile(inst);
-        }else {
-          snackBar('Problem with your file.','Help',false);
-        }
-      },
-      (_) => {
-        this.updial.hide();
-      },
-    ]);
-    this.updial.show();
-  };}
-
+        );
+        const fileinput = new TextInput("fileuploadfield", false);
+        this.updial.createActions(
+          ["Create Institute", "Cancel"],
+          [actionType.positive, actionType.neutral]
+        );
+        fileinput.input.addEventListener(
+          "change",
+          (event) => {
+            var files = event.target.files;
+            var file = files[0];
+            var reader = new FileReader();
+            reader.onload = (eve) => {
+              try {
+                inst = JSON.parse(eve.target.result);
+              } catch (e) {
+                clog(e);
+                fileinput.showError("Invalid file, must be of JSON type.");
+              }
+            };
+            reader.readAsText(file);
+          },
+          false
+        );
+        this.updial.onButtonClick([
+          (_) => {
+            if (inst) {
+              this.updial.loader(true);
+              this.fillScheduleFromfile(inst);
+            } else {
+              snackBar("Problem with your file.", "Help", false);
+            }
+          },
+          (_) => {
+            this.updial.hide();
+          },
+        ]);
+        this.updial.show();
+      };
+    }
   }
-  fillScheduleFromfile(inst){
-    try{
+  fillScheduleFromfile(inst) {
+    try {
       sessionStorage.setItem("adphone", inst.default.admin.phone);
       sessionStorage.setItem("instname", inst.default.institute.instituteName);
       sessionStorage.setItem("uiid", inst.uiid);
       sessionStorage.setItem("instemail", inst.default.institute.email);
       sessionStorage.setItem("instphone", inst.default.institute.phone);
       sessionStorage.setItem("startTimeField", inst.default.timings.startTime);
-      sessionStorage.setItem("breakStartField", inst.default.timings.breakStartTime);
-      sessionStorage.setItem("eachDurationField",inst.default.timings.periodMinutes);
+      sessionStorage.setItem(
+        "breakStartField",
+        inst.default.timings.breakStartTime
+      );
+      sessionStorage.setItem(
+        "eachDurationField",
+        inst.default.timings.periodMinutes
+      );
       sessionStorage.setItem("totalDaysField", inst.default.timings.daysInWeek);
-      sessionStorage.setItem("totalPeriodsField",inst.default.timings.periodsInDay);
-      sessionStorage.setItem("breakDurationField",inst.default.timings.breakMinutes);
-      
+      sessionStorage.setItem(
+        "totalPeriodsField",
+        inst.default.timings.periodsInDay
+      );
+      sessionStorage.setItem(
+        "breakDurationField",
+        inst.default.timings.breakMinutes
+      );
+
       const choosedialog = new Dialog();
       choosedialog.transparent();
-      let choicesview = inst.schedule.teachers.length?`${getSwitch('teacherschedule','Teachers Schedule','teacherscheduleswitch')}`:constant.nothing;
-      choicesview += inst.users.teachers.length?`${getSwitch('teacheraccount','Teacher Accounts','teacheraccountswitch')}`:constant.nothing;
-      choicesview += inst.users.classes.length?`${getSwitch('classrooms','Classrooms','classroomswitch')}`:constant.nothing;
-      choosedialog.setDisplay('Choose to use',`The following information was found in your file. Choose the ones to use.
+      let choicesview = inst.schedule.teachers.length
+        ? `${getSwitch(
+            "teacherschedule",
+            "Teachers Schedule",
+            "teacherscheduleswitch"
+          )}`
+        : constant.nothing;
+      choicesview += inst.users.teachers.length
+        ? `${getSwitch(
+            "teacheraccount",
+            "Teacher Accounts",
+            "teacheraccountswitch"
+          )}`
+        : constant.nothing;
+      choicesview += inst.users.classes.length
+        ? `${getSwitch("classrooms", "Classrooms", "classroomswitch")}`
+        : constant.nothing;
+      choosedialog.setDisplay(
+        "Choose to use",
+        `The following information was found in your file. Choose the ones to use.
       <div class="fmt-row">
       ${choicesview}
       </div>
-      `);
-      const teacherscheduleswitch = new Switch('teacherscheduleswitch');
-      const teacheraccountswitch = new Switch('teacheraccountswitch');
-      const studentaccountswitch = new Switch('studentaccountswitch');
-      const classroomswitch = new Switch('classroomswitch');
-      try{
-        teacherscheduleswitch.onTurnChange(_=>{
-          sessionStorage.setItem('fileteacherschedule',true);
-        },_=>{
-          sessionStorage.removeItem('fileteacherschedule');
-        });
-        teacheraccountswitch.onTurnChange(_=>{
-          sessionStorage.setItem('fileteacheraccount',true);
-        },_=>{
-          sessionStorage.removeItem('fileteacheraccount');
-        });
-        studentaccountswitch.onTurnChange(_=>{
-          sessionStorage.setItem('filestudentaccount',true);
-        },_=>{
-          sessionStorage.removeItem('filestudentaccount');
-        });
-        classroomswitch.onTurnChange(_=>{
-          sessionStorage.setItem('fileclasses',true);
-        },_=>{
-          sessionStorage.removeItem('fileclasses');
-        });
-      }catch{};
-      choosedialog.createActions(['Apply','Cancel'],[actionType.positive,actionType.neutral]);
-      choosedialog.onButtonClick([_=>{
-        choosedialog.setDisplay('Confirm Data',`${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, 
-        ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''},
-        ${sessionStorage.getItem('filestudentaccount')?'Student accounts':''}
-        ${sessionStorage.getItem('fileclasses')?', & Classrooms':''} will be created from your file.`);
-        choosedialog.createActions(['Confirm','Abort'],[actionType.positive,actionType.neutral]);
-        choosedialog.onButtonClick([_=>{
-          setClasses();
-          this.uploadfile.innerHTML = 'File Selected';
-          opacityOf(this.uploadfile,0.5);
-          this.uploadfile.onclick=_=>{snackBar('A file is already selected','Deselect File',true,_=>{location.reload()})}
-          choosedialog.hide();
-        },_=>{
+      `
+      );
+      const teacherscheduleswitch = new Switch("teacherscheduleswitch");
+      const teacheraccountswitch = new Switch("teacheraccountswitch");
+      const studentaccountswitch = new Switch("studentaccountswitch");
+      const classroomswitch = new Switch("classroomswitch");
+      try {
+        teacherscheduleswitch.onTurnChange(
+          (_) => {
+            sessionStorage.setItem("fileteacherschedule", true);
+          },
+          (_) => {
+            sessionStorage.removeItem("fileteacherschedule");
+          }
+        );
+        teacheraccountswitch.onTurnChange(
+          (_) => {
+            sessionStorage.setItem("fileteacheraccount", true);
+          },
+          (_) => {
+            sessionStorage.removeItem("fileteacheraccount");
+          }
+        );
+        studentaccountswitch.onTurnChange(
+          (_) => {
+            sessionStorage.setItem("filestudentaccount", true);
+          },
+          (_) => {
+            sessionStorage.removeItem("filestudentaccount");
+          }
+        );
+        classroomswitch.onTurnChange(
+          (_) => {
+            sessionStorage.setItem("fileclasses", true);
+          },
+          (_) => {
+            sessionStorage.removeItem("fileclasses");
+          }
+        );
+      } catch {}
+      choosedialog.createActions(
+        ["Apply", "Cancel"],
+        [actionType.positive, actionType.neutral]
+      );
+      choosedialog.onButtonClick([
+        (_) => {
+          choosedialog.setDisplay(
+            "Confirm Data",
+            `${
+              sessionStorage.getItem("fileteacherschedule") ? "Schedule" : ""
+            }, 
+        ${
+          sessionStorage.getItem("fileteacheraccount") ? "Teacher accounts" : ""
+        },
+        ${
+          sessionStorage.getItem("filestudentaccount") ? "Student accounts" : ""
+        }
+        ${
+          sessionStorage.getItem("fileclasses") ? ", & Classrooms" : ""
+        } will be created from your file.`
+          );
+          choosedialog.createActions(
+            ["Confirm", "Abort"],
+            [actionType.positive, actionType.neutral]
+          );
+          choosedialog.onButtonClick([
+            (_) => {
+              setClasses();
+              this.uploadfile.innerHTML = "File Selected";
+              opacityOf(this.uploadfile, 0.5);
+              this.uploadfile.onclick = (_) => {
+                snackBar(
+                  "A file is already selected",
+                  "Deselect File",
+                  true,
+                  (_) => {
+                    location.reload();
+                  }
+                );
+              };
+              choosedialog.hide();
+            },
+            (_) => {
+              inst = null;
+              sessionStorage.removeItem("fileteacherschedule");
+              sessionStorage.removeItem("fileteacheraccount");
+              sessionStorage.removeItem("filestudentaccount");
+              sessionStorage.removeItem("fileclasses");
+              choosedialog.hide();
+            },
+          ]);
+        },
+        (_) => {
           inst = null;
-          sessionStorage.removeItem('fileteacherschedule');
-          sessionStorage.removeItem('fileteacheraccount');
-          sessionStorage.removeItem('filestudentaccount');
-          sessionStorage.removeItem('fileclasses');
+          sessionStorage.removeItem("fileteacherschedule");
+          sessionStorage.removeItem("fileteacheraccount");
+          sessionStorage.removeItem("filestudentaccount");
+          sessionStorage.removeItem("fileclasses");
           choosedialog.hide();
-        }])
-      },_=>{
-        inst = null;
-        sessionStorage.removeItem('fileteacherschedule');
-        sessionStorage.removeItem('fileteacheraccount');
-        sessionStorage.removeItem('filestudentaccount');
-        sessionStorage.removeItem('fileclasses');
-        choosedialog.hide();
-      }]);
+        },
+      ]);
       choosedialog.show();
-
-    }catch(e){
+    } catch (e) {
       this.updial.loader(false);
-      snackBar(`File corrupted`,'Report',false);
+      snackBar(`File corrupted`, "Report", false);
     }
-    
   }
-  
 }
 
 class Stage1 {
@@ -199,18 +266,24 @@ class Stage1 {
       validType.phone
     );
 
-    this.instemailsame = new Switch('emailsameasadmin');
-    this.instemailsame.onTurnChange(_=>{
-      this.instEmailField.setInput(this.emaildisplay.innerHTML);
-    },_=>{
-      this.instEmailField.clearInput();
-    });
-    this.instphonesame = new Switch('phonesameasadmin');
-    this.instphonesame.onTurnChange(_=>{
-      this.instPhoneField.setInput(this.phoneField.getInput());
-    },_=>{
-      this.instPhoneField.clearInput();
-    });
+    this.instemailsame = new Switch("emailsameasadmin");
+    this.instemailsame.onTurnChange(
+      (_) => {
+        this.instEmailField.setInput(this.emaildisplay.innerHTML);
+      },
+      (_) => {
+        this.instEmailField.clearInput();
+      }
+    );
+    this.instphonesame = new Switch("phonesameasadmin");
+    this.instphonesame.onTurnChange(
+      (_) => {
+        this.instPhoneField.setInput(this.phoneField.getInput());
+      },
+      (_) => {
+        this.instPhoneField.clearInput();
+      }
+    );
     if (sessionStorage.getItem("uiid") == localStorage.getItem("uiid")) {
       this.phoneField.setInput(sessionStorage.getItem("adphone"));
       this.instNameField.setInput(sessionStorage.getItem("instname"));
@@ -268,7 +341,11 @@ class Stage1 {
       this.saveLocally();
       hide(this.view);
       show(s2.view);
-      app.greeting.innerHTML = getButton("previousButton","Previous",actionType.neutral);
+      app.greeting.innerHTML = getButton(
+        "previousButton",
+        "Previous",
+        actionType.neutral
+      );
       getElement("previousButton").onclick = () => {
         this.backToStage1(app, s2);
       };
@@ -297,7 +374,7 @@ class Stage1 {
 class Stage2 {
   constructor() {
     this.view = getElement("stage2");
-    this.updating = getElement("updatinginst").innerHTML == 'true';
+    this.updating = getElement("updatinginst").innerHTML == "true";
     this.startTimeField = new TextInput(
       "startTimeField",
       false,
@@ -317,20 +394,23 @@ class Stage2 {
       "",
       validType.naturalnumber
     );
-    this.nobreak = new Switch('nobreakcheck','nobreaklabel');
-    this.nobreak.onTurnChange(_=>{
-      this.breakStartField.disableInput();
-      this.breakStartField.setInput(null);
-      this.breakStartField.normalize();
-      this.breakDurationField.disableInput();
-      this.breakDurationField.setInput(0);
-      this.breakDurationField.normalize();
-      sessionStorage.setItem('nobreak',true);
-    },_=>{
-      sessionStorage.removeItem('nobreak');
-      this.breakStartField.enableInput();
-      this.breakDurationField.enableInput();
-    })
+    this.nobreak = new Switch("nobreakcheck", "nobreaklabel");
+    this.nobreak.onTurnChange(
+      (_) => {
+        this.breakStartField.disableInput();
+        this.breakStartField.setInput(null);
+        this.breakStartField.normalize();
+        this.breakDurationField.disableInput();
+        this.breakDurationField.setInput(0);
+        this.breakDurationField.normalize();
+        sessionStorage.setItem("nobreak", true);
+      },
+      (_) => {
+        sessionStorage.removeItem("nobreak");
+        this.breakStartField.enableInput();
+        this.breakDurationField.enableInput();
+      }
+    );
 
     this.daySelector = getElement("dayselector");
     this.daychecks = Array(constant.weekdays.length);
@@ -407,23 +487,25 @@ class Stage2 {
     sessionStorage.getItem("startTimeField")
       ? this.startTimeField.setInput(sessionStorage.getItem("startTimeField"))
       : (_) => {};
-    if(sessionStorage.getItem('nobreak')){
-      this.nobreak.on()
+    if (sessionStorage.getItem("nobreak")) {
+      this.nobreak.on();
       this.breakStartField.disableInput();
       this.breakStartField.setInput(null);
       this.breakStartField.normalize();
       this.breakDurationField.disableInput();
       this.breakDurationField.setInput(0);
       this.breakDurationField.normalize();
-    }else {
+    } else {
       sessionStorage.getItem("breakStartField")
-      ? this.breakStartField.setInput(sessionStorage.getItem("breakStartField"))
-      : (_) => {};
+        ? this.breakStartField.setInput(
+            sessionStorage.getItem("breakStartField")
+          )
+        : (_) => {};
       sessionStorage.getItem("breakDurationField")
-      ? this.breakDurationField.setInput(
-          sessionStorage.getItem("breakDurationField")
-        )
-      : (_) => {};
+        ? this.breakDurationField.setInput(
+            sessionStorage.getItem("breakDurationField")
+          )
+        : (_) => {};
     }
     sessionStorage.getItem("eachDurationField")
       ? this.eachDurationField.setInput(
@@ -436,7 +518,6 @@ class Stage2 {
           sessionStorage.getItem("totalPeriodsField")
         )
       : (_) => {};
-
 
     this.startTimeField.validate((_) => {
       this.breakStartField.inputFocus(),
@@ -475,11 +556,7 @@ class Stage2 {
     });
 
     this.save = getElement("saveStage2");
-    this.workingdaysField = new TextInput(
-      "workingdaysfield",
-      false,
-      ""
-    );
+    this.workingdaysField = new TextInput("workingdaysfield", false, "");
   }
   durationValid() {
     const getNumeric = (value) => {
@@ -503,10 +580,11 @@ class Stage2 {
     if (
       !(
         this.startTimeField.isValid() &&
-        (this.breakStartField.isValid()||sessionStorage.getItem('nobreak'))&&
+        (this.breakStartField.isValid() || sessionStorage.getItem("nobreak")) &&
         this.eachDurationField.isValid() &&
         this.totalPeriodsField.isValid() &&
-        (this.breakDurationField.isValid() ||sessionStorage.getItem('nobreak')) &&
+        (this.breakDurationField.isValid() ||
+          sessionStorage.getItem("nobreak")) &&
         this.someChecked()
       )
     ) {
@@ -516,7 +594,7 @@ class Stage2 {
           this.startTimeField.getInput()
         );
       });
-      if(!sessionStorage.getItem('nobreak')){
+      if (!sessionStorage.getItem("nobreak")) {
         this.breakStartField.validateNow((_) => {
           this.eachDurationField.inputFocus();
           sessionStorage.setItem(
@@ -547,27 +625,38 @@ class Stage2 {
           );
       });
     } else {
-      if(this.totalPeriodsField.getInput()*this.eachDurationField.getInput()>constant.minutesInDay-this.breakDurationField.getInput()){
-        this.totalPeriodsField.showError('Not acceptable');
-        this.eachDurationField.showError('Not acceptable');
-        return snackBar(`Invalid period setup. Make sure that product of total periods and each period duration doesn't exceed ${constant.minutesInDay-this.breakDurationField.getInput()} (total minutes in a day, excluding break minutes)`,'Help',false);
+      if (
+        this.totalPeriodsField.getInput() * this.eachDurationField.getInput() >
+        constant.minutesInDay - this.breakDurationField.getInput()
+      ) {
+        this.totalPeriodsField.showError("Not acceptable");
+        this.eachDurationField.showError("Not acceptable");
+        return snackBar(
+          `Invalid period setup. Make sure that product of total periods and each period duration doesn't exceed ${
+            constant.minutesInDay - this.breakDurationField.getInput()
+          } (total minutes in a day, excluding break minutes)`,
+          "Help",
+          false
+        );
       }
       this.saveLocally();
       this.confirmationDialog();
     }
   }
-  confirmationDialog(){
+  confirmationDialog() {
     const confirm = new Dialog();
-      let dindex = String(sessionStorage.getItem("totalDaysField")).split(",");
-      let days = constant.weekdays[Number(dindex[0])];
-      for (let i = 1; i < dindex.length; i++) {
-        days = `${days}, ${constant.weekdays[Number(dindex[i])]}`;
-      }
-      confirm.setDisplay(
-        "Confirmation",
-        `<center >Proceed to ${this.updating?'update':'create'} <b>${sessionStorage.getItem(
-          "instname"
-        )}</b>?${inst?' (From uploaded file)':''}</center>
+    let dindex = String(sessionStorage.getItem("totalDaysField")).split(",");
+    let days = constant.weekdays[Number(dindex[0])];
+    for (let i = 1; i < dindex.length; i++) {
+      days = `${days}, ${constant.weekdays[Number(dindex[i])]}`;
+    }
+    confirm.setDisplay(
+      "Confirmation",
+      `<center >Proceed to ${
+        this.updating ? "update" : "create"
+      } <b>${sessionStorage.getItem("instname")}</b>?${
+        inst ? " (From uploaded file)" : ""
+      }</center>
         <br/>
         <div class="questrial">
           <ul>
@@ -587,14 +676,16 @@ class Stage2 {
             <li>Day starts at: <b>${sessionStorage.getItem(
               "startTimeField"
             )} hours</b></li>
-            ${sessionStorage.getItem(
-              "nobreak"
-              )?'<li>No break time':`<li>Break starts at : <b>${sessionStorage.getItem(
-                "breakStartField"
-              )} hours</b></li>
+            ${
+              sessionStorage.getItem("nobreak")
+                ? "<li>No break time"
+                : `<li>Break starts at : <b>${sessionStorage.getItem(
+                    "breakStartField"
+                  )} hours</b></li>
               <li>Break duration : <b>${sessionStorage.getItem(
                 "breakDurationField"
-              )} minutes</b></li>`}
+              )} minutes</b></li>`
+            }
             <li>Each period duration : <b>${sessionStorage.getItem(
               "eachDurationField"
             )} minutes</b></li>
@@ -603,41 +694,61 @@ class Stage2 {
             )}</b></li>
             <li>Working days : <b>${days}</li>
           </ul>
-          ${inst?
-          `<div class="fmt-row">
-            With ${sessionStorage.getItem('fileteacherschedule')?'Schedule':''}, 
-            ${sessionStorage.getItem('fileteacheraccount')?'Teacher accounts':''}
-            ${sessionStorage.getItem('filestudentaccount')?'Student accounts':''}
-            ${sessionStorage.getItem('fileclasses')?', & Classrooms':''} from your file.
-          </div>`:''}
+          ${
+            inst
+              ? `<div class="fmt-row">
+            With ${
+              sessionStorage.getItem("fileteacherschedule") ? "Schedule" : ""
+            }, 
+            ${
+              sessionStorage.getItem("fileteacheraccount")
+                ? "Teacher accounts"
+                : ""
+            }
+            ${
+              sessionStorage.getItem("filestudentaccount")
+                ? "Student accounts"
+                : ""
+            }
+            ${
+              sessionStorage.getItem("fileclasses") ? ", & Classrooms" : ""
+            } from your file.
+          </div>`
+              : ""
+          }
         </div>`
-      );
-      confirm.createActions(
-        ["Confirm & Proceed", "Edit"],
-        [actionType.active, actionType.neutral]
-      );
-      confirm.onButtonClick([
-          (_) => {
-            loadingBox(
-              true,
-              "Setting up",
-              `Preparing <b>${sessionStorage.getItem(
-                "instname"
-              )}'s (${sessionStorage.getItem(
-                "uiid"
-              )})</br> schedule structure, please wait...`
-            );
-            const wdays = [];
-            String(sessionStorage.getItem("totalDaysField")).split(",").forEach((item) => {
-              wdays.push(Number(item));
-            });
-            const data = inst?{
+    );
+    confirm.createActions(
+      ["Confirm & Proceed", "Edit"],
+      [actionType.active, actionType.neutral]
+    );
+    confirm.onButtonClick([
+      (_) => {
+        loadingBox(
+          true,
+          "Setting up",
+          `Preparing <b>${sessionStorage.getItem(
+            "instname"
+          )}'s (${sessionStorage.getItem(
+            "uiid"
+          )})</br> schedule structure, please wait...`
+        );
+        const wdays = [];
+        String(sessionStorage.getItem("totalDaysField"))
+          .split(",")
+          .forEach((item) => {
+            wdays.push(Number(item));
+          });
+        const data = inst
+          ? {
               default: {
-                admin: [{
-                  username: sessionStorage.getItem("adname"),
-                  email: sessionStorage.getItem("ademail"),
-                  phone: sessionStorage.getItem("adphone"),
-                }],
+                admin: [
+                  {
+                    username: sessionStorage.getItem("adname"),
+                    email: sessionStorage.getItem("ademail"),
+                    phone: sessionStorage.getItem("adphone"),
+                  },
+                ],
                 institute: {
                   instituteName: sessionStorage.getItem("instname"),
                   email: sessionStorage.getItem("instemail"),
@@ -645,42 +756,61 @@ class Stage2 {
                 },
                 timings: {
                   startTime: sessionStorage.getItem("startTimeField"),
-                  breakStartTime: sessionStorage.getItem("nobreak")?null:sessionStorage.getItem("breakStartField"),
+                  breakStartTime: sessionStorage.getItem("nobreak")
+                    ? null
+                    : sessionStorage.getItem("breakStartField"),
                   periodMinutes: Number(
                     sessionStorage.getItem("eachDurationField")
                   ),
-                  breakMinutes: sessionStorage.getItem("nobreak")?0:Number(
-                    sessionStorage.getItem("breakDurationField")
-                  ),
+                  breakMinutes: sessionStorage.getItem("nobreak")
+                    ? 0
+                    : Number(sessionStorage.getItem("breakDurationField")),
                   periodsInDay: Number(
                     sessionStorage.getItem("totalPeriodsField")
                   ),
                   daysInWeek: wdays,
                 },
               },
-              schedule:sessionStorage.getItem('fileteacherschedule')?inst.schedule:{teachers:[]},
-              users:{
-                teachers:sessionStorage.getItem('fileteacheraccount')?inst.users.teachers:[],
-                students:sessionStorage.getItem('filestudentaccount')?inst.users.students:[],
-                classes:sessionStorage.getItem('fileclasses')?inst.users.classes:[]
+              schedule: sessionStorage.getItem("fileteacherschedule")
+                ? inst.schedule
+                : { teachers: [] },
+              users: {
+                teachers: sessionStorage.getItem("fileteacheraccount")
+                  ? inst.users.teachers
+                  : [],
+                students: sessionStorage.getItem("filestudentaccount")
+                  ? inst.users.students
+                  : [],
+                classes: sessionStorage.getItem("fileclasses")
+                  ? inst.users.classes
+                  : [],
               },
-              pseudousers:{
-                teachers:sessionStorage.getItem('fileteacheraccount')?inst.pseudousers.teachers:[],
-                students:sessionStorage.getItem('filestudentaccount')?inst.pseudousers.students:[],
-                classes:sessionStorage.getItem('fileclasses')?inst.pseudousers.classes:[]
+              pseudousers: {
+                teachers: sessionStorage.getItem("fileteacheraccount")
+                  ? inst.pseudousers.teachers
+                  : [],
+                students: sessionStorage.getItem("filestudentaccount")
+                  ? inst.pseudousers.students
+                  : [],
+                classes: sessionStorage.getItem("fileclasses")
+                  ? inst.pseudousers.classes
+                  : [],
               },
-              invite:inst.invite,
-              comms:inst.comms||[],
-              restricted:inst.restricted,
-              vacations:inst.vacations,
-              preferences:inst.preferences
-            }:{
+              invite: inst.invite,
+              comms: inst.comms || [],
+              restricted: inst.restricted,
+              vacations: inst.vacations,
+              preferences: inst.preferences,
+            }
+          : {
               default: {
-                admin: [{
-                  username: sessionStorage.getItem("adname"),
-                  email: sessionStorage.getItem("ademail"),
-                  phone: sessionStorage.getItem("adphone"),
-                }],
+                admin: [
+                  {
+                    username: sessionStorage.getItem("adname"),
+                    email: sessionStorage.getItem("ademail"),
+                    phone: sessionStorage.getItem("adphone"),
+                  },
+                ],
                 institute: {
                   instituteName: sessionStorage.getItem("instname"),
                   email: sessionStorage.getItem("instemail"),
@@ -688,13 +818,15 @@ class Stage2 {
                 },
                 timings: {
                   startTime: sessionStorage.getItem("startTimeField"),
-                  breakStartTime: sessionStorage.getItem("nobreak")?null:sessionStorage.getItem("breakStartField"),
+                  breakStartTime: sessionStorage.getItem("nobreak")
+                    ? null
+                    : sessionStorage.getItem("breakStartField"),
                   periodMinutes: Number(
                     sessionStorage.getItem("eachDurationField")
                   ),
-                  breakMinutes: sessionStorage.getItem("nobreak")?0:Number(
-                    sessionStorage.getItem("breakDurationField")
-                  ),
+                  breakMinutes: sessionStorage.getItem("nobreak")
+                    ? 0
+                    : Number(sessionStorage.getItem("breakDurationField")),
                   periodsInDay: Number(
                     sessionStorage.getItem("totalPeriodsField")
                   ),
@@ -702,81 +834,81 @@ class Stage2 {
                 },
               },
             };
-            postJsonData(post.admin.default, {
-              target: post.admin.action.registerInstitute,
-              fromfile:inst?true:false,
-              data,
-            }).then((response) => {
-              switch (response.event) {
-                case code.auth.SESSION_INVALID: {
-                  return relocate(locate.admin.auth, {
-                    action: action.login,
-                    target: locate.admin.target.register,
-                  });
+        postJsonData(post.admin.default, {
+          target: post.admin.action.registerInstitute,
+          fromfile: inst ? true : false,
+          data,
+        }).then((response) => {
+          switch (response.event) {
+            case code.auth.SESSION_INVALID: {
+              return relocate(locate.admin.auth, {
+                action: action.login,
+                target: locate.admin.target.register,
+              });
+            }
+            case code.inst.INSTITUTION_CREATION_FAILED: {
+              loadingBox(false);
+              snackBar(
+                `Error:${response.event}:${response.msg}`,
+                "Retry",
+                false,
+                (_) => {
+                  confirm.getDialogButton(0).click();
                 }
-                case code.inst.INSTITUTION_CREATION_FAILED: {
-                  loadingBox(false);
-                  snackBar(
-                    `Error:${response.event}:${response.msg}`,
-                    "Retry",
-                    false,
-                    (_) => {
-                      confirm.getDialogButton(0).click();
-                    }
-                  );
-                  return;
-                }
-                case code.inst.INSTITUTION_CREATED:
-                  {
-                    window.onbeforeunload = () => {};
-                    if(inst || this.updating) return location.reload();
-                    loadingBox(false);
-                    const finish = new Dialog();
-                    finish.setDisplay(
-                      "Insitution registered",
-                      "The details have been saved successfully. You may add teachers, or skip to your dashboard."
-                    );
-                    finish.createActions(
-                      ["Add teachers", "Skip"],
-                      [actionType.positive, actionType.neutral]
-                    );
-                    snackBar(
-                      `Your institution's UIID is, <b>${sessionStorage.getItem(
-                        "uiid"
-                      )}</b>. Always keep this in your mind.`,
-                      "Understood"
-                    );
-                    finish.onButtonClick(
-                      [
-                        (_) => {
-                          finish.loader();
-                          relocate(locate.admin.session, {
-                            u: localStorage.getItem(constant.sessionUID),
-                            target: locate.admin.target.addteacher,
-                          });
-                        },
-                        (_) => {
-                          finish.loader();
-                          relocate(locate.admin.session, {
-                            u: localStorage.getItem(constant.sessionUID),
-                            target: locate.admin.target.dashboard,
-                          });
-                        }
-                      ]
-                    );
-                    finish.show();
-                  }
-                  break;
-                  default:snackBar(`Couldn't create institution, please check for any wrong inputs.`);
+              );
+              return;
+            }
+            case code.inst.INSTITUTION_CREATED:
+              {
+                window.onbeforeunload = () => {};
+                if (inst || this.updating) return location.reload();
+                loadingBox(false);
+                const finish = new Dialog();
+                finish.setDisplay(
+                  "Insitution registered",
+                  "The details have been saved successfully. You may add teachers, or skip to your dashboard."
+                );
+                finish.createActions(
+                  ["Add teachers", "Skip"],
+                  [actionType.positive, actionType.neutral]
+                );
+                snackBar(
+                  `Your institution's UIID is, <b>${sessionStorage.getItem(
+                    "uiid"
+                  )}</b>. Always keep this in your mind.`,
+                  "Understood"
+                );
+                finish.onButtonClick([
+                  (_) => {
+                    finish.loader();
+                    relocate(locate.admin.session, {
+                      u: localStorage.getItem(constant.sessionUID),
+                      target: locate.admin.target.addteacher,
+                    });
+                  },
+                  (_) => {
+                    finish.loader();
+                    relocate(locate.admin.session, {
+                      u: localStorage.getItem(constant.sessionUID),
+                      target: locate.admin.target.dashboard,
+                    });
+                  },
+                ]);
+                finish.show();
               }
-            });
-          },
-          (_) => {
-            confirm.hide();
+              break;
+            default:
+              snackBar(
+                `Couldn't create institution, please check for any wrong inputs.`
+              );
           }
-        ]
-      );
-      confirm.show();
+        });
+      },
+      (_) => {
+        confirm.hide();
+      },
+    ]);
+    confirm.show();
   }
   saveLocally() {
     const days = [];
@@ -805,7 +937,7 @@ class Stage2 {
   }
 }
 
-function setClasses(){
+function setClasses() {
   const app = new Register();
   const s1 = new Stage1();
   const s2 = new Stage2();

@@ -14,19 +14,17 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
           ["Stay logged in", "Log out"],
           [actionType.positive, actionType.negative]
         );
-        confirmLogout.onButtonClick(
-          [
-            () => {
-              confirmLogout.hide();
-            },
-            () => {
-              confirmLogout.loader();
-              finishSession(client.admin, (_) => {
-                showadminregistration(true);
-              });
-            }
-          ]
-        );
+        confirmLogout.onButtonClick([
+          () => {
+            confirmLogout.hide();
+          },
+          () => {
+            confirmLogout.loader();
+            finishSession(client.admin, (_) => {
+              showadminregistration(true);
+            });
+          },
+        ]);
         confirmLogout.show();
       });
     },
@@ -35,8 +33,7 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
       regDial.setDisplay(
         "Create Admin Account",
         "Create a new account with a working email address (individual or institution).",
-        '/graphic/illustrations/adminview.svg'
-
+        "/graphic/illustrations/adminview.svg"
       );
       regDial.createActions(
         ["Next", "Cancel"],
@@ -47,25 +44,25 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
           "Your name",
           "Email Address",
           "New Password",
-          "Unique Institution ID - UIID"
+          "Unique Institution ID - UIID",
         ],
         [
           "Shravan Kumar, or something?",
           "youremail@example.domain",
           "Strong password",
-          "A unique ID for your institution"
+          "A unique ID for your institution",
         ],
         ["text", "email", "password", "text"],
         [
           validType.name,
           validType.email,
           validType.password,
-          validType.username
+          validType.username,
         ],
         [null, email, null, uiid],
         ["name", "email", "new-password", "username"],
         [true, false, false, false],
-        ["words", "off", "off", "off"],
+        ["words", "off", "off", "off"]
       );
 
       regDial.validate(0, (_) => {
@@ -78,37 +75,35 @@ const showadminregistration = (isShowing = true, email = null, uiid = null) => {
         regDial.getInput(3).focus();
       });
       regDial.validate(3);
-      regDial.onButtonClick(
-        [
-          () => {
-            if (!regDial.allValid()) {
-              regDial.validateNow(0, (_) => {
-                regDial.getInput(1).focus();
-              });
-              regDial.validateNow(1, (_) => {
-                regDial.getInput(2).focus();
-              });
-              regDial.validateNow(2, (_) => {
-                regDial.getInput(3).focus();
-              });
-              regDial.validateNow(3);
-            } else {
-              regDial.normalize();
-              regDial.loader();
-              createAccount(
-                regDial,
-                regDial.getInputValue(0).trim(),
-                regDial.getInputValue(1).trim(),
-                regDial.getInputValue(2),
-                regDial.getInputValue(3).trim()
-              );
-            }
-          },
-          () => {
-            regDial.hide();
+      regDial.onButtonClick([
+        () => {
+          if (!regDial.allValid()) {
+            regDial.validateNow(0, (_) => {
+              regDial.getInput(1).focus();
+            });
+            regDial.validateNow(1, (_) => {
+              regDial.getInput(2).focus();
+            });
+            regDial.validateNow(2, (_) => {
+              regDial.getInput(3).focus();
+            });
+            regDial.validateNow(3);
+          } else {
+            regDial.normalize();
+            regDial.loader();
+            createAccount(
+              regDial,
+              regDial.getInputValue(0).trim(),
+              regDial.getInputValue(1).trim(),
+              regDial.getInputValue(2),
+              regDial.getInputValue(3).trim()
+            );
           }
-        ]
-      );
+        },
+        () => {
+          regDial.hide();
+        },
+      ]);
       regDial.existence(isShowing);
     }
   );
@@ -185,7 +180,9 @@ function linkGenerator(target) {
         let linkdialog = new Dialog();
         linkdialog.setDisplay(
           "Invitation Link",
-          `<center><a href="${response.link}" target="_blank" rel="noreferrer">${response.link}</a>
+          `<center><a href="${
+            response.link
+          }" target="_blank" rel="noreferrer">${response.link}</a>
             <br/>This Link will automatically expire on <b>${getProperDate(
               String(response.exp)
             )}</b><br/><br/>
@@ -196,9 +193,10 @@ function linkGenerator(target) {
                 <span class="switch-positive" id="teachereditscheduleview"></span>
               </label>
           </div>
-          </center>`,true
+          </center>`,
+          true
         );
-        new QRCode(getElement(linkdialog.imagedivId),response.link);
+        new QRCode(getElement(linkdialog.imagedivId), response.link);
         this.allowteacherschedule = new Switch("teachereditschedulei");
         postJsonData(post.admin.manage, {
           type: "preferences",
@@ -231,36 +229,35 @@ function linkGenerator(target) {
         );
         linkdialog.createActions(
           ["Share", "Disable", "Copy", "Done"],
-          [actionType.positive, actionType.negative, actionType.positive, actionType.neutral]
-        );
-        linkdialog.onButtonClick(
           [
-            ()=>{
-              shareLinkAction('Teacher Invitation',response.link);
-            },
-            (_) => {
-              linkdialog.loader();
-              revokeLink(target);
-            },
-            (_) => {
-              navigator.clipboard
-                .writeText(response.link)
-                .then((_) => {
-                  snackBar("Link copied to clipboard.");
-                })
-                .catch((err) => {
-                  snackBar(
-                    "Failed to copy, please do it manually.",
-                    null,
-                    false
-                  );
-                });
-            },
-            (_) => {
-              linkdialog.hide();
-            }
+            actionType.positive,
+            actionType.negative,
+            actionType.positive,
+            actionType.neutral,
           ]
         );
+        linkdialog.onButtonClick([
+          () => {
+            shareLinkAction("Teacher Invitation", response.link);
+          },
+          (_) => {
+            linkdialog.loader();
+            revokeLink(target);
+          },
+          (_) => {
+            navigator.clipboard
+              .writeText(response.link)
+              .then((_) => {
+                snackBar("Link copied to clipboard.");
+              })
+              .catch((err) => {
+                snackBar("Failed to copy, please do it manually.", null, false);
+              });
+          },
+          (_) => {
+            linkdialog.hide();
+          },
+        ]);
         linkdialog.show();
       }
       switch (response.event) {
@@ -299,19 +296,17 @@ function revokeLink(target) {
         );
         nolinkdialog.createActions(
           ["Create Link", "Abort"],
-          [actionType.positive, actionType.negative],
+          [actionType.positive, actionType.negative]
         );
-        nolinkdialog.onButtonClick(
-          [
-            (_) => {
-              nolinkdialog.hide();
-              this.linkGenerator(target);
-            },
-            (_) => {
-              nolinkdialog.hide();
-            }
-          ]
-        );
+        nolinkdialog.onButtonClick([
+          (_) => {
+            nolinkdialog.hide();
+            this.linkGenerator(target);
+          },
+          (_) => {
+            nolinkdialog.hide();
+          },
+        ]);
         nolinkdialog.show();
       } else {
         snackBar(`Link couldn't be disabled.`, "Try again", false, (_) => {
@@ -319,7 +314,5 @@ function revokeLink(target) {
         });
       }
     })
-    .catch((error) => {
-      
-    });
+    .catch((error) => {});
 }

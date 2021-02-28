@@ -2,9 +2,9 @@ class Classrooms {
   constructor() {
     this.totalclasses = Number(getElement("totalusers").innerHTML);
     this.createclass = getElement("adduser");
-    getElement("teachers").onclick=_=>{
-      refer(locate.admin.session,{target:locate.admin.target.teachers})
-    }
+    getElement("teachers").onclick = (_) => {
+      refer(locate.admin.session, { target: locate.admin.target.teachers });
+    };
     this.createclass.onclick = (_) => {
       this.addclass = new Dialog();
       this.addclass.setDisplay(
@@ -37,33 +37,48 @@ class Classrooms {
           this.addclass.loader();
           postJsonData(post.admin.users, {
             target: client.student,
-            action:action.update, 
+            action: action.update,
             specific: code.action.CREATE_NEW_CLASS,
-            newclass:{
-              _id:null,
-              classname:this.addclass.getInputValue(0).trim(),
+            newclass: {
+              _id: null,
+              classname: this.addclass.getInputValue(0).trim(),
               inchargename: "",
               inchargeID: this.addclass.getInputValue(1).trim(),
-              students:[],
-              invite:{
-                student:{
-                  active:false,
-                  createdAt:0,
-                  expiresAt:0
-                }
-              }
-            }
+              students: [],
+              invite: {
+                student: {
+                  active: false,
+                  createdAt: 0,
+                  expiresAt: 0,
+                },
+              },
+            },
           }).then((resp) => {
-            if(resp.event == code.OK){
+            if (resp.event == code.OK) {
               return location.reload();
             }
             this.addclass.loader(false);
-            switch(resp.event){
-              case code.inst.CLASS_EXISTS:return this.addclass.showFieldError(0,'Classroom already exists');
-              case code.inst.INCHARGE_OCCUPIED:return this.addclass.showFieldError(1,`Already an incharge of ${resp.inchargeof}`);
-              case code.inst.INCHARGE_NOT_FOUND:return this.addclass.showFieldError(1,`No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${this.addclass.getInputValue(1).trim()}'})">Add teacher?</a>`);
-              default:return snackBar(resp.event,'Report',false);
-            };
+            switch (resp.event) {
+              case code.inst.CLASS_EXISTS:
+                return this.addclass.showFieldError(
+                  0,
+                  "Classroom already exists"
+                );
+              case code.inst.INCHARGE_OCCUPIED:
+                return this.addclass.showFieldError(
+                  1,
+                  `Already an incharge of ${resp.inchargeof}`
+                );
+              case code.inst.INCHARGE_NOT_FOUND:
+                return this.addclass.showFieldError(
+                  1,
+                  `No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${this.addclass
+                    .getInputValue(1)
+                    .trim()}'})">Add teacher?</a>`
+                );
+              default:
+                return snackBar(resp.event, "Report", false);
+            }
           });
         },
         (_) => {
@@ -126,7 +141,7 @@ class Classrooms {
               setincharge.loader();
               postJsonData(post.admin.users, {
                 target: client.student,
-                action:action.update,
+                action: action.update,
                 specific: code.action.SET_INCHARGE,
                 cid: classtab.classID,
                 newinchargeID: setincharge.getInputValue(0).trim(),
@@ -136,8 +151,12 @@ class Classrooms {
                 }
                 setincharge.loader(false);
                 switch (resp.event) {
-                  case code.inst.INCHARGE_NOT_FOUND:{
-                    return setincharge.inputField[0].showError(`No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${setincharge.getInputValue(0).trim()}'})">Add teacher?</a>`);
+                  case code.inst.INCHARGE_NOT_FOUND: {
+                    return setincharge.inputField[0].showError(
+                      `No such teacher exists. <a onclick="referTab(locate.admin.session,{target:locate.admin.target.addteacher,teacherID:'${setincharge
+                        .getInputValue(0)
+                        .trim()}'})">Add teacher?</a>`
+                    );
                   }
                   case code.inst.INCHARGE_OCCUPIED:
                     return snackBar(
@@ -147,7 +166,7 @@ class Classrooms {
                       (_) => {
                         postJsonData(post.admin.users, {
                           target: client.student,
-                          action:action.update,
+                          action: action.update,
                           specific: code.action.SET_INCHARGE,
                           switchclash: true,
                           cid: classtab.classID,
@@ -222,9 +241,9 @@ class Teachers {
     this.totalteachers = Number(getElement("totalusers").innerHTML);
     this.pendinginvites = getElement("invites");
     this.pendingrequests = getElement("requests");
-    getElement("classrooms").onclick=_=>{
-      refer(locate.admin.session,{target:locate.admin.target.classes})
-    }
+    getElement("classrooms").onclick = (_) => {
+      refer(locate.admin.session, { target: locate.admin.target.classes });
+    };
     this.pendinginvites.onclick = (_) => {
       const pending = new Dialog();
       pending.createActions(["Hide"], [actionType.neutral]);
@@ -288,9 +307,14 @@ class Teachers {
               })
                 .then((res) => {
                   if (res.event == code.mail.MAIL_SENT) {
-                    restrictElement(requests[p],60,`requestteacher${p}`,_=>{
-                      requests[p].onclick=requests[p].onclick;
-                    });
+                    restrictElement(
+                      requests[p],
+                      60,
+                      `requestteacher${p}`,
+                      (_) => {
+                        requests[p].onclick = requests[p].onclick;
+                      }
+                    );
                     return snackBar(
                       `Request email has been sent to ${nonuser}.`,
                       "OK"
@@ -546,10 +570,10 @@ window.onload = (_) => {
   const settingsmenu = new Menu("settingsmenu", "settingsmenubutton");
   new ThemeSwitch("darkmode");
   theme.setNav();
-  backRoot("backhistory",{client:client.admin})
-  getElement("logout").oncilck=_=>{
+  backRoot("backhistory", { client: client.admin });
+  getElement("logout").oncilck = (_) => {
     finishSession(client.admin);
-  }
+  };
   getElement(key.client).innerHTML == client.teacher
     ? new Teachers()
     : new Classrooms();

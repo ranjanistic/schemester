@@ -474,15 +474,13 @@ class TeacherFiller {
           if (this.data.isAdmin) {
             this.teacherClass[response.clash.period].showError(
               `This class is already taken at this period by 
-              <a id="clashlink${response.clash.uid}">${response.clash.id}</a>.`
+              <span id="clashlink${response.clash.id}">${response.clash.id}</span>.`
             );
-            getElement(`clashlink${response.clash.uid}`).onclick = (_) => {
+            getElement(`clashlink${response.clash.id}`).onclick = (_) => {
               referTab(locate.admin.session, {
                 target: locate.admin.target.viewschedule,
                 type: client.teacher,
-                [response.clash.uid ? "t" : "teacherID"]: response.clash.uid
-                  ? response.clash.uid
-                  : response.clash.id,
+                teacherID: response.clash.id,
               });
             };
           } else {

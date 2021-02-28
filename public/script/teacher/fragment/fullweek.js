@@ -1,6 +1,7 @@
 parent.window.scrollTo(0, 0);
 if (
-  sessionStorage.getItem(key.fragment) != locate.teacher.target.fragment.fullweek
+  sessionStorage.getItem(key.fragment) !=
+  locate.teacher.target.fragment.fullweek
 ) {
   parent.clickTab(1);
 }

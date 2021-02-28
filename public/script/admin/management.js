@@ -9,7 +9,7 @@ class Management {
       locate.admin.section.schedule,
       locate.admin.section.users,
       locate.admin.section.security,
-      locate.admin.section.about
+      locate.admin.section.about,
     ];
     this.displayIndex =
       this.sectionsArray.indexOf(this.sectionreq) < 0
@@ -22,7 +22,7 @@ class Management {
       getElement("scheduleTab"),
       getElement("usersTab"),
       getElement("securityTab"),
-      getElement("aboutTab")
+      getElement("aboutTab"),
     ];
     setClassNames(this.tabs[this.displayIndex], "leftTabButtonSelected");
     this.chips = [
@@ -31,7 +31,7 @@ class Management {
       getElement("mscheduleTab"),
       getElement("musersTab"),
       getElement("msecurityTab"),
-      getElement("maboutTab")
+      getElement("maboutTab"),
     ];
     this.chips[this.displayIndex].click();
     this.boxes = [
@@ -40,7 +40,7 @@ class Management {
       getElement("scheduleSettingsBox"),
       getElement("usersSettingsBox"),
       getElement("securitySettingsBox"),
-      getElement("aboutSettingsBox")
+      getElement("aboutSettingsBox"),
     ];
     showElement(this.boxes, this.displayIndex);
 
@@ -54,7 +54,7 @@ class Management {
     this.security = new Security();
     this.users = new Users(this.sectionsArray);
     for (var i = 0; i < this.tabs.length; i++) {
-      this.tabs[i].onclick=(event) => {
+      this.tabs[i].onclick = (event) => {
         this.handleTabClicks(
           event,
           this.tabs,
@@ -63,16 +63,19 @@ class Management {
           "leftTabButton"
         );
       };
-      this.chips[i].onclick=(event) => {
-          this.handleTabClicks(event, this.chips, this.boxes);
+      this.chips[i].onclick = (event) => {
+        this.handleTabClicks(event, this.chips, this.boxes);
       };
     }
-    this.contactDevs.onclick=_=>feedBackBox();
-    this.back.onclick=_=> this.undoAndReturn();
-    this.logout.onclick=(_) => {
+    this.contactDevs.onclick = (_) => feedBackBox();
+    this.back.onclick = (_) => this.undoAndReturn();
+    this.logout.onclick = (_) => {
       showLoader();
       finishSession(client.admin, (_) => {
-        relocate(locate.admin.login, { target: locate.admin.target.manage ,section:this.sectionsArray[this.displayIndex]});
+        relocate(locate.admin.login, {
+          target: locate.admin.target.manage,
+          section: this.sectionsArray[this.displayIndex],
+        });
       });
     };
   }
@@ -89,8 +92,8 @@ class Management {
             query.substr(query.lastIndexOf("=")),
             `=${this.sectionsArray[k]}`
           )
-          );
-          this.displayIndex = k;
+        );
+        this.displayIndex = k;
       }
       visibilityOf(showables[k], condition);
       if (showClass != null && hideClass != null) {
@@ -287,7 +290,7 @@ class Admin {
     }
     new Preferences();
     this.inviteadmin = new Button("inviteadmin");
-    this.inviteadmin.onclick(_=>{
+    this.inviteadmin.onclick((_) => {
       const adminlink = new Dialog();
       adminlink.transparent();
       adminlink.loader();
@@ -295,7 +298,7 @@ class Admin {
         type: "invitation",
         action: action.create,
         target: client.admin,
-      }).then(response=>{
+      }).then((response) => {
         if (
           response.event == code.invite.LINK_EXISTS ||
           response.event == code.invite.LINK_CREATED
@@ -304,43 +307,46 @@ class Admin {
           linkdialog.setDisplay(
             "Admin Invitation Link",
             `<center>
-              <a href="${response.link}" target="_blank" rel="noreferrer">${response.link}</a>
-              <br/>This Link will automatically expire on <b>${getProperDate(String(response.exp))}</b><br/>
-            </center>`,true
+              <a href="${response.link}" target="_blank" rel="noreferrer">${
+              response.link
+            }</a>
+              <br/>This Link will automatically expire on <b>${getProperDate(
+                String(response.exp)
+              )}</b><br/>
+            </center>`,
+            true
           );
-          new QRCode(getElement(linkdialog.imagedivId),response.link);
+          new QRCode(getElement(linkdialog.imagedivId), response.link);
           linkdialog.createActions(
             ["Share", "Disable", "Copy", "Done"],
-            [actionType.negative, actionType.positive, actionType.neutral]
+            [actionType.positive, actionType.negative, actionType.neutral]
           );
-          linkdialog.onButtonClick(
-            [
-              ()=>{
-                shareLinkAction("Admin Invitation",response.link);
-              },
-              (_) => {
-                linkdialog.loader();
-                revokeLink(client.admin);
-              },
-              (_) => {
-                navigator.clipboard
-                  .writeText(response.link)
-                  .then((_) => {
-                    snackBar("Link copied to clipboard.");
-                  })
-                  .catch((err) => {
-                    snackBar(
-                      "Failed to copy, please do it manually.",
-                      null,
-                      false
-                    );
-                  });
-              },
-              (_) => {
-                linkdialog.hide();
-              }
-            ]
-          );
+          linkdialog.onButtonClick([
+            () => {
+              shareLinkAction("Admin Invitation", response.link);
+            },
+            (_) => {
+              linkdialog.loader();
+              revokeLink(client.admin);
+            },
+            (_) => {
+              navigator.clipboard
+                .writeText(response.link)
+                .then((_) => {
+                  snackBar("Link copied to clipboard.");
+                })
+                .catch((err) => {
+                  snackBar(
+                    "Failed to copy, please do it manually.",
+                    null,
+                    false
+                  );
+                });
+            },
+            (_) => {
+              linkdialog.hide();
+            },
+          ]);
           linkdialog.show();
         }
         switch (response.event) {
@@ -349,12 +355,18 @@ class Admin {
           case code.invite.LINK_CREATED:
             return snackBar("Share this with the administrator.");
           case code.invite.LINK_CREATION_FAILED:
-            return snackBar(`Unable to generate link:${response.msg}`, "Report");
+            return snackBar(
+              `Unable to generate link:${response.msg}`,
+              "Report"
+            );
           default:
-            return snackBar(`Error:${response.event}:${response.msg}`, "Report");
+            return snackBar(
+              `Error:${response.event}:${response.msg}`,
+              "Report"
+            );
         }
-      })
-    })
+      });
+    });
   }
 }
 
@@ -479,7 +491,7 @@ class Institution {
       constructor() {
         this.allowteacherschedule = new Switch("teachereditschedule");
         this.scheduleActive = new Switch("scheduleactive");
-        new ThemeSwitch('darkmode');
+        new ThemeSwitch("darkmode");
         this.allowteacherschedule.onTurnChange(
           (_) => {
             postJsonData(post.admin.manage, {
@@ -534,12 +546,7 @@ class Schedule {
     this.start = new Editable(
       "start",
       "starteditor",
-      new TextInput(
-        "startfield",
-        "Start Time",
-        "",
-        validType.time
-      ),
+      new TextInput("startfield", "Start Time", "", validType.time),
       "editstart",
       "startView",
       "savestart",
@@ -694,12 +701,12 @@ class Schedule {
   }
   rescheduleDefault(weekdays = false, periods = false) {
     this.scheduler.createActions(["Discard"], [actionType.neutral]);
-    this.scheduler.onButtonClick(
-      [(_) => {
+    this.scheduler.onButtonClick([
+      (_) => {
         sessionStorage.clear();
         this.scheduler.hide();
-      }]
-    );
+      },
+    ]);
     this.scheduler.setDisplay(
       "Edit Schedule Structure",
       `
@@ -741,17 +748,22 @@ class Schedule {
     this.scheduler.setDisplay(
       "Periods Editor",
       `<center class="negative">These actions will change the periods, proceed with caution.</center>
-      ${getButton('addperiod','Add period')}
+      ${getButton("addperiod", "Add period")}
       <br/>
       <div class="fmt-row">
         ${editcontent}
       </div>`
     );
-    getElement("addperiod").onclick=_=>{
-      this.scheduler.setDisplay('Insert new period',`<center>Add a new (${addNumberSuffixHTML(periods+1)}) period in everyone's daily schedule.<br/>The period will be set to free by default.</center>
-      `)
+    getElement("addperiod").onclick = (_) => {
+      this.scheduler.setDisplay(
+        "Insert new period",
+        `<center>Add a new (${addNumberSuffixHTML(
+          periods + 1
+        )}) period in everyone's daily schedule.<br/>The period will be set to free by default.</center>
+      `
+      );
       this.scheduler.createActions(
-        [`Back`, `Create ${addNumberSuffixHTML(periods+1)} period`],
+        [`Back`, `Create ${addNumberSuffixHTML(periods + 1)} period`],
         [actionType.neutral, actionType.warning]
       );
       this.scheduler.onButtonClick([
@@ -765,20 +777,25 @@ class Schedule {
             target: client.teacher,
             action: action.update,
             specific: code.action.ADD_PERIOD,
-            newperiod: periods+1,
-          }).then(resp=>{
-            if(resp.event == code.OK){
-              snackBar(`${addNumberSuffixHTML(periods+1)} period has been created for everyone.`);
+            newperiod: periods + 1,
+          }).then((resp) => {
+            if (resp.event == code.OK) {
+              snackBar(
+                `${addNumberSuffixHTML(
+                  periods + 1
+                )} period has been created for everyone.`
+              );
               return this.restartView();
             }
             this.scheduler.loader(false);
-            switch(resp.event){
-              default:snackBar('An error occurred','Report',false);
+            switch (resp.event) {
+              default:
+                snackBar("An error occurred", "Report", false);
             }
-          })
-        }
+          });
+        },
       ]);
-    }
+    };
     const periodrows = [];
     const switchperiods = [];
     const deleteperiods = [];
@@ -788,8 +805,10 @@ class Schedule {
       switchperiods.push(getElement(`switchperiod${p}`));
       switchperiods[p].onclick = (_) => {
         this.scheduler.setDisplay(
-          `Switch ${addNumberSuffixHTML(p+1)} period`,
-          `<center>Provide the period number which you want to transfer or exchange schedule of everyone's <b>${addNumberSuffixHTML(p+1)} period</b> with.</center>`
+          `Switch ${addNumberSuffixHTML(p + 1)} period`,
+          `<center>Provide the period number which you want to transfer or exchange schedule of everyone's <b>${addNumberSuffixHTML(
+            p + 1
+          )} period</b> with.</center>`
         );
         this.scheduler.createInputs(
           ["Period number"],
@@ -801,7 +820,7 @@ class Schedule {
         this.scheduler.getInput(0).min = 1;
         this.scheduler.validate();
         this.scheduler.createActions(
-          [`Back`, `Switch ${addNumberSuffixHTML(p+1)} period`],
+          [`Back`, `Switch ${addNumberSuffixHTML(p + 1)} period`],
           [actionType.neutral, actionType.warning]
         );
         this.scheduler.onButtonClick([
@@ -810,21 +829,28 @@ class Schedule {
             this.reschedulePeriodsEditor();
           },
           (_) => {
-
-            if (!this.scheduler.allValid()||Number(this.scheduler.getInputValue(0))<1||Number(this.scheduler.getInputValue(0))>periods) return this.scheduler.validateNow();
+            if (
+              !this.scheduler.allValid() ||
+              Number(this.scheduler.getInputValue(0)) < 1 ||
+              Number(this.scheduler.getInputValue(0)) > periods
+            )
+              return this.scheduler.validateNow();
             this.scheduler.loader();
             postJsonData(post.admin.schedule, {
               target: client.teacher,
               action: action.update,
               specific: code.action.SWITCH_PERIODS,
               oldperiod: p,
-              newperiod: Number(this.scheduler.getInputValue(0).trim())-1,
+              newperiod: Number(this.scheduler.getInputValue(0).trim()) - 1,
             }).then((response) => {
-
               if (response.event == code.OK) {
                 this.scheduler.loader(false);
                 snackBar(
-                  `${addNumberSuffixHTML(p+1)} has been switched with ${addNumberSuffixHTML(this.scheduler.getInputValue(0))} period.`
+                  `${addNumberSuffixHTML(
+                    p + 1
+                  )} has been switched with ${addNumberSuffixHTML(
+                    this.scheduler.getInputValue(0)
+                  )} period.`
                 );
                 this.restartView();
               } else {
@@ -836,56 +862,70 @@ class Schedule {
       };
       deleteperiods.push(getElement(`deleteperiod${p}`));
       deleteperiods[p].onclick = (_) => {
-        snackBar(`Delete period ${p+1} from every schedule?`, "Delete", false, (_) => {
-          deleteperiods[p].onclick = (_) => {};
-          this.scheduler.loader();
-          snackBar(`Deleting period ${p+1}...`);
-          postJsonData(post.admin.schedule, {
-            target: client.teacher,
-            action: action.update,
-            specific: code.action.REMOVE_PERIOD,
-            period: p,
-          }).then((response) => {
-            this.scheduler.loader(false);
-            if (response.event == code.OK) {
-              remainingperiods--;
-              periods--;
-              if(remainingperiods<1){
-                this.scheduler.createActions(['Set periods']);
-                this.scheduler.onButtonClick([_=>{
-                  location.reload();
-                }]);
-              }
-              hide(periodrows[p]);
-              this.totalPeriods.innerHTML = Number(this.totalPeriods.innerHTML) - 1;
-              snackBar(
-                `${p+1} was removed from every schedule`,
-                "Refresh",
-                true,
-                (_) => {
-                  location.reload();
+        snackBar(
+          `Delete period ${p + 1} from every schedule?`,
+          "Delete",
+          false,
+          (_) => {
+            deleteperiods[p].onclick = (_) => {};
+            this.scheduler.loader();
+            snackBar(`Deleting period ${p + 1}...`);
+            postJsonData(post.admin.schedule, {
+              target: client.teacher,
+              action: action.update,
+              specific: code.action.REMOVE_PERIOD,
+              period: p,
+            }).then((response) => {
+              this.scheduler.loader(false);
+              if (response.event == code.OK) {
+                remainingperiods--;
+                periods--;
+                if (remainingperiods < 1) {
+                  this.scheduler.createActions(["Set periods"]);
+                  this.scheduler.onButtonClick([
+                    (_) => {
+                      location.reload();
+                    },
+                  ]);
                 }
-              );
-            } else {
-              snackBar(`Unable to remove ${p+1} from every schedule`, "Report");
-            }
-          });
-        });
+                hide(periodrows[p]);
+                this.totalPeriods.innerHTML =
+                  Number(this.totalPeriods.innerHTML) - 1;
+                snackBar(
+                  `${p + 1} was removed from every schedule`,
+                  "Refresh",
+                  true,
+                  (_) => {
+                    location.reload();
+                  }
+                );
+              } else {
+                snackBar(
+                  `Unable to remove ${p + 1} from every schedule`,
+                  "Report"
+                );
+              }
+            });
+          }
+        );
       };
-    };
+    }
     this.scheduler.createActions(
-      [`Back`,'Cancel'],
+      [`Back`, "Cancel"],
       [actionType.neutral, actionType.positive]
     );
-    this.scheduler.onButtonClick([_=>{
-      this.rescheduleDefault();
-    },_=>{
-      this.scheduler.hide();
-    }])
+    this.scheduler.onButtonClick([
+      (_) => {
+        this.rescheduleDefault();
+      },
+      (_) => {
+        this.scheduler.hide();
+      },
+    ]);
   }
   rescheduleWeekEditor() {
     const days = this.workDays.innerHTML.split(",");
-    days.forEach((day,d)=>days[d] = day.trim());
+    days.forEach((day, d) => (days[d] = day.trim()));
     const daysindices = [days.length];
     let editcontent = constant.nothing;
     days.forEach((day, d) => {
@@ -907,19 +947,22 @@ class Schedule {
       "Weekdays Editor",
       `
     <center class="negative">These actions will change the weekdays, proceed with caution.</center>
-    ${getButton('addday','Add day')}
+    ${getButton("addday", "Add day")}
     <br/>
     <div class="fmt-row">
       ${editcontent}
     </div>`
     );
-    getElement("addday").onclick=_=>{
-      this.scheduler.setDisplay('Insert new day',`<center>Add a new day in everyone's schedule.<br/>The periods of this day will be set to free by default.</center>
-      `)
+    getElement("addday").onclick = (_) => {
+      this.scheduler.setDisplay(
+        "Insert new day",
+        `<center>Add a new day in everyone's schedule.<br/>The periods of this day will be set to free by default.</center>
+      `
+      );
       this.scheduler.createInputs(
-        ['New day name'],
-        ['Type the new day to be inserted'],
-        ['text'],
+        ["New day name"],
+        ["Type the new day to be inserted"],
+        ["text"],
         [validType.weekday]
       );
       this.scheduler.validate();
@@ -942,22 +985,28 @@ class Schedule {
             newdayindex: constant.weekdayscasual.indexOf(
               this.scheduler.getInputValue(0).toLowerCase().trim()
             ),
-          }).then(resp=>{
-            if(resp.event == code.OK){
-              snackBar(`${this.scheduler.getInputValue(0)} is now a working day.`);
+          }).then((resp) => {
+            if (resp.event == code.OK) {
+              snackBar(
+                `${this.scheduler.getInputValue(0)} is now a working day.`
+              );
               return this.restartView();
             }
             this.scheduler.loader(false);
-            switch(resp.event){
-              case code.schedule.WEEKDAY_EXISTS:{
-                return this.scheduler.showFieldError(0,`${this.scheduler.getInputValue(0)} is already in schedule.`);
-              };
-              default:snackBar('An error occurred','Report',false);
+            switch (resp.event) {
+              case code.schedule.WEEKDAY_EXISTS: {
+                return this.scheduler.showFieldError(
+                  0,
+                  `${this.scheduler.getInputValue(0)} is already in schedule.`
+                );
+              }
+              default:
+                snackBar("An error occurred", "Report", false);
             }
-          })
-        }
+          });
+        },
       ]);
-    }
+    };
     const dayrows = [];
     const switchdays = [];
     const deleteDays = [];
@@ -995,7 +1044,7 @@ class Schedule {
               target: client.teacher,
               action: action.update,
               specific: code.action.SWITCH_DAY,
-              switchclash:true,
+              switchclash: true,
               olddayindex: daysindices[d],
               newdayindex: constant.weekdayscasual.indexOf(
                 this.scheduler.getInputValue(0).toLowerCase().trim()
@@ -1008,7 +1057,7 @@ class Schedule {
                     0
                   )}`
                 );
-                
+
                 this.restartView();
               } else {
                 snackBar("Could'nt change weekdays", "Report");
@@ -1032,11 +1081,13 @@ class Schedule {
             this.scheduler.loader(false);
             if (response.event == code.OK) {
               remainingdays--;
-              if(remainingdays<1){
-                this.scheduler.createActions(['Set days']);
-                this.scheduler.onButtonClick([_=>{
-                  location.reload();
-                }]);
+              if (remainingdays < 1) {
+                this.scheduler.createActions(["Set days"]);
+                this.scheduler.onButtonClick([
+                  (_) => {
+                    location.reload();
+                  },
+                ]);
               }
               hide(dayrows[d]);
               snackBar(
@@ -1093,7 +1144,7 @@ class Security {
     this.resetPass = getElement("resetPasswordButton");
     this.sendpasslink = getElement("sendpasswordlink");
 
-    resumeElementRestriction(this.sendpasslink,"sendpasslink",_=>{
+    resumeElementRestriction(this.sendpasslink, "sendpasslink", (_) => {
       this.sendpasslink.onclick = (_) => {
         this.linkSender();
       };
@@ -1102,65 +1153,72 @@ class Security {
     this.resetMail = getElement("resetMailButton");
     this.backup = getElement("instbackup");
 
-    resumeElementRestriction(this.backup,"backupinst",_=>{
-      this.backup.onclick=_=>{
+    resumeElementRestriction(this.backup, "backupinst", (_) => {
+      this.backup.onclick = (_) => {
         const backup = this.backup.onclick;
-        this.backup.onclick=_=>{};
-        snackBar('Generating backup file...');
+        this.backup.onclick = (_) => {};
+        snackBar("Generating backup file...");
         showLoader();
-        postJsonData(post.admin.default,{
-          target:code.inst.BACKUP_INSTITUTION
-        }).then(resp=>{
-          snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
-          hideLoader();
-          restrictElement(this.backup,60,"backupinst",_=>{
-            this.backup.onclick=backup;
-          });
-          refer(resp.url);
-        }).catch(err=>{
-          clog(err);
+        postJsonData(post.admin.default, {
+          target: code.inst.BACKUP_INSTITUTION,
         })
-      }
+          .then((resp) => {
+            snackBar(
+              "Backup file generated. Save that file securely, and only provide that file to Schemester when required."
+            );
+            hideLoader();
+            restrictElement(this.backup, 60, "backupinst", (_) => {
+              this.backup.onclick = backup;
+            });
+            refer(resp.url);
+          })
+          .catch((err) => {
+            clog(err);
+          });
+      };
     });
     this.deleteAccount = getElement("deleteAdminAccount");
     this.deleteInstitute = getElement("deleteInstitute");
     this.twofa = new Switch("twofactor");
-    this.twofa.onTurnChange(_=>{
-      postJsonData(post.admin.self,{
-        target: "account",
-        action:code.action.CHANGE_2FA,
-        enable:true
-      }).then(resp=>{
-        this.twofa.turn(resp.event == code.OK);
-      })
-    },_=>{
-      postJsonData(post.admin.self,{
-        target: "account",
-        action:code.action.CHANGE_2FA,
-        enable:false
-      }).then(resp=>{
-        this.twofa.turn(resp.event != code.OK);
-      })
-    })
+    this.twofa.onTurnChange(
+      (_) => {
+        postJsonData(post.admin.self, {
+          target: "account",
+          action: code.action.CHANGE_2FA,
+          enable: true,
+        }).then((resp) => {
+          this.twofa.turn(resp.event == code.OK);
+        });
+      },
+      (_) => {
+        postJsonData(post.admin.self, {
+          target: "account",
+          action: code.action.CHANGE_2FA,
+          enable: false,
+        }).then((resp) => {
+          this.twofa.turn(resp.event != code.OK);
+        });
+      }
+    );
     this.resetPass.onclick = (_) => {
       authenticateDialog(client.admin, (_) => {
         resetPasswordDialog(client.admin, true);
       });
     };
-    
+
     this.resetMail.onclick = (_) => {
       changeEmailBox(client.admin);
     };
-    this.deleteAccount.onclick=(_) => {
-        authenticateDialog(
-          client.admin,
-          (_) => {
-            const delconf = new Dialog();
-            delconf.setDisplay(
-              "Delete Account?",
-              `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
-                "id"
-              )}</b> permanently? The following consequencies will take place:<br/>
+    this.deleteAccount.onclick = (_) => {
+      authenticateDialog(
+        client.admin,
+        (_) => {
+          const delconf = new Dialog();
+          delconf.setDisplay(
+            "Delete Account?",
+            `Are you sure you want to delete your Schemester account <b>${localStorage.getItem(
+              "id"
+            )}</b> permanently? The following consequencies will take place:<br/>
       <div>
       <ul>
       <li>You will not be able to recover your account forever.</li>
@@ -1178,40 +1236,40 @@ class Security {
       <fieldset class="text-field" id="deluiidfield" style="display:none">
       </fieldset>
       </div>`
-            );
-            const deluiid = new TextInput(
-              "deluiidfield",
-              "UIID",
-              "Type the UIID of your institution",
-              validType.nonempty
-            );
-            const deletinstituteswitch = new Switch("deleteinstituteswitch");
-            deletinstituteswitch.onTurnChange(
-              (_) => {
-                deluiid.validate();
-                deluiid.show();
-              },
-              (_) => {
-                deluiid.hide();
-              }
-            );
-            delconf.setBackgroundColorType(bodyType.negative);
-            delconf.createActions(
-              [`Delete account & Institution`, "No, step back"],
-              [actionType.negative, actionType.positive]
-            );
-            delconf.onButtonClick(
-              [
-                (_) => {
-                  
-                },
-                (_) => {
-                  delconf.hide();
-                }
-              ]
-            );
-            restrictElement(delconf.getDialogButton(0),15,"admindelacc",_=>{
-              delconf.getDialogButton(0).onclick=_=>{
+          );
+          const deluiid = new TextInput(
+            "deluiidfield",
+            "UIID",
+            "Type the UIID of your institution",
+            validType.nonempty
+          );
+          const deletinstituteswitch = new Switch("deleteinstituteswitch");
+          deletinstituteswitch.onTurnChange(
+            (_) => {
+              deluiid.validate();
+              deluiid.show();
+            },
+            (_) => {
+              deluiid.hide();
+            }
+          );
+          delconf.setBackgroundColorType(bodyType.negative);
+          delconf.createActions(
+            [`Delete account & Institution`, "No, step back"],
+            [actionType.negative, actionType.positive]
+          );
+          delconf.onButtonClick([
+            (_) => {},
+            (_) => {
+              delconf.hide();
+            },
+          ]);
+          restrictElement(
+            delconf.getDialogButton(0),
+            15,
+            "admindelacc",
+            (_) => {
+              delconf.getDialogButton(0).onclick = (_) => {
                 if (deletinstituteswitch.isOn()) {
                   if (!deluiid.isValid()) {
                     return deluiid.validateNow();
@@ -1236,117 +1294,150 @@ class Security {
                     }
                   }
                 });
-              }
+              };
               let time = 60;
               let timer = setInterval(() => {
                 time--;
-                delconf.getDialogButton(0).innerHTML = `Delete account (${time}s)`;
+                delconf.getDialogButton(
+                  0
+                ).innerHTML = `Delete account (${time}s)`;
                 if (time == 0) {
                   clearInterval(timer);
                   delconf.hide();
                   snack.hide();
                 }
               }, 1000);
-            });
-          },
-        true,true
+            }
+          );
+        },
+        true,
+        true
       );
-    }
+    };
 
-    this.deleteInstitute.onclick=_=>{
-      authenticateDialog(client.admin,_=>{
-        const delinst = new Dialog();
-        delinst.setHeadingColor(colors.negative);
-        delinst.setBackgroundColorType(bodyType.negative);
-        delinst.setDisplay('Delete Institute?',`
+    this.deleteInstitute.onclick = (_) => {
+      authenticateDialog(
+        client.admin,
+        (_) => {
+          const delinst = new Dialog();
+          delinst.setHeadingColor(colors.negative);
+          delinst.setBackgroundColorType(bodyType.negative);
+          delinst.setDisplay(
+            "Delete Institute?",
+            `
           <div class="fmt-center">
             <div class="questrial group-text negative">This action is permanent, and kk will be completely removed.</div>
             <div class="questrial group-text">Type the uiid of your institution to delete it.</div>
-            ${getInputField('deluiidfield')}<br/>
+            ${getInputField("deluiidfield")}<br/>
             <button class="fmt-row positive-button questrial" id="downloadinst">Download Institute Backup</button><br/>
             <div class="fmt-row active caption">It is recommended to download a backup of your institution, which includes all schedule, settings, and user accounts, as a precautionary measure.</div>
           </div>`
-        );
-        const deluiid = new TextInput('deluiidfield','UIID','Type the UIID of your institution',validType.nonempty);
-        deluiid.setFieldCaption('UIID');
-        deluiid.setInputAttrs(`Type your institute's unique ID`);
-        const downloadinst = getElement("downloadinst");
-        downloadinst.onclick=_=>{
-          snackBar('Generating backup file...');
-          postJsonData(post.admin.default,{
-            target:code.inst.BACKUP_INSTITUTION
-          }).then(resp=>{
-            snackBar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
-            refer(resp.url);
-          }).catch(err=>{
-            clog(err);
-          })
-        }
-        delinst.createActions(['Abort','Delete Institution Permanently'],[actionType.positive,actionType.negative]);
-        delinst.onButtonClick([_=>{
-          delinst.hide();
-        },_=>{
-          
-        }]);
-        restrictElement(delinst.getDialogButton(1),15,"delinst",_=>{
-          delinst.getDialogButton(1).onclick=_=>{
-            if (!deluiid.isValid()) {
-              return deluiid.validateNow();
-            }
-            delinst.loader();
-            deluiid.disableInput();
+          );
+          const deluiid = new TextInput(
+            "deluiidfield",
+            "UIID",
+            "Type the UIID of your institution",
+            validType.nonempty
+          );
+          deluiid.setFieldCaption("UIID");
+          deluiid.setInputAttrs(`Type your institute's unique ID`);
+          const downloadinst = getElement("downloadinst");
+          downloadinst.onclick = (_) => {
+            snackBar("Generating backup file...");
             postJsonData(post.admin.default, {
-              target: "institute",
-              action: code.action.INSTITUTE_DELETE,
-              uiid: deluiid.getInput().trim(),
-            }).then((response) => {
-              if (response.event == code.OK) {
-                return relocate(locate.root,{client:client.admin});
-              } else {
-                delinst.loader(false);
-                deluiid.enableInput();
-                if (response.event == code.auth.WRONG_UIID) {
-                  return deluiid.showError("Wrong UIID");
-                } else {
-                  snackBar("Action Failed");
-                }
-              }
-            });
-          }
-          let time = 60;
-          const timer = setInterval(() => {
-            time--;
-            delinst.getDialogButton(1).innerHTML = `Delete Institute (${time}s)`;
-            if (time == 0) {
-              clearInterval(timer);
+              target: code.inst.BACKUP_INSTITUTION,
+            })
+              .then((resp) => {
+                snackBar(
+                  "Backup file generated. Save that file securely, and only provide that file to Schemester when required."
+                );
+                refer(resp.url);
+              })
+              .catch((err) => {
+                clog(err);
+              });
+          };
+          delinst.createActions(
+            ["Abort", "Delete Institution Permanently"],
+            [actionType.positive, actionType.negative]
+          );
+          delinst.onButtonClick([
+            (_) => {
               delinst.hide();
-            }
-          }, 1000);
-        });
-        delinst.show();
-      },true,true)
-    }
+            },
+            (_) => {},
+          ]);
+          restrictElement(delinst.getDialogButton(1), 15, "delinst", (_) => {
+            delinst.getDialogButton(1).onclick = (_) => {
+              if (!deluiid.isValid()) {
+                return deluiid.validateNow();
+              }
+              delinst.loader();
+              deluiid.disableInput();
+              postJsonData(post.admin.default, {
+                target: "institute",
+                action: code.action.INSTITUTE_DELETE,
+                uiid: deluiid.getInput().trim(),
+              }).then((response) => {
+                if (response.event == code.OK) {
+                  return relocate(locate.root, { client: client.admin });
+                } else {
+                  delinst.loader(false);
+                  deluiid.enableInput();
+                  if (response.event == code.auth.WRONG_UIID) {
+                    return deluiid.showError("Wrong UIID");
+                  } else {
+                    snackBar("Action Failed");
+                  }
+                }
+              });
+            };
+            let time = 60;
+            const timer = setInterval(() => {
+              time--;
+              delinst.getDialogButton(
+                1
+              ).innerHTML = `Delete Institute (${time}s)`;
+              if (time == 0) {
+                clearInterval(timer);
+                delinst.hide();
+              }
+            }, 1000);
+          });
+          delinst.show();
+        },
+        true,
+        true
+      );
+    };
   }
 
   linkSender() {
-    snackBar('To reset your password, a link will be sent to your provided email address.','Send Link',true,_=>{
-      this.sendpasslink.onclick=_=>{};
-      this.sendpasslink.innerHTML = 'Sending...';
-      postJsonData(post.admin.manage, {
-        type: "resetpassword",
-        action: "send",
-      }).then((response) => {
-        if (response.event == code.mail.MAIL_SENT) {
-          snackBar("A link for password reset has been sent to your email address.");
-          restrictElement(this.sendpasslink,120,"sendpasslink",_=>{
-            this.sendpasslink.innerHTML = 'Get password link';
-            this.sendpasslink.onclick=_=>{
-              this.linkSender();
-            }
-          });
-        }
-      });
-    });
+    snackBar(
+      "To reset your password, a link will be sent to your provided email address.",
+      "Send Link",
+      true,
+      (_) => {
+        this.sendpasslink.onclick = (_) => {};
+        this.sendpasslink.innerHTML = "Sending...";
+        postJsonData(post.admin.manage, {
+          type: "resetpassword",
+          action: "send",
+        }).then((response) => {
+          if (response.event == code.mail.MAIL_SENT) {
+            snackBar(
+              "A link for password reset has been sent to your email address."
+            );
+            restrictElement(this.sendpasslink, 120, "sendpasslink", (_) => {
+              this.sendpasslink.innerHTML = "Get password link";
+              this.sendpasslink.onclick = (_) => {
+                this.linkSender();
+              };
+            });
+          }
+        });
+      }
+    );
   }
 
   setButtonText(resetMail, resetPass) {
@@ -1448,9 +1539,9 @@ class Users {
       constructor() {
         this.listview = getElement("classList");
         this.search = getElement("classSearch");
-        getElement("classrooms").onclick=_=>{
-          refer(locate.admin.session,{target:locate.admin.target.classes});
-        }
+        getElement("classrooms").onclick = (_) => {
+          refer(locate.admin.session, { target: locate.admin.target.classes });
+        };
         this.load(false);
         this.search.oninput = (_) => {
           if (
@@ -1529,15 +1620,15 @@ class Users {
   }
 }
 
-class ReceiveData{
-  constructor(){
-    this.totalotheradmins = Number(getElement('totalotheradmins').innerHTML)
+class ReceiveData {
+  constructor() {
+    this.totalotheradmins = Number(getElement("totalotheradmins").innerHTML);
     this.otheradmins = [];
-    for(let o =0;o<this.totalotheradmins;o++){
+    for (let o = 0; o < this.totalotheradmins; o++) {
       this.otheradmins.push({
-        username:getElement(`otheradminname${o}`),
-        email:getElement(`otheradminemail${o}`),
-        phone:getElement(`otheradminphone${o}`)
+        username: getElement(`otheradminname${o}`),
+        email: getElement(`otheradminemail${o}`),
+        phone: getElement(`otheradminphone${o}`),
       });
     }
   }
@@ -1546,4 +1637,4 @@ class ReceiveData{
 window.onload = (_) => {
   theme.setNav();
   window.app = new Management();
-}
+};

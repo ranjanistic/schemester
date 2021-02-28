@@ -1,30 +1,33 @@
 parent.window.scrollTo(0, 0);
-if(sessionStorage.getItem(key.fragment)!=locate.teacher.target.fragment.about){
+if (
+  sessionStorage.getItem(key.fragment) != locate.teacher.target.fragment.about
+) {
   parent.clickTab(3);
 }
 class TeacherAbout {
   constructor() {
-    backRoot("backrootparent",{client:client.teacher})
-    new ThemeSwitch("darkmode",true);
+    backRoot("backrootparent", { client: client.teacher });
+    new ThemeSwitch("darkmode", true);
     this.hideclassswitch = new Switch("hideclass");
-    this.hideclassswitch.turn(localStorage.getItem('hideclassroom')?true:false);
-    getElement("hideclassroom").onclick=_=>{
+    this.hideclassswitch.turn(
+      localStorage.getItem("hideclassroom") ? true : false
+    );
+    getElement("hideclassroom").onclick = (_) => {
       this.hideclassswitch.change();
-      this.hideclassswitch.isOn()?parent.hideClassroom():parent.showClassroom();
-    }
+      this.hideclassswitch.isOn()
+        ? parent.hideClassroom()
+        : parent.showClassroom();
+    };
 
     getElement("logout").onclick = (_) => {
-      finishSession(client.teacher,(_) => {parent.location.reload()});
+      finishSession(client.teacher, (_) => {
+        parent.location.reload();
+      });
     };
     this.name = new Editable(
       "teachernameview",
       "teachernameeditor",
-      new TextInput(
-        "teachernamefield",
-        false,
-        "",
-        validType.name
-      ),
+      new TextInput("teachernamefield", false, "", validType.name),
       "editteachername",
       "teachername",
       "saveteachername",
@@ -52,23 +55,27 @@ class TeacherAbout {
     });
 
     this.backup = getElement("downloadschedule");
-    resumeElementRestriction(this.backup,"backupschedule",_=>{
-      this.backup.onclick=_=>{
+    resumeElementRestriction(this.backup, "backupschedule", (_) => {
+      this.backup.onclick = (_) => {
         const backup = this.backup.onclick;
-        this.backup.onclick=_=>{};
-        parent.snackbar('Generating backup file...');
-        postJsonData(post.teacher.schedule,{
-          action:code.schedule.CREATE_BACKUP
-        }).then(resp=>{
-          parent.snackbar('Backup file generated. Save that file securely, and only provide that file to Schemester when required.');
-          restrictElement(this.backup,60,"backupschedule",_=>{
-            this.backup.onclick=backup;
-          });
-          refer(resp.url);
-        }).catch(err=>{
-          clog(err);
+        this.backup.onclick = (_) => {};
+        parent.snackbar("Generating backup file...");
+        postJsonData(post.teacher.schedule, {
+          action: code.schedule.CREATE_BACKUP,
         })
-      }
+          .then((resp) => {
+            parent.snackbar(
+              "Backup file generated. Save that file securely, and only provide that file to Schemester when required."
+            );
+            restrictElement(this.backup, 60, "backupschedule", (_) => {
+              this.backup.onclick = backup;
+            });
+            refer(resp.url);
+          })
+          .catch((err) => {
+            clog(err);
+          });
+      };
     });
 
     this.resetmail = getElement("resetemail");
@@ -80,14 +87,20 @@ class TeacherAbout {
     };
     this.resetpass.onclick = (_) => {
       authenticateDialog(client.teacher, (_) => {
-        resetPasswordDialog(client.teacher, true,_=>{
-          parent.snackbar('Your password was changed','OK');
+        resetPasswordDialog(client.teacher, true, (_) => {
+          parent.snackbar("Your password was changed", "OK");
         });
       });
     };
-    resumeElementRestriction(this.forgotpass,key.teacher.forgotpassword,_=>{
-      this.forgotpass.onclick = (_) => {this.sendForgotLink()};
-    });
+    resumeElementRestriction(
+      this.forgotpass,
+      key.teacher.forgotpassword,
+      (_) => {
+        this.forgotpass.onclick = (_) => {
+          this.sendForgotLink();
+        };
+      }
+    );
 
     this.deleteaccount.onclick = (_) => {
       authenticateDialog(
@@ -122,17 +135,13 @@ class TeacherAbout {
       [`Delete account`, "No, step back"],
       [actionType.negative, actionType.positive]
     );
-    delconf.onButtonClick(
-      [
-        (_) => {
-          
-        },
-        (_) => {
-          delconf.hide();
-        }
-      ]
-    );
-    restrictElement(delconf.getDialogButton(0),15,"teacherdeleteacc",_=>{
+    delconf.onButtonClick([
+      (_) => {},
+      (_) => {
+        delconf.hide();
+      },
+    ]);
+    restrictElement(delconf.getDialogButton(0), 15, "teacherdeleteacc", (_) => {
       let time = 60;
       let timer = setInterval(() => {
         time--;
@@ -143,31 +152,42 @@ class TeacherAbout {
         }
       }, 1000);
 
-      delconf.getDialogButton(0).onclick=_=>{
+      delconf.getDialogButton(0).onclick = (_) => {
         delconf.loader();
-          postJsonData(post.teacher.self, {
-            target: "account",
-            action: code.action.ACCOUNT_DELETE,
-          }).then((response) => {
-            if (response.event == code.OK) {
-              relocateParent(locate.root);
-            } else {
-              parent.snackbar("Action Failed");
-            }
-          });
-      }
-    })
-  }
-  sendForgotLink() {
-    parent.linkSender(()=>restrictElement(this.forgotpass,120,key.teacher.forgotpassword,_=>{
-      this.forgotpass.innerHTML = 'Forgot password';
-      this.forgotpass.onclick = (_) => {this.sendForgotLink()};
-    }),_=>{
-      this.forgotpass.onclick=_=>{};
-      this.forgotpass.innerHTML = 'Sending...';
+        postJsonData(post.teacher.self, {
+          target: "account",
+          action: code.action.ACCOUNT_DELETE,
+        }).then((response) => {
+          if (response.event == code.OK) {
+            relocateParent(locate.root);
+          } else {
+            parent.snackbar("Action Failed");
+          }
+        });
+      };
     });
   }
+  sendForgotLink() {
+    parent.linkSender(
+      () =>
+        restrictElement(
+          this.forgotpass,
+          120,
+          key.teacher.forgotpassword,
+          (_) => {
+            this.forgotpass.innerHTML = "Forgot password";
+            this.forgotpass.onclick = (_) => {
+              this.sendForgotLink();
+            };
+          }
+        ),
+      (_) => {
+        this.forgotpass.onclick = (_) => {};
+        this.forgotpass.innerHTML = "Sending...";
+      }
+    );
+  }
 }
-window.onload = (_) =>{
-   new TeacherAbout();
-}
+window.onload = (_) => {
+  new TeacherAbout();
+};
