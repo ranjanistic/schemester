@@ -573,7 +573,7 @@ class DialogID {
     <div class="fmt-col fmt-twothird" id="dialogContent">
       <div class="fmt-row" id="dialogHeading"></div>
       <div class="fmt-row" id="dialogSubHeading"></div>
-      <div id="inputFields"></div>
+      <form><div id="inputFields"></div></form>
       <fieldset class="fmt-row text-field" id="dialogInputAreaField">
         <legend class="field-caption" id="dialogAreaFieldCaption"></legend>
         <textarea class="text-input" rows="5" id="dialogInputArea"></textarea>
@@ -876,7 +876,7 @@ class Dialog extends DialogID {
 /**
  * console.log() shorthand
  */
-const clog = (msg) => console.log(msg);
+const clog = console.log;
 
 /**
  * Dialog box to re-authenticate client accoriding to the type of client.
@@ -2254,48 +2254,26 @@ const tryCalling = (method = (_) => {}, catchMethod = (_) => {}) => {
 };
 
 const registerServiceWorker = () => {
-  return;
   if ("serviceWorker" in window.navigator) {
-    navigator.serviceWorker
-      .register("/sw.js")
+    navigator.serviceWorker.register("/sw.js")
       .then((reg) => {
-        console.log("SW:1:", reg.scope);
-        reg.onupdatefound = () => {
-          var newServiceWorker = reg.installing;
-          console.log(newServiceWorker.state);
-          newServiceWorker.onstatechange = () => {
-            if (newServiceWorker.state === "installed") {
-              if (
-                confirm(
-                  "Updates are available, would you like to reload to update?"
-                )
-              ) {
-                newServiceWorker.postMessage("skipWaiting");
-              }
-            }
-          };
-        };
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          window.location.reload();
-        });
+        clog("SW:1:", reg.scope);
       })
-      .catch((err) => {
-        console.log("SW:0:", err);
-      });
+      .catch(e => clog("SW:0:", e));
   }
 };
 
-const handlePageAlerts=_=>{
-  tryCalling(()=>{
+const handlePageAlerts = (_) => {
+  tryCalling(() => {
     let totalAlerts = Number(getElement("totalAlerts").innerHTML);
-    if(totalAlerts){
-      for(let a =0;a<totalAlerts;++a){
+    if (totalAlerts) {
+      for (let a = 0; a < totalAlerts; ++a) {
         let id = getElement(`alertID${a}`).innerHTML;
-        getElement(`hideAlert${a}`).onclick=_=>{
-          sessionStorage.setItem(`hidealert${id}`,1);
+        getElement(`hideAlert${a}`).onclick = (_) => {
+          sessionStorage.setItem(`hidealert${id}`, 1);
           hide(getElement(`alert${a}`));
-        }
-        if(sessionStorage.getItem(`hidealert${id}`)==1){
+        };
+        if (sessionStorage.getItem(`hidealert${id}`) == 1) {
           hide(getElement(`alert${a}`));
         }
       }
