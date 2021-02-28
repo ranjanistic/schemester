@@ -1,96 +1,98 @@
 {
-    "name" : "Schemester",
-    "short_name" : "Schemester",
-    "version": "1",
-    "default_locale": "en",
-    "lang": "en-US",
-    "description": "An autonomous online schedule management workflow system with additional features primarily meant for educational institutions.",
-    "start_url" : "/",
-    "background_color" : "#216bf3",
-    "display" : "standalone",
-    "scope" : "/",
-    "theme_color" : "#216bf3",
-    "categories": ["tools", "education"],
-    "icons": [
-      {
-        "src" : "/graphic/icons/schemester128.png",
-        "type": "image/png",
-        "sizes": "128x128"
-      },
-      {
-        "src" : "/graphic/icons/schemester192.png",
-        "type": "image/png",
-        "sizes": "192x192"
-      },
-      {
-        "src" : "/graphic/icons/schemester256.png",
-        "type": "image/png",
-        "sizes": "256x256"
-      },
-      {
-        "src": "/graphic/icons/schemester512.png",
-        "type": "image/png",
-        "sizes": "512x512"
-      },
-      {
-        "src": "/graphic/schemester512.svg",
-        "type": "image/svg+xml",
-        "sizes": "512x512",
-        "purpose":"any"
-      }
-    ],
-    "shortcuts": [
-      {
-        "name": "Schemester Home",
-        "description": "An autonomous online schedule management workflow system with additional features primarily meant for educational institutions.",
-        "url": "/home",
-        "icons": [
-          {
-            "src": "/graphic/schemester512.svg",
-            "type": "image/svg+xml",
-            "sizes": "512x512",
-            "purpose": "any"
-          }
-        ]
-      },
-      {
-        "name": "Admin Dashboard",
-        "description": "Welcome to the administrator dashboard of Schemester. Checkout what you've got on your institution's schedule, and take actions on other users' schedule.",
-        "url": "/admin/session",
-        "icons": [
-          {
-            "src": "/graphic/schemester512.svg",
-            "type": "image/svg+xml",
-            "sizes": "512x512",
-            "purpose": "any"
-          }
-        ]
-      },
-      {
-        "name": "Teacher Dashboard",
-        "description": "Welcome to the teacher dashboard of Schemester. Checkout what you've got on your schedule today, and take actions if required.",
-        "url": "/teacher/session",
-        "icons": [
-          {
-            "src": "/graphic/schemester512.svg",
-            "type": "image/svg+xml",
-            "sizes": "512x512",
-            "purpose": "any"
-          }
-        ]
-      },
-      {
-        "name": "Student Dashboard",
-        "description": "Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today.",
-        "url": "/student/session",
-        "icons": [
-          {
-            "src": "/graphic/schemester512.svg",
-            "type": "image/svg+xml",
-            "sizes": "512x512",
-            "purpose": "any"
-          }
-        ]
-      }
-    ]
+  "$schema": "https://json.schemastore.org/web-manifest.json",
+  "name": "Schemester",
+  "short_name": "Schemester",
+  "version": "1",
+  "default_locale": "en",
+  "lang": "en-US",
+  "description": "An autonomous online schedule management workflow system with additional features primarily meant for educational institutions.",
+  "start_url": "/",
+  "background_color": "#216bf3",
+  "display": "standalone",
+  "orientation": "any",
+  "scope": "/",
+  "theme_color": "#216bf3",
+  "categories": ["tools", "education"],
+  "icons": [
+    {
+      "src": "/graphic/icons/schemester128.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    },
+    {
+      "src": "/graphic/icons/schemester192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/graphic/icons/schemester256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "/graphic/icons/schemester512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/graphic/schemester512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Schemester Home",
+      "description": "An autonomous online schedule management workflow system with additional features primarily meant for educational institutions.",
+      "url": "/home",
+      "icons": [
+        {
+          "src": "/graphic/schemester512.svg",
+          "type": "image/svg+xml",
+          "sizes": "512x512",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "description": "Welcome to the administrator dashboard of Schemester. Checkout what you've got on your institution's schedule, and take actions on other users' schedule.",
+      "url": "/admin/session",
+      "icons": [
+        {
+          "src": "/graphic/schemester512.svg",
+          "type": "image/svg+xml",
+          "sizes": "512x512",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Teacher Dashboard",
+      "description": "Welcome to the teacher dashboard of Schemester. Checkout what you've got on your schedule today, and take actions if required.",
+      "url": "/teacher/session",
+      "icons": [
+        {
+          "src": "/graphic/schemester512.svg",
+          "type": "image/svg+xml",
+          "sizes": "512x512",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Student Dashboard",
+      "description": "Welcome to the student dashboard of Schemester. Checkout what you've got on your schedule today.",
+      "url": "/student/session",
+      "icons": [
+        {
+          "src": "/graphic/schemester512.svg",
+          "type": "image/svg+xml",
+          "sizes": "512x512",
+          "purpose": "any"
+        }
+      ]
+    }
+  ]
 }
