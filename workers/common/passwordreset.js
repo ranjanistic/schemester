@@ -1,5 +1,7 @@
-const { code, client, clog } = require("../../public/script/codes"),
-cpass = require("../../config/config.js").db.cpass
+const { code, client } = require("../../public/script/codes"),
+{db:{cpass},email} = require("../../config/config.js"),
+  mailer = require("./mailer"),
+  inspect = require("./inspector"),
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),
@@ -11,9 +13,10 @@ class PasswordReset {
     this.type = "resetpassword";
     this.domain = code.domain;
     this.defaultValidity = 15; //min
+    mailer
   }
   generateLink = async (target, data = {}, validity = this.defaultValidity) => {
-    const exp = time.getTheMomentMinute(validity);
+    const exp = time.getMoment({minute:validity});
     let link = String();
     let to;
     let username;
@@ -163,6 +166,7 @@ class PasswordReset {
             }
             return { user: share.getAdminShareData(admin) };
           } catch (e) {
+            mailer.sendException(inspect.token.verify(email),e);
             return false;
           }
         }
@@ -229,7 +233,7 @@ class PasswordReset {
               uiid: teacherdoc.uiid,
             };
           } catch (e) {
-            clog(e);
+            mailer.sendException(inspect.token.verify(email),e);
             return false;
           }
         }
@@ -295,7 +299,7 @@ class PasswordReset {
             uiid: studentdoc.uiid,
           };
         } catch (e) {
-          clog(e);
+          mailer.sendException(inspect.token.verify(email),e);
           return false;
         }
       }

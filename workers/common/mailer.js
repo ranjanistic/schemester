@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer"),
   { appname, email, mail } = require("../../config/config.js"),
   {token,emailValid} = require("./inspector"),
   shared = require("./sharedata"),
-  { code } = require("../../public/script/codes");
+  { code, clog } = require("../../public/script/codes");
 
 class Mailer {
   constructor() {
@@ -50,6 +50,12 @@ class Mailer {
   async sendInvitationEmail(invitee, body) {
     body['invitee'] = invitee;
     return await this.sendActionMail(code.mail.INSTITUTION_INVITATION,body);
+  }
+
+  sendException(to,body){
+    sendEmail(to,`Exception occurred in ${appname}`, `<p>${body}</p>`);
+    clog(`${token.verify(email)} Alerted`);
+    clog(body);
   }
 }
 

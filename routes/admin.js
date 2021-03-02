@@ -1,5 +1,3 @@
-const oauthworker = require("../workers/oauthworker");
-
 const express = require("express"),
   admin = express.Router(),
   { code, client, view,action, clog, get,post,key } = require("../public/script/codes"),

@@ -1,6 +1,7 @@
-const oauthworker = require("../oauthworker");
+const mailer = require("./mailer");
 
 const { ObjectId } = require("mongodb"),
+  oauthworker = require("../oauthworker"),
   cookieParser = require("cookie-parser"),
   jwt = require("jsonwebtoken"),
   bcrypt = require("bcryptjs"),
@@ -8,7 +9,7 @@ const { ObjectId } = require("mongodb"),
   time = require("./timer"),
   share = require("./sharedata"),
   {code,clog,client} = require("../../public/script/codes"),
-  {session,db} = require("../../config/config.js"),
+  {session,db,email} = require("../../config/config.js"),
   Institute = require("../../config/db").getInstitute(db.cpass),
   Admin = require("../../config/db").getAdmin(db.cpass),
   adminworker = require("../adminworker"),
@@ -20,7 +21,7 @@ class Session {
     this.uiid = "uiid";
     this.email = "email";
     this.password = "password";
-    this.classname = " classname";
+    this.classname = "classname";
     this.classpath = "users.classes";
     this.pclasspath = "pseudousers.classes";
     this.sessionKey = session.publickey;
@@ -39,6 +40,7 @@ class Session {
       if (!token) return code.event(code.auth.SESSION_INVALID);
       return jwt.verify(token, getSecretByClient(clientType));
     } catch (e) {
+      mailer.sendException(inspect.token.verify(email),e);
       return code.eventmsg(code.auth.SESSION_INVALID, e);
     }
   };
@@ -56,7 +58,7 @@ class Session {
     try{
       return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresInTemp*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
     }catch(e){
-      clog(e)
+      mailer.sendException(inspect.token.verify(email),e);
     }
   }
 
@@ -82,6 +84,7 @@ class Session {
       return response.cookie(this.sessionKey, token, { signed: true,expires: new Date(Date.now() + (this.expiresIn*1000)), httpOnly: true,secure:true,sameSite:'Lax'});
     }catch(e){
       clog(e)
+      mailer.sendException(inspect.token.verify(email),e);
     }
   }
 
@@ -211,8 +214,9 @@ class Session {
                     target: target,
                   };
                 }
-                default:
+                default:{
                   return code.event(code.auth.AUTH_REQ_FAILED);
+                }
               }
             }
           }
@@ -275,6 +279,7 @@ class Session {
                     }
                   }catch(e){
                     clog(e);
+                    mailer.sendException(inspect.token.verify(email),e);
                   }
                   return code.event(
                     isintheclass
@@ -521,6 +526,7 @@ class Session {
   userdata = async (request, clientType) => {
     this.verify(request, clientType)
       .catch((e) => {
+        mailer.sendException(inspect.token.verify(email),e);
         return code.event(code.auth.AUTH_REQ_FAILED);
       })
       .then(async (response) => {
