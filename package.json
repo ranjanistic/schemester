@@ -43,7 +43,7 @@
     "mongodb": "^3.6.5",
     "nodemailer": "^6.5.0",
     "pusher": "^5.0.0",
-    "workbox-cli": "^6.1.1"
+    "workbox-cli": "^6.1.2"
   },
   "devDependencies": {
     "commitizen": "^4.2.3",
