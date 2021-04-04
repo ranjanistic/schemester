@@ -42,7 +42,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.5",
     "nodemailer": "^6.5.0",
-    "pusher": "^4.0.2",
+    "pusher": "^5.0.0",
     "workbox-cli": "^6.1.1"
   },
   "devDependencies": {
