@@ -2255,11 +2255,12 @@ const tryCalling = (method = (_) => {}, catchMethod = (_) => {}) => {
 
 const registerServiceWorker = () => {
   if ("serviceWorker" in window.navigator) {
-    navigator.serviceWorker.register("/sw.js")
+    navigator.serviceWorker
+      .register("/sw.js")
       .then((reg) => {
         clog("SW:1:", reg.scope);
       })
-      .catch(e => clog("SW:0:", e));
+      .catch((e) => clog("SW:0:", e));
   }
 };
 
@@ -2323,3 +2324,11 @@ const getLoader = (id, size = 30, blue = true) =>
 const editIcon = (size) =>
   `<img width="${size}" src="/graphic/elements/editicon.svg"/>`;
 const appicon = (size = 256) => `/graphic/icons/schemester${size}.png`;
+
+document.addEventListener("DOMContentLoaded", () => {
+  Array.from(document.getElementsByTagName("form")).forEach((form) => {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+    });
+  });
+});
