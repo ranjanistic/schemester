@@ -1,16 +1,25 @@
 const express = require("express"),
   admin = express.Router(),
-  { code, client, view,action, clog, get,post,key } = require("../public/script/codes"),
+  {
+    code,
+    client,
+    view,
+    action,
+    get,
+    post,
+    key,
+  } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
-  {render} = require("../workers/common/inspector"),
+  { render } = require("../workers/common/inspector"),
   alert = require("../workers/common/alerts"),
   path = require("path"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
+  { sendException } = require("../workers/common/mailer"),
   worker = require("../workers/adminworker");
 
-session.use(admin,client.admin);
+session.use(admin, client.admin);
 
 admin.get(get.root, (_, res) => {
   res.redirect(worker.toLogin());
@@ -20,7 +29,10 @@ admin.get(get.root, (_, res) => {
 admin.get(get.authlogin, (req, res) => {
   const response = session.verify(req, client.admin);
   if (!session.valid(response))
-    return render(res,view.admin.login, { autofill: req.query,nexturl:req.query.nexturl||null });
+    return render(res, view.admin.login, {
+      autofill: req.query,
+      nexturl: req.query.nexturl || null,
+    });
   let data = req.query;
   delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, data));
@@ -29,23 +41,27 @@ admin.get(get.authlogin, (req, res) => {
 admin.post(post.auth, async (req, res) => {
   const body = req.body;
   switch (body.action) {
-    case action.login:{
+    case action.login:
+      {
         session
           .login(req, res, client.admin)
           .then((response) => {
             return res.json({ result: response });
           })
           .catch((error) => {
-            return res.json({error:error});
+            return res.json({ error: error });
           });
       }
       break;
-    case action.logout:{
+    case action.logout:
+      {
         session.finish(res).then((response) => {
           return res.json({ result: response });
         });
-    }break;
-    case action.signup:{
+      }
+      break;
+    case action.signup:
+      {
         session
           .signup(req, res, client.admin)
           .then((response) => {
@@ -56,35 +72,49 @@ admin.post(post.auth, async (req, res) => {
               result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
             });
           });
-    }break;
-    case action.verify:{  //2fa
-      const response = session.verify(req,client.admin);
-      if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-      session
-        .verify2fa(res,req.body.code, response.user, client.admin)
-        .then((response) => {
-          return res.json({ result: response });
-        })
-        .catch((error) => {
-          return res.json({error:error});
-        });
-    }break;
-    case action.oauth:{
-      const response = session.verify(req,client.admin);
-      if (!session.valid(response)) return res.json({result:code.event(code.auth.SESSION_INVALID)});
-      if(body.deauthorize){
-        return session.deauthorizeOauthDomain(response.user,body.domain).then((resp)=>{
-          return res.json({result:resp});
-        }).catch(err=>{
-          res.json({result:err});
-        })
       }
-      session.getOauthToken(response.user,body.domain).then((resp)=>{
-        return res.json({result:resp})
-      }).catch((err)=>{
-        res.json({result:err});
-      })
-    }break;
+      break;
+    case action.verify:
+      {
+        //2fa
+        const response = session.verify(req, client.admin);
+        if (!session.valid(response))
+          return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+        session
+          .verify2fa(res, req.body.code, response.user, client.admin)
+          .then((response) => {
+            return res.json({ result: response });
+          })
+          .catch((error) => {
+            return res.json({ error: error });
+          });
+      }
+      break;
+    case action.oauth:
+      {
+        const response = session.verify(req, client.admin);
+        if (!session.valid(response))
+          return res.json({ result: code.event(code.auth.SESSION_INVALID) });
+        if (body.deauthorize) {
+          return session
+            .deauthorizeOauthDomain(response.user, body.domain)
+            .then((resp) => {
+              return res.json({ result: resp });
+            })
+            .catch((err) => {
+              res.json({ result: err });
+            });
+        }
+        session
+          .getOauthToken(response.user, body.domain)
+          .then((resp) => {
+            return res.json({ result: resp });
+          })
+          .catch((err) => {
+            res.json({ result: err });
+          });
+      }
+      break;
     default:
       res.sendStatus(500);
   }
@@ -101,9 +131,9 @@ admin.get(get.session, async (req, res) => {
       return session.finish(res).then((response) => {
         if (response) res.redirect(worker.toLogin(query));
       });
-    if (!admin.verified) return render(res,view.verification, { user: admin });
+    if (!admin.verified) return render(res, view.verification, { user: admin });
     if (response.user.temp) {
-      return render(res,view.twofactor,{user:admin});
+      return render(res, view.twofactor, { user: admin });
     }
 
     let inst = await worker.inst.getInsituteByUIID(response.user);
@@ -114,7 +144,7 @@ admin.get(get.session, async (req, res) => {
       !inst.default.timings.periodsInDay
     ) {
       query.target = view.admin.target.register;
-      return render(res,view.admin.getViewByTarget(query.target), {
+      return render(res, view.admin.getViewByTarget(query.target), {
         adata: admin,
         inst: inst ? inst : false,
         uiid: response.user.uiid,
@@ -133,28 +163,28 @@ admin.get(get.session, async (req, res) => {
       const alerts = await alert.adminAlerts();
       switch (query.target) {
         case view.admin.target.addteacher: {
-          return render(res,view.admin.getViewByTarget(query.target), {
+          return render(res, view.admin.getViewByTarget(query.target), {
             user: admin,
             data: query,
             inst,
           });
         }
         case view.admin.target.manage: {
-          return render(res,view.admin.getViewByTarget(query.target), {
+          return render(res, view.admin.getViewByTarget(query.target), {
             adata: admin,
             inst,
             section: query.section,
           });
         }
         case view.admin.target.classes: {
-          return render(res,view.admin.getViewByTarget(query.target), {
+          return render(res, view.admin.getViewByTarget(query.target), {
             client: client.student,
             users: inst.users.classes,
             defaults: inst.default,
           });
         }
         case view.admin.target.teachers: {
-          return render(res,view.admin.getViewByTarget(query.target), {
+          return render(res, view.admin.getViewByTarget(query.target), {
             client: client.teacher,
             users: inst.users.teachers,
             classes: inst.users.classes,
@@ -163,7 +193,8 @@ admin.get(get.session, async (req, res) => {
         }
         case view.admin.target.viewschedule: {
           if (query.type == client.teacher) {
-            if (!(query.t || query.teacherID)) return render(res,view.notfound);
+            if (!(query.t || query.teacherID))
+              return render(res, view.notfound);
             let teacher = query.t
               ? await worker.users.teachers.getTeacherByID(
                   response.user,
@@ -174,13 +205,14 @@ admin.get(get.session, async (req, res) => {
                   query.teacherID
                 );
             //if query.t (_id) is provided, means required teacher account considered exists.
-            if (!teacher && query.t) return render(res,view.notfound);
+            if (!teacher && query.t) return render(res, view.notfound);
             let tschedule = await worker.schedule.getScheduleByTeacherID(
               response.user,
               teacher ? teacher.teacherID : query.teacherID
             );
-            if (!tschedule && query.teacherID) return render(res,view.notfound);
-            return render(res,view.admin.scheduleview, {
+            if (!tschedule && query.teacherID)
+              return render(res, view.notfound);
+            return render(res, view.admin.scheduleview, {
               group: { teacher: true, pending: teacher ? false : true },
               teacher: teacher ? teacher : { teacherID: query.teacherID },
               schedule: tschedule ? tschedule : false,
@@ -188,7 +220,8 @@ admin.get(get.session, async (req, res) => {
             });
           } else if (query.type == client.student) {
             //class schedule
-            if (!(query.c || query.classname)) return render(res,view.notfound);
+            if (!(query.c || query.classname))
+              return render(res, view.notfound);
             const classroom = query.c
               ? await worker.classroom.getClassByClassID(response.user, query.c)
               : await worker.classroom.getClassByClassname(
@@ -196,12 +229,12 @@ admin.get(get.session, async (req, res) => {
                   query.classname
                 );
 
-            if (!classroom) return render(res,view.notfound); //no class
+            if (!classroom) return render(res, view.notfound); //no class
             const schedule = await worker.schedule.classes.getScheduleByClassname(
               response.user,
               classroom
             );
-            return render(res,view.admin.scheduleview, {
+            return render(res, view.admin.scheduleview, {
               //both account and schedule
               group: { Class: true },
               Class: classroom,
@@ -211,13 +244,13 @@ admin.get(get.session, async (req, res) => {
               inst,
             });
           }
-          return render(res,view.notfound);
+          return render(res, view.notfound);
         }
-        default:{
-          return render(res,view.admin.getViewByTarget(query.target), {
+        default: {
+          return render(res, view.admin.getViewByTarget(query.target), {
             adata: admin,
             inst,
-            alerts
+            alerts,
           });
         }
       }
@@ -225,9 +258,9 @@ admin.get(get.session, async (req, res) => {
       query.target = view.admin.target.dashboard;
       return res.redirect(worker.toLogin(query));
     }
-  } catch (e) {
-    clog(e)
-    return render(res,view.servererror, { error: e });
+  } catch (error) {
+    sendException(error);
+    return render(res, view.servererror, { error });
   }
 });
 
@@ -248,7 +281,7 @@ admin.post(post.self, async (req, res) => {
   const response = session.verify(req, client.admin);
   if (!session.valid(response))
     return res.json({ result: code.event(code.auth.SESSION_INVALID) });
-    
+
   const admin = await worker.self.account.getAccount(response.user);
   if (!admin) return code.event(code.auth.USER_NOT_EXIST);
   switch (body.target) {
@@ -278,6 +311,7 @@ admin.post(post.sessionvalidate, (req, res) => {
         return res.json({ result: response });
       })
       .catch((error) => {
+        sendException(error);
         return res.json({
           result: code.eventmsg(code.server.DATABASE_ERROR, error),
         });
@@ -347,9 +381,9 @@ admin.post("/default", async (req, res) => {
 
 admin.get(get.download, async (req, res) => {
   const response = session.verify(req, client.admin);
-  if (!session.valid(response)) return render(res,view.forbidden);
+  if (!session.valid(response)) return render(res, view.forbidden);
   const query = req.query;
-  if (!(query.type && query.res)) return render(res,view.notfound);
+  if (!(query.type && query.res)) return render(res, view.notfound);
   switch (query.type) {
     case code.inst.BACKUP_INSTITUTION: {
       try {
@@ -367,14 +401,14 @@ admin.get(get.download, async (req, res) => {
               __dirname + `/../backups/${response.user.uiid}/${query.res}`
             ),
             (err) => {
-              if (err) render(res,view.notfound);
+              if (err) render(res, view.notfound);
             }
           );
         } else {
-          render(res,view.notfound);
+          render(res, view.notfound);
         }
       } catch {
-        render(res,view.notfound);
+        render(res, view.notfound);
       }
     }
   }
@@ -538,8 +572,8 @@ admin.post(post.manage, async (req, res) => {
       return res.json({
         result: await worker.self.handlePassReset(response.user, body),
       });
-    case "twofactor":{
-      return res.json({ result: await worker.self.send2fa(response.user)})
+    case "twofactor": {
+      return res.json({ result: await worker.self.send2fa(response.user) });
     }
     case "search":
       return res.json({
@@ -563,11 +597,18 @@ admin.post(post.mail, async (req, res) => {
       {
         switch (body.target) {
           case client.teacher:
-            let teacher = await worker.users.teachers.getTeacherByTeacherID(response.user,body.to);
-            if(!teacher){
-              teacher = await worker.users.teachers.getTeacherByTeacherID(response.user,body.to,true);
-              if(teacher) return res.json({result:code.event(code.OK)});
-            } else return res.json({result:code.event(code.OK)});
+            let teacher = await worker.users.teachers.getTeacherByTeacherID(
+              response.user,
+              body.to
+            );
+            if (!teacher) {
+              teacher = await worker.users.teachers.getTeacherByTeacherID(
+                response.user,
+                body.to,
+                true
+              );
+              if (teacher) return res.json({ result: code.event(code.OK) });
+            } else return res.json({ result: code.event(code.OK) });
 
             return res.json({
               result: await worker.users.teachers.sendInvitation(
@@ -592,11 +633,12 @@ admin.get(get.external, async (req, res) => {
         verify
           .handleVerification(query, client.admin)
           .then(async (resp) => {
-            if (!resp) return render(res,view.notfound);
-            return render(res,view.verification, { user: resp.user });
+            if (!resp) return render(res, view.notfound);
+            return render(res, view.verification, { user: resp.user });
           })
-          .catch((e) => {
-            return render(res,view.servererror, { error: e });
+          .catch((error) => {
+            sendException(error);
+            return render(res, view.servererror, { error });
           });
       }
       break;
@@ -605,11 +647,12 @@ admin.get(get.external, async (req, res) => {
         reset
           .handlePasswordResetLink(query, client.admin)
           .then(async (resp) => {
-            if (!resp) return render(res,view.notfound);
-            return render(res,view.passwordreset, { user: resp.user });
+            if (!resp) return render(res, view.notfound);
+            return render(res, view.passwordreset, { user: resp.user });
           })
-          .catch((e) => {
-            return render(res,view.servererror, { error: e });
+          .catch((error) => {
+            sendException(error);
+            return render(res, view.servererror, { error });
           });
       }
       break;
@@ -619,16 +662,16 @@ admin.get(get.external, async (req, res) => {
           .handleInvitation(query, client.admin)
           .then((resp) => {
             return resp
-              ? render(res,view.userinvitaion, { invite: resp.invite })
-              : render(res,view.notfound);
+              ? render(res, view.userinvitaion, { invite: resp.invite })
+              : render(res, view.notfound);
           })
           .catch((e) => {
-            return render(res,view.notfound);
+            return render(res, view.notfound);
           });
       }
       break;
     default:
-      render(res,view.notfound);
+      render(res, view.notfound);
   }
 });
 

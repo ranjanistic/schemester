@@ -1,7 +1,8 @@
 const { code, client } = require("../../public/script/codes"),
-{db:{cpass},email} = require("../../config/config.js"),
+  {
+    db: { cpass },
+  } = require("../../config/config.js"),
   mailer = require("./mailer"),
-  inspect = require("./inspector"),
   time = require("./timer"),
   share = require("./sharedata"),
   { ObjectId } = require("mongodb"),
@@ -13,13 +14,19 @@ class PasswordReset {
     this.type = "resetpassword";
     this.domain = code.domain;
     this.defaultValidity = 15; //min
-    mailer
   }
+  /**
+   * Generates a new password reset link based on given parameters.
+   * @param {String} target The target group for which reset link is to be generated, can be passed from Verification().target.
+   * @param {JSON} data The data to be attached with link, must be specific for specific targets.
+   * @param {Number} validity Number of minutes this link will be valid for. Defaults to 15.
+   * @returns Returns json with link, username, email & link expiry time in SGT notation.
+   */
   generateLink = async (target, data = {}, validity = this.defaultValidity) => {
-    const exp = time.getMoment({minute:validity});
-    let link = String();
-    let to;
-    let username;
+    const exp = time.getMoment({ minute: validity });
+    let link = String(),
+      to,
+      username;
     switch (target) {
       case client.admin:
         {
@@ -142,8 +149,14 @@ class PasswordReset {
    * @param expiryTime The time to be checked valid in SGT notation.
    * @returns A boolean value, if valid, true, otherwise false.
    */
-  isValidTime = (expiryTime) => time.getTheMomentMinute() < Number(expiryTime);
+  isValidTime = (expiryTime) => time.getMoment() < Number(expiryTime);
 
+  /**
+   * Handles the query of given password reset link
+   * @param {JSON} query The query of link (usually request.query of express GET method).
+   * @param {String} clientType The target client to be checked for link validation.
+   * @returns If query and clientType are in accordance with each other, returns JSON object of user key, else false.
+   */
   handlePasswordResetLink = async (query, clientType) => {
     switch (clientType) {
       case client.admin:
@@ -162,11 +175,11 @@ class PasswordReset {
                 { _id: ObjectId(query.u) },
                 { $unset: { rlinkexp: null } }
               );
-              return { user: { expired: true } };
+              return { user: {...share.getAdminShareData(admin), expired: true } };
             }
             return { user: share.getAdminShareData(admin) };
           } catch (e) {
-            mailer.sendException(inspect.token.verify(email),e);
+            mailer.sendException(e);
             return false;
           }
         }
@@ -227,13 +240,13 @@ class PasswordReset {
             )
               return false;
             if (!this.isValidTime(teacher.rlinkexp))
-              return { user: { expired: true } };
+              return { user: { ...share.getTeacherShareData(teacher), expired: true }, uiid: teacherdoc.uiid, };
             return {
               user: share.getTeacherShareData(teacher),
               uiid: teacherdoc.uiid,
             };
           } catch (e) {
-            mailer.sendException(inspect.token.verify(email),e);
+            mailer.sendException(e);
             return false;
           }
         }
@@ -293,13 +306,13 @@ class PasswordReset {
           )
             return false;
           if (!this.isValidTime(student.rlinkexp))
-            return { user: { expired: true } };
+            return { user: {...share.getStudentShareData(student), expired: true }, uiid: studentdoc.uiid };
           return {
             user: share.getStudentShareData(student),
             uiid: studentdoc.uiid,
           };
         } catch (e) {
-          mailer.sendException(inspect.token.verify(email),e);
+          mailer.sendException(e);
           return false;
         }
       }

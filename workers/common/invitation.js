@@ -1,4 +1,4 @@
-const {code,client,clog} = require("../../public/script/codes"),
+const { code, client } = require("../../public/script/codes"),
   cpass = require("../../config/config.js").db.cpass,
   Admin = require("../../config/db").getAdmin(cpass),
   Institute = require("../../config/db").getInstitute(cpass),
@@ -24,34 +24,37 @@ class Invitation {
    */
   generateLink = async (target, data, validdays = this.defaultValidity) => {
     switch (target) {
-      case client.admin:{
-        const instdoc = await Institute.findOne(
-          { _id: ObjectId(data.instID) },
-          { projection: { invite: 1 } }
-        );
-        if (instdoc.invite[target].active == true) {
-          if (
-            this.isActive(
-              this.checkTimingValidity(
-                instdoc.invite[target].createdAt,
-                instdoc.invite[target].expiresAt,
-                instdoc.invite[target].createdAt
+      case client.admin:
+        {
+          const instdoc = await Institute.findOne(
+            { _id: ObjectId(data.instID) },
+            { projection: { invite: 1 } }
+          );
+          if (instdoc.invite[target].active == true) {
+            if (
+              this.isActive(
+                this.checkTimingValidity(
+                  instdoc.invite[target].createdAt,
+                  instdoc.invite[target].expiresAt,
+                  instdoc.invite[target].createdAt
+                )
               )
-            )
-          ) {
-            return {
-              event: code.invite.LINK_EXISTS,
-              link: this.getTemplateLink(
-                target,
-                data,
-                instdoc.invite[target].createdAt
-              ),
-              exp: instdoc.invite[target].expiresAt,
-            };
+            ) {
+              return {
+                event: code.invite.LINK_EXISTS,
+                link: this.getTemplateLink(
+                  target,
+                  data,
+                  instdoc.invite[target].createdAt
+                ),
+                exp: instdoc.invite[target].expiresAt,
+              };
+            }
           }
         }
-      }break;
-      case client.teacher:{
+        break;
+      case client.teacher:
+        {
           const instdoc = await Institute.findOne(
             { _id: ObjectId(data.instID) },
             { projection: { invite: 1 } }
@@ -121,28 +124,29 @@ class Invitation {
     const creationTime = time.getTheMoment(false);
     const expiryTime = time.getTheMoment(false, validdays);
     switch (target) {
-      case client.admin:{
-        const document = await Institute.findOneAndUpdate(
-          { _id: ObjectId(data.instID) },
-          {
-            $set: {
-              [`invite.${target}`]: {
-                active: true,
-                createdAt: creationTime,
-                expiresAt: expiryTime,
+      case client.admin:
+        {
+          const document = await Institute.findOneAndUpdate(
+            { _id: ObjectId(data.instID) },
+            {
+              $set: {
+                [`invite.${target}`]: {
+                  active: true,
+                  createdAt: creationTime,
+                  expiresAt: expiryTime,
+                },
               },
-            },
-          }
-        );
-        return document.value
-          ? {
-              event: code.invite.LINK_CREATED,
-              link: this.getTemplateLink(target, data, creationTime),
-              exp: expiryTime,
             }
-          : code.event(code.invite.LINK_CREATION_FAILED);
-      }
-      break;
+          );
+          return document.value
+            ? {
+                event: code.invite.LINK_CREATED,
+                link: this.getTemplateLink(target, data, creationTime),
+                exp: expiryTime,
+              }
+            : code.event(code.invite.LINK_CREATION_FAILED);
+        }
+        break;
       case client.teacher:
         {
           const document = await Institute.findOneAndUpdate(
@@ -195,24 +199,26 @@ class Invitation {
 
   async disableInvitation(target, data) {
     switch (target) {
-      case client.admin:{
-        const path = `invite.${target}`;
-        const doc = await Institute.findOneAndUpdate(
-          { _id: ObjectId(data.instID) },
-          {
-            $set: {
-              [path]: {
-                active: false,
-                createdAt: 0,
-                expiresAt: 0,
+      case client.admin:
+        {
+          const path = `invite.${target}`;
+          const doc = await Institute.findOneAndUpdate(
+            { _id: ObjectId(data.instID) },
+            {
+              $set: {
+                [path]: {
+                  active: false,
+                  createdAt: 0,
+                  expiresAt: 0,
+                },
               },
-            },
-          }
-        );
-        return doc.value
-          ? code.event(code.invite.LINK_DISABLED)
-          : code.event(code.invite.LINK_DISABLE_FAILED);
-      }break;
+            }
+          );
+          return doc.value
+            ? code.event(code.invite.LINK_DISABLED)
+            : code.event(code.invite.LINK_DISABLE_FAILED);
+        }
+        break;
       case client.teacher: {
         const path = `invite.${target}`;
         const doc = await Institute.findOneAndUpdate(
@@ -257,101 +263,124 @@ class Invitation {
 
   async handleInvitation(query, target) {
     switch (target) {
-      case client.admin:{
-        if (!(query.in && query.t && query.ad)) return false;
-        const inst = await Institute.findOne(
-          { _id: ObjectId(query.in) },
-          { projection: { [`invite.${target}`]: 1, default: 1, uiid: 1 } }
-        );
-        if (!inst) return false;
-        if (!inst.invite.admin.active) return false;
-        const expires = inst.invite.admin.expiresAt;
-        if (!this.isActive(this.checkTimingValidity(
-          inst.invite.admin.createdAt,
-          expires,
-          query.t
-        ))) return false;
-        const host = await Admin.findOne({_id:ObjectId(query.ad)})
-        return {
-          invite: {
-            valid: true,
-            uiid: inst.uiid,
-            invitorID: host.email,
-            invitorName: host.username,
-            instname: inst.default.institute.instituteName,
-            expireAt: expires,
-            target: target,
-          },
-        };
-      }break;
-      case client.teacher: {
-        if (!(query.in && query.t && query.ad)) return false;
-        const inst = await Institute.findOne(
-          { _id: ObjectId(query.in) },
-          { projection: { [`invite.${target}`]: 1, default: 1, uiid: 1 } }
-        );
-        if (!inst) return false;
-        const host = await Admin.findOne({_id:ObjectId(query.ad)})
-        if (!inst.invite.teacher.active)
+      case client.admin:
+        {
+          if (!(query.in && query.t && query.ad)) return false;
+          const inst = await Institute.findOne(
+            { _id: ObjectId(query.in) },
+            { projection: { [`invite.${target}`]: 1, default: 1, uiid: 1 } }
+          );
+          if (!inst) return false;
+          if (!inst.invite.admin.active) return false;
+          const expires = inst.invite.admin.expiresAt;
+          if (
+            !this.isActive(
+              this.checkTimingValidity(
+                inst.invite.admin.createdAt,
+                expires,
+                query.t
+              )
+            )
+          )
+            return false;
+          const host = await Admin.findOne({ _id: ObjectId(query.ad) });
           return {
             invite: {
-              valid: false,
+              valid: true,
               uiid: inst.uiid,
-              adminemail: host.email,
-              adminName: host.username,
-              expireAt: inst.invite.teacher.expiresAt,
+              invitorID: host.email,
+              invitorName: host.username,
               instname: inst.default.institute.instituteName,
+              expireAt: expires,
               target: target,
             },
           };
+        }
+        break;
+      case client.teacher:
+        {
+          if (!(query.in && query.t && query.ad)) return false;
+          const inst = await Institute.findOne(
+            { _id: ObjectId(query.in) },
+            { projection: { [`invite.${target}`]: 1, default: 1, uiid: 1 } }
+          );
+          if (!inst) return false;
+          const host = await Admin.findOne({ _id: ObjectId(query.ad) });
+          if (!inst.invite.teacher.active)
+            return {
+              invite: {
+                valid: false,
+                uiid: inst.uiid,
+                adminemail: host.email,
+                adminName: host.username,
+                expireAt: inst.invite.teacher.expiresAt,
+                instname: inst.default.institute.instituteName,
+                target: target,
+              },
+            };
 
-        const expires = inst.invite.teacher.expiresAt;
-        const validity = this.checkTimingValidity(
-          inst.invite.teacher.createdAt,
-          expires,
-          query.t
-        );
-        if (this.isInvalid(validity)) return false;
-        return {
-          invite: {
-            valid: this.isActive(validity),
-            uiid: inst.uiid,
-            invitorID: host.email,
-            invitorName: host.username,
-            instname: inst.default.institute.instituteName,
-            expireAt: expires,
-            target: target,
-          },
-        };
-      }break;
-      case client.student:{
-        if(!(query.in && query.c && query.t)) return false;
-        const classdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.classes":{$elemMatch:{"_id":ObjectId(query.c)}}},{
-          projection:{uiid:1,"users.classes.$":1,default:1}
-        });
-        if(!classdoc) return false;
-        const Class = classdoc.users.classes[0];
-        if(!Class) return false;
-        const teacherdoc = await Institute.findOne({uiid:classdoc.uiid,"users.teachers":{$elemMatch:{"teacherID":Class.inchargeID}}},{
-          projection:{"users.teachers.$":1}
-        });
-        if(!teacherdoc) return false;
-        const incharge = share.getTeacherShareData(teacherdoc.users.teachers[0]);
-        const expires = Class.invite.student.expiresAt;
-        if(!Class.invite.student.active)
+          const expires = inst.invite.teacher.expiresAt;
+          const validity = this.checkTimingValidity(
+            inst.invite.teacher.createdAt,
+            expires,
+            query.t
+          );
+          if (this.isInvalid(validity)) return false;
           return {
-            invite:{
-              valid:false,
+            invite: {
+              valid: this.isActive(validity),
+              uiid: inst.uiid,
+              invitorID: host.email,
+              invitorName: host.username,
+              instname: inst.default.institute.instituteName,
+              expireAt: expires,
+              target: target,
+            },
+          };
+        }
+        break;
+      case client.student: {
+        if (!(query.in && query.c && query.t)) return false;
+        const classdoc = await Institute.findOne(
+          {
+            _id: ObjectId(query.in),
+            "users.classes": { $elemMatch: { _id: ObjectId(query.c) } },
+          },
+          {
+            projection: { uiid: 1, "users.classes.$": 1, default: 1 },
+          }
+        );
+        if (!classdoc) return false;
+        const Class = classdoc.users.classes[0];
+        if (!Class) return false;
+        const teacherdoc = await Institute.findOne(
+          {
+            uiid: classdoc.uiid,
+            "users.teachers": { $elemMatch: { teacherID: Class.inchargeID } },
+          },
+          {
+            projection: { "users.teachers.$": 1 },
+          }
+        );
+        if (!teacherdoc) return false;
+        const incharge = share.getTeacherShareData(
+          teacherdoc.users.teachers[0]
+        );
+        const expires = Class.invite.student.expiresAt;
+        if (!Class.invite.student.active)
+          return {
+            invite: {
+              valid: false,
               uiid: classdoc.uiid,
-              classname:Class.classname,
+              classname: Class.classname,
               invitorID: incharge.id,
               invitorName: incharge.username,
               expireAt: expires,
               instname: classdoc.default.institute.instituteName,
-              target: client.student, 
-            }
-          }
-        
+              target: client.student,
+            },
+          };
+
         const validity = this.checkTimingValidity(
           Class.invite.student.createdAt,
           expires,
@@ -364,7 +393,7 @@ class Invitation {
             uiid: classdoc.uiid,
             invitorID: incharge.id,
             invitorName: incharge.username,
-            classname:Class.classname,
+            classname: Class.classname,
             instname: classdoc.default.institute.instituteName,
             expireAt: expires,
             target: client.student,
@@ -392,8 +421,8 @@ class Invitation {
         return `${this.domain}/${target}/external?type=${this.type}&in=${data.instID}&c=${data.cid}&t=${createdAt}`;
     }
   }
-  
-  getPersonalInviteLink(target,data){
+
+  getPersonalInviteLink(target, data) {
     switch (target) {
       case client.admin:
         return `${this.domain}/${target}/external?type=${this.personalType}&in=${data.instID}&ad=${data.uid}&id=${data.to}`;
@@ -404,37 +433,50 @@ class Invitation {
     }
   }
 
-  async handlePersonalInvitation(query,target){
-    if(!(query.in&&query.id&&(query.ad||query.c))) return false;
-    switch(target){
-      case client.admin:{};
-      case client.teacher:{
-        const admin = await Admin.findOne({"_id":ObjectId(query.ad)});
-        if(!admin) return false;
-        const inst = await Institute.findOne({"_id":ObjectId(query.in),"schedule.teachers":{$elemMatch:{"teacherID":query.id}}},{
-          projection:{
-            "uiid":1,
-            "default":1,
-          }
-        });
-        if(!inst) return false;
-        const teacherdoc = await Institute.findOne({"_id":ObjectId(query.in),"users.teachers":{$elemMatch:{"teacherID":query.id}}});
-        if(teacherdoc) return false;
-        return {
-          invite:{
-            valid: true,
-            personal:true,
-            email:query.id,
-            uiid: inst.uiid,
-            invitorID: admin.email,
-            invitorName: admin.username,
-            instname: inst.default.institute.instituteName,
-            expireAt: false,
-            target: target,
-          }
+  async handlePersonalInvitation(query, target) {
+    if (!(query.in && query.id && (query.ad || query.c))) return false;
+    switch (target) {
+      case client.admin: {
+      }
+      case client.teacher:
+        {
+          const admin = await Admin.findOne({ _id: ObjectId(query.ad) });
+          if (!admin) return false;
+          const inst = await Institute.findOne(
+            {
+              _id: ObjectId(query.in),
+              "schedule.teachers": { $elemMatch: { teacherID: query.id } },
+            },
+            {
+              projection: {
+                uiid: 1,
+                default: 1,
+              },
+            }
+          );
+          if (!inst) return false;
+          const teacherdoc = await Institute.findOne({
+            _id: ObjectId(query.in),
+            "users.teachers": { $elemMatch: { teacherID: query.id } },
+          });
+          if (teacherdoc) return false;
+          return {
+            invite: {
+              valid: true,
+              personal: true,
+              email: query.id,
+              uiid: inst.uiid,
+              invitorID: admin.email,
+              invitorName: admin.username,
+              instname: inst.default.institute.instituteName,
+              expireAt: false,
+              target: target,
+            },
+          };
         }
-      }break;
-      case client.student:{};
+        break;
+      case client.student: {
+      }
     }
   }
 

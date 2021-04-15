@@ -1,9 +1,10 @@
-const { code, client, clog } = require("../../public/script/codes"),
-  inspect = require("./inspector"),
+const { code, client } = require("../../public/script/codes"),
   mailer = require("./mailer"),
   time = require("./timer"),
   share = require("./sharedata"),
-  {db:{cpass},email} = require("../../config/config.js"),
+  {
+    db: { cpass },
+  } = require("../../config/config.js"),
   { ObjectId } = require("mongodb"),
   Institute = require("../../config/db").getInstitute(cpass),
   Admin = require("../../config/db").getAdmin(cpass);
@@ -22,17 +23,16 @@ class Verification {
 
   /**
    * Generates a new verification link based on given parameters.
-   * @param {String} target The target group for which verificaiton link is to be generated, can be passed from Verification().target.
+   * @param {String} target The target group for which verificaiton link is to be generated.
    * @param {JSON} data The data to be attached with link, must be specific for specific targets.
    * @param {Number} validity Number of minutes this link will be valid for. Defaults to 15.
-   * @returns {JSON} Returns expiry time according to SGT notation, and the generated link, as key value pairs
-   *  of exp,link.
+   * @returns Returns json with link, username, email & link expiry time in SGT notation.
    */
   async generateLink(target, data = {}, validity = this.defaultValidity) {
-    const exp = time.getTheMomentMinute(validity);
-    let link = String();
-    let to;
-    let username;
+    const exp = time.getMoment({ minute: validity });
+    let link = String(),
+      to,
+      username;
     switch (target) {
       case client.admin:
         {
@@ -164,15 +164,13 @@ class Verification {
    * @param expiryTime The time to be checked valid in SGT notation.
    * @returns A boolean value, if valid, true, otherwise false.
    */
-  isValidTime(expiryTime) {
-    return time.getTheMomentMinute() < Number(expiryTime);
-  }
+  isValidTime = (expiryTime) => time.getMoment() < Number(expiryTime);
 
   /**
    * Handles the query of given verification link, and the target client to be verified.
    * @param {JSON} query The query of link (usually request.query of express GET method).
-   * @param {String} clientType The target client to be checked for link validation, can be derived from Verfication().target.
-   * @returns {Promise} If query and clientType are in accordance with each other, returns JSON object of user key, and if link is valid, verifies the given client,
+   * @param {String} clientType The target client to be checked for link validation.
+   * @returns If query and clientType are in accordance with each other, returns JSON object of user key, and if link is valid, verifies the given client,
    *  and returns additional data of given client.
    */
   handleVerification = async (query, clientType) => {
@@ -189,7 +187,7 @@ class Verification {
             )
               return false;
             if (!this.isValidTime(admin.vlinkexp))
-              return { user: { expired: true } };
+              return { user: {...share.getAdminShareData(admin), expired: true } };
             const doc = await Admin.findOneAndUpdate(
               { _id: ObjectId(query.u) },
               { $set: { verified: true }, $unset: { vlinkexp: null } },
@@ -199,7 +197,7 @@ class Verification {
             if (!doc.value) return false;
             return { user: share.getAdminShareData(doc.value) };
           } catch (e) {
-            mailer.sendException(inspect.token.verify(email), e);
+            mailer.sendException(e);
             return false;
           }
         }
@@ -245,7 +243,7 @@ class Verification {
               )
                 return false;
               if (!this.isValidTime(teacher.vlinkexp))
-                return { user: { expired: true } };
+                return { user: { ...share.getTeacherShareData(teacher), expired: true } };
               const doc = await Institute.findOneAndUpdate(
                 {
                   _id: ObjectId(query.in),
@@ -293,7 +291,7 @@ class Verification {
               return false;
 
             if (!this.isValidTime(teacher.vlinkexp))
-              return { user: { expired: true } };
+              return { user: { ...share.getTeacherShareData(teacher), expired: true } };
             const doc = await Institute.findOneAndUpdate(
               {
                 _id: ObjectId(query.in),
@@ -326,7 +324,7 @@ class Verification {
                 }
               : false;
           } catch (e) {
-            mailer.sendException(inspect.token.verify(email),e);
+            mailer.sendException(e);
             return false;
           }
         }
@@ -371,7 +369,7 @@ class Verification {
             )
               return false;
             if (!this.isValidTime(student.vlinkexp))
-              return { user: { expired: true } };
+              return { user: { ...share.getStudentShareData(student), expired: true } };
             const doc = await Institute.findOneAndUpdate(
               {
                 _id: ObjectId(query.in),
@@ -419,7 +417,7 @@ class Verification {
             return false;
 
           if (!this.isValidTime(student.vlinkexp))
-            return { user: { expired: true } };
+            return { user: {...share.getStudentShareData(student), expired: true } };
           const doc = await Institute.findOneAndUpdate(
             {
               _id: ObjectId(query.in),
@@ -450,7 +448,7 @@ class Verification {
             ? { user: share.getStudentShareData(studentdoc.users.students[0]) }
             : false;
         } catch (e) {
-          mailer.sendException(inspect.token.verify(email),e);
+          mailer.sendException(e);
           return false;
         }
       }

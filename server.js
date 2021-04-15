@@ -1,6 +1,5 @@
 const express = require("express"),
   helmet = require("helmet"),
-  bodyParser = require("body-parser"),
   { client, view, get } = require("./public/script/codes"),
   server = express(),
   cors = require("cors"),
@@ -11,12 +10,12 @@ const express = require("express"),
   fs = require("fs"),
   rateLimit = require("express-rate-limit");
 
+server.use(helmet());
 server.set("view engine", "ejs");
 server.set("trust proxy", 1);
-server.use(helmet());
 server.use(express.static("public"));
-server.use(bodyParser.urlencoded({ extended: true }));
-server.use(bodyParser.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(express.json());
 server.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -41,7 +40,7 @@ connectToDB(require("./config/config.js").db.dpass, (err, dbname) => {
   server.use(`/${client.admin}`, require(`./routes/${client.admin}`));
   server.use(`/${client.teacher}`, require(`./routes/${client.teacher}`));
   server.use(`/${client.student}`, require(`./routes/${client.student}`));
-  server.use("/oauth", cors() , require("./routes/oauth"));
+  server.use("/oauth", cors(), require("./routes/oauth"));
 
   server.get(get.root, (req, res) => {
     render(res, view.loader, { data: { client: req.query.client } });
@@ -51,7 +50,7 @@ connectToDB(require("./config/config.js").db.dpass, (err, dbname) => {
       alerts: await alert.globalAlerts(),
     });
   });
-  server.get(get.tour, (req, res) => {
+  server.get(get.tour, (_, res) => {
     render(res, view.tour, { filename: "slide", total: 7 });
   });
   server.get(get.search, (req, res) => {

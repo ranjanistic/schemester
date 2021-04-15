@@ -1,20 +1,29 @@
 const express = require("express"),
   student = express.Router(),
-  { code, client, view, action,get,post, clog,key } = require("../public/script/codes"),
+  {
+    code,
+    client,
+    view,
+    action,
+    get,
+    post,
+    key,
+  } = require("../public/script/codes"),
   session = require("../workers/common/session"),
   invite = require("../workers/common/invitation"),
-  {render} = require("../workers/common/inspector"),
+  { render } = require("../workers/common/inspector"),
+  { sendException } = require("../workers/common/mailer"),
   alert = require("../workers/common/alerts"),
   verify = require("../workers/common/verification"),
   reset = require("../workers/common/passwordreset"),
   worker = require("../workers/studentworker");
 
-session.use(student,client.student);
+session.use(student, client.student);
 
 const invalidsession = { result: code.event(code.auth.SESSION_INVALID) },
   authreqfailed = (error) => {
     return { result: code.eventmsg(code.auth.AUTH_REQ_FAILED, error) };
-};
+  };
 
 student.get(get.root, (_, res) => {
   res.redirect(worker.toLogin());
@@ -23,8 +32,8 @@ student.get(get.root, (_, res) => {
 
 student.get(get.authlogin, (req, res) => {
   const response = session.verify(req, client.student);
-  if (!session.valid(response,client.student))
-    return render(res,view.student.login, { autofill: req.query });
+  if (!session.valid(response, client.student))
+    return render(res, view.student.login, { autofill: req.query });
   let data = req.query;
   delete data[key.uid[0]];
   return res.redirect(worker.toSession(response.user.id, req.query));
@@ -60,6 +69,7 @@ student.post(post.auth, async (req, res) => {
             return res.json({ result: response });
           })
           .catch((error) => {
+            sendException(error);
             return res.json({
               result: code.eventmsg(code.auth.ACCOUNT_CREATION_FAILED, error),
             });
@@ -75,7 +85,8 @@ student.get(get.session, async (req, res) => {
   let query = req.query;
   const response = session.verify(req, client.student);
 
-  if (!session.valid(response,client.student)) return res.redirect(worker.toLogin(query));
+  if (!session.valid(response, client.student))
+    return res.redirect(worker.toLogin(query));
   if (query.u != response.user.id) return res.redirect(worker.toLogin(query));
   let student = await worker.self.account.getAccount(response.user);
   if (!student)
@@ -83,24 +94,24 @@ student.get(get.session, async (req, res) => {
       if (response) res.redirect(worker.toLogin(query));
     });
   if (!student.verified)
-    return render(res,view.verification, { user: student });
+    return render(res, view.verification, { user: student });
   let classrooms = await worker.classes.getClassesByStudentID(
     response.user.uiid,
     student.id
   );
   const alerts = await alert.studentAlerts();
   if (student.pseudo)
-    return render(res,view.student.getViewByTarget(view.student.target.dash), {
+    return render(res, view.student.getViewByTarget(view.student.target.dash), {
       student: student,
       target: { fragment: null },
       pseudoclasses: classrooms.pseudoclasses,
-      alerts
+      alerts,
     });
   try {
     switch (query.target) {
       case view.student.target.comms: {
         const comms = await worker.comms.getRoomAndCallList(response.user);
-        return render(res,view.student.getViewByTarget(query.target), {
+        return render(res, view.student.getViewByTarget(query.target), {
           client: student,
           rooms: comms.rooms,
           calls: comms.calls,
@@ -112,25 +123,24 @@ student.get(get.session, async (req, res) => {
           roomname: query.roomname ? query.roomname : false,
           personid: query.personid ? query.personid : false,
         });
-        if (!room) return render(res,view.notfound);
+        if (!room) return render(res, view.notfound);
         if (room.event == code.comms.BLOCKED_FROM_ROOM)
-          return render(res,view.forbidden);
-        return render(res,view.student.getViewByTarget(query.target), {
+          return render(res, view.forbidden);
+        return render(res, view.student.getViewByTarget(query.target), {
           client: student,
           room,
         });
       }
       default:
-        return render(res,view.student.getViewByTarget(query.target), {
+        return render(res, view.student.getViewByTarget(query.target), {
           student,
           target: {
             fragment: query.fragment,
           },
-          alerts
+          alerts,
         });
     }
   } catch (e) {
-    clog(e);
     return res.redirect(worker.toLogin());
   }
 });
@@ -139,7 +149,7 @@ student.get(get.fragment, async (req, res) => {
   //for student session fragments.
   const response = session.verify(req, client.student);
   const query = req.query;
-  if(!session.valid(response,client.student)) return worker.toLogin(query);
+  if (!session.valid(response, client.student)) return worker.toLogin(query);
   switch (query.fragment) {
     case view.student.target.fragment.today: {
       const scheduleresponse = await worker.schedule.getSchedule(
@@ -148,11 +158,11 @@ student.get(get.fragment, async (req, res) => {
       );
       if (!scheduleresponse)
         //no schedule
-        return render(res,view.student.getViewByTarget(query.fragment), {
+        return render(res, view.student.getViewByTarget(query.fragment), {
           today: null,
           timings: null,
         });
-      return render(res,view.student.getViewByTarget(query.fragment), {
+      return render(res, view.student.getViewByTarget(query.fragment), {
         today: scheduleresponse.schedule
           ? scheduleresponse.schedule.period
           : false,
@@ -163,14 +173,14 @@ student.get(get.fragment, async (req, res) => {
       worker.schedule
         .getSchedule(response.user)
         .then((resp) => {
-          return render(res,view.student.getViewByTarget(query.fragment), {
+          return render(res, view.student.getViewByTarget(query.fragment), {
             schedule: resp.schedule,
             timings: resp.timings,
           });
         })
-        .catch((e) => {
-          clog(e);
-          return render(res,view.servererror, { error: e });
+        .catch((error) => {
+          sendException(error);
+          return render(res, view.servererror, { error });
         });
       return;
     }
@@ -193,9 +203,9 @@ student.get(get.fragment, async (req, res) => {
       if (
         !classroom.classes.find((Class) => Class.classname == query.classname)
       ) {
-        return render(res,view.notfound);
+        return render(res, view.notfound);
       }
-      return render(res,view.student.getViewByTarget(query.fragment), {
+      return render(res, view.student.getViewByTarget(query.fragment), {
         classroom: classroom.classes.find(
           (Class) => Class.classname == query.classname
         ),
@@ -209,13 +219,13 @@ student.get(get.fragment, async (req, res) => {
       const defaults = await worker.institute.getDefaultsWithAdminPrefs(
         response.user
       );
-      return render(res,view.student.getViewByTarget(query.fragment), {
+      return render(res, view.student.getViewByTarget(query.fragment), {
         student,
         defaults,
       });
     }
     default:
-      return render(res,view.notfound);
+      return render(res, view.notfound);
   }
 });
 
@@ -232,7 +242,7 @@ student.post(post.self, async (req, res) => {
   }
   const response = session.verify(req, client.student);
 
-  if (!session.valid(response,client.student)) return res.json(invalidsession);
+  if (!session.valid(response, client.student)) return res.json(invalidsession);
   switch (body.target) {
     case action.receive:
       return res.json({
@@ -264,7 +274,8 @@ student.post(post.manage, async (req, res) => {
     }
   }
   const response = session.verify(req, client.student);
-  if (!session.valid(response,client.student)) return res.json({ result: response });
+  if (!session.valid(response, client.student))
+    return res.json({ result: response });
   switch (body.type) {
     case verify.type:
       return res.json({
@@ -286,7 +297,8 @@ student.post(post.sessionvalidate, async (req, res) => {
 
 student.post(post.classroom, async (req, res) => {
   const response = session.verify(req, client.student);
-  if (!session.valid(response,client.student)) return res.json({ result: response });
+  if (!session.valid(response, client.student))
+    return res.json({ result: response });
   const body = req.body;
   switch (body.action) {
     case "request":
@@ -298,9 +310,10 @@ student.post(post.classroom, async (req, res) => {
   }
 });
 
-student.post(post.comms,async(req,res)=>{
+student.post(post.comms, async (req, res) => {
   const response = session.verify(req, client.student);
-  if (!session.valid(response,client.student)) return res.json({ result: response });
+  if (!session.valid(response, client.student))
+    return res.json({ result: response });
   switch (req.body.action) {
     case action.chat:
       worker.comms.chatroom();
@@ -312,7 +325,7 @@ student.post(post.comms,async(req,res)=>{
       worker.comms.videocalling();
       break;
   }
-})
+});
 
 student.get(get.external, async (req, res) => {
   const query = req.query;
@@ -322,11 +335,11 @@ student.get(get.external, async (req, res) => {
         invite
           .handleInvitation(query, client.student)
           .then((resp) => {
-            if (!resp) return render(res,view.notfound);
-            return render(res,view.userinvitaion, { invite: resp.invite });
+            if (!resp) return render(res, view.notfound);
+            return render(res, view.userinvitaion, { invite: resp.invite });
           })
           .catch((e) => {
-            return render(res,view.notfound);
+            return render(res, view.notfound);
           });
       }
       break;
@@ -335,11 +348,12 @@ student.get(get.external, async (req, res) => {
       verify
         .handleVerification(query, client.student)
         .then((resp) => {
-          if (!resp) return render(res,view.notfound);
-          return render(res,view.verification, { user: resp.user });
+          if (!resp) return render(res, view.notfound);
+          return render(res, view.verification, { user: resp.user });
         })
-        .catch((e) => {
-          return render(res,view.servererror, { error: e });
+        .catch((error) => {
+          sendException(error);
+          return render(res, view.servererror, { error });
         });
       return;
     }
@@ -349,20 +363,21 @@ student.get(get.external, async (req, res) => {
         reset
           .handlePasswordResetLink(query, client.student)
           .then(async (resp) => {
-            if (!resp) return render(res,view.notfound);
-            return render(res,view.passwordreset, {
+            if (!resp) return render(res, view.notfound);
+            return render(res, view.passwordreset, {
               user: resp.user,
               uiid: resp.uiid,
               classname: resp.classname,
             });
           })
-          .catch((e) => {
-            return render(res,view.servererror, { error: e });
+          .catch((error) => {
+            sendException(error);
+            return render(res, view.servererror, { error: error });
           });
       }
       break;
     default:
-      render(res,view.servererror);
+      render(res, view.servererror);
   }
 });
 

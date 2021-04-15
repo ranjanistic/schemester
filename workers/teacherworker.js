@@ -1,10 +1,11 @@
-const {db:{cpass}} = require("../config/config.js"),
+const {
+    db: { cpass },
+  } = require("../config/config.js"),
   Admin = require("../config/db").getAdmin(cpass),
   Institute = require("../config/db").getInstitute(cpass),
   fs = require("fs"),
   path = require("path"),
-  pusher = require("pusher"),
-  {code,client,view,action,clog} = require("../public/script/codes"),
+  { code, client, view, action } = require("../public/script/codes"),
   invite = require("./common/invitation"),
   inspect = require("./common/inspector"),
   verify = require("./common/verification"),
@@ -14,7 +15,6 @@ const {db:{cpass}} = require("../config/config.js"),
   reset = require("./common/passwordreset"),
   share = require("./common/sharedata"),
   { ObjectId } = require("mongodb");
-
 
 class TeacherWorker {
   constructor() {
@@ -39,9 +39,10 @@ class TeacherWorker {
     let path = `/${client.teacher}/auth/login`;
     for (var key in query) {
       if (query.hasOwnProperty(key)) {
-        path = i > 0
-          ? `${path}&${key}=${query[key]}`
-          : `${path}?${key}=${query[key]}`;
+        path =
+          i > 0
+            ? `${path}&${key}=${query[key]}`
+            : `${path}?${key}=${query[key]}`;
         i++;
       }
     }
@@ -67,7 +68,6 @@ class Self {
         this.vlinkexp = "vlinkexp";
         this.rlinkexp = "rlinkexp";
       }
-      //todo:send feedback emails
 
       /**
        * Returns the teacher account associated with current user session.
@@ -75,25 +75,34 @@ class Self {
        * @param {Boolean} raw If true, will return exact account data (including password, encrypted), else will return through sharedata methods. Defaults to false.
        * @returns {Promise} If account exists, returns account object (if raw=false,returns filtered account object via sharedata module), else returns false.
        */
-      async getAccount(user,raw = false){
-        let teacher = await this.getTeacherById(user.uiid,user.id);
-        if(teacher)
-          return raw?teacher:share.getTeacherShareData(teacher,user.uiid);
-        teacher = await this.getTeacherById(user.uiid,user.id,true);
-        if(!teacher) return false;
-        if(raw) teacher['pseudo'] = true;
-        return raw?teacher:share.getPseudoTeacherShareData(teacher,user.uiid);
+      async getAccount(user, raw = false) {
+        let teacher = await this.getTeacherById(user.uiid, user.id);
+        if (teacher)
+          return raw ? teacher : share.getTeacherShareData(teacher, user.uiid);
+        teacher = await this.getTeacherById(user.uiid, user.id, true);
+        if (!teacher) return false;
+        if (raw) teacher["pseudo"] = true;
+        return raw
+          ? teacher
+          : share.getPseudoTeacherShareData(teacher, user.uiid);
       }
 
-      async getTeacherById(uiid,id,pseudo = false){
+      async getTeacherById(uiid, id, pseudo = false) {
         const path = pseudo ? pseudoteacherpath : teacherpath;
         const getpath = `${path}.$`;
-        const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{[this.uid]:ObjectId(id)}}},{
-          projection:{
-            [getpath]:1
+        const tdoc = await Institute.findOne(
+          { uiid: uiid, [path]: { $elemMatch: { [this.uid]: ObjectId(id) } } },
+          {
+            projection: {
+              [getpath]: 1,
+            },
           }
-        });
-        return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
+        );
+        return tdoc
+          ? pseudo
+            ? tdoc.pseudousers.teachers[0]
+            : tdoc.users.teachers[0]
+          : false;
       }
       async getTeacherByEmail(uiid, email, pseudo = false) {
         const path = pseudo ? pseudoteacherpath : teacherpath;
@@ -122,13 +131,20 @@ class Self {
             },
           }
         );
-        if(!doc.value) return code.event(code.NO);
-        doc = await Institute.findOneAndUpdate({uiid:uiid,
-          "schedule.teachers":{$elemMatch:{"teacherID":newteacher.teacherID}}},{
-            $set:{
-              "schedule.teachers.$.teachername":newteacher.username
-            }
-        });
+        if (!doc.value) return code.event(code.NO);
+        doc = await Institute.findOneAndUpdate(
+          {
+            uiid: uiid,
+            "schedule.teachers": {
+              $elemMatch: { teacherID: newteacher.teacherID },
+            },
+          },
+          {
+            $set: {
+              "schedule.teachers.$.teachername": newteacher.username,
+            },
+          }
+        );
         return code.event(code.OK);
       }
 
@@ -155,35 +171,55 @@ class Self {
        * To change current teacher's user name (pseudo or user)
        */
       changeName = async (user, body) => {
-        let teacher = await getTeacherById(user.uiid,user.id);
-        const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
-        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const namepath = pseudo?`${pseudoteacherpath}.$.${this.username}`:`${this.teacherpath}.$.${this.username}`;
-        const path = pseudo?pseudoteacherpath:this.teacherpath;
-        let newteacher = await Institute.findOneAndUpdate({
+        let teacher = await this.getTeacherById(user.uiid, user.id);
+        const pseudo = teacher ? false : true;
+        teacher = teacher
+          ? teacher
+          : await this.getTeacherById(user.uiid, user.id, true);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const namepath = pseudo
+          ? `${pseudoteacherpath}.$.${this.username}`
+          : `${this.teacherpath}.$.${this.username}`;
+        const path = pseudo ? pseudoteacherpath : this.teacherpath;
+        let newteacher = await Institute.findOneAndUpdate(
+          {
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
-        },
+          },
           {
             $set: {
               [namepath]: body.newname,
             },
           }
         );
-        if(!newteacher.value) return code.event(code.NO);
-        if(!pseudo){
-          newteacher = await Institute.findOneAndUpdate({uiid:user.uiid,
-          "schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},{
-            $set:{
-              "schedule.teachers.$.teachername":body.newname
+        if (!newteacher.value) return code.event(code.NO);
+        if (!pseudo) {
+          newteacher = await Institute.findOneAndUpdate(
+            {
+              uiid: user.uiid,
+              "schedule.teachers": {
+                $elemMatch: { teacherID: teacher.teacherID },
+              },
+            },
+            {
+              $set: {
+                "schedule.teachers.$.teachername": body.newname,
+              },
             }
-          });
-          newteacher = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
-            $set:{
-              "users.classes.$.inchargename":body.newname
+          );
+          newteacher = await Institute.findOneAndUpdate(
+            {
+              uiid: user.uiid,
+              "users.classes": {
+                $elemMatch: { inchargeID: teacher.teacherID },
+              },
+            },
+            {
+              $set: {
+                "users.classes.$.inchargename": body.newname,
+              },
             }
-          });
+          );
         }
         return code.event(code.OK);
       };
@@ -192,31 +228,39 @@ class Self {
        * To change current teacher's account password (pseudo or user)
        */
       changePassword = async (user, body) => {
-        let teacher = await getTeacherById(user.uiid,user.id);
-        const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
-        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        let teacher = await this.getTeacherById(user.uiid, user.id);
+        const pseudo = teacher ? false : true;
+        teacher = teacher
+          ? teacher
+          : await this.getTeacherById(user.uiid, user.id, true);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
         const salt = await bcrypt.genSalt(10);
         const epassword = await bcrypt.hash(body.newpassword, salt);
         const newteacher = await Institute.findOneAndUpdate(
           {
             uiid: user.uiid,
-            [pseudo?pseudoteacherpath:this.teacherpath]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
+            [pseudo ? pseudoteacherpath : this.teacherpath]: {
+              $elemMatch: { [this.uid]: ObjectId(user.id) },
+            },
           },
           {
             $set: {
-              [pseudo?`${pseudoteacherpath}.$.${this.password}`:`${this.teacherpath}.$.${this.password}`]: epassword,
+              [pseudo
+                ? `${pseudoteacherpath}.$.${this.password}`
+                : `${this.teacherpath}.$.${this.password}`]: epassword,
             },
             $unset: {
-              [pseudo?`${pseudoteacherpath}.$.${this.rlinkexp}`:`${this.teacherpath}.$.${this.rlinkexp}`]: null,
+              [pseudo
+                ? `${pseudoteacherpath}.$.${this.rlinkexp}`
+                : `${this.teacherpath}.$.${this.rlinkexp}`]: null,
             },
           }
         );
-        if(newteacher.value){
-          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED,{
-            to:teacher.teacherID,
-            username:teacher.username,
-            client:client.teacher,
+        if (newteacher.value) {
+          mailer.sendAlertMail(code.mail.PASSWORD_CHANGED, {
+            to: teacher.teacherID,
+            username: teacher.username,
+            client: client.teacher,
           });
         }
         return code.event(newteacher.value ? code.OK : code.NO);
@@ -226,42 +270,70 @@ class Self {
        * To change email address of teacher, pseudo or user
        */
       changeEmailID = async (user, body) => {
-        let teacher = await getTeacherById(user.uiid,user.id);
-        const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await getTeacherById(user.uiid,user.id,true);
-        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        let teacher = await this.getTeacherById(user.uiid, user.id);
+        const pseudo = teacher ? false : true;
+        teacher = teacher
+          ? teacher
+          : await this.getTeacherById(user.uiid, user.id, true);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
 
         if (teacher.teacherID == body.newemail)
           return code.event(code.auth.SAME_EMAIL);
-        const someteacher = await getTeacherByEmail(user.uiid,body.newemail);
+
+        const someteacher = await this.getTeacherByEmail(
+          user.uiid,
+          body.newemail
+        );
         if (someteacher) return code.event(code.auth.USER_EXIST);
         const newteacher = await Institute.findOneAndUpdate(
-          { uiid: user.uiid, [pseudo?pseudoteacherpath:this.teacherpath]:{$elemMatch:{[this.uid]:ObjectId(user.id)}}},
+          {
+            uiid: user.uiid,
+            [pseudo ? pseudoteacherpath : this.teacherpath]: {
+              $elemMatch: { [this.uid]: ObjectId(user.id) },
+            },
+          },
           {
             $set: {
-              [pseudo?`${pseudoteacherpath}.$.${this.teacherID}`:`${this.teacherpath}.$.${this.teacherID}`]: body.newemail,
-              [pseudo?`${pseudoteacherpath}.$.${this.verified}`:`${this.teacherpath}.$.${this.verified}`]: false,
+              [pseudo
+                ? `${pseudoteacherpath}.$.${this.teacherID}`
+                : `${this.teacherpath}.$.${this.teacherID}`]: body.newemail,
+              [pseudo
+                ? `${pseudoteacherpath}.$.${this.verified}`
+                : `${this.teacherpath}.$.${this.verified}`]: false,
             },
           }
         );
-        if(!newteacher.value) return code.event(code.NO);        
-        let res = await Institute.findOneAndUpdate({uiid:user.uiid,"schedule.teachers":{$elemMatch:{"teacherID":teacher.teacherID}}},
-        {
-          $set:{
-            "schedule.teachers.$.teacherID":body.newemail
+        if (!newteacher.value) return code.event(code.NO);
+        let res = await Institute.findOneAndUpdate(
+          {
+            uiid: user.uiid,
+            "schedule.teachers": {
+              $elemMatch: { teacherID: teacher.teacherID },
+            },
+          },
+          {
+            $set: {
+              "schedule.teachers.$.teacherID": body.newemail,
+            },
           }
-        });
-        res = await Institute.findOneAndUpdate({uiid:user.uiid,"users.classes":{$elemMatch:{"inchargeID":teacher.teacherID}}},{
-          $set:{
-            "users.classes.$.inchargeID":body.newemail
+        );
+        res = await Institute.findOneAndUpdate(
+          {
+            uiid: user.uiid,
+            "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
+          },
+          {
+            $set: {
+              "users.classes.$.inchargeID": body.newemail,
+            },
           }
-        });
-        if(newteacher.value){
-          mailer.sendAlertMail(code.mail.EMAIL_CHANGED,{
-            to:teacher.teacherID,
-            newmail:body.newemail,
-            username:teacher.username,
-            client:client.teacher,
+        );
+        if (newteacher.value) {
+          mailer.sendAlertMail(code.mail.EMAIL_CHANGED, {
+            to: teacher.teacherID,
+            newmail: body.newemail,
+            username: teacher.username,
+            client: client.teacher,
           });
         }
         return code.event(code.OK);
@@ -271,12 +343,15 @@ class Self {
        *To delete teacher account, pseudo or user.
        */
       deleteAccount = async (user) => {
-        let teacher = await this.getTeacherById(user.uiid,user.id);
-        const pseudo = teacher?false:true;
-        teacher = teacher?teacher:await this.getTeacherById(user.uiid,user.id,true);
-        if(!teacher) return code.event(code.auth.USER_NOT_EXIST);
-        const path = pseudo?pseudoteacherpath:this.teacherpath;
-        const deluser = await Institute.findOneAndUpdate({
+        let teacher = await this.getTeacherById(user.uiid, user.id);
+        const pseudo = teacher ? false : true;
+        teacher = teacher
+          ? teacher
+          : await this.getTeacherById(user.uiid, user.id, true);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
+        const path = pseudo ? pseudoteacherpath : this.teacherpath;
+        const deluser = await Institute.findOneAndUpdate(
+          {
             uiid: user.uiid,
             [path]: { $elemMatch: { [this.uid]: ObjectId(user.id) } },
           },
@@ -286,18 +361,23 @@ class Self {
             },
           }
         );
-        await Institute.findOneAndUpdate({
-          uiid:user.uiid,
-          "users.classes":{$elemMatch:{inchargeID:teacher.teacherID}}
-        },{ $set:{
-          "users.classes.$.inchargename":null,
-          "users.classes.$.inchargeID":null,
-        }});
-        if(deluser.value){
-          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED,{
-            to:teacher.teacherID,
-            username:teacher.username,
-            client:client.teacher,
+        await Institute.findOneAndUpdate(
+          {
+            uiid: user.uiid,
+            "users.classes": { $elemMatch: { inchargeID: teacher.teacherID } },
+          },
+          {
+            $set: {
+              "users.classes.$.inchargename": null,
+              "users.classes.$.inchargeID": null,
+            },
+          }
+        );
+        if (deluser.value) {
+          mailer.sendAlertMail(code.mail.ACCOUNT_DELETED, {
+            to: teacher.teacherID,
+            username: teacher.username,
+            client: client.teacher,
           });
         }
         return code.event(deluser.value ? code.OK : code.NO);
@@ -400,75 +480,96 @@ class Self {
   handleVerification = async (user, body) => {
     switch (body.action) {
       case action.send: {
-        const inst = await Institute.findOne({uiid:user.uiid},{projection:{"_id":1}});
-        if(!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
+        const inst = await Institute.findOne(
+          { uiid: user.uiid },
+          { projection: { _id: 1 } }
+        );
+        if (!inst) return code.event(code.inst.INSTITUTION_NOT_EXISTS);
         const linkdata = await verify.generateLink(client.teacher, {
           uid: user.id,
           instID: inst._id,
         });
-        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+        if (!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
         return await mailer.sendVerificationEmail(linkdata);
       }
       case action.check: {
         const teacher = await this.account.getAccount(user);
-        if (!teacher)
-          return code.event(code.auth.USER_NOT_EXIST);
+        if (!teacher) return code.event(code.auth.USER_NOT_EXIST);
         return code.event(
-          teacher.verified
-            ? code.verify.VERIFIED
-            : code.verify.NOT_VERIFIED
+          teacher.verified ? code.verify.VERIFIED : code.verify.NOT_VERIFIED
         );
       }
     }
   };
   handlePassReset = async (user, body) => {
     switch (body.action) {
-      case action.send:{
-        let inst;
-        if (!user) {
-          inst = await Institute.findOne({uiid:body.uiid},{projection:{[this.uid]:1}});
-          //user not logged in
-          if(!inst) return code.event(code.OK);
-          let teacher = await this.account.getTeacherByEmail(body.uiid,body.email)
-          if (!teacher) {
-            teacher = await this.account.getTeacherByEmail(body.uiid,body.email,true);
-            if (!teacher) return code.event(code.OK); //don't tell if user not exists, while sending reset email.
+      case action.send:
+        {
+          let inst;
+          if (!user) {
+            inst = await Institute.findOne(
+              { uiid: body.uiid },
+              { projection: { [this.uid]: 1 } }
+            );
+            //user not logged in
+            if (!inst) return code.event(code.OK);
+            let teacher = await this.account.getTeacherByEmail(
+              body.uiid,
+              body.email
+            );
+            if (!teacher) {
+              teacher = await this.account.getTeacherByEmail(
+                body.uiid,
+                body.email,
+                true
+              );
+              if (!teacher) return code.event(code.OK); //don't tell if user not exists, while sending reset email.
+            }
+            return await this.handlePassReset(
+              { id: share.getTeacherShareData(teacher).uid, uiid: body.uiid },
+              body
+            );
+          } else {
+            inst = await Institute.findOne(
+              { uiid: user.uiid },
+              { projection: { [this.uid]: 1 } }
+            );
           }
-          return await this.handlePassReset({ id: share.getTeacherShareData(teacher).uid,uiid:body.uiid },body);
-        } else{
-          inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
+          const linkdata = await reset.generateLink(client.teacher, {
+            uid: user.id,
+            instID: inst._id,
+          });
+          if (!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
+          return await mailer.sendPasswordResetEmail(linkdata);
         }
-        const linkdata = await reset.generateLink(client.teacher, {
-          uid: user.id,
-          instID: inst._id,
-        });
-        if(!linkdata) return code.event(code.mail.ERROR_MAIL_NOTSENT);
-        return await mailer.sendPasswordResetEmail(linkdata);
-      }break;
+        break;
     }
   };
 }
 
-class Institution{
-  constructor(){
-
-  }
-  async getDefaultsWithAdminPrefs(user){
-    const inst = await Institute.findOne({uiid:user.uiid},{projection:{"default":1}});
+class Institution {
+  constructor() {}
+  async getDefaultsWithAdminPrefs(user) {
+    const inst = await Institute.findOne(
+      { uiid: user.uiid },
+      { projection: { default: 1 } }
+    );
     await Promise.all(
-      inst.default.admin.map((admin,a)=>{
-        return new Promise(async(resolve)=>{
-          const useradmin = await Admin.findOne({"email":admin.email});
-          inst.default.admin[a]['phonevisible'] = useradmin.prefs.showphonetoteacher
-          inst.default.admin[a]['emailvisible'] = useradmin.prefs.showemailtoteacher
+      inst.default.admin.map((admin, a) => {
+        return new Promise(async (resolve) => {
+          const useradmin = await Admin.findOne({ email: admin.email });
+          inst.default.admin[a]["phonevisible"] =
+            useradmin.prefs.showphonetoteacher;
+          inst.default.admin[a]["emailvisible"] =
+            useradmin.prefs.showemailtoteacher;
           resolve(inst);
-        })
+        });
       })
     );
     return inst.default;
   }
-  async getInstituteByUIID(user){
-    if(!inspect.sessionTokenValid(user)) return false;
+  async getInstituteByUIID(user) {
+    if (!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOne(
       { uiid: user.uiid },
       {
@@ -482,8 +583,8 @@ class Institution{
       }
     );
   }
-  async findTeacherByTeacherID(user,teacherID){
-    if(!inspect.sessionTokenValid(user)) return false;
+  async findTeacherByTeacherID(user, teacherID) {
+    if (!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOne({
       uiid: uiid,
       "users.teachers": { $elemMatch: { teacherID: teacherID } },
@@ -495,16 +596,16 @@ class Schedule {
   constructor() {
     this.account = new Self().account;
     this.schedulepath = `schedule.teachers`;
-    this.getschedulepath = `${this.schedulepath}.$`
+    this.getschedulepath = `${this.schedulepath}.$`;
     this.teachername = `teachername`;
     this.teacherID = `teacherID`;
     this.days = `days`;
-      this.dayIndex = `dayIndex`;
-      this.absent = `absent`;
-      this.period = `period`;
-        this.classname = `classname`;
-        this.subject = `subject`;
-        this.hold = `hold`;
+    this.dayIndex = `dayIndex`;
+    this.absent = `absent`;
+    this.period = `period`;
+    this.classname = `classname`;
+    this.subject = `subject`;
+    this.hold = `hold`;
   }
   async scheduleUpload(user, body) {
     const inst = await Institute.findOne({ uiid: user.uiid });
@@ -513,30 +614,40 @@ class Schedule {
     let incomplete = false; //if existing teacher schedule being rewritten without completion.
     let found = inst.schedule.teachers.some((teacher) => {
       if (teacher.teacherID == body.teacherID) {
-        overwriting = inst.default.timings.daysInWeek.every((d)=>{
+        overwriting = inst.default.timings.daysInWeek.every((d) => {
           //check if all days are present in teacher schedule
-          return teacher.days.find((day)=>day.dayIndex == d)?true:false;
+          return teacher.days.find((day) => day.dayIndex == d) ? true : false;
         });
-        if(!overwriting) {
+        if (!overwriting) {
           //check if incoming day index is less than any day index present in teacher schedule
-          incomplete = teacher.days.find((day) => body.data.dayIndex <= day.dayIndex)?true:false;
+          incomplete = teacher.days.find(
+            (day) => body.data.dayIndex <= day.dayIndex
+          )
+            ? true
+            : false;
         }
         return true;
       }
     });
-    if (overwriting) //completed schedule, must be edited from schedule view.
+    if (overwriting)
+      //completed schedule, must be edited from schedule view.
       return code.event(code.schedule.SCHEDULE_EXISTS);
 
-    if (incomplete) { //remove teacher schedule
-      await Institute.findOneAndUpdate({ uiid: user.uiid },{
-        $pull: { [this.schedulepath]: { teacherID: body.teacherID } },
-      });
+    if (incomplete) {
+      //remove teacher schedule
+      await Institute.findOneAndUpdate(
+        { uiid: user.uiid },
+        {
+          $pull: { [this.schedulepath]: { teacherID: body.teacherID } },
+        }
+      );
       found = false; //add as a new teacher schedule
     }
 
     const clashdata = [];
-    let clashed = inst.schedule.teachers.some((teacher) => {  //for clash checking
-      if(teacher.teacherID!=body.teacherID){
+    let clashed = inst.schedule.teachers.some((teacher) => {
+      //for clash checking
+      if (teacher.teacherID != body.teacherID) {
         let clashed = teacher.days.some((day) => {
           if (day.dayIndex == body.data.dayIndex) {
             let clashed = day.period.some((period, pindex) => {
@@ -545,10 +656,10 @@ class Schedule {
                 period.classname != code.schedule.FREE
               ) {
                 clashdata.push({
-                  classname:period.classname,
-                  period:pindex,
-                  id:teacher.teacherID,
-                  clashwith:teacher.teachername,
+                  classname: period.classname,
+                  period: pindex,
+                  id: teacher.teacherID,
+                  clashwith: teacher.teachername,
                 });
                 return true;
               }
@@ -563,68 +674,108 @@ class Schedule {
       //if some period clashed with an existing teacher.
       return {
         event: code.schedule.SCHEDULE_CLASHED,
-        clash: clashdata[0]
-      }
+        clash: clashdata[0],
+      };
     }
     if (found) {
       //existing teacher schedule, incomplete
-      let doc = await Institute.updateOne({uiid:user.uiid},{
-        $set:{
-          [`${this.schedulepath}.$[outer].days.$[outer1].period`]:body.data.period  //overwrite existing day
-        }
-      },{
-        arrayFilters:[{"outer.teacherID":body.teacherID},{"outer1.dayIndex":body.data.dayIndex}]
-      });
-      //return if existing day is overwritten.
-      if(doc.result.nModified) return code.event(code.schedule.SCHEDULE_CREATED);
-      doc = await Institute.findOneAndUpdate({
-        uiid: user.uiid,
-        [this.schedulepath]: {
-          $elemMatch: { teacherID: body.teacherID },
-        }, //existing schedule teacherID
-      },{
-        $push: { [`${this.schedulepath}.$[outer].days`]: body.data }, //new day push
-      },{
-        arrayFilters:[{"outer.teacherID":body.teacherID}]
-      });
-      return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED); //new day created.
-    } else { 
-      //no existing schedule teacherID
-      const doc = await Institute.findOneAndUpdate({ uiid: user.uiid }, {
-        $push: {
-          [this.schedulepath]: {
-            teachername:body.teachername,
-            teacherID: body.teacherID,
-            days: [body.data],
+      let doc = await Institute.updateOne(
+        { uiid: user.uiid },
+        {
+          $set: {
+            [`${this.schedulepath}.$[outer].days.$[outer1].period`]: body.data
+              .period, //overwrite existing day
           },
-        }, //new teacher schedule push
-      });
+        },
+        {
+          arrayFilters: [
+            { "outer.teacherID": body.teacherID },
+            { "outer1.dayIndex": body.data.dayIndex },
+          ],
+        }
+      );
+      //return if existing day is overwritten.
+      if (doc.result.nModified)
+        return code.event(code.schedule.SCHEDULE_CREATED);
+      doc = await Institute.findOneAndUpdate(
+        {
+          uiid: user.uiid,
+          [this.schedulepath]: {
+            $elemMatch: { teacherID: body.teacherID },
+          }, //existing schedule teacherID
+        },
+        {
+          $push: { [`${this.schedulepath}.$[outer].days`]: body.data }, //new day push
+        },
+        {
+          arrayFilters: [{ "outer.teacherID": body.teacherID }],
+        }
+      );
+      return code.event(
+        doc.value
+          ? code.schedule.SCHEDULE_CREATED
+          : code.schedule.SCHEDULE_NOT_CREATED
+      ); //new day created.
+    } else {
+      //no existing schedule teacherID
+      const doc = await Institute.findOneAndUpdate(
+        { uiid: user.uiid },
+        {
+          $push: {
+            [this.schedulepath]: {
+              teachername: body.teachername,
+              teacherID: body.teacherID,
+              days: [body.data],
+            },
+          }, //new teacher schedule push
+        }
+      );
       //return if teacher created in schedule
-      return code.event(doc.value?code.schedule.SCHEDULE_CREATED:code.schedule.SCHEDULE_NOT_CREATED);//new teacher new day created.
+      return code.event(
+        doc.value
+          ? code.schedule.SCHEDULE_CREATED
+          : code.schedule.SCHEDULE_NOT_CREATED
+      ); //new teacher new day created.
     }
   }
 
   async scheduleUpdate(user, body) {}
 
-  async createScheduleBackup(user,sendPromptCallback=(filename,err)=>{}){
-    const teacher = await getTeacherById(user.uiid,user.id);
-    if(!teacher) return false;
-    const scheduledoc = await Institute.findOne({uiid:user.uiid,[this.schedulepath]:{$elemMatch:{"teacherID":teacher.teacherID}}},{
-      projection:{[this.getschedulepath]:1}
-    });
-    if(!scheduledoc) return false;
+  async createScheduleBackup(user, sendPromptCallback = (filename, err) => {}) {
+    const teacher = await this.getTeacherById(user.uiid, user.id);
+    if (!teacher) return false;
+    const scheduledoc = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.schedulepath]: { $elemMatch: { teacherID: teacher.teacherID } },
+      },
+      {
+        projection: { [this.getschedulepath]: 1 },
+      }
+    );
+    if (!scheduledoc) return false;
     const schedule = scheduledoc.schedule.teachers[0];
-    
-    fs.mkdir(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}`),()=>{
-      const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
-      fs.writeFile(path.join(path.dirname(require.main.filename)+`/backups/${user.uiid}/${filename}`),JSON.stringify(schedule),(err)=>{
-        sendPromptCallback(filename,err);
-      });
-    });
+
+    fs.mkdir(
+      path.join(path.dirname(require.main.filename) + `/backups/${user.uiid}`),
+      () => {
+        const filename = `${user.uiid}_${timer.getTheMoment()}.json`;
+        fs.writeFile(
+          path.join(
+            path.dirname(require.main.filename) +
+              `/backups/${user.uiid}/${filename}`
+          ),
+          JSON.stringify(schedule),
+          (err) => {
+            sendPromptCallback(filename, err);
+          }
+        );
+      }
+    );
   }
 
-  async removeScheduleByTeacherID(user,teacherID){
-    if(!inspect.sessionTokenValid(user)) return false;
+  async removeScheduleByTeacherID(user, teacherID) {
+    if (!inspect.sessionTokenValid(user)) return false;
     return await Institute.findOneAndUpdate(
       { uiid: user.uiid },
       {
@@ -633,25 +784,32 @@ class Schedule {
     );
   }
 
-  async getSchedule(user, body = {}){
+  async getSchedule(user, body = {}) {
     let teacher = await this.account.getAccount(user);
-    if(!teacher) return false;
-    
-    const inst = await Institute.findOne({uiid: user.uiid},{ projection: { _id: 0, default:1} });
+    if (!teacher) return false;
+
+    const inst = await Institute.findOne(
+      { uiid: user.uiid },
+      { projection: { _id: 0, default: 1 } }
+    );
     if (!inst) return false;
-    const teacherschedule = await Institute.findOne({uiid: user.uiid,
-      [this.schedulepath]: { $elemMatch: { [this.teacherID]: teacher.id } },
-    },{
-      projection: {[this.getschedulepath]: 1},
-    });
+    const teacherschedule = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.schedulepath]: { $elemMatch: { [this.teacherID]: teacher.id } },
+      },
+      {
+        projection: { [this.getschedulepath]: 1 },
+      }
+    );
     const timings = inst.default.timings;
-    if (!teacherschedule) return { schedule:false,timings:timings};
+    if (!teacherschedule) return { schedule: false, timings: timings };
     const schedule = teacherschedule.schedule.teachers[0].days;
     if (body.dayIndex == null) return { schedule: schedule, timings: timings };
     let today = teacherschedule.schedule.teachers[0].days[0];
     today = schedule.find((day) => day.dayIndex == body.dayIndex);
-    return { schedule: today?today:false, timings: timings };
-  };
+    return { schedule: today ? today : false, timings: timings };
+  }
 }
 
 class Classroom {
@@ -665,8 +823,8 @@ class Classroom {
     this.inchargename = "inchargename";
     this.inchargeID = "inchargeID";
     this.students = "students";
-      this.username = "username";
-      this.studentID = "studentID";
+    this.username = "username";
+    this.studentID = "studentID";
 
     class Manage {
       constructor() {}
@@ -684,7 +842,7 @@ class Classroom {
       case action.update:
         return await this.updateClassroom(user, teacher, body, classroom);
       case action.receive:
-        return await this.getClassroom(user,body);
+        return await this.getClassroom(user, body);
       case action.manage:
         return await this.manage.handleSettings(user, body, teacher, classroom);
     }
@@ -716,17 +874,26 @@ class Classroom {
   }
   async updateClassroom(user, teacher, body, classroom) {
     switch (body.specific) {
-      case "addstudent": {
-      }break;
+      case "addstudent":
+        {
+        }
+        break;
       case "removestudent": {
-        const deldoc = await Institute.updateOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":classroom.classname}}},{
-          $pull:{
-            "users.classes.$[outer].students":{studentID:body.studentID}
+        const deldoc = await Institute.updateOne(
+          {
+            uiid: user.uiid,
+            "users.classes": { $elemMatch: { classname: classroom.classname } },
+          },
+          {
+            $pull: {
+              "users.classes.$[outer].students": { studentID: body.studentID },
+            },
+          },
+          {
+            arrayFilters: [{ "outer.inchargeID": teacher.teacherID }],
           }
-        },{
-          arrayFilters:[{"outer.inchargeID":teacher.teacherID}]
-        });
-        return code.event(deldoc.result.nModified?code.OK:code.NO);
+        );
+        return code.event(deldoc.result.nModified ? code.OK : code.NO);
       }
     }
   }
@@ -737,34 +904,37 @@ class Classroom {
    * @param {String} teacherID The teacher ID of teacher (email address) to be looked in.
    * @returns {Array} classes taken by the teacher.
    */
-  async getClassesByTeacherID(uiid,teacherID){
-    let tscheddoc = await Institute.findOne({uiid:uiid,'schedule.teachers':{$elemMatch:{teacherID:teacherID}}});
+  async getClassesByTeacherID(uiid, teacherID) {
+    let tscheddoc = await Institute.findOne({
+      uiid: uiid,
+      "schedule.teachers": { $elemMatch: { teacherID: teacherID } },
+    });
     let classes = [];
-    tscheddoc.days.forEach((day)=>{
-      day.period.forEach((period)=>{
-        if(!classes.includes(period.classname)){
+    tscheddoc.days.forEach((day) => {
+      day.period.forEach((period) => {
+        if (!classes.includes(period.classname)) {
           classes.push(period.classname);
         }
-      })
+      });
     });
-    return classes.length?classes:false;
+    return classes.length ? classes : false;
   }
-
-
 
   /**
    * returns assigned classroom of given teacher, with pseudo students and other classes taken by the teacher.
    */
   async getClassroom(user, body) {
     const teacher = await this.account.getAccount(user);
-    let classdoc = await Institute.findOne({
+    let classdoc = await Institute.findOne(
+      {
         uiid: user.uiid,
         "users.classes": { $elemMatch: { inchargeID: teacher.id } },
       },
       { projection: { "users.classes.$": 1 } }
     );
     if (!classdoc) return { classroom: false, pseudostudents: false };
-    const pclassdoc = await Institute.findOne({
+    const pclassdoc = await Institute.findOne(
+      {
         uiid: user.uiid,
         "pseudousers.classes": {
           $elemMatch: { classname: classdoc.users.classes[0].classname },
@@ -773,34 +943,42 @@ class Classroom {
       { projection: { "pseudousers.classes.$": 1 } }
     );
     let pseudostudents = [];
-    if(pclassdoc){
+    if (pclassdoc) {
       pseudostudents = pclassdoc.pseudousers.classes[0].students;
     }
     let classroom = classdoc.users.classes[0];
     let todayschedule = await new Schedule().getSchedule(user);
     let otherclasses = [];
-    if(todayschedule.schedule){
-    todayschedule.schedule.forEach(day=>{
-      day.period.forEach((period)=>{
-        if(!otherclasses.includes(period.classname)){
-          otherclasses.push(period.classname);
-        }
+    if (todayschedule.schedule) {
+      todayschedule.schedule.forEach((day) => {
+        day.period.forEach((period) => {
+          if (!otherclasses.includes(period.classname)) {
+            otherclasses.push(period.classname);
+          }
+        });
       });
-    });}
-    if(body&&otherclasses.includes(body.otherclass)){//a specific classes needed
-      classdoc = await Institute.findOne({uiid:user.uiid,"users.classes":{$elemMatch:{"classname":body.otherclass}}},{
-        projection:{"users.classes.$":1}
-      });
-      classroom = classdoc?classdoc.users.classes[0]:classroom;
     }
-    classroom.students.forEach((stud,s)=>{
+    if (body && otherclasses.includes(body.otherclass)) {
+      //a specific classes needed
+      classdoc = await Institute.findOne(
+        {
+          uiid: user.uiid,
+          "users.classes": { $elemMatch: { classname: body.otherclass } },
+        },
+        {
+          projection: { "users.classes.$": 1 },
+        }
+      );
+      classroom = classdoc ? classdoc.users.classes[0] : classroom;
+    }
+    classroom.students.forEach((stud, s) => {
       classroom.students[s] = share.getStudentShareData(stud);
     });
     const classes = await this.getClassroomsBySchedule(user);
     return {
       classroom: classroom,
       pseudostudents: pseudostudents,
-      otherclasses:otherclasses.length?otherclasses:classes
+      otherclasses: otherclasses.length ? otherclasses : classes,
     };
   }
 
@@ -810,87 +988,139 @@ class Classroom {
    * @param {String} studentID
    * @param {Boolean} fullaccount If false, will return full student account (filtered via sharedata module), else returns only name and id. Defaults to false.
    */
-  async getStudentByStudentID(user,studentID,fullaccount = false){
+  async getStudentByStudentID(user, studentID, fullaccount = false) {
     const teacher = await this.account.getAccount(user);
-    if(!teacher) return false;
-    const studpath = await Institute.findOne({uiid:user.uiid,[this.studentpath]:{$elemMatch:{[this.studentID]:studentID}}},{projection:{[`${this.studentpath}.$`]:1}});
-    return fullaccount?share.getStudentShareData(studpath.users.students[0]):{username:studpath.users.students[0].username,studentID:studpath.users.students[0].studentID};
+    if (!teacher) return false;
+    const studpath = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.studentpath]: { $elemMatch: { [this.studentID]: studentID } },
+      },
+      { projection: { [`${this.studentpath}.$`]: 1 } }
+    );
+    return fullaccount
+      ? share.getStudentShareData(studpath.users.students[0])
+      : {
+          username: studpath.users.students[0].username,
+          studentID: studpath.users.students[0].studentID,
+        };
   }
 
-  async getClassroomByClassID(user,classid){
-    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.uid]:ObjectId(classid)}}});
-    if(!classdoc) return false;
-    return classdoc.users.classes[0];
-  }
-
-  async getClassroomByClassname(user,classname){
-    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.classname]:classname}}});
-    if(!classdoc) return false;
-    return classdoc.users.classes[0];
-  }
-
-  async getClassroomByInchargeID(user,inchargeID){
-    const classdoc = await Institute.findOne({uiid:user.uiid,[this.classpath]:{$elemMatch:{[this.inchargeID]:inchargeID}}},{
-      projection:{"users.classes.$":1,"pseudousers.classes":1}
+  async getClassroomByClassID(user, classid) {
+    const classdoc = await Institute.findOne({
+      uiid: user.uiid,
+      [this.classpath]: { $elemMatch: { [this.uid]: ObjectId(classid) } },
     });
-    if(!classdoc) return false;
+    if (!classdoc) return false;
+    return classdoc.users.classes[0];
+  }
+
+  async getClassroomByClassname(user, classname) {
+    const classdoc = await Institute.findOne({
+      uiid: user.uiid,
+      [this.classpath]: { $elemMatch: { [this.classname]: classname } },
+    });
+    if (!classdoc) return false;
+    return classdoc.users.classes[0];
+  }
+
+  async getClassroomByInchargeID(user, inchargeID) {
+    const classdoc = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.classpath]: { $elemMatch: { [this.inchargeID]: inchargeID } },
+      },
+      {
+        projection: { "users.classes.$": 1, "pseudousers.classes": 1 },
+      }
+    );
+    if (!classdoc) return false;
     let theclass = classdoc.users.classes[0];
-    theclass['pseudostudents'] = classdoc.pseudousers.classes.find((pclass)=>pclass.classname==theclass.classname).students;
+    theclass["pseudostudents"] = classdoc.pseudousers.classes.find(
+      (pclass) => pclass.classname == theclass.classname
+    ).students;
     return theclass;
   }
 
-  async getClassroomsBySchedule(user,classnameonly = true,pseudostudents = false){
+  async getClassroomsBySchedule(
+    user,
+    classnameonly = true,
+    pseudostudents = false
+  ) {
     const teacher = await this.account.getAccount(user);
-    const scheddoc = await Institute.findOne({uiid:user.uiid,[this.schedulepath]:{$elemMatch:{'teacherID':teacher.id}}},{
-      projection:{[`${this.schedulepath}.$`]:1}
-    });
+    const scheddoc = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.schedulepath]: { $elemMatch: { teacherID: teacher.id } },
+      },
+      {
+        projection: { [`${this.schedulepath}.$`]: 1 },
+      }
+    );
     let classnames = [];
-    if(!scheddoc) return false
-    scheddoc.schedule.teachers[0].days.forEach((day)=>{
-      day.period.forEach((period)=>{
-        if(!classnames.includes(period.classname)&&period.classname!==code.free){
+    if (!scheddoc) return false;
+    scheddoc.schedule.teachers[0].days.forEach((day) => {
+      day.period.forEach((period) => {
+        if (
+          !classnames.includes(period.classname) &&
+          period.classname !== code.free
+        ) {
           classnames.push(period.classname);
         }
-      })
+      });
     });
-    if(!classnames.length) return false;
-    if(classnameonly) return classnames;
+    if (!classnames.length) return false;
+    if (classnameonly) return classnames;
 
     //users.classes
     let classes = [];
-    const classdoc = await Institute.findOne({uiid:user.uiid},{projection:{[`${this.classpath}`]:1}});
-    classnames.forEach((cname)=>{
-      const theclass = classdoc.users.classes.find((Class)=>Class.classname == cname);
-      if(theclass) classes.push(theclass);
+    const classdoc = await Institute.findOne(
+      { uiid: user.uiid },
+      { projection: { [`${this.classpath}`]: 1 } }
+    );
+    classnames.forEach((cname) => {
+      const theclass = classdoc.users.classes.find(
+        (Class) => Class.classname == cname
+      );
+      if (theclass) classes.push(theclass);
     });
-    if(!classes.length) return false;
-    if(!pseudostudents) return classes;
+    if (!classes.length) return false;
+    if (!pseudostudents) return classes;
 
     //including pseudostudents
-    const pseudodoc = await Institute.findOne({uiid:user.uiid},{projection:{'pseudousers.classes':1}});
-    classes.forEach((Class,c)=>{
-      const pclass = pseudodoc.pseudousers.classes.find((pClass)=>pClass.classname == Class.classname);
-      if(pclass) classes[c]['pseudostudents'] = pclass.students;
+    const pseudodoc = await Institute.findOne(
+      { uiid: user.uiid },
+      { projection: { "pseudousers.classes": 1 } }
+    );
+    classes.forEach((Class, c) => {
+      const pclass = pseudodoc.pseudousers.classes.find(
+        (pClass) => pClass.classname == Class.classname
+      );
+      if (pclass) classes[c]["pseudostudents"] = pclass.students;
     });
     return classes;
   }
 
   async handleInvitation(user, body, classroom) {
-    const inst = await Institute.findOne({uiid:user.uiid},{projection:{[this.uid]:1}});
+    const inst = await Institute.findOne(
+      { uiid: user.uiid },
+      { projection: { [this.uid]: 1 } }
+    );
     switch (body.action) {
-      case action.create:{
-        return await invite.generateLink(client.student,{
-          cid:classroom._id,
-          instID:inst._id
-        });
-      }break;
-      case action.disable:{
-        return await invite.disableInvitation(client.student,{
-          cid:classroom._id,
-          instID:inst._id
+      case action.create:
+        {
+          return await invite.generateLink(client.student, {
+            cid: classroom._id,
+            instID: inst._id,
+          });
+        }
+        break;
+      case action.disable: {
+        return await invite.disableInvitation(client.student, {
+          cid: classroom._id,
+          instID: inst._id,
         });
       }
-        
     }
     return;
   }
@@ -903,44 +1133,46 @@ class PseudoUsers {
     this.classes = "classes";
     this.studentID = "studentID";
     this.classname = "classname";
-    this.classpath =  `users.${this.classes}`;
+    this.classpath = `users.${this.classes}`;
     this.pclasspath = `${this.object}.${this.classes}`;
     this.studentpath = `users.${this.students}`;
     this.pstudentpath = `${this.object}.${this.students}`;
   }
   async managePseudousers(user, body, teacher) {
-    const classdoc = await Institute.findOne({uiid: user.uiid,
-      [this.classpath]: {
-        $elemMatch: { inchargeID: teacher.teacherID },
+    const classdoc = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.classpath]: {
+          $elemMatch: { inchargeID: teacher.teacherID },
+        },
+      },
+      {
+        projection: { [`${this.classpath}.$`]: 1 },
       }
-    },{
-      projection: { [`${this.classpath}.$`]: 1 } 
-    });
-    if(!classdoc) return code.event(code.NO);
+    );
+    if (!classdoc) return code.event(code.NO);
     switch (body.action) {
       case action.receive:
-        return await this.getPseudoUsers(user, body,classdoc.users.classes[0].classname);
+        return await this.getPseudoUsers(
+          user,
+          body,
+          classdoc.users.classes[0].classname
+        );
       case action.accept:
-        return await this.acceptStudentRequest(user, body,classdoc.users.classes[0].classname);
+        return await this.acceptStudentRequest(
+          user,
+          body,
+          classdoc.users.classes[0].classname
+        );
       case action.reject:
-        return await this.rejectStudentRequest(user, body,classdoc.users.classes[0].classname);
+        return await this.rejectStudentRequest(
+          user,
+          body,
+          classdoc.users.classes[0].classname
+        );
     }
   }
-  async getPseudoUsers(user, teacher,classname) {
-    const pclassdoc = await Institute.findOne({
-        uiid: user.uiid,
-        [this.pclasspath]: {
-          $elemMatch: { classname: classname },
-        },
-    },
-      { projection: { [`${this.pclasspath}.$`]: 1 } }
-    );
-    return pclassdoc
-      ? pclassdoc.pseudousers.classes[0].students
-      : code.event(code.NO);
-  }
-
-  async acceptStudentRequest(user, body,classname) {
+  async getPseudoUsers(user, teacher, classname) {
     const pclassdoc = await Institute.findOne(
       {
         uiid: user.uiid,
@@ -948,44 +1180,67 @@ class PseudoUsers {
           $elemMatch: { classname: classname },
         },
       },
-      { projection: { [`${this.pclasspath}.$`]: 1,[this.pstudentpath]:1 } }
+      { projection: { [`${this.pclasspath}.$`]: 1 } }
+    );
+    return pclassdoc
+      ? pclassdoc.pseudousers.classes[0].students
+      : code.event(code.NO);
+  }
+
+  async acceptStudentRequest(user, body, classname) {
+    const pclassdoc = await Institute.findOne(
+      {
+        uiid: user.uiid,
+        [this.pclasspath]: {
+          $elemMatch: { classname: classname },
+        },
+      },
+      { projection: { [`${this.pclasspath}.$`]: 1, [this.pstudentpath]: 1 } }
     );
     if (!pclassdoc) return code.event(code.NO);
-    let student = pclassdoc.pseudousers.classes[0].students.find((stud)=>stud.studentID == body.studentID);
-    let studaccount = pclassdoc.pseudousers.students.find((acc)=>acc.studentID==body.studentID);
-    const query = studaccount?{
-      $push: {
-        [`${this.classpath}.$.${this.students}`]: student,
-        [this.studentpath]:studaccount
-      },
-      $pull: {
-        [`${this.pclasspath}.$[outer].${this.students}`]: {
-          [this.studentID]: student.studentID,
-        },
-        [this.pstudentpath]:{studentID:studaccount.studentID}
-      },
-    }:{
-      $push: {
-        [`${this.classpath}.$.${this.students}`]: student,
-      },
-      $pull: {
-        [`${this.pclasspath}.$[outer].${this.students}`]: {
-          [this.studentID]: student.studentID,
-        },
-      },
-    }
+    let student = pclassdoc.pseudousers.classes[0].students.find(
+      (stud) => stud.studentID == body.studentID
+    );
+    let studaccount = pclassdoc.pseudousers.students.find(
+      (acc) => acc.studentID == body.studentID
+    );
+    const query = studaccount
+      ? {
+          $push: {
+            [`${this.classpath}.$.${this.students}`]: student,
+            [this.studentpath]: studaccount,
+          },
+          $pull: {
+            [`${this.pclasspath}.$[outer].${this.students}`]: {
+              [this.studentID]: student.studentID,
+            },
+            [this.pstudentpath]: { studentID: studaccount.studentID },
+          },
+        }
+      : {
+          $push: {
+            [`${this.classpath}.$.${this.students}`]: student,
+          },
+          $pull: {
+            [`${this.pclasspath}.$[outer].${this.students}`]: {
+              [this.studentID]: student.studentID,
+            },
+          },
+        };
     if (!student) return code.event(code.NO);
-    const doc = await Institute.updateOne({
+    const doc = await Institute.updateOne(
+      {
         uiid: user.uiid,
         [this.classpath]: { $elemMatch: { classname: classname } },
-      },query,
+      },
+      query,
       {
         arrayFilters: [{ [`outer.${this.classname}`]: classname }],
       }
     );
     return code.event(doc.result.nModified ? code.OK : code.NO);
   }
-  async rejectStudentRequest(user, body,classname) {
+  async rejectStudentRequest(user, body, classname) {
     const doc = await Institute.updateOne(
       {
         uiid: user.uiid,
@@ -995,7 +1250,9 @@ class PseudoUsers {
       },
       {
         $pull: {
-          [`${this.pclasspath}.$.${this.students}`]: { [this.studentID]: body.studentID },
+          [`${this.pclasspath}.$.${this.students}`]: {
+            [this.studentID]: body.studentID,
+          },
         },
       }
     );
@@ -1004,8 +1261,8 @@ class PseudoUsers {
   }
 }
 
-class Comms{
-  constructor(){
+class Comms {
+  constructor() {
     this.account = new Self().account;
     this.classes = new Classroom();
     this.id = "_id";
@@ -1019,193 +1276,225 @@ class Comms{
   }
   /**
    * Returns rooms and calls.
-   * @param {JSON} user 
-   * @param {String} teacherID 
+   * @param {JSON} user
+   * @param {String} teacherID
    */
-  async getRoomAndCallList(user){
+  async getRoomAndCallList(user) {
     const teacher = await this.account.getAccount(user);
-    const inst = await Institute.findOne({uiid:user.uiid},{
-      projection:{[this.comms]:1,"users.classes":1}
-    });
+    const inst = await Institute.findOne(
+      { uiid: user.uiid },
+      {
+        projection: { [this.comms]: 1, "users.classes": 1 },
+      }
+    );
     let rooms = [];
     let calls = [];
     let calltimes = [];
-    inst.comms.forEach((room)=>{
-      if(room.people.find((person)=>person.id==teacher.id)){
+    inst.comms.forEach((room) => {
+      if (room.people.find((person) => person.id == teacher.id)) {
         rooms.push({
-          [this.id]:room._id,
-          [this.roomname]:room.roomname,
-          [this.people]:room.people,
-          [this.chats]:room.chats
+          [this.id]: room._id,
+          [this.roomname]: room.roomname,
+          [this.people]: room.people,
+          [this.chats]: room.chats,
         });
-        room.voicecalls.forEach((call)=>{
+        room.voicecalls.forEach((call) => {
           calltimes.push(call.time);
         });
       }
     });
     calltimes.sort();
-    inst.comms.forEach((room)=>{
-      if(room.people.find((person)=>person.id==teacher.id)){
-        calltimes.forEach((time)=>{
-          if(room.voicecalls.find((call)=>call.time==time)){
+    inst.comms.forEach((room) => {
+      if (room.people.find((person) => person.id == teacher.id)) {
+        calltimes.forEach((time) => {
+          if (room.voicecalls.find((call) => call.time == time)) {
             calls.push(room.voicecalls);
-            if(room.roomname) return calls[calls.length-1][this.roomname] = room.roomname;
-            room.people.forEach((person)=>{
-              if(person.id!=teacher.id){
-                calls[calls.length-1][this.roomname] += `${person.username}, `;
+            if (room.roomname)
+              return (calls[calls.length - 1][this.roomname] = room.roomname);
+            room.people.forEach((person) => {
+              if (person.id != teacher.id) {
+                calls[calls.length - 1][
+                  this.roomname
+                ] += `${person.username}, `;
               }
             });
-            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].trim()
-            calls[calls.length-1][this.roomname] = calls[calls.length-1][this.roomname].substr(0,calls[calls.length-1][this.roomname].length-2);
+            calls[calls.length - 1][this.roomname] = calls[calls.length - 1][
+              this.roomname
+            ].trim();
+            calls[calls.length - 1][this.roomname] = calls[calls.length - 1][
+              this.roomname
+            ].substr(0, calls[calls.length - 1][this.roomname].length - 2);
           }
-        })
+        });
       }
-    })
-    const classroom = inst.users.classes.find((Class)=>Class.inchargeID==teacher.id);
-    if(classroom){
-      if(rooms.find((room)=>room.roomname==classroom.classname)?false:true){
+    });
+    const classroom = inst.users.classes.find(
+      (Class) => Class.inchargeID == teacher.id
+    );
+    if (classroom) {
+      if (
+        rooms.find((room) => room.roomname == classroom.classname)
+          ? false
+          : true
+      ) {
         rooms.push({
-          [this.roomname]:classroom.classname,
-          [this.people]:classroom.students
+          [this.roomname]: classroom.classname,
+          [this.people]: classroom.students,
         });
       }
     }
-    return rooms.length?{rooms:rooms,calls:calls}:false;
+    return rooms.length ? { rooms: rooms, calls: calls } : false;
   }
 
-
-  async getRoom(user,roomdata){
+  async getRoom(user, roomdata) {
     const teacher = await this.account.getAccount(user);
     let room;
-    if(roomdata.rid) room = await this.getRoomByID(user.uiid,roomdata.rid);
-    else if(roomdata.roomname) {
-      room = await this.getRoomByName(user.uiid,roomdata.roomname)
-      if(!room){
-        const classes = await this.classes.getClassroomsBySchedule(user,false);
-        if(classes){  //if classroom is being accessed by teacher
-          const theclass = classes.find((Class)=>Class.classname==roomdata.roomname);
-          if(theclass) {
-            theclass.students.forEach((student,s)=>{
+    if (roomdata.rid) room = await this.getRoomByID(user.uiid, roomdata.rid);
+    else if (roomdata.roomname) {
+      room = await this.getRoomByName(user.uiid, roomdata.roomname);
+      if (!room) {
+        const classes = await this.classes.getClassroomsBySchedule(user, false);
+        if (classes) {
+          //if classroom is being accessed by teacher
+          const theclass = classes.find(
+            (Class) => Class.classname == roomdata.roomname
+          );
+          if (theclass) {
+            theclass.students.forEach((student, s) => {
               theclass.students[s][this.id] = student.studentID;
-              delete theclass.students[s]['studentID'];
+              delete theclass.students[s]["studentID"];
             });
-            room = await this.createNewRoom(user,theclass.students,theclass._id,theclass.classname);
+            room = await this.createNewRoom(
+              user,
+              theclass.students,
+              theclass._id,
+              theclass.classname
+            );
           }
         }
       }
-    } else if(roomdata.personid){
-      room = await this.getSinglePersonRoom(user.uiid,roomdata.personid);
-      if(!room){
-        const student = await this.classes.getStudentByStudentID(user,roomdata.personid);
-        room = await this.createNewRoom(user,[{
-          username:student.username,
-          id:student.studentID
-        }]);
+    } else if (roomdata.personid) {
+      room = await this.getSinglePersonRoom(user.uiid, roomdata.personid);
+      if (!room) {
+        const student = await this.classes.getStudentByStudentID(
+          user,
+          roomdata.personid
+        );
+        room = await this.createNewRoom(user, [
+          {
+            username: student.username,
+            id: student.studentID,
+          },
+        ]);
       }
     } else return false;
-    if(!room) return false;
-    if(!room.people.find((person)=>person.id==teacher.id)) return code.event(code.comms.ROOM_ACCESS_DENIED);
-    if(room.blocked.includes(teacher.id)) return code.event(code.comms.BLOCKED_FROM_ROOM);
+    if (!room) return false;
+    if (!room.people.find((person) => person.id == teacher.id))
+      return code.event(code.comms.ROOM_ACCESS_DENIED);
+    if (room.blocked.includes(teacher.id))
+      return code.event(code.comms.BLOCKED_FROM_ROOM);
     return room;
   }
 
-  async getRoomByID(uiid,roomid){
-    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.id]:ObjectId(roomid)}}},{
-      projection:{[`${this.comms}.$`]:1}
-    });
-    if(!roomdoc) return false;
-    return roomdoc.comms[0];
-  }
-  async getRoomByName(uiid,roomname){
-    const roomdoc = await Institute.findOne({uiid:uiid,[this.comms]:{$elemMatch:{[this.roomname]:roomname}}},{
-      projection:{[`${this.comms}.$`]:1}
-    });
-    if(!roomdoc) return false;
-    return roomdoc.comms[0];
-  }
-  
-  async getSinglePersonRoom(uiid,personid){
-    const roomdoc = await Institute.findOne({uiid:uiid},{
-      projection:{[`${this.comms}`]:1}
-    });
-    if(!roomdoc) return false;
-    const room = roomdoc.comms.find((room)=>
-      (room.people.length == 2) && (room.people.find((person)=>person.id==personid))?true:false
+  async getRoomByID(uiid, roomid) {
+    const roomdoc = await Institute.findOne(
+      {
+        uiid: uiid,
+        [this.comms]: { $elemMatch: { [this.id]: ObjectId(roomid) } },
+      },
+      {
+        projection: { [`${this.comms}.$`]: 1 },
+      }
     );
-    return room?room:false;
+    if (!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+  async getRoomByName(uiid, roomname) {
+    const roomdoc = await Institute.findOne(
+      {
+        uiid: uiid,
+        [this.comms]: { $elemMatch: { [this.roomname]: roomname } },
+      },
+      {
+        projection: { [`${this.comms}.$`]: 1 },
+      }
+    );
+    if (!roomdoc) return false;
+    return roomdoc.comms[0];
+  }
+
+  async getSinglePersonRoom(uiid, personid) {
+    const roomdoc = await Institute.findOne(
+      { uiid: uiid },
+      {
+        projection: { [`${this.comms}`]: 1 },
+      }
+    );
+    if (!roomdoc) return false;
+    const room = roomdoc.comms.find((room) =>
+      room.people.length == 2 &&
+      room.people.find((person) => person.id == personid)
+        ? true
+        : false
+    );
+    return room ? room : false;
   }
 
   /**
    * Creates a new room in comms.
    * @returns {Promise} The new room if created, else false.
    */
-  async createNewRoom(user,people = [],roomID = new ObjectId(),roomname = String()){
+  async createNewRoom(
+    user,
+    people = [],
+    roomID = new ObjectId(),
+    roomname = String()
+  ) {
     const teacher = await this.account.getAccount(user);
-    if(!teacher) return false;
-    if(!people.length) return false;
+    if (!teacher) return false;
+    if (!people.length) return false;
     people.push({
-      username:teacher.username,
-      id:teacher.id
+      username: teacher.username,
+      id: teacher.id,
     });
     const newroom = {
-      _id:roomID,
-      roomname:roomname,
-      people:people,
-      chats:[],
-      voicecalls:[],
-      videocalls:[],
-      blocked:[]
+      _id: roomID,
+      roomname: roomname,
+      people: people,
+      chats: [],
+      voicecalls: [],
+      videocalls: [],
+      blocked: [],
     };
-    const donedoc = await Institute.findOneAndUpdate({uiid:user.uiid},{
-      $push:{
-        [this.comms]:newroom
+    const donedoc = await Institute.findOneAndUpdate(
+      { uiid: user.uiid },
+      {
+        $push: {
+          [this.comms]: newroom,
+        },
       }
-    });
-    if(!donedoc.value) return false;
+    );
+    if (!donedoc.value) return false;
     return newroom;
   }
-  
-  chatroom(){
 
-  }
-  voicecalling(){
+  chatroom() {}
+  voicecalling() {
     const voicecall = {
-      time:'',
-      username:'',
-      id:'',
-      duration:0
+      time: "",
+      username: "",
+      id: "",
+      duration: 0,
     };
   }
-  videocalling(){
+  videocalling() {
     const videocall = {
-      time:'',
-      username:'',
-      id:'',
-      duration:0
+      time: "",
+      username: "",
+      id: "",
+      duration: 0,
     };
   }
 }
-
 
 module.exports = new TeacherWorker();
-
-async function getTeacherById(uiid,id,pseudo = false){
-  let path = pseudo?"pseudousers.teachers":"users.teachers";
-  let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
-  const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"_id":ObjectId(id)}}},{
-    projection:{
-      [getpath]:1
-    }
-  });
-  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
-}
-async function getTeacherByEmail(uiid,email,pseudo = false){
-  let path = pseudo?"pseudousers.teachers":"users.teachers";
-  let getpath = pseudo?"pseudousers.teachers.$":"users.teachers.$";
-  const tdoc = await Institute.findOne({uiid:uiid,[path]:{$elemMatch:{"teacherID":email}}},{
-    projection:{
-      [getpath]:1
-    }
-  });
-  return tdoc?pseudo?tdoc.pseudousers.teachers[0]:tdoc.users.teachers[0]:false;
-}

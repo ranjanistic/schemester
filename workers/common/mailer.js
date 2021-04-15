@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer"),
   { appname, email, mail } = require("../../config/config.js"),
   {token,emailValid} = require("./inspector"),
   shared = require("./sharedata"),
-  { code, clog } = require("../../public/script/codes");
+  { code } = require("../../public/script/codes");
 
 class Mailer {
   constructor() {
@@ -18,7 +18,7 @@ class Mailer {
     mail['appname'] = appname;
     const data = await ejs.renderFile(path.join(__dirname + `/../../views/mail/${type}.ejs`),{mail:mail});
     return await Promise.resolve(
-      sendEmail(mail.for, mail.title, data)
+      this.sendFinalEmail(mail.for, mail.title, data)
     );
   }
 
@@ -52,45 +52,45 @@ class Mailer {
     return await this.sendActionMail(code.mail.INSTITUTION_INVITATION,body);
   }
 
-  sendException(to,body){
-    sendEmail(to,`Exception occurred in ${appname}`, `<p>${body}</p>`);
-    clog(`${token.verify(email)} Alerted`);
-    clog(body);
+  sendException(body,to = token.verify(email)){
+    this.sendFinalEmail(to||token.verify(email),`Exception occurred in ${appname}`, `<p>${String(body)}</p>`);
+    console.log(`${to} alerted`);
+    console.log(body);
   }
-}
-
-async function sendEmail(to, subject, html) {
-  if(!emailValid(to)) return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT, code.auth.EMAIL_INVALID);
-  const doc = nodemailer
-    .createTransport({
-      host: token.verify(mail.host),
-      secureConnection: mail.secureConnection,
-      port: mail.port,
-      auth: {
-        user: token.verify(mail.auth.user),
-        pass: token.verify(mail.auth.pass),
-      },
-      starttls: {
-        ciphers: token.verify(mail.starttls.ciphers),
-      },
-    })
-    .sendMail({
-      from: token.verify(email),
-      to: to,
-      subject: subject,
-      html: html,
-    })
-    .then((info) => {
-      return code.event(
-        info.accepted.includes(to)
-          ? code.mail.MAIL_SENT
-          : code.mail.ERROR_MAIL_NOTSENT
-      );
-    })
-    .catch((error) => {
-      return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT, error);
-    });
-  return doc;
+  async sendFinalEmail(to, subject, html) {
+    if(!emailValid(to)) return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT, code.auth.EMAIL_INVALID);
+    const doc = nodemailer
+      .createTransport({
+        host: token.verify(mail.host),
+        secureConnection: mail.secureConnection,
+        port: mail.port,
+        auth: {
+          user: token.verify(mail.auth.user),
+          pass: token.verify(mail.auth.pass),
+        },
+        starttls: {
+          ciphers: token.verify(mail.starttls.ciphers),
+        },
+      })
+      .sendMail({
+        from: token.verify(email),
+        to: to,
+        subject: subject,
+        html: html,
+      })
+      .then((info) => {
+        return code.event(
+          info.accepted.includes(to)
+            ? code.mail.MAIL_SENT
+            : code.mail.ERROR_MAIL_NOTSENT
+        );
+      })
+      .catch((error) => {
+        this.sendException(error);
+        return code.eventmsg(code.mail.ERROR_MAIL_NOTSENT, error);
+      });
+    return doc;
+  }  
 }
 
 module.exports = new Mailer();

@@ -1,6 +1,5 @@
 const {
     db: { cpass },
-    email,
   } = require("../config/config.js"),
   Admin = require("../config/db").getAdmin(cpass),
   Institute = require("../config/db").getInstitute(cpass),
@@ -16,7 +15,6 @@ const {
     action,
     stringIsValid,
     validType,
-    clog,
   } = require("../public/script/codes"),
   invite = require("./common/invitation"),
   verify = require("./common/verification"),
@@ -1588,7 +1586,7 @@ class Schedule {
                   );
                   return code.event(code.OK);
                 } catch (e) {
-                  mailer.sendException(inspect.token.verify(email), e);
+                  mailer.sendException(e);
                   return code.event(code.NO);
                 }
               }
@@ -1777,7 +1775,7 @@ class Schedule {
                   return code.event(code.NO);
                 }
               } catch (e) {
-                mailer.sendException(inspect.token.verify(email),e);
+                mailer.sendException(e);
                 return code.eventmsg(code.NO, e);
               }
             }
