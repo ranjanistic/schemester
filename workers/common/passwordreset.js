@@ -1,6 +1,7 @@
-const { code, client } = require("../../public/script/codes"),
+const { client } = require("../../public/script/codes"),
   {
     db: { cpass },
+    site,
   } = require("../../config/config.js"),
   mailer = require("./mailer"),
   time = require("./timer"),
@@ -12,7 +13,7 @@ const { code, client } = require("../../public/script/codes"),
 class PasswordReset {
   constructor() {
     this.type = "resetpassword";
-    this.domain = code.domain;
+    this.domain = site;
     this.defaultValidity = 15; //min
   }
   /**
@@ -175,7 +176,9 @@ class PasswordReset {
                 { _id: ObjectId(query.u) },
                 { $unset: { rlinkexp: null } }
               );
-              return { user: {...share.getAdminShareData(admin), expired: true } };
+              return {
+                user: { ...share.getAdminShareData(admin), expired: true },
+              };
             }
             return { user: share.getAdminShareData(admin) };
           } catch (e) {
@@ -240,7 +243,10 @@ class PasswordReset {
             )
               return false;
             if (!this.isValidTime(teacher.rlinkexp))
-              return { user: { ...share.getTeacherShareData(teacher), expired: true }, uiid: teacherdoc.uiid, };
+              return {
+                user: { ...share.getTeacherShareData(teacher), expired: true },
+                uiid: teacherdoc.uiid,
+              };
             return {
               user: share.getTeacherShareData(teacher),
               uiid: teacherdoc.uiid,
@@ -306,7 +312,10 @@ class PasswordReset {
           )
             return false;
           if (!this.isValidTime(student.rlinkexp))
-            return { user: {...share.getStudentShareData(student), expired: true }, uiid: studentdoc.uiid };
+            return {
+              user: { ...share.getStudentShareData(student), expired: true },
+              uiid: studentdoc.uiid,
+            };
           return {
             user: share.getStudentShareData(student),
             uiid: studentdoc.uiid,

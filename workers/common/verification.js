@@ -1,9 +1,10 @@
-const { code, client } = require("../../public/script/codes"),
+const { client } = require("../../public/script/codes"),
   mailer = require("./mailer"),
   time = require("./timer"),
   share = require("./sharedata"),
   {
     db: { cpass },
+    site,
   } = require("../../config/config.js"),
   { ObjectId } = require("mongodb"),
   Institute = require("../../config/db").getInstitute(cpass),
@@ -17,7 +18,7 @@ const { code, client } = require("../../public/script/codes"),
 class Verification {
   constructor() {
     this.type = "verification";
-    this.domain = code.domain;
+    this.domain = site;
     this.defaultValidity = 15; //min
   }
 
@@ -187,7 +188,9 @@ class Verification {
             )
               return false;
             if (!this.isValidTime(admin.vlinkexp))
-              return { user: {...share.getAdminShareData(admin), expired: true } };
+              return {
+                user: { ...share.getAdminShareData(admin), expired: true },
+              };
             const doc = await Admin.findOneAndUpdate(
               { _id: ObjectId(query.u) },
               { $set: { verified: true }, $unset: { vlinkexp: null } },
@@ -243,7 +246,12 @@ class Verification {
               )
                 return false;
               if (!this.isValidTime(teacher.vlinkexp))
-                return { user: { ...share.getTeacherShareData(teacher), expired: true } };
+                return {
+                  user: {
+                    ...share.getTeacherShareData(teacher),
+                    expired: true,
+                  },
+                };
               const doc = await Institute.findOneAndUpdate(
                 {
                   _id: ObjectId(query.in),
@@ -291,7 +299,9 @@ class Verification {
               return false;
 
             if (!this.isValidTime(teacher.vlinkexp))
-              return { user: { ...share.getTeacherShareData(teacher), expired: true } };
+              return {
+                user: { ...share.getTeacherShareData(teacher), expired: true },
+              };
             const doc = await Institute.findOneAndUpdate(
               {
                 _id: ObjectId(query.in),
@@ -369,7 +379,9 @@ class Verification {
             )
               return false;
             if (!this.isValidTime(student.vlinkexp))
-              return { user: { ...share.getStudentShareData(student), expired: true } };
+              return {
+                user: { ...share.getStudentShareData(student), expired: true },
+              };
             const doc = await Institute.findOneAndUpdate(
               {
                 _id: ObjectId(query.in),
@@ -417,7 +429,9 @@ class Verification {
             return false;
 
           if (!this.isValidTime(student.vlinkexp))
-            return { user: {...share.getStudentShareData(student), expired: true } };
+            return {
+              user: { ...share.getStudentShareData(student), expired: true },
+            };
           const doc = await Institute.findOneAndUpdate(
             {
               _id: ObjectId(query.in),

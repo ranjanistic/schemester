@@ -18,7 +18,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(express.json());
 server.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 1 * 60 * 1000, // 1 minutes
     max: 100, // limit each IP to 100 requests per windowMs
     handler: (_, res) => {
       render(res, view.ratelimited);
