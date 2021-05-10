@@ -45,7 +45,7 @@
     "workbox-cli": "^6.1.5"
   },
   "devDependencies": {
-    "commitizen": "^4.2.3",
+    "commitizen": "^4.2.4",
     "cz-conventional-changelog": "^3.3.0",
     "es6-promisify": "^6.1.1",
     "mocha": "^8.3.2",
