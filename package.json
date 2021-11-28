@@ -35,7 +35,7 @@
     "dotenv": "^10.0.0",
     "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "express-rate-limit": "^5.2.6",
+    "express-rate-limit": "^5.5.1",
     "fs": "0.0.1-security",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
@@ -47,7 +47,7 @@
   "devDependencies": {
     "commitizen": "^4.2.3",
     "cz-conventional-changelog": "^3.3.0",
-    "es6-promisify": "^6.1.1",
+    "es6-promisify": "^7.0.0",
     "mocha": "^8.4.0",
     "nodemon": "^2.0.7",
     "pm2": "^5.1.2"
