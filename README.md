@@ -5,6 +5,9 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 ![Labeler](https://github.com/ranjanistic/schemester-web/workflows/Labeler/badge.svg)
 
+
+[![Presence on Knotters!](https://img.shields.io/static/v1?label=Knotters&message=Project&color=12e49d&link=https://knotters.org&style=for-the-badge)](https://knotters.org)
+
 This repo hosts the source code for [schemester](https://schemester.herokuapp.com).
 Jump to
 
