@@ -6,8 +6,6 @@
 ![Labeler](https://github.com/ranjanistic/schemester-web/workflows/Labeler/badge.svg)
 
 
-[![Presence on Knotters!](https://img.shields.io/static/v1?label=Knotters&message=Project&color=1657ce&link=https://knotters.org&style=for-the-badge)](https://knotters.org/projects/profile/schemester)
-
 This repo hosts the source code for [schemester](https://schemester.herokuapp.com).
 Jump to
 
